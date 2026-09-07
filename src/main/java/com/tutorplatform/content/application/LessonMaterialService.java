@@ -4,6 +4,7 @@ import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.content.application.exception.InvalidLessonMaterialException;
 import com.tutorplatform.content.application.exception.LessonMaterialNotFoundException;
 import com.tutorplatform.content.application.exception.LessonMaterialPositionConflictException;
+import com.tutorplatform.content.application.exception.LessonMaterialVersionConflictException;
 import com.tutorplatform.content.application.exception.TopicNotFoundException;
 import com.tutorplatform.content.domain.LessonMaterialEntity;
 import com.tutorplatform.content.domain.LessonMaterialRepository;
@@ -11,6 +12,7 @@ import com.tutorplatform.content.domain.LessonMaterialType;
 import com.tutorplatform.program.application.ProgramQuery;
 import com.tutorplatform.user.domain.TeacherRepository;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -216,6 +218,8 @@ public class LessonMaterialService {
             return lessonMaterialRepository.saveAndFlush(material);
         } catch (DataIntegrityViolationException exception) {
             throw new LessonMaterialPositionConflictException(exception);
+        } catch (ObjectOptimisticLockingFailureException exception) {
+            throw new LessonMaterialVersionConflictException(exception);
         }
     }
 
