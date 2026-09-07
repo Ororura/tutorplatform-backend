@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.tutorplatform.config.SecurityInfrastructureTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-07T11:21:46.397Z" hostname="Egors-MacBook-Pro.local" time="0.598">
+  <properties/>
+  <testcase name="authenticatedPrincipalWithoutRequiredRoleReturnsNormalizedAccessDeniedError()" classname="com.tutorplatform.config.SecurityInfrastructureTest" time="0.018"/>
+  <testcase name="unsafeRequestWithCsrfPassesSecurityLayer()" classname="com.tutorplatform.config.SecurityInfrastructureTest" time="0.012"/>
+  <testcase name="productionCookieHasRequiredSecurityAttributes()" classname="com.tutorplatform.config.SecurityInfrastructureTest" time="0.004"/>
+  <testcase name="unauthenticatedProtectedEndpointReturnsNormalizedUnauthorizedError()" classname="com.tutorplatform.config.SecurityInfrastructureTest" time="0.007"/>
+  <testcase name="unsafeRequestWithoutCsrfReturnsNormalizedForbiddenError()" classname="com.tutorplatform.config.SecurityInfrastructureTest" time="0.004"/>
+  <testcase name="configuredArgon2PasswordEncoderCanHashAndVerifyPasswords()" classname="com.tutorplatform.config.SecurityInfrastructureTest" time="0.153"/>
+  <testcase name="logoutInvalidatesCurrentSession()" classname="com.tutorplatform.config.SecurityInfrastructureTest" time="0.009"/>
+  <system-out><![CDATA[2026-09-07T14:21:46.398+03:00  INFO 11250 --- [tutor-learning-platform-backend] [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.tutorplatform.config.SecurityInfrastructureTest]: SecurityInfrastructureTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-09-07T14:21:46.411+03:00  INFO 11250 --- [tutor-learning-platform-backend] [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.tutorplatform.TutorLearningPlatformApplication for test class com.tutorplatform.config.SecurityInfrastructureTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.5)
+
+2026-09-07T14:21:46.431+03:00  INFO 11250 --- [tutor-learning-platform-backend] [    Test worker] c.t.config.SecurityInfrastructureTest    : Starting SecurityInfrastructureTest using Java 21.0.6 with PID 11250 (started by egorgladkikh in /Users/egorgladkikh/Desktop/tutor-learning-platform/backend)
+2026-09-07T14:21:46.431+03:00  INFO 11250 --- [tutor-learning-platform-backend] [    Test worker] c.t.config.SecurityInfrastructureTest    : No active profile set, falling back to 1 default profile: "default"
+2026-09-07T14:21:46.732+03:00  INFO 11250 --- [tutor-learning-platform-backend] [    Test worker] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name org.springframework.security.core.userdetails.UserDetailsService#0
+2026-09-07T14:21:46.775+03:00  INFO 11250 --- [tutor-learning-platform-backend] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-09-07T14:21:46.775+03:00  INFO 11250 --- [tutor-learning-platform-backend] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-09-07T14:21:46.776+03:00  INFO 11250 --- [tutor-learning-platform-backend] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-09-07T14:21:46.782+03:00  INFO 11250 --- [tutor-learning-platform-backend] [    Test worker] c.t.config.SecurityInfrastructureTest    : Started SecurityInfrastructureTest in 0.368 seconds (process running for 9.588)
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

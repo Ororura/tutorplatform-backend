@@ -1,0 +1,55 @@
+server:
+  port: 8080
+  servlet:
+    session:
+      timeout: 12h
+
+spring:
+  application:
+    name: tutor-learning-platform-backend
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/tutor_learning}
+    username: ${SPRING_DATASOURCE_USERNAME:tutor}
+    password: ${SPRING_DATASOURCE_PASSWORD:tutor_dev}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  session:
+    store-type: jdbc
+    jdbc:
+      initialize-schema: always
+      platform: postgresql
+      cleanup-cron: "0 */15 * * * *"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+app:
+  security:
+    session-cookie-secure: ${SESSION_COOKIE_SECURE:false}
+  student-invites:
+    ttl: ${STUDENT_INVITE_TTL:P7D}
+    public-frontend-base-url: ${PUBLIC_FRONTEND_BASE_URL:http://localhost:3000}

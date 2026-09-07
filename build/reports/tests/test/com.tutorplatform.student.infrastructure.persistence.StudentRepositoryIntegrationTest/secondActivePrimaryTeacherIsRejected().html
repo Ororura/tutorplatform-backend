@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - secondActivePrimaryTeacherIsRejected()</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<div class="breadcrumbs">
+<a class="breadcrumb" href="../index.html">all</a> &gt; 
+<a class="breadcrumb" href="index.html">com.tutorplatform.student.infrastructure.persistence.StudentRepositoryIntegrationTest</a> &gt; 
+<span class="breadcrumb">secondActivePrimaryTeacherIsRejected()</span>
+</div>
+<div class="tab-container">
+<ul class="tabLinks">
+<li>
+<a class="successGroup" href="#">Gradle Test Run :test</a>
+</li>
+</ul>
+<div class="tab">
+<h2>Gradle Test Run :test</h2>
+<h1>secondActivePrimaryTeacherIsRejected()</h1>
+<div class="tab-container">
+<ul class="tabLinks">
+<li>
+<a class="" href="#">summary</a>
+</li>
+<li>
+<a class="" href="#">standard output</a>
+</li>
+</ul>
+<div class="tab">
+<h2>summary</h2>
+<div>
+<div class="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox">
+<div class="counter">1</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox">
+<div class="counter">0</div>
+<p>skipped</p>
+</div>
+</td>
+<td>
+<div class="infoBox duration">
+<div class="counter">0.030s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="tab">
+<h2>standard output</h2>
+<span class="code">
+<pre id="root-0-test-stdout-secondActivePrimaryTeacherIsRejected()">Hibernate: select ue1_0.id,ue1_0.created_at,ue1_0.email,ue1_0.last_login_at,ue1_0.password_hash,r1_0.user_id,r1_0.role,ue1_0.status,ue1_0.updated_at from users ue1_0 left join user_roles r1_0 on ue1_0.id=r1_0.user_id where ue1_0.id=?
+Hibernate: insert into users (created_at,email,last_login_at,password_hash,status,updated_at,id) values (?,?,?,?,?,?,?)
+Hibernate: insert into user_roles (user_id,role) values (?,?)
+Hibernate: select te1_0.id,te1_0.created_at,te1_0.display_name,te1_0.updated_at,te1_0.user_id from teachers te1_0 where te1_0.id=?
+Hibernate: insert into teachers (created_at,display_name,updated_at,user_id,id) values (?,?,?,?,?)
+Hibernate: select ue1_0.id,ue1_0.created_at,ue1_0.email,ue1_0.last_login_at,ue1_0.password_hash,r1_0.user_id,r1_0.role,ue1_0.status,ue1_0.updated_at from users ue1_0 left join user_roles r1_0 on ue1_0.id=r1_0.user_id where ue1_0.id=?
+Hibernate: insert into users (created_at,email,last_login_at,password_hash,status,updated_at,id) values (?,?,?,?,?,?,?)
+Hibernate: insert into user_roles (user_id,role) values (?,?)
+Hibernate: select te1_0.id,te1_0.created_at,te1_0.display_name,te1_0.updated_at,te1_0.user_id from teachers te1_0 where te1_0.id=?
+Hibernate: insert into teachers (created_at,display_name,updated_at,user_id,id) values (?,?,?,?,?)
+Hibernate: select sdm1_0.id,sdm1_0.created_at,sdm1_0.first_name,sdm1_0.last_name,sdm1_0.status,sdm1_0.updated_at,sdm1_0.user_id from students sdm1_0 where sdm1_0.id=?
+Hibernate: select sdm1_0.id,sdm1_0.created_at,sdm1_0.first_name,sdm1_0.last_name,sdm1_0.status,sdm1_0.updated_at,sdm1_0.user_id from students sdm1_0 where sdm1_0.id=?
+Hibernate: insert into students (created_at,first_name,last_name,status,updated_at,user_id,id) values (?,?,?,?,?,?,?)
+Hibernate: select tsle1_0.student_id,tsle1_0.teacher_id,tsle1_0.created_at,tsle1_0.ended_at,tsle1_0.relation_type,tsle1_0.started_at from teacher_student_links tsle1_0 where (tsle1_0.student_id,tsle1_0.teacher_id) in ((?,?))
+Hibernate: insert into teacher_student_links (created_at,ended_at,relation_type,started_at,student_id,teacher_id) values (?,?,?,?,?,?)
+Hibernate: select tsle1_0.student_id,tsle1_0.teacher_id,tsle1_0.created_at,tsle1_0.ended_at,tsle1_0.relation_type,tsle1_0.started_at from teacher_student_links tsle1_0 where (tsle1_0.student_id,tsle1_0.teacher_id) in ((?,?))
+Hibernate: insert into teacher_student_links (created_at,ended_at,relation_type,started_at,student_id,teacher_id) values (?,?,?,?,?,?)
+2026-09-07T14:21:56.872+03:00  WARN 11250 --- [tutor-learning-platform-backend] [    Test worker] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Error: 0, SQLState: 23505
+2026-09-07T14:21:56.872+03:00 ERROR 11250 --- [tutor-learning-platform-backend] [    Test worker] o.h.engine.jdbc.spi.SqlExceptionHelper   : ERROR: duplicate key value violates unique constraint &quot;uq_student_primary_teacher_active&quot;
+  Detail: Key (student_id)=(4acb3107-6c76-4c3d-8639-6c652e047f4b) already exists.
+</pre>
+<button class="clipboard-copy-btn" aria-label="Copy to clipboard" data-copy-element-id="root-0-test-stdout-secondActivePrimaryTeacherIsRejected()">Copy</button>
+</span>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="https://www.gradle.org">Gradle 9.6.0</a> at Sep 7, 2026, 2:22:03 PM</p>
+</div>
+</div>
+</body>
+</html>
