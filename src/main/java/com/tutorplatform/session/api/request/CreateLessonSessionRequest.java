@@ -36,6 +36,6 @@ public record CreateLessonSessionRequest(
     String privateNotes,
 
     @NotNull
-    List<@Valid LessonSessionTopicRequest> topics
+    List<@NotNull @Valid LessonSessionTopicRequest> topics
 ) {
 }

@@ -189,6 +189,26 @@ class SessionPersistenceIntegrationTest {
     }
 
     @Test
+    void lessonSessionRejectsUnknownStudentProgramForeignKey() {
+        SessionFixture fixture = createSessionFixture(
+            "unknown-session-program@example.com", AttendanceStatus.ATTENDED
+        );
+
+        assertThatThrownBy(() -> jdbcTemplate.update(
+            """
+                insert into lesson_sessions (
+                    id, student_program_id, teacher_id, started_at,
+                    duration_minutes, attendance_status
+                ) values (?, ?, ?, ?, 60, 'ATTENDED')
+                """,
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            fixture.teacher().getId(),
+            Timestamp.from(Instant.now())
+        )).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
     void lessonSessionTopicIsLinkedToTopic() {
         SessionFixture fixture = createSessionFixture("topic-link@example.com", AttendanceStatus.ATTENDED);
         LessonSessionTopicEntity link = lessonSessionTopicRepository.saveAndFlush(new LessonSessionTopicEntity(
@@ -202,6 +222,22 @@ class SessionPersistenceIntegrationTest {
                     assertThat(persisted.getTopicId()).isEqualTo(fixture.topic().getId());
                     assertThat(persisted.isPrimary()).isTrue();
                 });
+    }
+
+    @Test
+    void lessonSessionTopicRejectsUnknownTopicForeignKey() {
+        SessionFixture fixture = createSessionFixture(
+            "unknown-session-topic@example.com", AttendanceStatus.ATTENDED
+        );
+
+        assertThatThrownBy(() -> jdbcTemplate.update(
+            """
+                insert into lesson_session_topics (lesson_session_id, topic_id)
+                values (?, ?)
+                """,
+            fixture.lessonSession().getId(),
+            UUID.randomUUID()
+        )).isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test

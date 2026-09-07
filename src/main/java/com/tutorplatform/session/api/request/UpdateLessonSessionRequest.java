@@ -37,6 +37,6 @@ public record UpdateLessonSessionRequest(
     Long version,
 
     @NotNull
-    List<@Valid LessonSessionTopicRequest> topics
+    List<@NotNull @Valid LessonSessionTopicRequest> topics
 ) {
 }

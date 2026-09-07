@@ -34,6 +34,9 @@ import com.tutorplatform.user.domain.UserRepository;
 import com.tutorplatform.user.domain.UserRole;
 import com.tutorplatform.user.domain.UserStatus;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -112,6 +115,76 @@ class SessionApiIntegrationTest {
             .andReturn();
 
         assertThat(json(result).required("id").textValue()).isNotBlank();
+    }
+
+    @ParameterizedTest
+    @EnumSource(AttendanceStatus.class)
+    void postCreatesEveryAttendanceStatus(AttendanceStatus statusValue) throws Exception {
+        SessionFixture fixture = createFixture("api-status-" + statusValue.name().toLowerCase() + "@example.com");
+
+        mockMvc.perform(post(sessionsUrl(fixture.student().getId()))
+                .with(user(fixture.principal()))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(createRequest(
+                    fixture.studentProgram().getId(),
+                    fixture.topic().getId(),
+                    60,
+                    statusValue
+                )))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.attendanceStatus").value(statusValue.name()));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {1, 600})
+    void postAcceptsDurationBoundaries(int durationMinutes) throws Exception {
+        SessionFixture fixture = createFixture("api-duration-" + durationMinutes + "@example.com");
+
+        mockMvc.perform(post(sessionsUrl(fixture.student().getId()))
+                .with(user(fixture.principal()))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(createRequest(
+                    fixture.studentProgram().getId(),
+                    fixture.topic().getId(),
+                    durationMinutes
+                )))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.durationMinutes").value(durationMinutes));
+    }
+
+    @Test
+    void postPersistsMultipleTopics() throws Exception {
+        SessionFixture fixture = createFixture("api-multiple-topics@example.com");
+        String request = """
+            {
+              "studentProgramId": "%s",
+              "startedAt": "2026-09-07T15:00:00Z",
+              "durationMinutes": 60,
+              "attendanceStatus": "ATTENDED",
+              "topics": [
+                {"topicId": "%s", "isPrimary": true},
+                {"topicId": "%s", "isPrimary": false}
+              ]
+            }
+            """.formatted(
+                fixture.studentProgram().getId(),
+                fixture.topic().getId(),
+                fixture.secondTopic().getId()
+            );
+
+        mockMvc.perform(post(sessionsUrl(fixture.student().getId()))
+                .with(user(fixture.principal()))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.topics.length()").value(2))
+            .andExpect(jsonPath("$.topics[*].topicId").value(org.hamcrest.Matchers.containsInAnyOrder(
+                fixture.topic().getId().toString(),
+                fixture.secondTopic().getId().toString()
+            )));
     }
 
     @Test
@@ -222,20 +295,53 @@ class SessionApiIntegrationTest {
                 .with(user(other.principal())))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.code").value("STUDENT_NOT_FOUND"));
+
+        mockMvc.perform(post(sessionsUrl(owner.student().getId()))
+                .with(user(other.principal()))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(createRequest(
+                    owner.studentProgram().getId(), owner.topic().getId(), 60
+                )))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("STUDENT_NOT_FOUND"));
     }
 
-    @Test
-    void invalidDurationReturnsValidationError() throws Exception {
-        SessionFixture fixture = createFixture("api-duration@example.com");
+    @ParameterizedTest
+    @ValueSource(ints = {0, 601})
+    void invalidDurationReturnsValidationError(int durationMinutes) throws Exception {
+        SessionFixture fixture = createFixture("api-invalid-duration-" + durationMinutes + "@example.com");
 
         mockMvc.perform(post(sessionsUrl(fixture.student().getId()))
                 .with(user(fixture.principal()))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(createRequest(fixture.studentProgram().getId(), fixture.topic().getId(), 0)))
+                .content(createRequest(
+                    fixture.studentProgram().getId(), fixture.topic().getId(), durationMinutes
+                )))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
             .andExpect(jsonPath("$.details[0].field").value("durationMinutes"));
+    }
+
+    @Test
+    void foreignLessonSessionIsNotReadableOrUpdatable() throws Exception {
+        SessionFixture owner = createFixture("api-session-owner@example.com");
+        SessionFixture other = createFixture("api-session-other@example.com");
+        LessonSessionResult session = createSession(owner, 60, AttendanceStatus.ATTENDED);
+
+        mockMvc.perform(get(sessionUrl(owner.student().getId(), session.id()))
+                .with(user(other.principal())))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("STUDENT_NOT_FOUND"));
+
+        mockMvc.perform(patch(sessionUrl(owner.student().getId(), session.id()))
+                .with(user(other.principal()))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(updateRequest(session, owner.topic().getId())))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("STUDENT_NOT_FOUND"));
     }
 
     @Test
@@ -262,6 +368,28 @@ class SessionApiIntegrationTest {
                 .content(createRequest(fixture.studentProgram().getId(), UUID.randomUUID(), 60)))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value("LESSON_SESSION_TOPIC_INVALID"));
+    }
+
+    @Test
+    void nullTopicElementReturnsValidationError() throws Exception {
+        SessionFixture fixture = createFixture("api-null-topic@example.com");
+        String request = """
+            {
+              "studentProgramId": "%s",
+              "startedAt": "2026-09-07T15:00:00Z",
+              "durationMinutes": 60,
+              "attendanceStatus": "ATTENDED",
+              "topics": [null]
+            }
+            """.formatted(fixture.studentProgram().getId());
+
+        mockMvc.perform(post(sessionsUrl(fixture.student().getId()))
+                .with(user(fixture.principal()))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
     }
 
     @Test
@@ -321,17 +449,26 @@ class SessionApiIntegrationTest {
     }
 
     private String createRequest(UUID studentProgramId, UUID topicId, int durationMinutes) {
+        return createRequest(studentProgramId, topicId, durationMinutes, AttendanceStatus.ATTENDED);
+    }
+
+    private String createRequest(
+        UUID studentProgramId,
+        UUID topicId,
+        int durationMinutes,
+        AttendanceStatus attendanceStatus
+    ) {
         return """
             {
               "studentProgramId": "%s",
               "startedAt": "2026-09-07T15:00:00Z",
               "durationMinutes": %d,
-              "attendanceStatus": "ATTENDED",
+              "attendanceStatus": "%s",
               "summary": "Разобрали циклы",
               "privateNotes": "Повторить вложенные циклы",
               "topics": [{"topicId": "%s", "isPrimary": true}]
             }
-            """.formatted(studentProgramId, durationMinutes, topicId);
+            """.formatted(studentProgramId, durationMinutes, attendanceStatus, topicId);
     }
 
     private String updateRequest(LessonSessionResult session, UUID topicId) {
@@ -402,7 +539,10 @@ class SessionApiIntegrationTest {
         TopicEntity topic = topicRepository.saveAndFlush(new TopicEntity(
             UUID.randomUUID(), module.getId(), "Тема", null, 0, TopicStatus.DRAFT
         ));
-        return new SessionFixture(teacher, principal, student, studentProgram, topic);
+        TopicEntity secondTopic = topicRepository.saveAndFlush(new TopicEntity(
+            UUID.randomUUID(), module.getId(), "Вторая тема", null, 1, TopicStatus.DRAFT
+        ));
+        return new SessionFixture(teacher, principal, student, studentProgram, topic, secondTopic);
     }
 
     private String sessionsUrl(UUID studentId) {
@@ -422,7 +562,8 @@ class SessionApiIntegrationTest {
         AuthenticatedUser principal,
         StudentEntity student,
         StudentProgramEntity studentProgram,
-        TopicEntity topic
+        TopicEntity topic,
+        TopicEntity secondTopic
     ) {
     }
 }
