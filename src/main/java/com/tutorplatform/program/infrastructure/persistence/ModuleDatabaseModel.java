@@ -1,6 +1,7 @@
 package com.tutorplatform.program.infrastructure.persistence;
 
 import com.tutorplatform.program.domain.ModuleEntity;
+import com.tutorplatform.program.infrastructure.persistence.learningprogram.LearningProgramDatabaseModel;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

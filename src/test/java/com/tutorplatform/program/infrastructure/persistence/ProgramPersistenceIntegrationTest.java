@@ -16,6 +16,8 @@ import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressStatu
 import com.tutorplatform.program.domain.TopicEntity;
 import com.tutorplatform.program.domain.TopicRepository;
 import com.tutorplatform.program.domain.TopicStatus;
+import com.tutorplatform.program.infrastructure.persistence.learningprogram.JpaLearningProgramRepository;
+import com.tutorplatform.program.infrastructure.persistence.learningprogram.LearningProgramDatabaseModel;
 import com.tutorplatform.program.infrastructure.persistence.studentprogram.JpaStudentProgramRepository;
 import com.tutorplatform.program.infrastructure.persistence.studentprogram.JpaStudentTopicProgressRepository;
 import com.tutorplatform.program.infrastructure.persistence.studentprogram.StudentProgramDatabaseModel;

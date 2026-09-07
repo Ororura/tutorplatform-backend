@@ -1,4 +1,4 @@
-package com.tutorplatform.program.infrastructure.persistence;
+package com.tutorplatform.program.infrastructure.persistence.learningprogram;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
