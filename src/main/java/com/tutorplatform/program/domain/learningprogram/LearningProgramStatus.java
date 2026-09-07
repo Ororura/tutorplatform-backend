@@ -1,4 +1,4 @@
-package com.tutorplatform.program.domain;
+package com.tutorplatform.program.domain.learningprogram;
 
 public enum LearningProgramStatus {
     DRAFT,

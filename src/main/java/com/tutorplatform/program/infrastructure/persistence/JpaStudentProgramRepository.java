@@ -1,7 +1,7 @@
 package com.tutorplatform.program.infrastructure.persistence;
 
-import com.tutorplatform.program.domain.StudentProgramEntity;
-import com.tutorplatform.program.domain.StudentProgramRepository;
+import com.tutorplatform.program.domain.studentprogram.StudentProgramEntity;
+import com.tutorplatform.program.domain.studentprogram.StudentProgramRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;

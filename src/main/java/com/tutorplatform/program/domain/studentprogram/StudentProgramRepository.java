@@ -1,4 +1,4 @@
-package com.tutorplatform.program.domain;
+package com.tutorplatform.program.domain.studentprogram;
 
 import java.util.Optional;
 import java.util.UUID;

@@ -1,4 +1,4 @@
-package com.tutorplatform.program.domain;
+package com.tutorplatform.program.domain.studentprogram;
 
 public enum StudentProgramStatus {
     ACTIVE,

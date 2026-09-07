@@ -1,7 +1,7 @@
 package com.tutorplatform.program.application;
 
 import com.tutorplatform.program.domain.ModuleRepository;
-import com.tutorplatform.program.domain.StudentProgramRepository;
+import com.tutorplatform.program.domain.studentprogram.StudentProgramRepository;
 import com.tutorplatform.program.domain.TopicRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

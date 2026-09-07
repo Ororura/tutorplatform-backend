@@ -1,7 +1,7 @@
 package com.tutorplatform.program.infrastructure.persistence;
 
-import com.tutorplatform.program.domain.LearningProgramEntity;
-import com.tutorplatform.program.domain.LearningProgramStatus;
+import com.tutorplatform.program.domain.learningprogram.LearningProgramEntity;
+import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
 import com.tutorplatform.subject.infrastructure.persistence.SubjectDatabaseModel;
 import com.tutorplatform.user.infrastructure.persistence.TeacherDatabaseModel;
 import jakarta.persistence.Column;
