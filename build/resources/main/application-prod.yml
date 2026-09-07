@@ -1,3 +1,0 @@
-app:
-  security:
-    session-cookie-secure: true
