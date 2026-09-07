@@ -49,7 +49,7 @@ class StudentRepositoryIntegrationTest {
         registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
         registry.add("spring.datasource.username", POSTGRES::getUsername);
         registry.add("spring.datasource.password", POSTGRES::getPassword);
-        registry.add("spring.flyway.target", () -> "002");
+        registry.add("spring.flyway.target", () -> "003");
     }
 
     @Autowired
@@ -143,10 +143,10 @@ class StudentRepositoryIntegrationTest {
     }
 
     @Test
-    void cleanPostgresIsMigratedFromV001ThroughV002() {
+    void cleanPostgresIsMigratedFromV001ThroughV003() {
         assertThat(Arrays.stream(flyway.info().applied())
                 .map(migration -> migration.getVersion().toString()))
-                .containsExactly("001", "002");
+                .containsExactly("001", "002", "003");
 
         assertThat(jdbcTemplate.queryForObject(
                 """
