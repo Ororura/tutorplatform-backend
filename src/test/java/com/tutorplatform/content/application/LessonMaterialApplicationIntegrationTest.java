@@ -1,0 +1,423 @@
+package com.tutorplatform.content.application;
+
+import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
+import com.tutorplatform.content.application.exception.InvalidLessonMaterialException;
+import com.tutorplatform.content.application.exception.LessonMaterialNotFoundException;
+import com.tutorplatform.content.application.exception.LessonMaterialPositionConflictException;
+import com.tutorplatform.content.application.exception.TopicNotFoundException;
+import com.tutorplatform.content.domain.LessonMaterialType;
+import com.tutorplatform.program.domain.ModuleEntity;
+import com.tutorplatform.program.domain.ModuleRepository;
+import com.tutorplatform.program.domain.TopicEntity;
+import com.tutorplatform.program.domain.TopicRepository;
+import com.tutorplatform.program.domain.TopicStatus;
+import com.tutorplatform.program.domain.learningprogram.LearningProgramEntity;
+import com.tutorplatform.program.domain.learningprogram.LearningProgramRepository;
+import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
+import com.tutorplatform.subject.domain.SubjectEntity;
+import com.tutorplatform.subject.domain.SubjectRepository;
+import com.tutorplatform.subject.domain.SubjectStatus;
+import com.tutorplatform.user.domain.TeacherEntity;
+import com.tutorplatform.user.domain.TeacherRepository;
+import com.tutorplatform.user.domain.UserEntity;
+import com.tutorplatform.user.domain.UserRepository;
+import com.tutorplatform.user.domain.UserRole;
+import com.tutorplatform.user.domain.UserStatus;
+import jakarta.persistence.OptimisticLockException;
+import org.hibernate.StaleObjectStateException;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.postgresql.PostgreSQLContainer;
+
+import java.util.List;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@Testcontainers
+class LessonMaterialApplicationIntegrationTest {
+
+    @Container
+    private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
+
+    @DynamicPropertySource
+    static void configurePostgres(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
+        registry.add("spring.datasource.username", POSTGRES::getUsername);
+        registry.add("spring.datasource.password", POSTGRES::getPassword);
+        registry.add("spring.flyway.target", () -> "005");
+    }
+
+    @Autowired private LessonMaterialService lessonMaterialService;
+    @Autowired private UserRepository userRepository;
+    @Autowired private TeacherRepository teacherRepository;
+    @Autowired private SubjectRepository subjectRepository;
+    @Autowired private LearningProgramRepository learningProgramRepository;
+    @Autowired private ModuleRepository moduleRepository;
+    @Autowired private TopicRepository topicRepository;
+
+    @Test
+    void teacherCreatesTextMaterial() {
+        ContentFixture fixture = createFixture("create-text-material@example.com");
+
+        LessonMaterialResult created = createMaterial(
+            fixture, LessonMaterialType.TEXT, "Текст", "Содержимое", null, 0
+        );
+
+        assertThat(created.materialType()).isEqualTo(LessonMaterialType.TEXT);
+        assertThat(created.content()).isEqualTo("Содержимое");
+        assertThat(created.createdByTeacherId()).isEqualTo(fixture.teacher().getId());
+        assertThat(created.version()).isZero();
+    }
+
+    @Test
+    void teacherCreatesMarkdownMaterial() {
+        ContentFixture fixture = createFixture("create-markdown-material@example.com");
+
+        LessonMaterialResult created = createMaterial(
+            fixture, LessonMaterialType.MARKDOWN, "Markdown", "# Заголовок", null, 0
+        );
+
+        assertThat(created.materialType()).isEqualTo(LessonMaterialType.MARKDOWN);
+        assertThat(created.content()).isEqualTo("# Заголовок");
+    }
+
+    @Test
+    void teacherCreatesCodeExampleMaterial() {
+        ContentFixture fixture = createFixture("create-code-material@example.com");
+
+        LessonMaterialResult created = createMaterial(
+            fixture, LessonMaterialType.CODE_EXAMPLE, "Пример", "System.out.println();", null, 0
+        );
+
+        assertThat(created.materialType()).isEqualTo(LessonMaterialType.CODE_EXAMPLE);
+        assertThat(created.content()).isEqualTo("System.out.println();");
+    }
+
+    @Test
+    void teacherCreatesLinkMaterial() {
+        ContentFixture fixture = createFixture("create-link-material@example.com");
+
+        LessonMaterialResult created = createMaterial(
+            fixture, LessonMaterialType.LINK, "Документация", null,
+            "https://example.com/docs", 0
+        );
+
+        assertThat(created.materialType()).isEqualTo(LessonMaterialType.LINK);
+        assertThat(created.externalUrl()).isEqualTo("https://example.com/docs");
+        assertThat(created.content()).isNull();
+        assertThat(created.fileAssetId()).isNull();
+    }
+
+    @Test
+    void topicOwnedByAnotherTeacherIsRejected() {
+        ContentFixture current = createFixture("current-topic-owner@example.com");
+        ContentFixture foreign = createFixture("foreign-topic-owner@example.com");
+
+        assertThatThrownBy(() -> lessonMaterialService.createLessonMaterial(
+            current.principal(),
+            createCommand(foreign.topic().getId(), LessonMaterialType.TEXT, "Текст", "Содержимое", null, 0)
+        )).isInstanceOf(TopicNotFoundException.class);
+    }
+
+    @Test
+    void unknownTopicIsRejected() {
+        ContentFixture fixture = createFixture("unknown-topic@example.com");
+
+        assertThatThrownBy(() -> lessonMaterialService.createLessonMaterial(
+            fixture.principal(),
+            createCommand(UUID.randomUUID(), LessonMaterialType.TEXT, "Текст", "Содержимое", null, 0)
+        )).isInstanceOf(TopicNotFoundException.class);
+    }
+
+    @Test
+    void textWithoutContentIsRejected() {
+        ContentFixture fixture = createFixture("text-without-content@example.com");
+
+        assertThatThrownBy(() -> lessonMaterialService.createLessonMaterial(
+            fixture.principal(),
+            createCommand(fixture.topic().getId(), LessonMaterialType.TEXT, "Текст", null, null, 0)
+        )).isInstanceOf(InvalidLessonMaterialException.class)
+            .extracting("field")
+            .isEqualTo("content");
+    }
+
+    @Test
+    void linkWithoutExternalUrlIsRejected() {
+        ContentFixture fixture = createFixture("link-without-url@example.com");
+
+        assertThatThrownBy(() -> lessonMaterialService.createLessonMaterial(
+            fixture.principal(),
+            createCommand(fixture.topic().getId(), LessonMaterialType.LINK, "Ссылка", null, null, 0)
+        )).isInstanceOf(InvalidLessonMaterialException.class)
+            .extracting("field")
+            .isEqualTo("externalUrl");
+    }
+
+    @Test
+    void negativePositionIsRejected() {
+        ContentFixture fixture = createFixture("negative-app-position@example.com");
+
+        assertThatThrownBy(() -> lessonMaterialService.createLessonMaterial(
+            fixture.principal(),
+            createCommand(fixture.topic().getId(), LessonMaterialType.TEXT, "Текст", "Содержимое", null, -1)
+        )).isInstanceOf(InvalidLessonMaterialException.class)
+            .extracting("field")
+            .isEqualTo("position");
+    }
+
+    @Test
+    void duplicatePositionIsReportedAsConflict() {
+        ContentFixture fixture = createFixture("duplicate-app-position@example.com");
+        createTextMaterial(fixture, "Первый", 0);
+
+        assertThatThrownBy(() -> createTextMaterial(fixture, "Второй", 0))
+            .isInstanceOf(LessonMaterialPositionConflictException.class);
+    }
+
+    @Test
+    void listIsOrderedByPosition() {
+        ContentFixture fixture = createFixture("list-materials@example.com");
+        LessonMaterialResult third = createTextMaterial(fixture, "Третий", 2);
+        LessonMaterialResult first = createTextMaterial(fixture, "Первый", 0);
+        LessonMaterialResult second = createTextMaterial(fixture, "Второй", 1);
+
+        assertThat(lessonMaterialService.listLessonMaterials(
+            fixture.principal(), fixture.topic().getId()
+        )).extracting(LessonMaterialResult::id)
+            .containsExactly(first.id(), second.id(), third.id());
+    }
+
+    @Test
+    void getDoesNotRevealForeignMaterial() {
+        ContentFixture current = createFixture("current-material-reader@example.com");
+        ContentFixture foreign = createFixture("foreign-material-reader@example.com");
+        LessonMaterialResult foreignMaterial = createTextMaterial(foreign, "Чужой", 0);
+
+        assertThatThrownBy(() -> lessonMaterialService.getLessonMaterial(
+            current.principal(), current.topic().getId(), foreignMaterial.id()
+        )).isInstanceOf(LessonMaterialNotFoundException.class);
+    }
+
+    @Test
+    void updateChangesAllowedFieldsAndMaterialType() {
+        ContentFixture fixture = createFixture("update-material@example.com");
+        LessonMaterialResult created = createTextMaterial(fixture, "Текст", 0);
+
+        LessonMaterialResult updated = lessonMaterialService.updateLessonMaterial(
+            fixture.principal(),
+            fixture.topic().getId(),
+            created.id(),
+            new UpdateLessonMaterialCommand(
+                LessonMaterialType.LINK,
+                "Новая ссылка",
+                null,
+                null,
+                "https://example.com/updated",
+                3,
+                created.version()
+            )
+        );
+
+        assertThat(updated.materialType()).isEqualTo(LessonMaterialType.LINK);
+        assertThat(updated.title()).isEqualTo("Новая ссылка");
+        assertThat(updated.content()).isNull();
+        assertThat(updated.externalUrl()).isEqualTo("https://example.com/updated");
+        assertThat(updated.position()).isEqualTo(3);
+        assertThat(updated.version()).isEqualTo(created.version() + 1);
+        assertThat(updated.topicId()).isEqualTo(created.topicId());
+        assertThat(updated.createdByTeacherId()).isEqualTo(created.createdByTeacherId());
+    }
+
+    @Test
+    void typeChangeRejectsStalePayload() {
+        ContentFixture fixture = createFixture("invalid-type-change@example.com");
+        LessonMaterialResult created = createTextMaterial(fixture, "Текст", 0);
+
+        assertThatThrownBy(() -> lessonMaterialService.updateLessonMaterial(
+            fixture.principal(),
+            fixture.topic().getId(),
+            created.id(),
+            new UpdateLessonMaterialCommand(
+                LessonMaterialType.LINK,
+                "Ссылка",
+                created.content(),
+                null,
+                "https://example.com",
+                0,
+                created.version()
+            )
+        )).isInstanceOf(InvalidLessonMaterialException.class);
+
+        assertThat(lessonMaterialService.getLessonMaterial(
+            fixture.principal(), fixture.topic().getId(), created.id()
+        ).materialType()).isEqualTo(LessonMaterialType.TEXT);
+    }
+
+    @Test
+    void fileAndImageCreationAreNotSupported() {
+        ContentFixture fixture = createFixture("unsupported-file-types@example.com");
+
+        assertThatThrownBy(() -> lessonMaterialService.createLessonMaterial(
+            fixture.principal(),
+            new CreateLessonMaterialCommand(
+                fixture.topic().getId(), LessonMaterialType.FILE, "Файл", null,
+                UUID.randomUUID(), null, 0
+            )
+        )).isInstanceOf(InvalidLessonMaterialException.class)
+            .extracting("field")
+            .isEqualTo("materialType");
+        assertThatThrownBy(() -> lessonMaterialService.createLessonMaterial(
+            fixture.principal(),
+            new CreateLessonMaterialCommand(
+                fixture.topic().getId(), LessonMaterialType.IMAGE, "Изображение", null,
+                UUID.randomUUID(), null, 0
+            )
+        )).isInstanceOf(InvalidLessonMaterialException.class)
+            .extracting("field")
+            .isEqualTo("materialType");
+    }
+
+    @Test
+    void blankTitleIsRejected() {
+        ContentFixture fixture = createFixture("blank-material-title@example.com");
+
+        assertThatThrownBy(() -> lessonMaterialService.createLessonMaterial(
+            fixture.principal(),
+            createCommand(fixture.topic().getId(), LessonMaterialType.TEXT, " ", "Содержимое", null, 0)
+        )).isInstanceOf(InvalidLessonMaterialException.class)
+            .extracting("field")
+            .isEqualTo("title");
+    }
+
+    @Test
+    void optimisticLockingRejectsStaleUpdate() {
+        ContentFixture fixture = createFixture("application-material-lock@example.com");
+        LessonMaterialResult created = createTextMaterial(fixture, "Исходный", 0);
+        UpdateLessonMaterialCommand firstUpdate = updateTextCommand(created, "Первая версия");
+        UpdateLessonMaterialCommand staleUpdate = updateTextCommand(created, "Устаревшая версия");
+
+        LessonMaterialResult updated = lessonMaterialService.updateLessonMaterial(
+            fixture.principal(), fixture.topic().getId(), created.id(), firstUpdate
+        );
+        Throwable thrown = catchThrowable(() -> lessonMaterialService.updateLessonMaterial(
+            fixture.principal(), fixture.topic().getId(), created.id(), staleUpdate
+        ));
+
+        assertThat(thrown).isNotNull();
+        assertThat(hasOptimisticLockCause(thrown)).isTrue();
+        assertThat(lessonMaterialService.getLessonMaterial(
+            fixture.principal(), fixture.topic().getId(), created.id()
+        )).satisfies(persisted -> {
+            assertThat(persisted.title()).isEqualTo("Первая версия");
+            assertThat(persisted.version()).isEqualTo(updated.version());
+        });
+    }
+
+    private LessonMaterialResult createTextMaterial(ContentFixture fixture, String title, int position) {
+        return createMaterial(fixture, LessonMaterialType.TEXT, title, "Содержимое", null, position);
+    }
+
+    private LessonMaterialResult createMaterial(
+        ContentFixture fixture,
+        LessonMaterialType type,
+        String title,
+        String content,
+        String externalUrl,
+        int position
+    ) {
+        return lessonMaterialService.createLessonMaterial(
+            fixture.principal(),
+            createCommand(fixture.topic().getId(), type, title, content, externalUrl, position)
+        );
+    }
+
+    private CreateLessonMaterialCommand createCommand(
+        UUID topicId,
+        LessonMaterialType type,
+        String title,
+        String content,
+        String externalUrl,
+        int position
+    ) {
+        return new CreateLessonMaterialCommand(
+            topicId, type, title, content, null, externalUrl, position
+        );
+    }
+
+    private UpdateLessonMaterialCommand updateTextCommand(
+        LessonMaterialResult source,
+        String title
+    ) {
+        return new UpdateLessonMaterialCommand(
+            LessonMaterialType.TEXT,
+            title,
+            source.content(),
+            null,
+            null,
+            source.position(),
+            source.version()
+        );
+    }
+
+    private ContentFixture createFixture(String email) {
+        UserEntity user = new UserEntity(UUID.randomUUID(), email, "password-hash", UserStatus.ACTIVE);
+        user.addRole(UserRole.TEACHER);
+        userRepository.saveAndFlush(user);
+        TeacherEntity teacher = teacherRepository.saveAndFlush(new TeacherEntity(
+            UUID.randomUUID(), user, "Teacher"
+        ));
+        SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
+            UUID.randomUUID(), teacher.getId(), null, "Предмет " + UUID.randomUUID(),
+            null, SubjectStatus.ACTIVE
+        ));
+        LearningProgramEntity learningProgram = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
+            UUID.randomUUID(), teacher.getId(), subject.getId(), "Программа", null,
+            LearningProgramStatus.DRAFT
+        ));
+        ModuleEntity module = moduleRepository.saveAndFlush(new ModuleEntity(
+            UUID.randomUUID(), learningProgram.getId(), "Модуль", null, 0
+        ));
+        TopicEntity topic = topicRepository.saveAndFlush(new TopicEntity(
+            UUID.randomUUID(), module.getId(), "Тема", null, 0, TopicStatus.DRAFT
+        ));
+        AuthenticatedUser principal = new AuthenticatedUser(
+            user.getId(),
+            email,
+            "",
+            true,
+            List.of(new SimpleGrantedAuthority("ROLE_TEACHER"))
+        );
+        return new ContentFixture(principal, teacher, topic);
+    }
+
+    private boolean hasOptimisticLockCause(Throwable throwable) {
+        Throwable current = throwable;
+        while (current != null) {
+            if (current instanceof OptimisticLockException
+                || current instanceof StaleObjectStateException
+                || current instanceof ObjectOptimisticLockingFailureException) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
+    }
+
+    private record ContentFixture(
+        AuthenticatedUser principal,
+        TeacherEntity teacher,
+        TopicEntity topic
+    ) {
+    }
+}

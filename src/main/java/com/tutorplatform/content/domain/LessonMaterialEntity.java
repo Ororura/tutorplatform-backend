@@ -83,11 +83,17 @@ public class LessonMaterialEntity {
         if (requiresContent(requiredType) && content == null) {
             throw new IllegalArgumentException(requiredType + " material requires content");
         }
+        if (requiresContent(requiredType) && (fileAssetId != null || externalUrl != null)) {
+            throw new IllegalArgumentException(requiredType + " material only supports content");
+        }
         if (requiresFileAsset(requiredType) && fileAssetId == null) {
             throw new IllegalArgumentException(requiredType + " material requires fileAssetId");
         }
         if (requiredType == LessonMaterialType.LINK && externalUrl == null) {
             throw new IllegalArgumentException("LINK material requires externalUrl");
+        }
+        if (requiredType == LessonMaterialType.LINK && (content != null || fileAssetId != null)) {
+            throw new IllegalArgumentException("LINK material only supports externalUrl");
         }
         this.materialType = requiredType;
         this.title = Objects.requireNonNull(title);

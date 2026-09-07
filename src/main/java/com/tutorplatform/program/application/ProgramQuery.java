@@ -7,7 +7,19 @@ public interface ProgramQuery {
 
     Optional<StudentProgramContext> findStudentProgram(UUID studentProgramId);
 
+    Optional<TopicContext> findTopic(UUID topicId);
+
     boolean topicBelongsToLearningProgram(UUID topicId, UUID learningProgramId);
+
+    record TopicContext(
+        UUID id,
+        UUID learningProgramId,
+        UUID teacherId
+    ) {
+        public boolean isOwnedBy(UUID expectedTeacherId) {
+            return teacherId.equals(expectedTeacherId);
+        }
+    }
 
     record StudentProgramContext(
         UUID id,

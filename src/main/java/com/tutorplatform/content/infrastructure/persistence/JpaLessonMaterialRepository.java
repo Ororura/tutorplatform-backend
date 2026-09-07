@@ -33,6 +33,12 @@ public class JpaLessonMaterialRepository implements LessonMaterialRepository {
     }
 
     @Override
+    public Optional<LessonMaterialEntity> findByIdAndTopicId(UUID lessonMaterialId, UUID topicId) {
+        return databaseRepository.findByIdAndTopicId(lessonMaterialId, topicId)
+                .map(LessonMaterialDatabaseModel::toEntity);
+    }
+
+    @Override
     public List<LessonMaterialEntity> findAllByTopicIdOrderByPosition(UUID topicId) {
         return databaseRepository.findAllByTopicIdOrderByPositionAsc(topicId).stream()
                 .map(LessonMaterialDatabaseModel::toEntity)
