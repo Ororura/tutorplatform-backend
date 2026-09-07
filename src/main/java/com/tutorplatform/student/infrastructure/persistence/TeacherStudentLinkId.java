@@ -16,7 +16,7 @@ public class TeacherStudentLinkId implements Serializable {
     @Column(name = "student_id", nullable = false)
     private UUID studentId;
 
-    protected TeacherStudentLinkId() {
+    public TeacherStudentLinkId() {
     }
 
     public TeacherStudentLinkId(UUID teacherId, UUID studentId) {

@@ -2,6 +2,7 @@ package com.tutorplatform.student.infrastructure.persistence;
 
 import com.tutorplatform.student.domain.StudentEntity;
 import com.tutorplatform.student.domain.StudentRepository;
+import com.tutorplatform.student.domain.TeacherStudentRelationType;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -31,17 +32,17 @@ public class JpaStudentRepository implements StudentRepository {
 
     @Override
     public Optional<StudentEntity> findByIdForUpdate(UUID studentId) {
-        return databaseRepository.findByIdForUpdate(studentId).map(StudentDatabaseModel::toEntity);
+        return databaseRepository.findWithLockById(studentId).map(StudentDatabaseModel::toEntity);
     }
 
     @Override
     public Optional<StudentEntity> findOwnedStudent(UUID teacherId, UUID studentId) {
-        return databaseRepository.findOwnedStudent(teacherId, studentId).map(StudentDatabaseModel::toEntity);
+        return databaseRepository.findOwnedStudent(teacherId, studentId, TeacherStudentRelationType.PRIMARY).map(StudentDatabaseModel::toEntity);
     }
 
     @Override
     public Optional<StudentEntity> findOwnedStudentForUpdate(UUID teacherId, UUID studentId) {
-        return databaseRepository.findOwnedStudentForUpdate(teacherId, studentId)
+        return databaseRepository.findOwnedStudentForUpdate(teacherId, studentId, TeacherStudentRelationType.PRIMARY)
                 .map(StudentDatabaseModel::toEntity);
     }
 

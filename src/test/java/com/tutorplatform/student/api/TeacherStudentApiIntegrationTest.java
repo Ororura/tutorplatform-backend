@@ -6,6 +6,7 @@ import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.student.domain.StudentStatus;
 import com.tutorplatform.student.domain.StudentEntity;
 import com.tutorplatform.student.domain.StudentRepository;
+import com.tutorplatform.student.domain.TeacherStudentRelationType;
 import com.tutorplatform.student.infrastructure.persistence.StudentInviteRepository;
 import com.tutorplatform.student.infrastructure.persistence.TeacherStudentLinkEntity;
 import com.tutorplatform.student.infrastructure.persistence.TeacherStudentLinkRepository;
@@ -114,7 +115,7 @@ class TeacherStudentApiIntegrationTest {
         UUID studentId = UUID.fromString(json(result).required("id").textValue());
         StudentEntity student = studentRepository.findById(studentId).orElseThrow();
         assertThat(student.getUserId()).isNull();
-        assertThat(teacherStudentLinkRepository.existsActivePrimaryLink(teacher.teacher().getId(), studentId)).isTrue();
+        assertThat(teacherStudentLinkRepository.existsByIdTeacherIdAndIdStudentIdAndRelationTypeAndEndedAtIsNull(teacher.teacher().getId(), studentId, TeacherStudentRelationType.PRIMARY)).isTrue();
     }
 
     @Test
