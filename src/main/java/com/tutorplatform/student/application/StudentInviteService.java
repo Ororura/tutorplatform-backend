@@ -106,7 +106,7 @@ public class StudentInviteService {
                 .orElseThrow(StudentNotFoundException::new);
 
         Instant now = Instant.now();
-        return new StudentInviteListResponse(studentInviteRepository.findAllByStudentIdOrderByCreatedAtDesc(studentId)
+        return new StudentInviteListResponse(studentInviteRepository.findAllByStudent_IdOrderByCreatedAtDesc(studentId)
                 .stream()
                 .map(invite -> new StudentInviteSummaryResponse(
                         invite.getId(),
@@ -124,7 +124,7 @@ public class StudentInviteService {
         studentRepository.findOwnedStudent(teacherId, studentId)
                 .orElseThrow(StudentNotFoundException::new);
 
-        StudentInviteEntity invite = studentInviteRepository.findByIdAndStudentId(inviteId, studentId)
+        StudentInviteEntity invite = studentInviteRepository.findByIdAndStudent_Id(inviteId, studentId)
                 .orElseThrow(StudentInviteNotFoundException::new);
         if (invite.getAcceptedAt() != null) {
             throw new StudentInviteAlreadyAcceptedException();

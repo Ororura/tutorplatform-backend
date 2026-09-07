@@ -78,7 +78,7 @@ public class PublicStudentInvitationService {
                 .orElseThrow(StudentInviteNotFoundException::new);
         StudentEntity student = studentRepository.findByIdForUpdate(studentId)
                 .orElseThrow(StudentInviteNotFoundException::new);
-        StudentInviteEntity invite = studentInviteRepository.findByTokenHashForUpdate(tokenHash)
+        StudentInviteEntity invite = studentInviteRepository.findLockedByTokenHash(tokenHash)
                 .orElseThrow(StudentInviteNotFoundException::new);
         Instant now = Instant.now();
         validateState(invite, now);

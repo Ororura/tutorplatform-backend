@@ -12,20 +12,32 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface StudentInviteRepository extends JpaRepository<StudentInviteEntity, UUID> {
+public interface StudentInviteRepository
+    extends JpaRepository<StudentInviteEntity, UUID> {
 
     Optional<StudentInviteEntity> findByTokenHash(String tokenHash);
 
-    @Query("select invite.student.id from StudentInviteEntity invite where invite.tokenHash = :tokenHash")
-    Optional<UUID> findStudentIdByTokenHash(@Param("tokenHash") String tokenHash);
+    @Query("""
+            select invite.student.id
+            from StudentInviteEntity invite
+            where invite.tokenHash = :tokenHash
+            """)
+    Optional<UUID> findStudentIdByTokenHash(
+        @Param("tokenHash") String tokenHash
+    );
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select invite from StudentInviteEntity invite where invite.tokenHash = :tokenHash")
-    Optional<StudentInviteEntity> findByTokenHashForUpdate(@Param("tokenHash") String tokenHash);
+    Optional<StudentInviteEntity> findLockedByTokenHash(
+        String tokenHash
+    );
 
-    List<StudentInviteEntity> findAllByStudentIdOrderByCreatedAtDesc(UUID studentId);
+    List<StudentInviteEntity>
+    findAllByStudent_IdOrderByCreatedAtDesc(UUID studentId);
 
-    Optional<StudentInviteEntity> findByIdAndStudentId(UUID id, UUID studentId);
+    Optional<StudentInviteEntity> findByIdAndStudent_Id(
+        UUID id,
+        UUID studentId
+    );
 
     @Modifying
     @Query("""
@@ -37,7 +49,7 @@ public interface StudentInviteRepository extends JpaRepository<StudentInviteEnti
               and invite.expiresAt > :revokedAt
             """)
     int revokeActiveInvites(
-            @Param("studentId") UUID studentId,
-            @Param("revokedAt") Instant revokedAt
+        @Param("studentId") UUID studentId,
+        @Param("revokedAt") Instant revokedAt
     );
 }
