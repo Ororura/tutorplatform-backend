@@ -94,7 +94,7 @@ class ProgramPersistenceIntegrationTest {
         registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
         registry.add("spring.datasource.username", POSTGRES::getUsername);
         registry.add("spring.datasource.password", POSTGRES::getPassword);
-        registry.add("spring.flyway.target", () -> "003");
+        registry.add("spring.flyway.target", () -> "005");
     }
 
     @Autowired private UserRepository userRepository;
@@ -113,10 +113,10 @@ class ProgramPersistenceIntegrationTest {
     @Autowired private PlatformTransactionManager transactionManager;
 
     @Test
-    void flywayV003AppliesSuccessfully() {
+    void flywayMigrationsThroughV005ApplySuccessfully() {
         assertThat(Arrays.stream(flyway.info().applied())
                 .map(migration -> migration.getVersion().toString()))
-                .containsExactly("001", "002", "003");
+                .containsExactly("001", "002", "003", "005");
 
         assertThat(jdbcTemplate.queryForObject(
                 """

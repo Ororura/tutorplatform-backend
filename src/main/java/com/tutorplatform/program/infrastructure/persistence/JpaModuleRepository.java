@@ -12,7 +12,7 @@ public class JpaModuleRepository implements ModuleRepository {
 
     private final ModuleDatabaseRepository databaseRepository;
 
-    public JpaModuleRepository(ModuleDatabaseRepository databaseRepository) {
+    JpaModuleRepository(ModuleDatabaseRepository databaseRepository) {
         this.databaseRepository = databaseRepository;
     }
 

@@ -13,7 +13,7 @@ public class JpaStudentRepository implements StudentRepository {
 
     private final StudentDatabaseRepository databaseRepository;
 
-    public JpaStudentRepository(StudentDatabaseRepository databaseRepository) {
+    JpaStudentRepository(StudentDatabaseRepository databaseRepository) {
         this.databaseRepository = databaseRepository;
     }
 

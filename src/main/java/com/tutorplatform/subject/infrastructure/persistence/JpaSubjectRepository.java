@@ -12,7 +12,7 @@ public class JpaSubjectRepository implements SubjectRepository {
 
     private final SubjectDatabaseRepository databaseRepository;
 
-    public JpaSubjectRepository(SubjectDatabaseRepository databaseRepository) {
+    JpaSubjectRepository(SubjectDatabaseRepository databaseRepository) {
         this.databaseRepository = databaseRepository;
     }
 

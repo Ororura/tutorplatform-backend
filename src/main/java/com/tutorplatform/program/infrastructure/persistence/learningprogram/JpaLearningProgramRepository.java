@@ -12,7 +12,7 @@ public class JpaLearningProgramRepository implements LearningProgramRepository {
 
     private final LearningProgramDatabaseRepository databaseRepository;
 
-    public JpaLearningProgramRepository(LearningProgramDatabaseRepository databaseRepository) {
+    JpaLearningProgramRepository(LearningProgramDatabaseRepository databaseRepository) {
         this.databaseRepository = databaseRepository;
     }
 

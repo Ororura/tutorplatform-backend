@@ -12,7 +12,7 @@ public class JpaTopicRepository implements TopicRepository {
 
     private final TopicDatabaseRepository databaseRepository;
 
-    public JpaTopicRepository(TopicDatabaseRepository databaseRepository) {
+    JpaTopicRepository(TopicDatabaseRepository databaseRepository) {
         this.databaseRepository = databaseRepository;
     }
 

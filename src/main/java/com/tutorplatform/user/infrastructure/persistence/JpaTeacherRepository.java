@@ -11,7 +11,7 @@ import java.util.UUID;
 public class JpaTeacherRepository implements TeacherRepository {
     private final TeacherDatabaseRepository databaseRepository;
 
-    public JpaTeacherRepository(TeacherDatabaseRepository databaseRepository) {
+    JpaTeacherRepository(TeacherDatabaseRepository databaseRepository) {
         this.databaseRepository = databaseRepository;
     }
 

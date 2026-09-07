@@ -11,7 +11,7 @@ import java.util.UUID;
 public class JpaUserRepository implements UserRepository {
     private final UserDatabaseRepository databaseRepository;
 
-    public JpaUserRepository(UserDatabaseRepository databaseRepository) {
+    JpaUserRepository(UserDatabaseRepository databaseRepository) {
         this.databaseRepository = databaseRepository;
     }
 
