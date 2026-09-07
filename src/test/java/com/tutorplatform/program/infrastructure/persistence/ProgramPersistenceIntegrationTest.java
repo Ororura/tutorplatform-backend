@@ -17,10 +17,8 @@ import com.tutorplatform.program.domain.TopicEntity;
 import com.tutorplatform.program.domain.TopicRepository;
 import com.tutorplatform.program.domain.TopicStatus;
 import com.tutorplatform.program.infrastructure.persistence.learningprogram.JpaLearningProgramRepository;
-import com.tutorplatform.program.infrastructure.persistence.learningprogram.LearningProgramDatabaseModel;
 import com.tutorplatform.program.infrastructure.persistence.studentprogram.JpaStudentProgramRepository;
 import com.tutorplatform.program.infrastructure.persistence.studentprogram.JpaStudentTopicProgressRepository;
-import com.tutorplatform.program.infrastructure.persistence.studentprogram.StudentProgramDatabaseModel;
 import com.tutorplatform.student.domain.StudentEntity;
 import com.tutorplatform.student.domain.StudentRepository;
 import com.tutorplatform.student.domain.StudentStatus;
@@ -39,8 +37,6 @@ import com.tutorplatform.user.domain.UserRole;
 import com.tutorplatform.user.domain.UserStatus;
 import com.tutorplatform.user.infrastructure.persistence.JpaTeacherRepository;
 import com.tutorplatform.user.infrastructure.persistence.JpaUserRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.OptimisticLockException;
 import org.flywaydb.core.Flyway;
 import org.hibernate.StaleObjectStateException;
@@ -53,16 +49,21 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -109,7 +110,7 @@ class ProgramPersistenceIntegrationTest {
     @Autowired private ProgramQuery programQuery;
     @Autowired private Flyway flyway;
     @Autowired private JdbcTemplate jdbcTemplate;
-    @Autowired private EntityManagerFactory entityManagerFactory;
+    @Autowired private PlatformTransactionManager transactionManager;
 
     @Test
     void flywayV003AppliesSuccessfully() {
@@ -280,31 +281,46 @@ class ProgramPersistenceIntegrationTest {
         TopicEntity topic = createTopic(module, 0);
 
         assertOptimisticLocking(
-                LearningProgramDatabaseModel.class,
                 fixture.learningProgram().getId(),
-                model -> {
-                    LearningProgramEntity value = model.toEntity();
+                learningProgramRepository::findById,
+                learningProgramRepository::saveAndFlush,
+                value -> {
                     value.update("Первая версия", value.getDescription(), value.getStatus());
-                    model.updateFrom(value);
+                    return value;
                 },
-                model -> {
-                    LearningProgramEntity value = model.toEntity();
+                value -> {
                     value.update("Устаревшая версия", value.getDescription(), value.getStatus());
-                    model.updateFrom(value);
-                }
+                    return value;
+                },
+                "LearningProgramEntity"
         );
+        assertThat(learningProgramRepository.findById(fixture.learningProgram().getId()))
+                .get().extracting(LearningProgramEntity::getTitle)
+                .isEqualTo("Первая версия");
+
         assertOptimisticLocking(
-                StudentProgramDatabaseModel.class,
                 studentProgram.getId(),
-                model -> model.updateFrom(copyWithStatus(model.toEntity(), StudentProgramStatus.PAUSED)),
-                model -> model.updateFrom(copyWithStatus(model.toEntity(), StudentProgramStatus.COMPLETED))
+                studentProgramRepository::findById,
+                studentProgramRepository::saveAndFlush,
+                value -> copyWithStatus(value, StudentProgramStatus.PAUSED),
+                value -> copyWithStatus(value, StudentProgramStatus.COMPLETED),
+                "StudentProgramEntity"
         );
+        assertThat(studentProgramRepository.findById(studentProgram.getId()))
+                .get().extracting(StudentProgramEntity::getStatus)
+                .isEqualTo(StudentProgramStatus.PAUSED);
+
         assertOptimisticLocking(
-                TopicDatabaseModel.class,
                 topic.getId(),
-                model -> model.updateFrom(copyWithTitle(model.toEntity(), "Первая версия")),
-                model -> model.updateFrom(copyWithTitle(model.toEntity(), "Устаревшая версия"))
+                topicRepository::findById,
+                topicRepository::saveAndFlush,
+                value -> copyWithTitle(value, "Первая версия"),
+                value -> copyWithTitle(value, "Устаревшая версия"),
+                "TopicEntity"
         );
+        assertThat(topicRepository.findById(topic.getId()))
+                .get().extracting(TopicEntity::getTitle)
+                .isEqualTo("Первая версия");
     }
 
     private ProgramFixture createProgramFixture(String email) {
@@ -384,34 +400,28 @@ class ProgramPersistenceIntegrationTest {
     }
 
     private <T> void assertOptimisticLocking(
-            Class<T> type,
             UUID id,
-            Consumer<T> firstChange,
-            Consumer<T> staleChange
+            Function<UUID, Optional<T>> findById,
+            Function<T, T> saveAndFlush,
+            UnaryOperator<T> firstChange,
+            UnaryOperator<T> staleChange,
+            String entityName
     ) {
-        EntityManager firstEntityManager = entityManagerFactory.createEntityManager();
-        EntityManager staleEntityManager = entityManagerFactory.createEntityManager();
-        try {
-            firstEntityManager.getTransaction().begin();
-            staleEntityManager.getTransaction().begin();
-            T first = firstEntityManager.find(type, id);
-            T stale = staleEntityManager.find(type, id);
+        TransactionTemplate transaction = new TransactionTemplate(transactionManager);
+        transaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 
-            firstChange.accept(first);
-            firstEntityManager.getTransaction().commit();
+        T first = transaction.execute(status -> findById.apply(id).orElseThrow());
+        T stale = transaction.execute(status -> findById.apply(id).orElseThrow());
 
-            staleChange.accept(stale);
-            Throwable thrown = catchThrowable(() -> staleEntityManager.getTransaction().commit());
-            assertThat(thrown).as("stale %s update", type.getSimpleName()).isNotNull();
-            assertThat(hasOptimisticLockCause(thrown))
-                    .as("%s must fail specifically because of optimistic locking", type.getSimpleName())
-                    .isTrue();
-        } finally {
-            if (firstEntityManager.getTransaction().isActive()) firstEntityManager.getTransaction().rollback();
-            if (staleEntityManager.getTransaction().isActive()) staleEntityManager.getTransaction().rollback();
-            firstEntityManager.close();
-            staleEntityManager.close();
-        }
+        transaction.executeWithoutResult(status -> saveAndFlush.apply(firstChange.apply(first)));
+
+        Throwable thrown = catchThrowable(() -> transaction.executeWithoutResult(
+                status -> saveAndFlush.apply(staleChange.apply(stale))
+        ));
+        assertThat(thrown).as("stale %s update", entityName).isNotNull();
+        assertThat(hasOptimisticLockCause(thrown))
+                .as("%s must fail specifically because of optimistic locking", entityName)
+                .isTrue();
     }
 
     private boolean hasOptimisticLockCause(Throwable throwable) {
