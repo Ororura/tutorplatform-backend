@@ -22,13 +22,16 @@ public class JpaLessonSessionQuery implements LessonSessionQuery {
         UUID teacherId,
         UUID studentId,
         int page,
-        int size
+        int size,
+        String sortField,
+        boolean ascending
     ) {
+        Sort.Direction direction = ascending ? Sort.Direction.ASC : Sort.Direction.DESC;
         var result = databaseRepository.findPageByTeacherAndStudent(
             teacherId,
             studentId,
             PageRequest.of(page, size, Sort.by(
-                Sort.Order.desc("startedAt"),
+                new Sort.Order(direction, sortField),
                 Sort.Order.desc("id")
             ))
         );

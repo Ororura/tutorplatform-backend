@@ -26,6 +26,10 @@ import java.util.UUID;
 @Service
 public class LessonSessionService {
 
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
+        "startedAt", "createdAt", "durationMinutes"
+    );
+
     private final StudentOwnershipQuery studentOwnershipQuery;
     private final ProgramQuery programQuery;
     private final LessonSessionRepository lessonSessionRepository;
@@ -96,11 +100,27 @@ public class LessonSessionService {
         int page,
         int size
     ) {
-        validatePagination(page, size);
+        return listLessonSessions(principal, studentId, page, size, "startedAt,desc");
+    }
+
+    @Transactional(readOnly = true)
+    public LessonSessionPageResult listLessonSessions(
+        AuthenticatedUser principal,
+        UUID studentId,
+        int page,
+        int size,
+        String sort
+    ) {
+        SortParameters sortParameters = validateListParameters(page, size, sort);
         UUID teacherId = currentTeacherId(principal);
         requireOwnedStudent(teacherId, studentId);
         LessonSessionPage sessions = lessonSessionQuery.findPageByTeacherAndStudent(
-            teacherId, studentId, page, size
+            teacherId,
+            studentId,
+            page,
+            size,
+            sortParameters.field(),
+            sortParameters.ascending()
         );
         Set<UUID> sessionIds = sessions.items().stream()
             .map(LessonSessionEntity::getId)
@@ -245,7 +265,7 @@ public class LessonSessionService {
         );
     }
 
-    private void validatePagination(int page, int size) {
+    private SortParameters validateListParameters(int page, int size, String sort) {
         if (page < 0) {
             throw new InvalidSessionListParameterException(
                 "page", "must be greater than or equal to 0"
@@ -254,5 +274,20 @@ public class LessonSessionService {
         if (size < 1 || size > 100) {
             throw new InvalidSessionListParameterException("size", "must be between 1 and 100");
         }
+        String[] sortParts = sort.split(",", -1);
+        if (sortParts.length != 2 || !ALLOWED_SORT_FIELDS.contains(sortParts[0])) {
+            throw new InvalidSessionListParameterException(
+                "sort", "must use startedAt, createdAt, or durationMinutes"
+            );
+        }
+        if (!sortParts[1].equals("asc") && !sortParts[1].equals("desc")) {
+            throw new InvalidSessionListParameterException(
+                "sort", "direction must be asc or desc"
+            );
+        }
+        return new SortParameters(sortParts[0], sortParts[1].equals("asc"));
+    }
+
+    private record SortParameters(String field, boolean ascending) {
     }
 }

@@ -8,6 +8,8 @@ public interface LessonSessionQuery {
         UUID teacherId,
         UUID studentId,
         int page,
-        int size
+        int size,
+        String sortField,
+        boolean ascending
     );
 }
