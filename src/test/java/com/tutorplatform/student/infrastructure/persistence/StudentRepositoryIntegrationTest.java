@@ -146,7 +146,7 @@ class StudentRepositoryIntegrationTest {
     void cleanPostgresIsMigratedThroughV005() {
         assertThat(Arrays.stream(flyway.info().applied())
                 .map(migration -> migration.getVersion().toString()))
-                .containsExactly("001", "002", "003", "005");
+                .containsExactly("001", "002", "003", "004", "005");
 
         assertThat(jdbcTemplate.queryForObject(
                 """
