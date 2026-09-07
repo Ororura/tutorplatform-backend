@@ -2,7 +2,8 @@ package com.tutorplatform.student.infrastructure.persistence;
 
 import com.tutorplatform.student.domain.StudentEntity;
 import com.tutorplatform.student.domain.TeacherStudentRelationType;
-import com.tutorplatform.user.infrastructure.persistence.TeacherEntity;
+import com.tutorplatform.user.domain.TeacherEntity;
+import com.tutorplatform.user.infrastructure.persistence.TeacherDatabaseModel;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
@@ -25,10 +26,9 @@ public class TeacherStudentLinkEntity {
     @EmbeddedId
     private TeacherStudentLinkId id;
 
-    @MapsId("teacherId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "teacher_id", nullable = false)
-    private TeacherEntity teacher;
+    @JoinColumn(name = "teacher_id", nullable = false, insertable = false, updatable = false)
+    private TeacherDatabaseModel teacher;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "student_id", nullable = false, insertable = false, updatable = false)
@@ -53,7 +53,7 @@ public class TeacherStudentLinkEntity {
     }
 
     public TeacherStudentLinkEntity(TeacherEntity teacher, StudentEntity student) {
-        this.teacher = Objects.requireNonNull(teacher);
+        Objects.requireNonNull(teacher);
         Objects.requireNonNull(student);
         this.id = new TeacherStudentLinkId(teacher.getId(), student.getId());
         this.relationType = TeacherStudentRelationType.PRIMARY;
@@ -63,7 +63,7 @@ public class TeacherStudentLinkEntity {
         return id;
     }
 
-    public TeacherEntity getTeacher() {
+    public TeacherDatabaseModel getTeacher() {
         return teacher;
     }
 

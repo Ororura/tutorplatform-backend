@@ -4,8 +4,8 @@ import com.tutorplatform.auth.api.CurrentUserResponse;
 import com.tutorplatform.auth.api.UserRole;
 import com.tutorplatform.auth.infrastructure.persistence.CurrentUserQueryRepository;
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
-import com.tutorplatform.user.infrastructure.persistence.UserEntity;
-import com.tutorplatform.user.infrastructure.persistence.UserRepository;
+import com.tutorplatform.user.domain.UserEntity;
+import com.tutorplatform.user.domain.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

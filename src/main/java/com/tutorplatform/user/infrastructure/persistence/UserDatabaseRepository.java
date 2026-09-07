@@ -7,12 +7,10 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UserRepository extends JpaRepository<UserEntity, UUID> {
-
+interface UserDatabaseRepository extends JpaRepository<UserDatabaseModel, UUID> {
     @Query(value = "SELECT * FROM users WHERE email = CAST(:email AS citext)", nativeQuery = true)
-    Optional<UserEntity> findByEmail(@Param("email") String email);
+    Optional<UserDatabaseModel> findByEmail(@Param("email") String email);
 
     @Query(value = "SELECT EXISTS(SELECT 1 FROM users WHERE email = CAST(:email AS citext))", nativeQuery = true)
     boolean existsByEmail(@Param("email") String email);
-
 }

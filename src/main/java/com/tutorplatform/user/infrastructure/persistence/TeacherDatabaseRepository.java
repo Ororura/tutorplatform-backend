@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface TeacherRepository extends JpaRepository<TeacherEntity, UUID> {
-
-    Optional<TeacherEntity> findByUserId(UUID userId);
+interface TeacherDatabaseRepository extends JpaRepository<TeacherDatabaseModel, UUID> {
+    Optional<TeacherDatabaseModel> findByUserId(UUID userId);
 }

@@ -2,7 +2,7 @@ package com.tutorplatform.student.infrastructure.persistence;
 
 import com.tutorplatform.student.domain.StudentEntity;
 import com.tutorplatform.student.domain.StudentStatus;
-import com.tutorplatform.user.infrastructure.persistence.UserEntity;
+import com.tutorplatform.user.infrastructure.persistence.UserDatabaseModel;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -27,8 +27,11 @@ public class StudentDatabaseModel {
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", unique = true)
-    private UserEntity user;
+    @JoinColumn(name = "user_id", unique = true, insertable = false, updatable = false)
+    private UserDatabaseModel user;
+
+    @Column(name = "user_id", unique = true)
+    private UUID userId;
 
     @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;
@@ -53,20 +56,20 @@ public class StudentDatabaseModel {
 
     StudentDatabaseModel(StudentEntity student) {
         this.id = Objects.requireNonNull(student.getId());
-        updateFrom(student, null);
+        updateFrom(student);
     }
 
-    void updateFrom(StudentEntity student, UserEntity user) {
+    void updateFrom(StudentEntity student) {
         this.firstName = Objects.requireNonNull(student.getFirstName());
         this.lastName = student.getLastName();
         this.status = Objects.requireNonNull(student.getStatus());
-        this.user = user;
+        this.userId = student.getUserId();
     }
 
     StudentEntity toEntity() {
         return new StudentEntity(
                 id,
-                user == null ? null : user.getId(),
+                userId,
                 firstName,
                 lastName,
                 status,

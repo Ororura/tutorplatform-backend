@@ -1,7 +1,8 @@
 package com.tutorplatform.student.infrastructure.persistence;
 
 import com.tutorplatform.student.domain.StudentEntity;
-import com.tutorplatform.user.infrastructure.persistence.TeacherEntity;
+import com.tutorplatform.user.domain.TeacherEntity;
+import com.tutorplatform.user.infrastructure.persistence.TeacherDatabaseModel;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -30,8 +31,11 @@ public class StudentInviteEntity {
     private UUID studentId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "created_by_teacher_id", nullable = false)
-    private TeacherEntity createdByTeacher;
+    @JoinColumn(name = "created_by_teacher_id", nullable = false, insertable = false, updatable = false)
+    private TeacherDatabaseModel createdByTeacher;
+
+    @Column(name = "created_by_teacher_id", nullable = false)
+    private UUID createdByTeacherId;
 
     @Column(nullable = false, columnDefinition = "citext")
     private String email;
@@ -65,7 +69,7 @@ public class StudentInviteEntity {
     ) {
         this.id = Objects.requireNonNull(id);
         this.studentId = Objects.requireNonNull(student).getId();
-        this.createdByTeacher = Objects.requireNonNull(createdByTeacher);
+        this.createdByTeacherId = Objects.requireNonNull(createdByTeacher).getId();
         this.email = Objects.requireNonNull(email);
         this.tokenHash = Objects.requireNonNull(tokenHash);
         this.expiresAt = Objects.requireNonNull(expiresAt);
@@ -79,7 +83,7 @@ public class StudentInviteEntity {
         return student;
     }
 
-    public TeacherEntity getCreatedByTeacher() {
+    public TeacherDatabaseModel getCreatedByTeacher() {
         return createdByTeacher;
     }
 

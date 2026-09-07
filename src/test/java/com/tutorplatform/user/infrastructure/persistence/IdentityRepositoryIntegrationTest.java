@@ -1,5 +1,9 @@
 package com.tutorplatform.user.infrastructure.persistence;
 
+import com.tutorplatform.user.domain.TeacherEntity;
+import com.tutorplatform.user.domain.TeacherRepository;
+import com.tutorplatform.user.domain.UserEntity;
+import com.tutorplatform.user.domain.UserRepository;
 import com.tutorplatform.user.domain.UserRole;
 import com.tutorplatform.user.domain.UserStatus;
 import jakarta.persistence.EntityManager;
@@ -8,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
@@ -22,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DataJpaTest
 @Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Import({JpaUserRepository.class, JpaTeacherRepository.class})
 class IdentityRepositoryIntegrationTest {
 
     @Container
@@ -94,7 +100,7 @@ class IdentityRepositoryIntegrationTest {
 
         TeacherEntity persisted = teacherRepository.findByUserId(userId).orElseThrow();
         assertThat(persisted.getId()).isEqualTo(teacherId);
-        assertThat(persisted.getUser().getId()).isEqualTo(userId);
+        assertThat(persisted.getUserId()).isEqualTo(userId);
         assertThat(persisted.getDisplayName()).isEqualTo("Егор");
     }
 

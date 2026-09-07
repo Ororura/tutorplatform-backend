@@ -13,10 +13,10 @@ import com.tutorplatform.student.infrastructure.persistence.TeacherStudentLinkEn
 import com.tutorplatform.student.infrastructure.persistence.TeacherStudentLinkRepository;
 import com.tutorplatform.user.domain.UserRole;
 import com.tutorplatform.user.domain.UserStatus;
-import com.tutorplatform.user.infrastructure.persistence.TeacherEntity;
-import com.tutorplatform.user.infrastructure.persistence.TeacherRepository;
-import com.tutorplatform.user.infrastructure.persistence.UserEntity;
-import com.tutorplatform.user.infrastructure.persistence.UserRepository;
+import com.tutorplatform.user.domain.TeacherEntity;
+import com.tutorplatform.user.domain.TeacherRepository;
+import com.tutorplatform.user.domain.UserEntity;
+import com.tutorplatform.user.domain.UserRepository;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

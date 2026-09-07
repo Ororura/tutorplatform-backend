@@ -5,10 +5,12 @@ import com.tutorplatform.student.domain.StudentRepository;
 import com.tutorplatform.student.domain.StudentStatus;
 import com.tutorplatform.user.domain.UserRole;
 import com.tutorplatform.user.domain.UserStatus;
-import com.tutorplatform.user.infrastructure.persistence.TeacherEntity;
-import com.tutorplatform.user.infrastructure.persistence.TeacherRepository;
-import com.tutorplatform.user.infrastructure.persistence.UserEntity;
-import com.tutorplatform.user.infrastructure.persistence.UserRepository;
+import com.tutorplatform.user.infrastructure.persistence.JpaTeacherRepository;
+import com.tutorplatform.user.infrastructure.persistence.JpaUserRepository;
+import com.tutorplatform.user.domain.TeacherEntity;
+import com.tutorplatform.user.domain.TeacherRepository;
+import com.tutorplatform.user.domain.UserEntity;
+import com.tutorplatform.user.domain.UserRepository;
 import jakarta.persistence.EntityManager;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
@@ -35,7 +37,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DataJpaTest
 @Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(JpaStudentRepository.class)
+@Import({JpaStudentRepository.class, JpaUserRepository.class, JpaTeacherRepository.class})
 class StudentRepositoryIntegrationTest {
 
     @Container

@@ -18,8 +18,8 @@ import com.tutorplatform.student.domain.StudentStatus;
 import com.tutorplatform.student.infrastructure.persistence.StudentQueryRepository;
 import com.tutorplatform.student.infrastructure.persistence.TeacherStudentLinkEntity;
 import com.tutorplatform.student.infrastructure.persistence.TeacherStudentLinkRepository;
-import com.tutorplatform.user.infrastructure.persistence.TeacherEntity;
-import com.tutorplatform.user.infrastructure.persistence.TeacherRepository;
+import com.tutorplatform.user.domain.TeacherEntity;
+import com.tutorplatform.user.domain.TeacherRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
