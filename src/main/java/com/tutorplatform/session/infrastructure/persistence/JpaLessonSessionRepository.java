@@ -31,4 +31,15 @@ public class JpaLessonSessionRepository implements LessonSessionRepository {
     public List<LessonSessionEntity> findAll() {
         return databaseRepository.findAll().stream().map(LessonSessionDatabaseModel::toEntity).toList();
     }
+
+    @Override
+    public Optional<LessonSessionEntity> findOwnedById(
+        UUID lessonSessionId,
+        UUID teacherId,
+        UUID studentId
+    ) {
+        return databaseRepository.findOwnedById(lessonSessionId, teacherId, studentId)
+            .map(LessonSessionDatabaseModel::toEntity);
+    }
+
 }

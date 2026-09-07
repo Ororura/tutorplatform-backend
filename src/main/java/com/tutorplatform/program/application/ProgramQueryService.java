@@ -33,7 +33,8 @@ public class ProgramQueryService implements ProgramQuery {
                 .map(studentProgram -> new StudentProgramContext(
                         studentProgram.getId(),
                         studentProgram.getStudentId(),
-                        studentProgram.getLearningProgramId()
+                        studentProgram.getLearningProgramId(),
+                        studentProgram.getAssignedByTeacherId()
                 ));
     }
 

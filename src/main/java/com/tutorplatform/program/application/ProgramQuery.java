@@ -9,9 +9,18 @@ public interface ProgramQuery {
 
     boolean topicBelongsToLearningProgram(UUID topicId, UUID learningProgramId);
 
-    record StudentProgramContext(UUID id, UUID studentId, UUID learningProgramId) {
+    record StudentProgramContext(
+        UUID id,
+        UUID studentId,
+        UUID learningProgramId,
+        UUID assignedByTeacherId
+    ) {
         public boolean belongsToStudent(UUID expectedStudentId) {
             return studentId.equals(expectedStudentId);
+        }
+
+        public boolean isAssignedBy(UUID teacherId) {
+            return assignedByTeacherId.equals(teacherId);
         }
     }
 }

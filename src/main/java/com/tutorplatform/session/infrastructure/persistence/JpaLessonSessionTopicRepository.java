@@ -5,6 +5,7 @@ import com.tutorplatform.session.domain.LessonSessionTopicRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Repository
@@ -24,9 +25,35 @@ public class JpaLessonSessionTopicRepository implements LessonSessionTopicReposi
     }
 
     @Override
+    public List<LessonSessionTopicEntity> saveAllAndFlush(
+        List<LessonSessionTopicEntity> lessonSessionTopics
+    ) {
+        return databaseRepository.saveAllAndFlush(lessonSessionTopics.stream()
+                .map(LessonSessionTopicDatabaseModel::new)
+                .toList()).stream()
+            .map(LessonSessionTopicDatabaseModel::toEntity)
+            .toList();
+    }
+
+    @Override
     public List<LessonSessionTopicEntity> findAllByLessonSessionId(UUID lessonSessionId) {
         return databaseRepository.findAllByIdLessonSessionId(lessonSessionId).stream()
             .map(LessonSessionTopicDatabaseModel::toEntity)
             .toList();
+    }
+
+    @Override
+    public List<LessonSessionTopicEntity> findAllByLessonSessionIds(Set<UUID> lessonSessionIds) {
+        if (lessonSessionIds.isEmpty()) {
+            return List.of();
+        }
+        return databaseRepository.findAllByIdLessonSessionIdIn(lessonSessionIds).stream()
+            .map(LessonSessionTopicDatabaseModel::toEntity)
+            .toList();
+    }
+
+    @Override
+    public void deleteAllByLessonSessionId(UUID lessonSessionId) {
+        databaseRepository.deleteAllByLessonSessionId(lessonSessionId);
     }
 }
