@@ -1,4 +1,4 @@
-package com.tutorplatform.program.infrastructure.persistence;
+package com.tutorplatform.program.infrastructure.persistence.studentprogram;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

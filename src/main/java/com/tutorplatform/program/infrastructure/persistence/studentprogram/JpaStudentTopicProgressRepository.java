@@ -1,4 +1,4 @@
-package com.tutorplatform.program.infrastructure.persistence;
+package com.tutorplatform.program.infrastructure.persistence.studentprogram;
 
 import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressEntity;
 import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressRepository;

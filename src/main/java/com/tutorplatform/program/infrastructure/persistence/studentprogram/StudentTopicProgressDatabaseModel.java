@@ -1,7 +1,8 @@
-package com.tutorplatform.program.infrastructure.persistence;
+package com.tutorplatform.program.infrastructure.persistence.studentprogram;
 
 import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressEntity;
 import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressStatus;
+import com.tutorplatform.program.infrastructure.persistence.TopicDatabaseModel;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
