@@ -14,7 +14,8 @@ public interface ProgramQuery {
     record TopicContext(
         UUID id,
         UUID learningProgramId,
-        UUID teacherId
+        UUID teacherId,
+        UUID subjectId
     ) {
         public boolean isOwnedBy(UUID expectedTeacherId) {
             return teacherId.equals(expectedTeacherId);

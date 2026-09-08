@@ -2,6 +2,8 @@ package com.tutorplatform.task.infrastructure.persistence.task;
 
 import com.tutorplatform.task.domain.task.TaskStatus;
 import com.tutorplatform.task.domain.task.TaskType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,5 +30,23 @@ interface TaskDatabaseRepository extends JpaRepository<TaskDatabaseModel, UUID> 
             @Param("subjectId") UUID subjectId,
             @Param("status") TaskStatus status,
             @Param("taskType") TaskType taskType
+    );
+
+    @Query("""
+        select task
+        from TaskDatabaseModel task
+        where task.teacherId = :teacherId
+          and task.taskType = :taskType
+          and (:subjectId is null or task.subjectId = :subjectId)
+          and (:status is null or task.status = :status)
+          and (:difficulty is null or task.difficulty = :difficulty)
+        """)
+    Page<TaskDatabaseModel> findPageByTeacher(
+            @Param("teacherId") UUID teacherId,
+            @Param("taskType") TaskType taskType,
+            @Param("subjectId") UUID subjectId,
+            @Param("status") TaskStatus status,
+            @Param("difficulty") com.tutorplatform.task.domain.task.TaskDifficulty difficulty,
+            Pageable pageable
     );
 }

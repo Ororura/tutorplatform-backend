@@ -27,4 +27,14 @@ public class JpaTopicTaskRepository implements TopicTaskRepository {
                 .map(TopicTaskDatabaseModel::toEntity)
                 .toList();
     }
+
+    @Override
+    public boolean existsByTopicIdAndTaskId(UUID topicId, UUID taskId) {
+        return databaseRepository.existsByIdTopicIdAndIdTaskId(topicId, taskId);
+    }
+
+    @Override
+    public boolean existsByTopicIdAndPosition(UUID topicId, int position) {
+        return databaseRepository.existsByIdTopicIdAndPosition(topicId, position);
+    }
 }
