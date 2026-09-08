@@ -2,11 +2,13 @@ package com.tutorplatform.shared.api;
 
 import com.tutorplatform.auth.application.EmailAlreadyRegisteredException;
 import com.tutorplatform.auth.application.InvalidCredentialsException;
+import com.tutorplatform.content.application.FileTooLargeException;
 import com.tutorplatform.content.application.exception.InvalidLessonMaterialException;
 import com.tutorplatform.content.application.exception.LessonMaterialNotFoundException;
 import com.tutorplatform.content.application.exception.LessonMaterialPositionConflictException;
 import com.tutorplatform.content.application.exception.LessonMaterialVersionConflictException;
 import com.tutorplatform.content.application.exception.TopicNotFoundException;
+import com.tutorplatform.file.application.FileStorageException;
 import com.tutorplatform.session.application.exception.InvalidLessonSessionTopicsException;
 import com.tutorplatform.session.application.exception.InvalidSessionListParameterException;
 import com.tutorplatform.session.application.exception.LessonSessionNotFoundException;
@@ -14,28 +16,52 @@ import com.tutorplatform.session.application.exception.StudentProgramNotFoundExc
 import com.tutorplatform.session.application.exception.TopicOutsideStudentProgramException;
 import com.tutorplatform.student.application.exception.InvalidStudentListParameterException;
 import com.tutorplatform.student.application.exception.PublicStudentInviteAlreadyAcceptedException;
-import com.tutorplatform.student.application.exception.StudentNotFoundException;
 import com.tutorplatform.student.application.exception.StudentAlreadyRegisteredException;
+import com.tutorplatform.student.application.exception.StudentInviteAlreadyAcceptedException;
 import com.tutorplatform.student.application.exception.StudentInviteEmailConflictException;
 import com.tutorplatform.student.application.exception.StudentInviteExpiredException;
-import com.tutorplatform.student.application.exception.StudentInviteAlreadyAcceptedException;
 import com.tutorplatform.student.application.exception.StudentInviteNotFoundException;
 import com.tutorplatform.student.application.exception.StudentInviteRevokedException;
+import com.tutorplatform.student.application.exception.StudentNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.time.Instant;
 import java.util.List;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+
+    @ExceptionHandler({FileTooLargeException.class,
+            MaxUploadSizeExceededException.class})
+    ResponseEntity<ApiError> handleFileTooLarge(Exception exception) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(
+            ApiError.of("FILE_TOO_LARGE", "File exceeds upload limit", MDC.get("traceId")));
+    }
+
+    @ExceptionHandler({MissingServletRequestPartException.class,
+            MissingServletRequestParameterException.class})
+    ResponseEntity<ApiError> handleMissingUploadParameter(Exception exception) {
+        return ResponseEntity.badRequest().body(
+            ApiError.of("VALIDATION_ERROR", "Required request part or parameter is missing", MDC.get("traceId")));
+    }
+
+    @ExceptionHandler(FileStorageException.class)
+    ResponseEntity<ApiError> handleStorageFailure(Exception exception) {
+        org.slf4j.LoggerFactory.getLogger(ApiExceptionHandler.class).error("File storage operation failed", exception);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+            ApiError.of("FILE_STORAGE_ERROR", "File storage operation failed", MDC.get("traceId")));
+    }
 
     @ExceptionHandler(EmailAlreadyRegisteredException.class)
     ResponseEntity<ApiError> handleEmailAlreadyRegistered(EmailAlreadyRegisteredException exception) {

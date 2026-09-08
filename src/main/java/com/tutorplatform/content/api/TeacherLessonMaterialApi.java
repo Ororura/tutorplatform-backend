@@ -4,6 +4,7 @@ import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.content.api.request.CreateLessonMaterialRequest;
 import com.tutorplatform.content.api.request.UpdateLessonMaterialRequest;
 import com.tutorplatform.content.api.response.LessonMaterialResponse;
+import com.tutorplatform.content.domain.LessonMaterialType;
 import com.tutorplatform.shared.api.ApiError;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -12,11 +13,38 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface TeacherLessonMaterialApi {
+
+    @Operation(operationId = "uploadLessonMaterial", summary = "Upload a FILE or IMAGE lesson material")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "File and material created"),
+        @ApiResponse(responseCode = "400", description = "Invalid file or metadata"),
+        @ApiResponse(responseCode = "401", description = "Authentication required"),
+        @ApiResponse(responseCode = "403", description = "Teacher role and CSRF required"),
+        @ApiResponse(responseCode = "404", description = "Topic not found"),
+        @ApiResponse(responseCode = "409", description = "Position conflict"),
+        @ApiResponse(responseCode = "413", description = "File too large")
+    })
+    ResponseEntity<LessonMaterialResponse> uploadLessonMaterial(
+        AuthenticatedUser principal, UUID topicId,
+        @Parameter(schema = @Schema(allowableValues = {"FILE", "IMAGE"}))
+        LessonMaterialType materialType,
+        String title, int position, MultipartFile file
+    );
+
+    @Operation(operationId = "downloadLessonMaterial", summary = "Download an owned lesson material attachment")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Attachment content"),
+        @ApiResponse(responseCode = "401", description = "Authentication required"),
+        @ApiResponse(responseCode = "403", description = "Teacher role required"),
+        @ApiResponse(responseCode = "404", description = "Lesson material not found")
+    })
+    ResponseEntity<byte[]> downloadLessonMaterial(AuthenticatedUser principal, UUID topicId, UUID materialId);
 
     @Operation(operationId = "createLessonMaterial", summary = "Create a lesson material")
     @ApiResponses({

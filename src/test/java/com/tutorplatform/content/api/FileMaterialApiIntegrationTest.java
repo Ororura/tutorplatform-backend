@@ -1,0 +1,312 @@
+package com.tutorplatform.content.api;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
+import com.tutorplatform.content.application.CreateLessonMaterialCommand;
+import com.tutorplatform.content.application.LessonMaterialService;
+import com.tutorplatform.content.domain.FileAssetRepository;
+import com.tutorplatform.content.domain.LessonMaterialType;
+import com.tutorplatform.program.domain.ModuleEntity;
+import com.tutorplatform.program.domain.ModuleRepository;
+import com.tutorplatform.program.domain.TopicEntity;
+import com.tutorplatform.program.domain.TopicRepository;
+import com.tutorplatform.program.domain.TopicStatus;
+import com.tutorplatform.program.domain.learningprogram.LearningProgramEntity;
+import com.tutorplatform.program.domain.learningprogram.LearningProgramRepository;
+import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
+import com.tutorplatform.subject.domain.SubjectEntity;
+import com.tutorplatform.subject.domain.SubjectRepository;
+import com.tutorplatform.subject.domain.SubjectStatus;
+import com.tutorplatform.user.domain.TeacherEntity;
+import com.tutorplatform.user.domain.TeacherRepository;
+import com.tutorplatform.user.domain.UserEntity;
+import com.tutorplatform.user.domain.UserRepository;
+import com.tutorplatform.user.domain.UserRole;
+import com.tutorplatform.user.domain.UserStatus;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.postgresql.PostgreSQLContainer;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@Testcontainers
+@org.junit.jupiter.api.extension.ExtendWith(org.springframework.boot.test.system.OutputCaptureExtension.class)
+class FileMaterialApiIntegrationTest {
+    @Container
+    private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
+
+    @DynamicPropertySource
+    static void configurePostgres(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
+        registry.add("spring.datasource.username", POSTGRES::getUsername);
+        registry.add("spring.datasource.password", POSTGRES::getPassword);
+        registry.add("spring.flyway.target", () -> "005");
+        registry.add("app.file-storage.directory", () -> STORAGE.toString());
+        registry.add("app.material-files.max-size-bytes", () -> "1024");
+    }
+
+    @Autowired private MockMvc mockMvc;
+    @Autowired private ObjectMapper objectMapper;
+    @Autowired private LessonMaterialService lessonMaterialService;
+    @Autowired private UserRepository userRepository;
+    @Autowired private TeacherRepository teacherRepository;
+    @Autowired private SubjectRepository subjectRepository;
+    @Autowired private LearningProgramRepository learningProgramRepository;
+    @Autowired private ModuleRepository moduleRepository;
+    @Autowired private TopicRepository topicRepository;
+
+
+    private static final Path STORAGE = temporaryStorage();
+    @Autowired private FileAssetRepository assets;
+    @Autowired private JdbcTemplate jdbc;
+    @org.springframework.test.context.bean.override.mockito.MockitoSpyBean
+    private com.tutorplatform.file.application.FileStorage storage;
+
+    private static Path temporaryStorage() {
+        try { return Files.createTempDirectory("material-api-"); }
+        catch (java.io.IOException exception) { throw new java.io.UncheckedIOException(exception); }
+    }
+
+    @org.junit.jupiter.api.AfterAll
+    static void cleanupStorage() throws Exception {
+        try (var paths = Files.walk(STORAGE)) {
+            for (Path path : paths.sorted(java.util.Comparator.reverseOrder()).toList()) Files.delete(path);
+        }
+    }
+
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder upload(
+            ContentFixture fixture, String type, String name, String mime, byte[] bytes, int position) {
+        return multipart(materialsUrl(fixture.topic().getId()) + "/upload")
+            .file(new MockMultipartFile("file", name, mime, bytes))
+            .param("materialType", type).param("title", "Attachment").param("position", "" + position);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = LessonMaterialType.class, names = {"FILE", "IMAGE"})
+    void uploadPersistsObjectMetadataAndDownloadsWithoutPaths(LessonMaterialType type) throws Exception {
+        var fixture = createFixture(UUID.randomUUID() + "@example.com");
+        byte[] bytes = type == LessonMaterialType.FILE ? "%PDF-1.7\nexample".getBytes()
+            : java.util.Base64.getDecoder().decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aE0sAAAAASUVORK5CYII=");
+        String mime = type == LessonMaterialType.FILE ? "application/pdf" : "image/png";
+        String name = "../../duplicate." + (type == LessonMaterialType.FILE ? "pdf" : "png");
+        var result = mockMvc.perform(upload(fixture, type.name(), name, mime, bytes, 0)
+                .with(user(fixture.principal())).with(csrf()))
+            .andExpect(status().isCreated()).andExpect(jsonPath("$.materialType").value(type.name()))
+            .andExpect(jsonPath("$.storageKey").doesNotExist()).andReturn();
+        UUID materialId = UUID.fromString(json(result).get("id").asText());
+        var material = lessonMaterialService.getLessonMaterial(fixture.principal(), fixture.topic().getId(), materialId);
+        var asset = assets.findById(material.fileAssetId()).orElseThrow();
+        assertThat(asset.getUploadedByTeacherId()).isEqualTo(fixture.teacher().getId());
+        assertThat(asset.getOriginalFilename()).isEqualTo(name);
+        assertThat(asset.getMimeType()).isEqualTo(mime);
+        assertThat(asset.getSizeBytes()).isEqualTo(bytes.length);
+        assertThat(asset.getStorageProvider()).isEqualTo(com.tutorplatform.content.domain.StorageProvider.LOCAL);
+        assertThat(asset.getCreatedAt()).isNotNull();
+        assertThat(asset.getSha256()).isEqualTo(java.util.HexFormat.of().formatHex(
+            java.security.MessageDigest.getInstance("SHA-256").digest(bytes)));
+        assertThat(UUID.fromString(asset.getStorageKey()).toString()).isEqualTo(asset.getStorageKey());
+        assertThat(Files.readAllBytes(STORAGE.resolve(asset.getStorageKey()))).isEqualTo(bytes);
+        var duplicate = mockMvc.perform(upload(fixture, type.name(), name, mime, bytes, 1)
+            .with(user(fixture.principal())).with(csrf())).andExpect(status().isCreated()).andReturn();
+        var otherMaterial = lessonMaterialService.getLessonMaterial(fixture.principal(), fixture.topic().getId(),
+            UUID.fromString(json(duplicate).get("id").asText()));
+        var otherAsset = assets.findById(otherMaterial.fileAssetId()).orElseThrow();
+        assertThat(otherAsset.getStorageKey()).isNotEqualTo(asset.getStorageKey());
+        assertThat(Files.exists(STORAGE.resolve(otherAsset.getStorageKey()))).isTrue();
+        mockMvc.perform(get(materialUrl(fixture.topic().getId(), materialId) + "/download")
+                .with(user(fixture.principal())))
+            .andExpect(status().isOk()).andExpect(content().bytes(bytes)).andExpect(content().contentType(mime))
+            .andExpect(header().string("Cache-Control", "no-store"))
+            .andExpect(header().string("X-Content-Type-Options", "nosniff"))
+            .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.allOf(
+                org.hamcrest.Matchers.startsWith("attachment;"),
+                org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString(STORAGE.toString())),
+                org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString(asset.getStorageKey())),
+                org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("../")))));
+        var stranger = createFixture(UUID.randomUUID() + "@example.com");
+        mockMvc.perform(get(materialUrl(fixture.topic().getId(), materialId) + "/download")
+            .with(user(stranger.principal()))).andExpect(status().isNotFound());
+        mockMvc.perform(get(materialUrl(fixture.topic().getId(), materialId) + "/download"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void validatesSizeMimeAndImageTypeBeforeWriting() throws Exception {
+        var fixture = createFixture(UUID.randomUUID() + "@example.com");
+        long count = objectCount();
+        mockMvc.perform(upload(fixture, "FILE", "big.txt", "text/plain", new byte[1025], 0)
+            .with(user(fixture.principal())).with(csrf())).andExpect(status().isPayloadTooLarge());
+        mockMvc.perform(upload(fixture, "FILE", "bad.exe", "application/x-executable", new byte[]{1, 2}, 0)
+            .with(user(fixture.principal())).with(csrf())).andExpect(status().isBadRequest());
+        mockMvc.perform(upload(fixture, "IMAGE", "fake.png", "image/png", "not a PNG".getBytes(), 0)
+            .with(user(fixture.principal())).with(csrf())).andExpect(status().isBadRequest());
+        mockMvc.perform(upload(fixture, "IMAGE", "text.txt", "text/plain", "hello".getBytes(), 0)
+            .with(user(fixture.principal())).with(csrf())).andExpect(status().isBadRequest());
+        assertThat(objectCount()).isEqualTo(count);
+        assertThat(jdbc.queryForObject("select count(*) from file_assets where uploaded_by_teacher_id = ?",
+            Long.class, fixture.teacher().getId())).isZero();
+    }
+
+    @Test
+    void uploadRequiresOwnerAuthenticationAndCsrf() throws Exception {
+        var fixture = createFixture(UUID.randomUUID() + "@example.com");
+        var stranger = createFixture(UUID.randomUUID() + "@example.com");
+        long count = objectCount();
+        mockMvc.perform(upload(fixture, "FILE", "a.txt", "text/plain", "hello".getBytes(), 0)
+            .with(user(stranger.principal())).with(csrf())).andExpect(status().isNotFound());
+        mockMvc.perform(upload(fixture, "FILE", "a.txt", "text/plain", "hello".getBytes(), 0)
+            .with(csrf())).andExpect(status().isUnauthorized());
+        mockMvc.perform(upload(fixture, "FILE", "a.txt", "text/plain", "hello".getBytes(), 0)
+            .with(user(fixture.principal()))).andExpect(status().isForbidden());
+        assertThat(objectCount()).isEqualTo(count);
+    }
+
+    @Test
+    void databaseFailureRollsBackMetadataAndDeletesObject() throws Exception {
+        var fixture = createFixture(UUID.randomUUID() + "@example.com");
+        lessonMaterialService.createLessonMaterial(fixture.principal(), new CreateLessonMaterialCommand(
+            fixture.topic().getId(), LessonMaterialType.TEXT, "Existing", "text", null, null, 0));
+        long count = objectCount();
+        mockMvc.perform(upload(fixture, "FILE", "a.txt", "text/plain", "hello".getBytes(), 0)
+            .with(user(fixture.principal())).with(csrf())).andExpect(status().isConflict());
+        assertThat(objectCount()).isEqualTo(count);
+        assertThat(jdbc.queryForObject("select count(*) from file_assets where uploaded_by_teacher_id = ?",
+            Long.class, fixture.teacher().getId())).isZero();
+        assertThat(lessonMaterialService.listLessonMaterials(fixture.principal(), fixture.topic().getId())).hasSize(1);
+    }
+
+    @Test
+    void failureAtCommitAlsoCompensatesObject() throws Exception {
+        var fixture = createFixture(UUID.randomUUID() + "@example.com");
+        long count = objectCount();
+        jdbc.execute("""
+            CREATE FUNCTION reject_file_material_commit() RETURNS trigger LANGUAGE plpgsql AS $$
+            BEGIN RAISE EXCEPTION 'Test commit failure'; RETURN NEW; END $$
+            """);
+        jdbc.execute("""
+            CREATE CONSTRAINT TRIGGER reject_file_material_commit
+            AFTER INSERT ON lesson_materials DEFERRABLE INITIALLY DEFERRED
+            FOR EACH ROW EXECUTE FUNCTION reject_file_material_commit()
+            """);
+        try {
+            mockMvc.perform(upload(fixture, "FILE", "a.txt", "text/plain", "hello".getBytes(), 0)
+                .with(user(fixture.principal())).with(csrf())).andExpect(status().is5xxServerError());
+            assertThat(objectCount()).isEqualTo(count);
+            assertThat(jdbc.queryForObject("select count(*) from file_assets where uploaded_by_teacher_id = ?",
+                Long.class, fixture.teacher().getId())).isZero();
+        } finally {
+            jdbc.execute("DROP TRIGGER reject_file_material_commit ON lesson_materials");
+            jdbc.execute("DROP FUNCTION reject_file_material_commit()");
+        }
+    }
+
+    @Test
+    void failedCompensationReportsOpaqueKeyForManualCleanup(
+            org.springframework.boot.test.system.CapturedOutput output) throws Exception {
+        var fixture = createFixture(UUID.randomUUID() + "@example.com");
+        lessonMaterialService.createLessonMaterial(fixture.principal(), new CreateLessonMaterialCommand(
+            fixture.topic().getId(), LessonMaterialType.TEXT, "Existing", "text", null, null, 0));
+        java.util.Set<Path> before;
+        try (var paths = Files.list(STORAGE)) { before = paths.collect(java.util.stream.Collectors.toSet()); }
+        org.mockito.Mockito.doThrow(new com.tutorplatform.file.application.FileStorageException(
+            new java.io.IOException("Test delete failure"))).when(storage).delete(org.mockito.ArgumentMatchers.anyString());
+        try {
+            mockMvc.perform(upload(fixture, "FILE", "a.txt", "text/plain", "hello".getBytes(), 0)
+                .with(user(fixture.principal())).with(csrf())).andExpect(status().isConflict());
+            try (var paths = Files.list(STORAGE)) {
+                var remaining = paths.filter(path -> !before.contains(path)).toList();
+                assertThat(remaining).hasSize(1);
+                assertThat(output.getOut()).contains("FILE_STORAGE_CLEANUP_REQUIRED provider=LOCAL key="
+                    + remaining.getFirst().getFileName());
+            }
+        } finally {
+            org.mockito.Mockito.reset(storage);
+            try (var paths = Files.list(STORAGE)) {
+                for (Path path : paths.filter(path -> !before.contains(path)).toList()) Files.delete(path);
+            }
+        }
+    }
+
+    private long objectCount() throws Exception {
+        try (var paths = Files.list(STORAGE)) { return paths.count(); }
+    }
+    private ContentFixture createFixture(String email) {
+        UserEntity user = new UserEntity(UUID.randomUUID(), email, "password-hash", UserStatus.ACTIVE);
+        user.addRole(UserRole.TEACHER);
+        userRepository.saveAndFlush(user);
+        TeacherEntity teacher = teacherRepository.saveAndFlush(new TeacherEntity(
+            UUID.randomUUID(), user, "Teacher"
+        ));
+        SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
+            UUID.randomUUID(), teacher.getId(), null, "Предмет " + UUID.randomUUID(),
+            null, SubjectStatus.ACTIVE
+        ));
+        LearningProgramEntity learningProgram = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
+            UUID.randomUUID(), teacher.getId(), subject.getId(), "Программа", null,
+            LearningProgramStatus.DRAFT
+        ));
+        ModuleEntity module = moduleRepository.saveAndFlush(new ModuleEntity(
+            UUID.randomUUID(), learningProgram.getId(), "Модуль", null, 0
+        ));
+        TopicEntity topic = topicRepository.saveAndFlush(new TopicEntity(
+            UUID.randomUUID(), module.getId(), "Тема", null, 0, TopicStatus.DRAFT
+        ));
+        AuthenticatedUser principal = new AuthenticatedUser(
+            user.getId(),
+            email,
+            "password-hash",
+            true,
+            List.of(new SimpleGrantedAuthority("ROLE_TEACHER"))
+        );
+        return new ContentFixture(principal, teacher, topic);
+    }
+
+    private String materialsUrl(UUID topicId) {
+        return "/api/v1/teacher/topics/" + topicId + "/materials";
+    }
+
+    private String materialUrl(UUID topicId, UUID materialId) {
+        return materialsUrl(topicId) + "/" + materialId;
+    }
+
+    private JsonNode json(MvcResult result) throws Exception {
+        return objectMapper.readTree(result.getResponse().getContentAsByteArray());
+    }
+
+    private record ContentFixture(
+        AuthenticatedUser principal,
+        TeacherEntity teacher,
+        TopicEntity topic
+    ) {
+    }
+
+}
