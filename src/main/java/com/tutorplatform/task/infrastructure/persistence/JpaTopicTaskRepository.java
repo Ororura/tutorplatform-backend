@@ -1,0 +1,30 @@
+package com.tutorplatform.task.infrastructure.persistence;
+
+import com.tutorplatform.task.domain.TopicTaskEntity;
+import com.tutorplatform.task.domain.TopicTaskRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.UUID;
+
+@Repository
+public class JpaTopicTaskRepository implements TopicTaskRepository {
+
+    private final TopicTaskDatabaseRepository databaseRepository;
+
+    JpaTopicTaskRepository(TopicTaskDatabaseRepository databaseRepository) {
+        this.databaseRepository = databaseRepository;
+    }
+
+    @Override
+    public TopicTaskEntity saveAndFlush(TopicTaskEntity topicTask) {
+        return databaseRepository.saveAndFlush(new TopicTaskDatabaseModel(topicTask)).toEntity();
+    }
+
+    @Override
+    public List<TopicTaskEntity> findAllByTopicIdOrderByPosition(UUID topicId) {
+        return databaseRepository.findAllByIdTopicIdOrderByPositionAsc(topicId).stream()
+                .map(TopicTaskDatabaseModel::toEntity)
+                .toList();
+    }
+}
