@@ -2,7 +2,10 @@ package com.tutorplatform.task.application;
 
 import com.tutorplatform.task.domain.task.TaskDifficulty;
 import com.tutorplatform.task.domain.task.TaskStatus;
+import com.tutorplatform.task.domain.task.TaskType;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public interface TaskQuery {
@@ -17,4 +20,19 @@ public interface TaskQuery {
             String sortField,
             boolean ascending
     );
+
+    List<TaskContext> findTasksByIds(Set<UUID> taskIds);
+
+    record TaskContext(
+            UUID id,
+            UUID teacherId,
+            UUID subjectId,
+            String title,
+            TaskType type,
+            TaskStatus status
+    ) {
+        public boolean isOwnedBy(UUID expectedTeacherId) {
+            return teacherId.equals(expectedTeacherId);
+        }
+    }
 }

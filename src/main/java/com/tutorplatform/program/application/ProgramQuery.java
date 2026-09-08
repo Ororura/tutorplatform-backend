@@ -26,7 +26,8 @@ public interface ProgramQuery {
         UUID id,
         UUID studentId,
         UUID learningProgramId,
-        UUID assignedByTeacherId
+        UUID assignedByTeacherId,
+        UUID subjectId
     ) {
         public boolean belongsToStudent(UUID expectedStudentId) {
             return studentId.equals(expectedStudentId);

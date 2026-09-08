@@ -47,12 +47,15 @@ public class ProgramQueryService implements ProgramQuery {
     @Override
     public Optional<StudentProgramContext> findStudentProgram(UUID studentProgramId) {
         return studentProgramRepository.findById(studentProgramId)
-                .map(studentProgram -> new StudentProgramContext(
-                        studentProgram.getId(),
-                        studentProgram.getStudentId(),
-                        studentProgram.getLearningProgramId(),
-                        studentProgram.getAssignedByTeacherId()
-                ));
+                .flatMap(studentProgram -> learningProgramRepository
+                        .findById(studentProgram.getLearningProgramId())
+                        .map(learningProgram -> new StudentProgramContext(
+                                studentProgram.getId(),
+                                studentProgram.getStudentId(),
+                                studentProgram.getLearningProgramId(),
+                                studentProgram.getAssignedByTeacherId(),
+                                learningProgram.getSubjectId()
+                        )));
     }
 
     @Override

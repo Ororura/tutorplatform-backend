@@ -26,7 +26,7 @@ public class HomeworkItemDatabaseModel {
     @JoinColumn(name = "task_id", nullable = false, insertable = false, updatable = false)
     private TaskDatabaseModel task;
 
-    @Column(name = "task_id", nullable = false, updatable = false)
+    @Column(name = "task_id", nullable = false)
     private UUID taskId;
 
     @Column(nullable = false)

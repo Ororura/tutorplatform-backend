@@ -10,6 +10,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
+import java.util.List;
+import java.util.Set;
 
 @Repository
 public class JpaTaskQuery implements TaskQuery {
@@ -48,5 +50,22 @@ public class JpaTaskQuery implements TaskQuery {
                 result.getTotalElements(),
                 result.getTotalPages()
         );
+    }
+
+    @Override
+    public List<TaskContext> findTasksByIds(Set<UUID> taskIds) {
+        if (taskIds.isEmpty()) {
+            return List.of();
+        }
+        return databaseRepository.findAllById(taskIds).stream()
+                .map(task -> new TaskContext(
+                        task.getId(),
+                        task.getTeacherId(),
+                        task.getSubjectId(),
+                        task.getTitle(),
+                        task.getTaskType(),
+                        task.getStatus()
+                ))
+                .toList();
     }
 }

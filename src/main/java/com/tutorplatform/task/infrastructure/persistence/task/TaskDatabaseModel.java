@@ -103,4 +103,11 @@ public class TaskDatabaseModel {
                 version, createdAt, updatedAt
         );
     }
+
+    public UUID getId() { return id; }
+    public UUID getTeacherId() { return teacherId; }
+    public UUID getSubjectId() { return subjectId; }
+    public String getTitle() { return title; }
+    public TaskType getTaskType() { return taskType; }
+    public TaskStatus getStatus() { return status; }
 }

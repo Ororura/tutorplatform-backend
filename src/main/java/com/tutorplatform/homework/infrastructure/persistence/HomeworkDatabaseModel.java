@@ -123,7 +123,12 @@ public class HomeworkDatabaseModel {
         );
     }
 
-    UUID getId() {
-        return id;
-    }
+    UUID getId() { return id; }
+    UUID getStudentProgramId() { return studentProgramId; }
+    String getTitle() { return title; }
+    HomeworkStatus getStatus() { return status; }
+    Instant getAssignedAt() { return assignedAt; }
+    Instant getDueAt() { return dueAt; }
+    Instant getCompletedAt() { return completedAt; }
+    Instant getCreatedAt() { return createdAt; }
 }
