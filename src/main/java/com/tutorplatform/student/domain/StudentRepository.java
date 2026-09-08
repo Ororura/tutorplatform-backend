@@ -9,6 +9,8 @@ public interface StudentRepository {
 
     Optional<StudentEntity> findById(UUID studentId);
 
+    Optional<StudentEntity> findByUserId(UUID userId);
+
     Optional<StudentEntity> findByIdForUpdate(UUID studentId);
 
     Optional<StudentEntity> findOwnedStudent(UUID teacherId, UUID studentId);

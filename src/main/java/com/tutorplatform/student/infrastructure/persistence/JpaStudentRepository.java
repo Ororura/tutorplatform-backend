@@ -31,6 +31,11 @@ public class JpaStudentRepository implements StudentRepository {
     }
 
     @Override
+    public Optional<StudentEntity> findByUserId(UUID userId) {
+        return databaseRepository.findByUserId(userId).map(StudentDatabaseModel::toEntity);
+    }
+
+    @Override
     public Optional<StudentEntity> findByIdForUpdate(UUID studentId) {
         return databaseRepository.findWithLockById(studentId).map(StudentDatabaseModel::toEntity);
     }

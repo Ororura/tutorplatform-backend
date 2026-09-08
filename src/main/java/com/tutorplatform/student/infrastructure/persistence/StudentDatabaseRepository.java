@@ -11,6 +11,8 @@ import java.util.UUID;
 
 interface StudentDatabaseRepository extends JpaRepository<StudentDatabaseModel, UUID> {
 
+    Optional<StudentDatabaseModel> findByUserId(UUID userId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<StudentDatabaseModel> findWithLockById(UUID id);
 

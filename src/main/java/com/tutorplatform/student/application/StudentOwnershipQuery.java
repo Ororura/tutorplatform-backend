@@ -7,5 +7,7 @@ public interface StudentOwnershipQuery {
 
     Optional<UUID> findTeacherIdByUserId(UUID userId);
 
+    Optional<UUID> findStudentIdByUserId(UUID userId);
+
     boolean isActivePrimaryOwner(UUID teacherId, UUID studentId);
 }
