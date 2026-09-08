@@ -1,10 +1,10 @@
-package com.tutorplatform.task.infrastructure.persistence;
+package com.tutorplatform.task.infrastructure.persistence.task;
 
 import com.tutorplatform.subject.infrastructure.persistence.SubjectDatabaseModel;
-import com.tutorplatform.task.domain.TaskDifficulty;
-import com.tutorplatform.task.domain.TaskEntity;
-import com.tutorplatform.task.domain.TaskStatus;
-import com.tutorplatform.task.domain.TaskType;
+import com.tutorplatform.task.domain.task.TaskDifficulty;
+import com.tutorplatform.task.domain.task.TaskEntity;
+import com.tutorplatform.task.domain.task.TaskStatus;
+import com.tutorplatform.task.domain.task.TaskType;
 import com.tutorplatform.user.infrastructure.persistence.TeacherDatabaseModel;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

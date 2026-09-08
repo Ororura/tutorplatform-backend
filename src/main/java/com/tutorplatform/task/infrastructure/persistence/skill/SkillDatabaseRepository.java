@@ -1,4 +1,4 @@
-package com.tutorplatform.task.infrastructure.persistence;
+package com.tutorplatform.task.infrastructure.persistence.skill;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

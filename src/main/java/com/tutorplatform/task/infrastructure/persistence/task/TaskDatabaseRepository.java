@@ -1,7 +1,7 @@
-package com.tutorplatform.task.infrastructure.persistence;
+package com.tutorplatform.task.infrastructure.persistence.task;
 
-import com.tutorplatform.task.domain.TaskStatus;
-import com.tutorplatform.task.domain.TaskType;
+import com.tutorplatform.task.domain.task.TaskStatus;
+import com.tutorplatform.task.domain.task.TaskType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

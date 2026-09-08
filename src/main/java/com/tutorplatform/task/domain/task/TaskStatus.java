@@ -1,4 +1,4 @@
-package com.tutorplatform.task.domain;
+package com.tutorplatform.task.domain.task;
 
 public enum TaskStatus {
     DRAFT,

@@ -1,7 +1,7 @@
-package com.tutorplatform.task.infrastructure.persistence;
+package com.tutorplatform.task.infrastructure.persistence.skill;
 
 import com.tutorplatform.subject.infrastructure.persistence.SubjectDatabaseModel;
-import com.tutorplatform.task.domain.SkillEntity;
+import com.tutorplatform.task.domain.skill.SkillEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

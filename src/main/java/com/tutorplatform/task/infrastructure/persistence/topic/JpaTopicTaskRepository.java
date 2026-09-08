@@ -1,7 +1,7 @@
-package com.tutorplatform.task.infrastructure.persistence;
+package com.tutorplatform.task.infrastructure.persistence.topic;
 
-import com.tutorplatform.task.domain.TopicTaskEntity;
-import com.tutorplatform.task.domain.TopicTaskRepository;
+import com.tutorplatform.task.domain.topic.TopicTaskEntity;
+import com.tutorplatform.task.domain.topic.TopicTaskRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

@@ -1,7 +1,7 @@
-package com.tutorplatform.task.infrastructure.persistence;
+package com.tutorplatform.task.infrastructure.persistence.skill;
 
-import com.tutorplatform.task.domain.SkillEntity;
-import com.tutorplatform.task.domain.SkillRepository;
+import com.tutorplatform.task.domain.skill.SkillEntity;
+import com.tutorplatform.task.domain.skill.SkillRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;

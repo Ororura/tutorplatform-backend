@@ -1,4 +1,4 @@
-package com.tutorplatform.task.domain;
+package com.tutorplatform.task.domain.task;
 
 import java.time.Instant;
 import java.util.Objects;

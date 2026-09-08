@@ -1,7 +1,8 @@
-package com.tutorplatform.task.infrastructure.persistence;
+package com.tutorplatform.task.infrastructure.persistence.topic;
 
 import com.tutorplatform.program.infrastructure.persistence.TopicDatabaseModel;
-import com.tutorplatform.task.domain.TopicTaskEntity;
+import com.tutorplatform.task.domain.topic.TopicTaskEntity;
+import com.tutorplatform.task.infrastructure.persistence.task.TaskDatabaseModel;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;

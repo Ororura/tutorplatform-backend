@@ -1,4 +1,4 @@
-package com.tutorplatform.task.domain;
+package com.tutorplatform.task.domain.skill;
 
 import java.util.Optional;
 import java.util.UUID;

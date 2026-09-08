@@ -1,4 +1,4 @@
-package com.tutorplatform.task.domain;
+package com.tutorplatform.task.domain.task;
 
 import java.util.List;
 import java.util.Optional;

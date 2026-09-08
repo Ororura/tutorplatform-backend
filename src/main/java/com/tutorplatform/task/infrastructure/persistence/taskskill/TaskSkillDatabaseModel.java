@@ -1,6 +1,8 @@
-package com.tutorplatform.task.infrastructure.persistence;
+package com.tutorplatform.task.infrastructure.persistence.taskskill;
 
-import com.tutorplatform.task.domain.TaskSkillEntity;
+import com.tutorplatform.task.domain.taskskill.TaskSkillEntity;
+import com.tutorplatform.task.infrastructure.persistence.skill.SkillDatabaseModel;
+import com.tutorplatform.task.infrastructure.persistence.task.TaskDatabaseModel;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;

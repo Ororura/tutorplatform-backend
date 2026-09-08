@@ -1,4 +1,4 @@
-package com.tutorplatform.task.infrastructure.persistence;
+package com.tutorplatform.task.infrastructure.persistence.taskskill;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
