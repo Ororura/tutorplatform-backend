@@ -5,6 +5,7 @@ import com.tutorplatform.program.application.ProgramQuery;
 import com.tutorplatform.session.application.exception.InvalidLessonSessionTopicsException;
 import com.tutorplatform.session.application.exception.InvalidSessionListParameterException;
 import com.tutorplatform.session.application.exception.LessonSessionNotFoundException;
+import com.tutorplatform.session.application.exception.LessonSessionVersionConflictException;
 import com.tutorplatform.session.application.exception.StudentProgramNotFoundException;
 import com.tutorplatform.session.application.exception.TopicOutsideStudentProgramException;
 import com.tutorplatform.session.domain.LessonSessionEntity;
@@ -15,6 +16,7 @@ import com.tutorplatform.student.application.StudentOwnershipQuery;
 import com.tutorplatform.student.application.exception.StudentNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -159,19 +161,24 @@ public class LessonSessionService {
         );
         validateTopics(command.topics(), studentProgram.learningProgramId());
 
-        LessonSessionEntity updated = lessonSessionRepository.saveAndFlush(new LessonSessionEntity(
-            current.getId(),
-            current.getStudentProgramId(),
-            current.getTeacherId(),
-            command.startedAt(),
-            command.durationMinutes(),
-            command.attendanceStatus(),
-            command.summary(),
-            command.privateNotes(),
-            command.version(),
-            current.getCreatedAt(),
-            current.getUpdatedAt()
-        ));
+        LessonSessionEntity updated;
+        try {
+            updated = lessonSessionRepository.saveAndFlush(new LessonSessionEntity(
+                current.getId(),
+                current.getStudentProgramId(),
+                current.getTeacherId(),
+                command.startedAt(),
+                command.durationMinutes(),
+                command.attendanceStatus(),
+                command.summary(),
+                command.privateNotes(),
+                command.version(),
+                current.getCreatedAt(),
+                current.getUpdatedAt()
+            ));
+        } catch (ObjectOptimisticLockingFailureException exception) {
+            throw new LessonSessionVersionConflictException(exception);
+        }
         lessonSessionTopicRepository.deleteAllByLessonSessionId(lessonSessionId);
         List<LessonSessionTopicEntity> topics = saveTopics(lessonSessionId, command.topics());
         return toResult(updated, topics);

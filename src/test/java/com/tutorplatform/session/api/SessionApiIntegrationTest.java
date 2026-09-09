@@ -242,6 +242,39 @@ class SessionApiIntegrationTest {
     }
 
     @Test
+    void stalePatchReturnsLessonSessionVersionConflict() throws Exception {
+        SessionFixture fixture = createFixture("api-stale-session@example.com");
+        LessonSessionResult session = createSession(fixture, 60, AttendanceStatus.ATTENDED);
+        String update = updateRequest(session, fixture.topic().getId());
+
+        mockMvc.perform(patch(sessionUrl(fixture.student().getId(), session.id()))
+                .with(user(fixture.principal()))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(update))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(patch(sessionUrl(fixture.student().getId(), session.id()))
+                .with(user(fixture.principal()))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(update))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("LESSON_SESSION_VERSION_CONFLICT"))
+            .andExpect(jsonPath("$.message").value("Lesson session was modified by another request"));
+    }
+
+    @Test
+    void unknownLessonSessionReturnsNotFoundContract() throws Exception {
+        SessionFixture fixture = createFixture("api-missing-session@example.com");
+
+        mockMvc.perform(get(sessionUrl(fixture.student().getId(), UUID.randomUUID()))
+                .with(user(fixture.principal())))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("LESSON_SESSION_NOT_FOUND"));
+    }
+
+    @Test
     void unauthenticatedRequestReturnsUnauthorized() throws Exception {
         mockMvc.perform(get(sessionsUrl(UUID.randomUUID())))
             .andExpect(status().isUnauthorized())

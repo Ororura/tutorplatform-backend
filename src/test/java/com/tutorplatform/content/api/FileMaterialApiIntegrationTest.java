@@ -164,7 +164,9 @@ class FileMaterialApiIntegrationTest {
         var fixture = createFixture(UUID.randomUUID() + "@example.com");
         long count = objectCount();
         mockMvc.perform(upload(fixture, "FILE", "big.txt", "text/plain", new byte[1025], 0)
-            .with(user(fixture.principal())).with(csrf())).andExpect(status().isPayloadTooLarge());
+            .with(user(fixture.principal())).with(csrf()))
+            .andExpect(status().isPayloadTooLarge())
+            .andExpect(jsonPath("$.code").value("FILE_TOO_LARGE"));
         mockMvc.perform(upload(fixture, "FILE", "bad.exe", "application/x-executable", new byte[]{1, 2}, 0)
             .with(user(fixture.principal())).with(csrf())).andExpect(status().isBadRequest());
         mockMvc.perform(upload(fixture, "IMAGE", "fake.png", "image/png", "not a PNG".getBytes(), 0)
@@ -202,6 +204,22 @@ class FileMaterialApiIntegrationTest {
         assertThat(jdbc.queryForObject("select count(*) from file_assets where uploaded_by_teacher_id = ?",
             Long.class, fixture.teacher().getId())).isZero();
         assertThat(lessonMaterialService.listLessonMaterials(fixture.principal(), fixture.topic().getId())).hasSize(1);
+    }
+
+    @Test
+    void storageFailureReturnsOpaqueStorageError() throws Exception {
+        var fixture = createFixture(UUID.randomUUID() + "@example.com");
+        org.mockito.Mockito.doThrow(new com.tutorplatform.file.application.FileStorageException(
+            new java.io.IOException("disk details"))).when(storage).store(org.mockito.ArgumentMatchers.any());
+        try {
+            mockMvc.perform(upload(fixture, "FILE", "a.txt", "text/plain", "hello".getBytes(), 0)
+                    .with(user(fixture.principal())).with(csrf()))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.code").value("FILE_STORAGE_ERROR"))
+                .andExpect(jsonPath("$.message").value("File storage operation failed"));
+        } finally {
+            org.mockito.Mockito.reset(storage);
+        }
     }
 
     @Test

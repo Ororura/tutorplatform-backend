@@ -158,6 +158,19 @@ class AuthIntegrationTest {
     }
 
     @Test
+    void malformedJsonReturnsStandardValidationError() throws Exception {
+        CsrfExchange csrf = obtainCsrf();
+
+        mockMvc.perform(post("/api/v1/auth/register/teacher")
+                        .cookie(csrf.sessionCookie())
+                        .header(csrf.headerName(), csrf.token())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+    }
+
+    @Test
     void loginCreatesSessionAndUnknownEmailAndWrongPasswordReturnSameError() throws Exception {
         register("teacher@example.com", "Егор");
 
