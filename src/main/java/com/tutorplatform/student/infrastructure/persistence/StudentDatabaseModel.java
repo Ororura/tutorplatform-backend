@@ -60,13 +60,13 @@ public class StudentDatabaseModel {
 
     StudentEntity toEntity() {
         return new StudentEntity(
-                id,
-                userId,
-                firstName,
-                lastName,
-                status,
-                createdAt,
-                updatedAt
+            id,
+            userId,
+            firstName,
+            lastName,
+            status,
+            createdAt,
+            updatedAt
         );
     }
 

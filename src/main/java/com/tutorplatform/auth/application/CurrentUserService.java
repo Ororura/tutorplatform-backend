@@ -18,8 +18,8 @@ public class CurrentUserService {
     private final CurrentUserQueryRepository currentUserQueryRepository;
 
     public CurrentUserService(
-            UserRepository userRepository,
-            CurrentUserQueryRepository currentUserQueryRepository
+        UserRepository userRepository,
+        CurrentUserQueryRepository currentUserQueryRepository
     ) {
         this.userRepository = userRepository;
         this.currentUserQueryRepository = currentUserQueryRepository;
@@ -31,13 +31,13 @@ public class CurrentUserService {
         String displayName = currentUserQueryRepository.findDisplayName(user.id()).orElseThrow();
 
         return new CurrentUserResponse(
-                user.id(),
-                user.email(),
-                displayName,
-                user.roles().stream()
-                        .map(role -> UserRole.valueOf(role.name()))
-                        .sorted(Comparator.comparing(UserRole::name))
-                        .toList()
+            user.id(),
+            user.email(),
+            displayName,
+            user.roles().stream()
+                .map(role -> UserRole.valueOf(role.name()))
+                .sorted(Comparator.comparing(UserRole::name))
+                .toList()
         );
     }
 }

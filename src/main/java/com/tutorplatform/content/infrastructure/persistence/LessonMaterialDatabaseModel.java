@@ -16,7 +16,8 @@ import java.util.UUID;
 @Table(name = "lesson_materials")
 public class LessonMaterialDatabaseModel {
 
-    @Id private UUID id;
+    @Id
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "topic_id", nullable = false, insertable = false, updatable = false)
@@ -89,8 +90,8 @@ public class LessonMaterialDatabaseModel {
 
     LessonMaterialEntity toEntity() {
         return new LessonMaterialEntity(
-                id, topicId, createdByTeacherId, materialType, title, content, fileAssetId,
-                externalUrl, position, version, createdAt, updatedAt
+            id, topicId, createdByTeacherId, materialType, title, content, fileAssetId,
+            externalUrl, position, version, createdAt, updatedAt
         );
     }
 }

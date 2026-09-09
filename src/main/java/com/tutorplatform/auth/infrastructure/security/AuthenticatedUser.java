@@ -9,11 +9,11 @@ import java.util.List;
 import java.util.UUID;
 
 public record AuthenticatedUser(
-        UUID id,
-        String username,
-        String password,
-        boolean enabled,
-        List<? extends GrantedAuthority> authorities
+    UUID id,
+    String username,
+    String password,
+    boolean enabled,
+    List<? extends GrantedAuthority> authorities
 ) implements UserDetails {
 
     @Serial

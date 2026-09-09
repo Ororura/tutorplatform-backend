@@ -50,6 +50,26 @@ class HomeworkApiIntegrationTest {
 
     @Container
     private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
+    @Autowired
+    private MockMvc mockMvc;
+    @Autowired
+    private HomeworkService homeworkService;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TeacherRepository teacherRepository;
+    @Autowired
+    private StudentRepository studentRepository;
+    @Autowired
+    private TeacherStudentLinkRepository teacherStudentLinkRepository;
+    @Autowired
+    private SubjectRepository subjectRepository;
+    @Autowired
+    private LearningProgramRepository learningProgramRepository;
+    @Autowired
+    private StudentProgramRepository studentProgramRepository;
+    @Autowired
+    private TaskRepository taskRepository;
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
@@ -58,17 +78,6 @@ class HomeworkApiIntegrationTest {
         registry.add("spring.datasource.password", POSTGRES::getPassword);
         registry.add("spring.flyway.target", () -> "007");
     }
-
-    @Autowired private MockMvc mockMvc;
-    @Autowired private HomeworkService homeworkService;
-    @Autowired private UserRepository userRepository;
-    @Autowired private TeacherRepository teacherRepository;
-    @Autowired private StudentRepository studentRepository;
-    @Autowired private TeacherStudentLinkRepository teacherStudentLinkRepository;
-    @Autowired private SubjectRepository subjectRepository;
-    @Autowired private LearningProgramRepository learningProgramRepository;
-    @Autowired private StudentProgramRepository studentProgramRepository;
-    @Autowired private TaskRepository taskRepository;
 
     @Test
     void postCreatesHomeworkAndReturnsDetails() throws Exception {
@@ -204,8 +213,8 @@ class HomeworkApiIntegrationTest {
     @Test
     void studentRoleCannotAccessTeacherHomeworkApi() throws Exception {
         AuthenticatedUser studentPrincipal = new AuthenticatedUser(
-                UUID.randomUUID(), "student-homework@example.com", "password-hash", true,
-                List.of(new SimpleGrantedAuthority("ROLE_STUDENT"))
+            UUID.randomUUID(), "student-homework@example.com", "password-hash", true,
+            List.of(new SimpleGrantedAuthority("ROLE_STUDENT"))
         );
 
         mockMvc.perform(get(homeworksUrl(UUID.randomUUID())).with(user(studentPrincipal)))
@@ -260,15 +269,15 @@ class HomeworkApiIntegrationTest {
 
     private HomeworkResult createHomework(Fixture fixture) {
         return homeworkService.createHomework(
-                fixture.principal(),
-                new CreateHomeworkCommand(
-                        fixture.student().getId(), fixture.studentProgram().id(),
-                        "Домашнее задание №1", "Описание", Instant.now().plusSeconds(3600),
-                        List.of(
-                                new HomeworkItemInput(fixture.firstTask().getId(), 0, true),
-                                new HomeworkItemInput(fixture.secondTask().getId(), 1, true)
-                        )
+            fixture.principal(),
+            new CreateHomeworkCommand(
+                fixture.student().getId(), fixture.studentProgram().id(),
+                "Домашнее задание №1", "Описание", Instant.now().plusSeconds(3600),
+                List.of(
+                    new HomeworkItemInput(fixture.firstTask().getId(), 0, true),
+                    new HomeworkItemInput(fixture.secondTask().getId(), 1, true)
                 )
+            )
         );
     }
 
@@ -285,10 +294,10 @@ class HomeworkApiIntegrationTest {
               ]
             }
             """.formatted(
-                fixture.studentProgram().id(),
-                fixture.firstTask().getId(),
-                fixture.secondTask().getId()
-            );
+            fixture.studentProgram().id(),
+            fixture.firstTask().getId(),
+            fixture.secondTask().getId()
+        );
     }
 
     private String updateRequest(Fixture fixture, long version) {
@@ -310,27 +319,27 @@ class HomeworkApiIntegrationTest {
         user.addRole(UserRole.TEACHER);
         userRepository.saveAndFlush(user);
         TeacherEntity teacher = teacherRepository.saveAndFlush(new TeacherEntity(
-                UUID.randomUUID(), user, "Teacher"
+            UUID.randomUUID(), user, "Teacher"
         ));
         AuthenticatedUser principal = new AuthenticatedUser(
-                user.id(), email, "password-hash", true,
-                List.of(new SimpleGrantedAuthority("ROLE_TEACHER"))
+            user.id(), email, "password-hash", true,
+            List.of(new SimpleGrantedAuthority("ROLE_TEACHER"))
         );
         StudentEntity student = studentRepository.saveAndFlush(new StudentEntity(
-                UUID.randomUUID(), "Ученик", null, StudentStatus.ACTIVE
+            UUID.randomUUID(), "Ученик", null, StudentStatus.ACTIVE
         ));
         teacherStudentLinkRepository.saveAndFlush(new TeacherStudentLinkEntity(teacher, student));
         SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
-                UUID.randomUUID(), teacher.id(), null, "Предмет " + UUID.randomUUID(), null,
-                SubjectStatus.ACTIVE
+            UUID.randomUUID(), teacher.id(), null, "Предмет " + UUID.randomUUID(), null,
+            SubjectStatus.ACTIVE
         ));
         LearningProgramEntity program = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-                UUID.randomUUID(), teacher.id(), subject.id(), "Программа", null,
-                LearningProgramStatus.ACTIVE
+            UUID.randomUUID(), teacher.id(), subject.id(), "Программа", null,
+            LearningProgramStatus.ACTIVE
         ));
         StudentProgramEntity studentProgram = studentProgramRepository.saveAndFlush(new StudentProgramEntity(
-                UUID.randomUUID(), student.getId(), program.getId(), teacher.id(),
-                StudentProgramStatus.ACTIVE, 480, Instant.now(), null
+            UUID.randomUUID(), student.getId(), program.getId(), teacher.id(),
+            StudentProgramStatus.ACTIVE, 480, Instant.now(), null
         ));
         TaskEntity first = createTask(teacher, subject, "Первая задача");
         TaskEntity second = createTask(teacher, subject, "Вторая задача");
@@ -339,8 +348,8 @@ class HomeworkApiIntegrationTest {
 
     private TaskEntity createTask(TeacherEntity teacher, SubjectEntity subject, String title) {
         return taskRepository.saveAndFlush(new TaskEntity(
-                UUID.randomUUID(), teacher.id(), subject.id(), title, "Условие",
-                TaskType.TEXT, TaskDifficulty.EASY, TaskStatus.ACTIVE
+            UUID.randomUUID(), teacher.id(), subject.id(), title, "Условие",
+            TaskType.TEXT, TaskDifficulty.EASY, TaskStatus.ACTIVE
         ));
     }
 
@@ -353,12 +362,12 @@ class HomeworkApiIntegrationTest {
     }
 
     private record Fixture(
-            TeacherEntity teacher,
-            AuthenticatedUser principal,
-            StudentEntity student,
-            StudentProgramEntity studentProgram,
-            TaskEntity firstTask,
-            TaskEntity secondTask
+        TeacherEntity teacher,
+        AuthenticatedUser principal,
+        StudentEntity student,
+        StudentProgramEntity studentProgram,
+        TaskEntity firstTask,
+        TaskEntity secondTask
     ) {
     }
 }

@@ -55,20 +55,40 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
-        JpaUserRepository.class,
-        JpaTeacherRepository.class,
-        JpaStudentRepository.class,
-        JpaSubjectRepository.class,
-        JpaLearningProgramRepository.class,
-        JpaStudentProgramRepository.class,
-        JpaTaskRepository.class,
-        JpaHomeworkRepository.class,
-        JpaSubmissionRepository.class
+    JpaUserRepository.class,
+    JpaTeacherRepository.class,
+    JpaStudentRepository.class,
+    JpaSubjectRepository.class,
+    JpaLearningProgramRepository.class,
+    JpaStudentProgramRepository.class,
+    JpaTaskRepository.class,
+    JpaHomeworkRepository.class,
+    JpaSubmissionRepository.class
 })
 class SubmissionPersistenceIntegrationTest {
 
     @Container
     private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TeacherRepository teacherRepository;
+    @Autowired
+    private StudentRepository studentRepository;
+    @Autowired
+    private SubjectRepository subjectRepository;
+    @Autowired
+    private LearningProgramRepository learningProgramRepository;
+    @Autowired
+    private StudentProgramRepository studentProgramRepository;
+    @Autowired
+    private TaskRepository taskRepository;
+    @Autowired
+    private HomeworkRepository homeworkRepository;
+    @Autowired
+    private SubmissionRepository submissionRepository;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
@@ -78,25 +98,14 @@ class SubmissionPersistenceIntegrationTest {
         registry.add("spring.flyway.target", () -> "007");
     }
 
-    @Autowired private UserRepository userRepository;
-    @Autowired private TeacherRepository teacherRepository;
-    @Autowired private StudentRepository studentRepository;
-    @Autowired private SubjectRepository subjectRepository;
-    @Autowired private LearningProgramRepository learningProgramRepository;
-    @Autowired private StudentProgramRepository studentProgramRepository;
-    @Autowired private TaskRepository taskRepository;
-    @Autowired private HomeworkRepository homeworkRepository;
-    @Autowired private SubmissionRepository submissionRepository;
-    @Autowired private JdbcTemplate jdbcTemplate;
-
     @Test
     void textSubmissionIsSavedWithAllFields() {
         Fixture fixture = createFixture(true);
         Instant submittedAt = Instant.now().truncatedTo(ChronoUnit.MICROS);
 
         SubmissionEntity saved = submissionRepository.saveAndFlush(new SubmissionEntity(
-                UUID.randomUUID(), fixture.studentId(), fixture.studentProgramId(), fixture.taskId(),
-                fixture.homeworkItemId(), 1, SubmissionStatus.NEEDS_REVIEW, "Развёрнутый ответ", submittedAt
+            UUID.randomUUID(), fixture.studentId(), fixture.studentProgramId(), fixture.taskId(),
+            fixture.homeworkItemId(), 1, SubmissionStatus.NEEDS_REVIEW, "Развёрнутый ответ", submittedAt
         ));
 
         assertThat(submissionRepository.findById(saved.getId())).get().satisfies(found -> {
@@ -118,19 +127,19 @@ class SubmissionPersistenceIntegrationTest {
         SubmissionEntity saved = submissionRepository.saveAndFlush(submission(fixture, null, 1));
 
         assertThat(submissionRepository.findById(saved.getId()))
-                .get().extracting(SubmissionEntity::getHomeworkItemId).isNull();
+            .get().extracting(SubmissionEntity::getHomeworkItemId).isNull();
     }
 
     @Test
     void submissionWithHomeworkItemIsSaved() {
         Fixture fixture = createFixture(true);
         SubmissionEntity saved = submissionRepository.saveAndFlush(
-                submission(fixture, fixture.homeworkItemId(), 1)
+            submission(fixture, fixture.homeworkItemId(), 1)
         );
 
         assertThat(submissionRepository.findById(saved.getId()))
-                .get().extracting(SubmissionEntity::getHomeworkItemId)
-                .isEqualTo(fixture.homeworkItemId());
+            .get().extracting(SubmissionEntity::getHomeworkItemId)
+            .isEqualTo(fixture.homeworkItemId());
     }
 
     @Test
@@ -138,8 +147,8 @@ class SubmissionPersistenceIntegrationTest {
         Fixture fixture = createFixture(false);
 
         assertThatThrownBy(() -> insertSubmission(
-                fixture, UUID.randomUUID(), fixture.studentId(), fixture.studentProgramId(),
-                fixture.taskId(), null, 0, "SUBMITTED", null
+            fixture, UUID.randomUUID(), fixture.studentId(), fixture.studentProgramId(),
+            fixture.taskId(), null, 0, "SUBMITTED", null
         )).isInstanceOf(DataIntegrityViolationException.class);
     }
 
@@ -149,11 +158,11 @@ class SubmissionPersistenceIntegrationTest {
         int attemptNo = 1;
         for (SubmissionStatus status : SubmissionStatus.values()) {
             SubmissionEntity saved = submissionRepository.saveAndFlush(new SubmissionEntity(
-                    UUID.randomUUID(), fixture.studentId(), fixture.studentProgramId(), fixture.taskId(),
-                    null, attemptNo++, status, "Ответ", Instant.now()
+                UUID.randomUUID(), fixture.studentId(), fixture.studentProgramId(), fixture.taskId(),
+                null, attemptNo++, status, "Ответ", Instant.now()
             ));
             assertThat(submissionRepository.findById(saved.getId()))
-                    .get().extracting(SubmissionEntity::getStatus).isEqualTo(status);
+                .get().extracting(SubmissionEntity::getStatus).isEqualTo(status);
         }
     }
 
@@ -181,12 +190,12 @@ class SubmissionPersistenceIntegrationTest {
     void textAnswerIsNullableAtDatabaseLevel() {
         Fixture fixture = createFixture(false);
         SubmissionEntity saved = submissionRepository.saveAndFlush(new SubmissionEntity(
-                UUID.randomUUID(), fixture.studentId(), fixture.studentProgramId(), fixture.taskId(),
-                null, 1, SubmissionStatus.SUBMITTED, null, Instant.now()
+            UUID.randomUUID(), fixture.studentId(), fixture.studentProgramId(), fixture.taskId(),
+            null, 1, SubmissionStatus.SUBMITTED, null, Instant.now()
         ));
 
         assertThat(submissionRepository.findById(saved.getId()))
-                .get().extracting(SubmissionEntity::getTextAnswer).isNull();
+            .get().extracting(SubmissionEntity::getTextAnswer).isNull();
     }
 
     @Test
@@ -200,10 +209,10 @@ class SubmissionPersistenceIntegrationTest {
         SubmissionAttemptContext context = context(fixture, fixture.homeworkItemId());
 
         assertThat(submissionRepository.findAttempts(context, 0, 10).items())
-                .extracting(SubmissionEntity::getAttemptNo)
-                .containsExactly(3, 2, 1);
+            .extracting(SubmissionEntity::getAttemptNo)
+            .containsExactly(3, 2, 1);
         assertThat(submissionRepository.findLatestAttempt(context))
-                .get().extracting(SubmissionEntity::getAttemptNo).isEqualTo(3);
+            .get().extracting(SubmissionEntity::getAttemptNo).isEqualTo(3);
         assertThat(submissionRepository.existsByStatus(context, SubmissionStatus.SUBMITTED)).isTrue();
     }
 
@@ -255,103 +264,103 @@ class SubmissionPersistenceIntegrationTest {
         submissionRepository.saveAndFlush(submission(fixture, null, 1));
 
         assertThatThrownBy(() -> submissionRepository.saveAndFlush(submission(fixture, null, 1)))
-                .isInstanceOf(DataIntegrityViolationException.class);
+            .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
     void codeSubmissionJavaBehaviorIsNotIntroduced() {
         assertThatThrownBy(() -> Class.forName("com.tutorplatform.submission.domain.CodeSubmissionEntity"))
-                .isInstanceOf(ClassNotFoundException.class);
+            .isInstanceOf(ClassNotFoundException.class);
         assertThatThrownBy(() -> Class.forName("com.tutorplatform.submission.application.CodeExecutionService"))
-                .isInstanceOf(ClassNotFoundException.class);
+            .isInstanceOf(ClassNotFoundException.class);
     }
 
     private void assertInvalidForeignKey(ForeignKey foreignKey) {
         Fixture fixture = createFixture(true);
         assertThatThrownBy(() -> insertSubmission(
-                fixture,
-                UUID.randomUUID(),
-                foreignKey == ForeignKey.STUDENT ? UUID.randomUUID() : fixture.studentId(),
-                foreignKey == ForeignKey.STUDENT_PROGRAM ? UUID.randomUUID() : fixture.studentProgramId(),
-                foreignKey == ForeignKey.TASK ? UUID.randomUUID() : fixture.taskId(),
-                foreignKey == ForeignKey.HOMEWORK_ITEM ? UUID.randomUUID() : fixture.homeworkItemId(),
-                1,
-                "SUBMITTED",
-                "Ответ"
+            fixture,
+            UUID.randomUUID(),
+            foreignKey == ForeignKey.STUDENT ? UUID.randomUUID() : fixture.studentId(),
+            foreignKey == ForeignKey.STUDENT_PROGRAM ? UUID.randomUUID() : fixture.studentProgramId(),
+            foreignKey == ForeignKey.TASK ? UUID.randomUUID() : fixture.taskId(),
+            foreignKey == ForeignKey.HOMEWORK_ITEM ? UUID.randomUUID() : fixture.homeworkItemId(),
+            1,
+            "SUBMITTED",
+            "Ответ"
         )).isInstanceOf(DataIntegrityViolationException.class);
     }
 
     private void insertSubmission(
-            Fixture fixture,
-            UUID id,
-            UUID studentId,
-            UUID studentProgramId,
-            UUID taskId,
-            UUID homeworkItemId,
-            int attemptNo,
-            String status,
-            String textAnswer
+        Fixture fixture,
+        UUID id,
+        UUID studentId,
+        UUID studentProgramId,
+        UUID taskId,
+        UUID homeworkItemId,
+        int attemptNo,
+        String status,
+        String textAnswer
     ) {
         jdbcTemplate.update(
-                """
-                    insert into submissions(
-                        id, student_id, student_program_id, task_id, homework_item_id,
-                        attempt_no, status, text_answer
-                    ) values (?, ?, ?, ?, ?, ?, ?, ?)
-                    """,
-                id, studentId, studentProgramId, taskId, homeworkItemId, attemptNo, status, textAnswer
+            """
+                insert into submissions(
+                    id, student_id, student_program_id, task_id, homework_item_id,
+                    attempt_no, status, text_answer
+                ) values (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+            id, studentId, studentProgramId, taskId, homeworkItemId, attemptNo, status, textAnswer
         );
     }
 
     private SubmissionEntity submission(Fixture fixture, UUID homeworkItemId, int attemptNo) {
         return new SubmissionEntity(
-                UUID.randomUUID(), fixture.studentId(), fixture.studentProgramId(), fixture.taskId(),
-                homeworkItemId, attemptNo, SubmissionStatus.SUBMITTED, "Ответ", Instant.now()
+            UUID.randomUUID(), fixture.studentId(), fixture.studentProgramId(), fixture.taskId(),
+            homeworkItemId, attemptNo, SubmissionStatus.SUBMITTED, "Ответ", Instant.now()
         );
     }
 
     private SubmissionAttemptContext context(Fixture fixture, UUID homeworkItemId) {
         return new SubmissionAttemptContext(
-                fixture.studentId(), fixture.studentProgramId(), fixture.taskId(), homeworkItemId
+            fixture.studentId(), fixture.studentProgramId(), fixture.taskId(), homeworkItemId
         );
     }
 
     private Fixture createFixture(boolean withHomework) {
         UserEntity user = new UserEntity(
-                UUID.randomUUID(), UUID.randomUUID() + "@example.com", "password-hash", UserStatus.ACTIVE
+            UUID.randomUUID(), UUID.randomUUID() + "@example.com", "password-hash", UserStatus.ACTIVE
         );
         user.addRole(UserRole.TEACHER);
         userRepository.saveAndFlush(user);
         TeacherEntity teacher = teacherRepository.saveAndFlush(
-                new TeacherEntity(UUID.randomUUID(), user, "Teacher")
+            new TeacherEntity(UUID.randomUUID(), user, "Teacher")
         );
         StudentEntity student = studentRepository.saveAndFlush(new StudentEntity(
-                UUID.randomUUID(), "Ученик", null, StudentStatus.ACTIVE
+            UUID.randomUUID(), "Ученик", null, StudentStatus.ACTIVE
         ));
         SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
-                UUID.randomUUID(), teacher.id(), null, "Предмет " + UUID.randomUUID(), null,
-                SubjectStatus.ACTIVE
+            UUID.randomUUID(), teacher.id(), null, "Предмет " + UUID.randomUUID(), null,
+            SubjectStatus.ACTIVE
         ));
         LearningProgramEntity program = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-                UUID.randomUUID(), teacher.id(), subject.id(), "Программа", null,
-                LearningProgramStatus.ACTIVE
+            UUID.randomUUID(), teacher.id(), subject.id(), "Программа", null,
+            LearningProgramStatus.ACTIVE
         ));
         StudentProgramEntity studentProgram = studentProgramRepository.saveAndFlush(new StudentProgramEntity(
-                UUID.randomUUID(), student.getId(), program.getId(), teacher.id(),
-                StudentProgramStatus.ACTIVE, 480, Instant.now(), null
+            UUID.randomUUID(), student.getId(), program.getId(), teacher.id(),
+            StudentProgramStatus.ACTIVE, 480, Instant.now(), null
         ));
         TaskEntity task = taskRepository.saveAndFlush(new TaskEntity(
-                UUID.randomUUID(), teacher.id(), subject.id(), "Текстовое задание", "Условие",
-                TaskType.TEXT, TaskDifficulty.EASY, TaskStatus.ACTIVE
+            UUID.randomUUID(), teacher.id(), subject.id(), "Текстовое задание", "Условие",
+            TaskType.TEXT, TaskDifficulty.EASY, TaskStatus.ACTIVE
         ));
         UUID homeworkItemId = null;
         if (withHomework) {
             UUID homeworkId = UUID.randomUUID();
             homeworkItemId = UUID.randomUUID();
             HomeworkEntity homework = homeworkRepository.saveAndFlush(new HomeworkEntity(
-                    homeworkId, studentProgram.id(), teacher.id(), "Домашняя работа", null,
-                    Instant.now(), null, HomeworkStatus.ASSIGNED, null,
-                    List.of(new HomeworkItemEntity(homeworkItemId, homeworkId, task.getId(), 0, true))
+                homeworkId, studentProgram.id(), teacher.id(), "Домашняя работа", null,
+                Instant.now(), null, HomeworkStatus.ASSIGNED, null,
+                List.of(new HomeworkItemEntity(homeworkItemId, homeworkId, task.getId(), 0, true))
             ));
             homeworkItemId = homework.getItems().getFirst().id();
         }
@@ -366,10 +375,10 @@ class SubmissionPersistenceIntegrationTest {
     }
 
     private record Fixture(
-            UUID studentId,
-            UUID studentProgramId,
-            UUID taskId,
-            UUID homeworkItemId
+        UUID studentId,
+        UUID studentProgramId,
+        UUID taskId,
+        UUID homeworkItemId
     ) {
     }
 }

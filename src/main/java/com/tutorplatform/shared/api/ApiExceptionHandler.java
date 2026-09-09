@@ -22,77 +22,77 @@ public class ApiExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException exception) {
         List<ApiErrorDetail> details = exception.getBindingResult().getFieldErrors().stream()
-                .map(error -> new ApiErrorDetail(error.getField(), error.getDefaultMessage()))
-                .toList();
+            .map(error -> new ApiErrorDetail(error.getField(), error.getDefaultMessage()))
+            .toList();
 
         return ResponseEntity.badRequest().body(new ApiError(
-                "VALIDATION_ERROR",
-                "Request validation failed",
-                Instant.now(),
-                MDC.get("traceId"),
-                details
+            "VALIDATION_ERROR",
+            "Request validation failed",
+            Instant.now(),
+            MDC.get("traceId"),
+            details
         ));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     ResponseEntity<ApiError> handleUnreadableRequest(HttpMessageNotReadableException exception) {
         return ResponseEntity.badRequest().body(
-                ApiError.of("VALIDATION_ERROR", "Request body has an invalid value", MDC.get("traceId"))
+            ApiError.of("VALIDATION_ERROR", "Request body has an invalid value", MDC.get("traceId"))
         );
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException exception) {
         List<ApiErrorDetail> details = exception.getConstraintViolations().stream()
-                .map(violation -> new ApiErrorDetail(
-                        violation.getPropertyPath().toString(),
-                        violation.getMessage()
-                ))
-                .toList();
+            .map(violation -> new ApiErrorDetail(
+                violation.getPropertyPath().toString(),
+                violation.getMessage()
+            ))
+            .toList();
 
         return ResponseEntity.badRequest().body(new ApiError(
-                "VALIDATION_ERROR",
-                "Request validation failed",
-                Instant.now(),
-                MDC.get("traceId"),
-                details
+            "VALIDATION_ERROR",
+            "Request validation failed",
+            Instant.now(),
+            MDC.get("traceId"),
+            details
         ));
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     ResponseEntity<ApiError> handleTypeMismatch(MethodArgumentTypeMismatchException exception) {
         return ResponseEntity.badRequest().body(new ApiError(
-                "VALIDATION_ERROR",
-                "Request validation failed",
-                Instant.now(),
-                MDC.get("traceId"),
-                List.of(new ApiErrorDetail(exception.getName(), "has an invalid value"))
+            "VALIDATION_ERROR",
+            "Request validation failed",
+            Instant.now(),
+            MDC.get("traceId"),
+            List.of(new ApiErrorDetail(exception.getName(), "has an invalid value"))
         ));
     }
 
     @ExceptionHandler({MissingServletRequestPartException.class,
-            MissingServletRequestParameterException.class})
+        MissingServletRequestParameterException.class})
     ResponseEntity<ApiError> handleMissingUploadParameter(Exception exception) {
         return ResponseEntity.badRequest().body(
-                ApiError.of(
-                        "VALIDATION_ERROR",
-                        "Required request part or parameter is missing",
-                        MDC.get("traceId")
-                )
+            ApiError.of(
+                "VALIDATION_ERROR",
+                "Required request part or parameter is missing",
+                MDC.get("traceId")
+            )
         );
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     ResponseEntity<ApiError> handleMaxUploadSizeExceeded(MaxUploadSizeExceededException exception) {
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(
-                ApiError.of("FILE_TOO_LARGE", "File exceeds upload limit", MDC.get("traceId"))
+            ApiError.of("FILE_TOO_LARGE", "File exceeds upload limit", MDC.get("traceId"))
         );
     }
 
     @ExceptionHandler(Exception.class)
     ResponseEntity<ApiError> handleUnexpected(Exception exception) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                ApiError.of("INTERNAL_ERROR", "Unexpected server failure", MDC.get("traceId"))
+            ApiError.of("INTERNAL_ERROR", "Unexpected server failure", MDC.get("traceId"))
         );
     }
 }

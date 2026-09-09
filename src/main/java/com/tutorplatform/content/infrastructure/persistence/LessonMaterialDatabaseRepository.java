@@ -8,6 +8,8 @@ import java.util.UUID;
 
 interface LessonMaterialDatabaseRepository extends JpaRepository<LessonMaterialDatabaseModel, UUID> {
     Optional<LessonMaterialDatabaseModel> findByIdAndTopicId(UUID lessonMaterialId, UUID topicId);
+
     List<LessonMaterialDatabaseModel> findAllByTopicIdOrderByPositionAsc(UUID topicId);
+
     boolean existsByIdAndTopicId(UUID lessonMaterialId, UUID topicId);
 }

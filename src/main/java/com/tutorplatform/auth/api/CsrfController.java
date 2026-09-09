@@ -19,22 +19,22 @@ public class CsrfController {
 
     @Operation(operationId = "getCsrfToken", summary = "Get CSRF token")
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "OK",
-                    content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = CsrfTokenResponse.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Unexpected server failure",
-                    content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ApiError.class)
-                    )
+        @ApiResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = CsrfTokenResponse.class)
             )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Unexpected server failure",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ApiError.class)
+            )
+        )
     })
     @GetMapping(value = "/csrf", produces = MediaType.APPLICATION_JSON_VALUE)
     public CsrfTokenResponse getCsrfToken(@Parameter(hidden = true) CsrfToken csrfToken) {

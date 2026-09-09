@@ -5,5 +5,6 @@ import java.util.UUID;
 
 public interface StudentTopicProgressRepository {
     StudentTopicProgressEntity saveAndFlush(StudentTopicProgressEntity progress);
+
     Optional<StudentTopicProgressEntity> findById(UUID studentProgramId, UUID topicId);
 }

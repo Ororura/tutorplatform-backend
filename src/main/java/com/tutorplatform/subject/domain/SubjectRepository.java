@@ -5,5 +5,6 @@ import java.util.UUID;
 
 public interface SubjectRepository {
     SubjectEntity saveAndFlush(SubjectEntity subject);
+
     Optional<SubjectEntity> findById(UUID subjectId);
 }

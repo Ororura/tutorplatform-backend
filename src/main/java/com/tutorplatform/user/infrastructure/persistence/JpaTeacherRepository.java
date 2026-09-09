@@ -15,20 +15,36 @@ public class JpaTeacherRepository implements TeacherRepository {
         this.databaseRepository = databaseRepository;
     }
 
-    @Override public TeacherEntity save(TeacherEntity teacher) { return saveModel(teacher, false); }
-    @Override public TeacherEntity saveAndFlush(TeacherEntity teacher) { return saveModel(teacher, true); }
+    @Override
+    public TeacherEntity save(TeacherEntity teacher) {
+        return saveModel(teacher, false);
+    }
+
+    @Override
+    public TeacherEntity saveAndFlush(TeacherEntity teacher) {
+        return saveModel(teacher, true);
+    }
 
     private TeacherEntity saveModel(TeacherEntity teacher, boolean flush) {
         TeacherDatabaseModel model = databaseRepository.findById(teacher.id())
-                .orElseGet(() -> new TeacherDatabaseModel(teacher));
+            .orElseGet(() -> new TeacherDatabaseModel(teacher));
         model.updateFrom(teacher);
         model = flush ? databaseRepository.saveAndFlush(model) : databaseRepository.save(model);
         return model.toEntity();
     }
 
-    @Override public Optional<TeacherEntity> findByUserId(UUID userId) {
+    @Override
+    public Optional<TeacherEntity> findByUserId(UUID userId) {
         return databaseRepository.findByUserId(userId).map(TeacherDatabaseModel::toEntity);
     }
-    @Override public long count() { return databaseRepository.count(); }
-    @Override public void deleteAll() { databaseRepository.deleteAll(); }
+
+    @Override
+    public long count() {
+        return databaseRepository.count();
+    }
+
+    @Override
+    public void deleteAll() {
+        databaseRepository.deleteAll();
+    }
 }

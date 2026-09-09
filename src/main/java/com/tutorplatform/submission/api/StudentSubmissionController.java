@@ -26,42 +26,42 @@ public class StudentSubmissionController implements StudentSubmissionApi {
     @Override
     @PostMapping("/tasks/{taskId}/submissions")
     public ResponseEntity<StudentSubmissionResponse> submitTextAnswer(
-            @AuthenticationPrincipal AuthenticatedUser principal,
-            @PathVariable UUID taskId,
-            @Valid @RequestBody SubmitTextAnswerRequest request
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID taskId,
+        @Valid @RequestBody SubmitTextAnswerRequest request
     ) {
         StudentSubmissionResponse response = StudentSubmissionResponse.from(
-                submissionService.submitTextAnswer(
-                        principal, taskId, request.homeworkItemId(), request.textAnswer()
-                )
+            submissionService.submitTextAnswer(
+                principal, taskId, request.homeworkItemId(), request.textAnswer()
+            )
         );
         return ResponseEntity.created(URI.create(
-                "/api/v1/student/submissions/" + response.id()
+            "/api/v1/student/submissions/" + response.id()
         )).body(response);
     }
 
     @Override
     @GetMapping("/tasks/{taskId}/submissions")
     public StudentSubmissionPageResponse listStudentTaskSubmissions(
-            @AuthenticationPrincipal AuthenticatedUser principal,
-            @PathVariable UUID taskId,
-            @RequestParam(required = false) UUID homeworkItemId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID taskId,
+        @RequestParam(required = false) UUID homeworkItemId,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size
     ) {
         return StudentSubmissionPageResponse.from(submissionService.listStudentTaskSubmissions(
-                principal, taskId, homeworkItemId, page, size
+            principal, taskId, homeworkItemId, page, size
         ));
     }
 
     @Override
     @GetMapping("/submissions/{submissionId}")
     public StudentSubmissionResponse getStudentSubmission(
-            @AuthenticationPrincipal AuthenticatedUser principal,
-            @PathVariable UUID submissionId
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID submissionId
     ) {
         return StudentSubmissionResponse.from(
-                submissionService.getStudentSubmission(principal, submissionId)
+            submissionService.getStudentSubmission(principal, submissionId)
         );
     }
 }

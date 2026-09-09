@@ -27,7 +27,13 @@ class IdentityRepositoryIntegrationTest {
 
     @Container
     private static final PostgreSQLContainer POSTGRES =
-            new PostgreSQLContainer("postgres:16-alpine");
+        new PostgreSQLContainer("postgres:16-alpine");
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TeacherRepository teacherRepository;
+    @Autowired
+    private EntityManager entityManager;
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
@@ -36,15 +42,6 @@ class IdentityRepositoryIntegrationTest {
         registry.add("spring.datasource.password", POSTGRES::getPassword);
         registry.add("spring.flyway.target", () -> "007");
     }
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private TeacherRepository teacherRepository;
-
-    @Autowired
-    private EntityManager entityManager;
 
     @Test
     void flywayMigratesCleanPostgresAndRolesArePersisted() {
@@ -65,21 +62,21 @@ class IdentityRepositoryIntegrationTest {
     @Test
     void emailIsUniqueCaseInsensitively() {
         userRepository.saveAndFlush(new UserEntity(
-                UUID.randomUUID(),
-                "Teacher@Example.com",
-                "password-hash",
-                UserStatus.ACTIVE
+            UUID.randomUUID(),
+            "Teacher@Example.com",
+            "password-hash",
+            UserStatus.ACTIVE
         ));
 
         UserEntity duplicate = new UserEntity(
-                UUID.randomUUID(),
-                "teacher@example.com",
-                "other-password-hash",
-                UserStatus.ACTIVE
+            UUID.randomUUID(),
+            "teacher@example.com",
+            "other-password-hash",
+            UserStatus.ACTIVE
         );
 
         assertThatThrownBy(() -> userRepository.saveAndFlush(duplicate))
-                .isInstanceOf(DataIntegrityViolationException.class);
+            .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
@@ -103,16 +100,16 @@ class IdentityRepositoryIntegrationTest {
     void emailLookupUsesCitextEquality() {
         UUID userId = UUID.randomUUID();
         userRepository.saveAndFlush(new UserEntity(
-                userId,
-                "Lookup@Example.com",
-                "password-hash",
-                UserStatus.ACTIVE
+            userId,
+            "Lookup@Example.com",
+            "password-hash",
+            UserStatus.ACTIVE
         ));
         entityManager.clear();
 
         assertThat(userRepository.findByEmail("lookup@example.com"))
-                .map(UserEntity::id)
-                .contains(userId);
+            .map(UserEntity::id)
+            .contains(userId);
         assertThat(userRepository.existsByEmail("LOOKUP@example.com")).isTrue();
     }
 }

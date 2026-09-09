@@ -7,21 +7,21 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record TeacherRegistrationRequest(
-        @NotBlank
-        @Size(min = 2, max = 160)
-        @Schema(example = "Егор", minLength = 2, maxLength = 160)
-        String displayName,
+    @NotBlank
+    @Size(min = 2, max = 160)
+    @Schema(example = "Егор", minLength = 2, maxLength = 160)
+    String displayName,
 
-        @NotBlank
-        @Email
-        @Size(max = 320)
-        @Schema(example = "teacher@example.com", maxLength = 320)
-        String email,
+    @NotBlank
+    @Email
+    @Size(max = 320)
+    @Schema(example = "teacher@example.com", maxLength = 320)
+    String email,
 
-        @NotNull
-        @Size(min = 10, max = 128)
-        @Schema(example = "correct horse battery staple", minLength = 10, maxLength = 128, format = "password")
-        String password
+    @NotNull
+    @Size(min = 10, max = 128)
+    @Schema(example = "correct horse battery staple", minLength = 10, maxLength = 128, format = "password")
+    String password
 ) {
     public TeacherRegistrationRequest {
         displayName = displayName == null ? null : displayName.strip();

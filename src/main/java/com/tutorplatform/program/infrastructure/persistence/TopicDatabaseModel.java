@@ -14,7 +14,8 @@ import java.util.UUID;
 @Table(name = "topics")
 public class TopicDatabaseModel {
 
-    @Id private UUID id;
+    @Id
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "module_id", nullable = false, insertable = false, updatable = false)
@@ -26,7 +27,8 @@ public class TopicDatabaseModel {
     @Column(nullable = false, length = 180)
     private String title;
 
-    @Column private String description;
+    @Column
+    private String description;
 
     @Column(nullable = false)
     private int position;

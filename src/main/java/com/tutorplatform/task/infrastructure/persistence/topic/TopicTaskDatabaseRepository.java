@@ -7,6 +7,8 @@ import java.util.UUID;
 
 interface TopicTaskDatabaseRepository extends JpaRepository<TopicTaskDatabaseModel, TopicTaskId> {
     List<TopicTaskDatabaseModel> findAllByIdTopicIdOrderByPositionAsc(UUID topicId);
+
     boolean existsByIdTopicIdAndIdTaskId(UUID topicId, UUID taskId);
+
     boolean existsByIdTopicIdAndPosition(UUID topicId, int position);
 }

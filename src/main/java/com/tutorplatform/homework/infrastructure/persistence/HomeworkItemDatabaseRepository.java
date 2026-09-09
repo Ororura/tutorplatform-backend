@@ -17,7 +17,7 @@ interface HomeworkItemDatabaseRepository extends JpaRepository<HomeworkItemDatab
           and item.id = :homeworkItemId
         """)
     Optional<HomeworkItemDatabaseModel> findByHomeworkIdAndId(
-            @Param("homeworkId") UUID homeworkId,
-            @Param("homeworkItemId") UUID homeworkItemId
+        @Param("homeworkId") UUID homeworkId,
+        @Param("homeworkItemId") UUID homeworkItemId
     );
 }

@@ -82,8 +82,8 @@ public class SubmissionDatabaseModel {
 
     SubmissionEntity toEntity() {
         return new SubmissionEntity(
-                id, studentId, studentProgramId, taskId, homeworkItemId, attemptNo, status,
-                textAnswer, submittedAt, createdAt
+            id, studentId, studentProgramId, taskId, homeworkItemId, attemptNo, status,
+            textAnswer, submittedAt, createdAt
         );
     }
 }

@@ -32,7 +32,7 @@ public class TeacherLessonMaterialController implements TeacherLessonMaterialApi
     private final FileMaterialService fileMaterialService;
 
     public TeacherLessonMaterialController(LessonMaterialService lessonMaterialService,
-            FileMaterialService fileMaterialService) {
+                                           FileMaterialService fileMaterialService) {
         this.lessonMaterialService = lessonMaterialService;
         this.fileMaterialService = fileMaterialService;
     }

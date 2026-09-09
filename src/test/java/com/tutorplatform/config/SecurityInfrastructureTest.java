@@ -33,12 +33,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = CsrfController.class)
 @Import({
-        SecurityConfig.class,
-        SecurityInfrastructureTest.SecurityProbeController.class,
-        RestAuthenticationEntryPoint.class,
-        RestAccessDeniedHandler.class,
-        ApiErrorWriter.class,
-        TraceIdFilter.class
+    SecurityConfig.class,
+    SecurityInfrastructureTest.SecurityProbeController.class,
+    RestAuthenticationEntryPoint.class,
+    RestAccessDeniedHandler.class,
+    ApiErrorWriter.class,
+    TraceIdFilter.class
 })
 class SecurityInfrastructureTest {
 
@@ -57,27 +57,27 @@ class SecurityInfrastructureTest {
     @Test
     void unauthenticatedProtectedEndpointReturnsNormalizedUnauthorizedError() throws Exception {
         mockMvc.perform(get("/api/v1/teacher/security-probe"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(header().exists(TraceIdFilter.HEADER))
-                .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"))
-                .andExpect(jsonPath("$.traceId").isNotEmpty());
+            .andExpect(status().isUnauthorized())
+            .andExpect(header().exists(TraceIdFilter.HEADER))
+            .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"))
+            .andExpect(jsonPath("$.traceId").isNotEmpty());
     }
 
     @Test
     void unsafeRequestWithoutCsrfReturnsNormalizedForbiddenError() throws Exception {
         mockMvc.perform(post("/api/v1/auth/login"))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value("CSRF_INVALID"))
-                .andExpect(jsonPath("$.traceId").isNotEmpty());
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.code").value("CSRF_INVALID"))
+            .andExpect(jsonPath("$.traceId").isNotEmpty());
     }
 
     @Test
     void authenticatedPrincipalWithoutRequiredRoleReturnsNormalizedAccessDeniedError() throws Exception {
         mockMvc.perform(get("/api/v1/teacher/security-probe")
-                        .with(user("student").roles("STUDENT")))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value("ACCESS_DENIED"))
-                .andExpect(jsonPath("$.traceId").isNotEmpty());
+                .with(user("student").roles("STUDENT")))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.code").value("ACCESS_DENIED"))
+            .andExpect(jsonPath("$.traceId").isNotEmpty());
     }
 
     @Test
@@ -85,9 +85,9 @@ class SecurityInfrastructureTest {
         CsrfExchange csrf = obtainCsrf();
 
         mockMvc.perform(post("/api/v1/auth/login")
-                        .session(csrf.session())
-                        .header(csrf.headerName(), csrf.token()))
-                .andExpect(status().isNoContent());
+                .session(csrf.session())
+                .header(csrf.headerName(), csrf.token()))
+            .andExpect(status().isNoContent());
     }
 
     @Test
@@ -96,13 +96,13 @@ class SecurityInfrastructureTest {
         csrf.session().setAttribute("application-state", "present");
 
         mockMvc.perform(post("/api/v1/auth/logout")
-                        .session(csrf.session())
-                        .with(user("teacher").roles("TEACHER"))
-                        .header(csrf.headerName(), csrf.token()))
-                .andExpect(status().isNoContent());
+                .session(csrf.session())
+                .with(user("teacher").roles("TEACHER"))
+                .header(csrf.headerName(), csrf.token()))
+            .andExpect(status().isNoContent());
 
         assertThatIllegalStateException()
-                .isThrownBy(() -> csrf.session().getAttribute("application-state"));
+            .isThrownBy(() -> csrf.session().getAttribute("application-state"));
     }
 
     @Test
@@ -118,33 +118,33 @@ class SecurityInfrastructureTest {
         var cookieSerializer = new SecurityConfig().cookieSerializer(true);
 
         cookieSerializer.writeCookieValue(new CookieValue(
-                new MockHttpServletRequest(),
-                response,
-                "session-id"
+            new MockHttpServletRequest(),
+            response,
+            "session-id"
         ));
 
         assertThat(response.getHeader("Set-Cookie"))
-                .startsWith("TUTOR_SESSION=")
-                .contains("Path=/")
-                .contains("Secure")
-                .contains("HttpOnly")
-                .contains("SameSite=Lax");
+            .startsWith("TUTOR_SESSION=")
+            .contains("Path=/")
+            .contains("Secure")
+            .contains("HttpOnly")
+            .contains("SameSite=Lax");
     }
 
     private CsrfExchange obtainCsrf() throws Exception {
         MvcResult result = mockMvc.perform(get("/api/v1/auth/csrf"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.headerName").value("X-XSRF-TOKEN"))
-                .andReturn();
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.headerName").value("X-XSRF-TOKEN"))
+            .andReturn();
 
         JsonNode response = objectMapper.readTree(result.getResponse().getContentAsByteArray());
         HttpSession session = result.getRequest().getSession(false);
         assertThat(session).isInstanceOf(MockHttpSession.class);
 
         return new CsrfExchange(
-                (MockHttpSession) session,
-                response.required("headerName").textValue(),
-                response.required("token").textValue()
+            (MockHttpSession) session,
+            response.required("headerName").textValue(),
+            response.required("token").textValue()
         );
     }
 

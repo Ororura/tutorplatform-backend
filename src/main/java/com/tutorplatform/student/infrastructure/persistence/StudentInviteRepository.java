@@ -18,10 +18,10 @@ public interface StudentInviteRepository
     Optional<StudentInviteEntity> findByTokenHash(String tokenHash);
 
     @Query("""
-            select invite.student.id
-            from StudentInviteEntity invite
-            where invite.tokenHash = :tokenHash
-            """)
+        select invite.student.id
+        from StudentInviteEntity invite
+        where invite.tokenHash = :tokenHash
+        """)
     Optional<UUID> findStudentIdByTokenHash(
         @Param("tokenHash") String tokenHash
     );
@@ -41,13 +41,13 @@ public interface StudentInviteRepository
 
     @Modifying
     @Query("""
-            update StudentInviteEntity invite
-            set invite.revokedAt = :revokedAt
-            where invite.student.id = :studentId
-              and invite.acceptedAt is null
-              and invite.revokedAt is null
-              and invite.expiresAt > :revokedAt
-            """)
+        update StudentInviteEntity invite
+        set invite.revokedAt = :revokedAt
+        where invite.student.id = :studentId
+          and invite.acceptedAt is null
+          and invite.revokedAt is null
+          and invite.expiresAt > :revokedAt
+        """)
     int revokeActiveInvites(
         @Param("studentId") UUID studentId,
         @Param("revokedAt") Instant revokedAt

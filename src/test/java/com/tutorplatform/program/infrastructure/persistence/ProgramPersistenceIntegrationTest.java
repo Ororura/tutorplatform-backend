@@ -57,21 +57,49 @@ import static org.assertj.core.api.Assertions.*;
 @Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
-        JpaUserRepository.class,
-        JpaTeacherRepository.class,
-        JpaStudentRepository.class,
-        JpaSubjectRepository.class,
-        JpaLearningProgramRepository.class,
-        JpaStudentProgramRepository.class,
-        JpaModuleRepository.class,
-        JpaTopicRepository.class,
-        JpaStudentTopicProgressRepository.class,
-        ProgramQueryService.class
+    JpaUserRepository.class,
+    JpaTeacherRepository.class,
+    JpaStudentRepository.class,
+    JpaSubjectRepository.class,
+    JpaLearningProgramRepository.class,
+    JpaStudentProgramRepository.class,
+    JpaModuleRepository.class,
+    JpaTopicRepository.class,
+    JpaStudentTopicProgressRepository.class,
+    ProgramQueryService.class
 })
 class ProgramPersistenceIntegrationTest {
 
     @Container
     private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TeacherRepository teacherRepository;
+    @Autowired
+    private StudentRepository studentRepository;
+    @Autowired
+    private TeacherStudentLinkRepository teacherStudentLinkRepository;
+    @Autowired
+    private SubjectRepository subjectRepository;
+    @Autowired
+    private LearningProgramRepository learningProgramRepository;
+    @Autowired
+    private StudentProgramRepository studentProgramRepository;
+    @Autowired
+    private ModuleRepository moduleRepository;
+    @Autowired
+    private TopicRepository topicRepository;
+    @Autowired
+    private StudentTopicProgressRepository studentTopicProgressRepository;
+    @Autowired
+    private ProgramQuery programQuery;
+    @Autowired
+    private Flyway flyway;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private PlatformTransactionManager transactionManager;
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
@@ -81,38 +109,23 @@ class ProgramPersistenceIntegrationTest {
         registry.add("spring.flyway.target", () -> "007");
     }
 
-    @Autowired private UserRepository userRepository;
-    @Autowired private TeacherRepository teacherRepository;
-    @Autowired private StudentRepository studentRepository;
-    @Autowired private TeacherStudentLinkRepository teacherStudentLinkRepository;
-    @Autowired private SubjectRepository subjectRepository;
-    @Autowired private LearningProgramRepository learningProgramRepository;
-    @Autowired private StudentProgramRepository studentProgramRepository;
-    @Autowired private ModuleRepository moduleRepository;
-    @Autowired private TopicRepository topicRepository;
-    @Autowired private StudentTopicProgressRepository studentTopicProgressRepository;
-    @Autowired private ProgramQuery programQuery;
-    @Autowired private Flyway flyway;
-    @Autowired private JdbcTemplate jdbcTemplate;
-    @Autowired private PlatformTransactionManager transactionManager;
-
     @Test
     void flywayMigrationsThroughV006ApplySuccessfully() {
         assertThat(Arrays.stream(flyway.info().applied())
-                .map(migration -> migration.getVersion().toString()))
-                .containsExactly("001", "002", "003", "004", "005", "006", "007");
+            .map(migration -> migration.getVersion().toString()))
+            .containsExactly("001", "002", "003", "004", "005", "006", "007");
 
         assertThat(jdbcTemplate.queryForObject(
-                """
-                        select count(*)
-                        from information_schema.tables
-                        where table_schema = 'public'
-                          and table_name in (
-                            'subjects', 'learning_programs', 'student_programs',
-                            'modules', 'topics', 'student_topic_progress'
-                          )
-                        """,
-                Integer.class
+            """
+                select count(*)
+                from information_schema.tables
+                where table_schema = 'public'
+                  and table_name in (
+                    'subjects', 'learning_programs', 'student_programs',
+                    'modules', 'topics', 'student_topic_progress'
+                  )
+                """,
+            Integer.class
         )).isEqualTo(6);
     }
 
@@ -121,7 +134,7 @@ class ProgramPersistenceIntegrationTest {
         ProgramFixture fixture = createProgramFixture("teacher-owner@example.com");
 
         LearningProgramEntity persisted = learningProgramRepository.findById(fixture.learningProgram().getId())
-                .orElseThrow();
+            .orElseThrow();
 
         assertThat(persisted.getTeacherId()).isEqualTo(fixture.teacher().id());
         assertThat(persisted.getSubjectId()).isEqualTo(fixture.subject().id());
@@ -162,7 +175,7 @@ class ProgramPersistenceIntegrationTest {
         ModuleEntity module = createModule(fixture.learningProgram(), 0);
 
         assertThat(moduleRepository.findById(module.id()).orElseThrow().learningProgramId())
-                .isEqualTo(fixture.learningProgram().getId());
+            .isEqualTo(fixture.learningProgram().getId());
     }
 
     @Test
@@ -172,7 +185,7 @@ class ProgramPersistenceIntegrationTest {
         TopicEntity topic = createTopic(module, 0);
 
         assertThat(topicRepository.findById(topic.id()).orElseThrow().moduleId())
-                .isEqualTo(module.id());
+            .isEqualTo(module.id());
     }
 
     @Test
@@ -183,9 +196,9 @@ class ProgramPersistenceIntegrationTest {
         TopicEntity topic = createTopic(module, 0);
 
         assertThat(programQuery.topicBelongsToLearningProgram(topic.id(), fixture.learningProgram().getId()))
-                .isTrue();
+            .isTrue();
         assertThat(programQuery.topicBelongsToLearningProgram(topic.id(), otherFixture.learningProgram().getId()))
-                .isFalse();
+            .isFalse();
     }
 
     @Test
@@ -194,7 +207,7 @@ class ProgramPersistenceIntegrationTest {
         createModule(fixture.learningProgram(), 0);
 
         assertThatThrownBy(() -> createModule(fixture.learningProgram(), 0))
-                .isInstanceOf(DataIntegrityViolationException.class);
+            .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
@@ -204,7 +217,7 @@ class ProgramPersistenceIntegrationTest {
         createTopic(module, 0);
 
         assertThatThrownBy(() -> createTopic(module, 0))
-                .isInstanceOf(DataIntegrityViolationException.class);
+            .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
@@ -217,22 +230,22 @@ class ProgramPersistenceIntegrationTest {
         TopicEntity topic = createTopic(createModule(fixture.learningProgram(), 0), 0);
 
         studentTopicProgressRepository.saveAndFlush(new StudentTopicProgressEntity(
-                firstStudentProgram.id(), topic.id(), StudentTopicProgressStatus.AVAILABLE, null, null
+            firstStudentProgram.id(), topic.id(), StudentTopicProgressStatus.AVAILABLE, null, null
         ));
         studentTopicProgressRepository.saveAndFlush(new StudentTopicProgressEntity(
-                secondStudentProgram.id(), topic.id(), StudentTopicProgressStatus.LOCKED, null, null
+            secondStudentProgram.id(), topic.id(), StudentTopicProgressStatus.LOCKED, null, null
         ));
 
         assertThat(studentTopicProgressRepository.findById(firstStudentProgram.id(), topic.id()))
-                .get().extracting(StudentTopicProgressEntity::status)
-                .isEqualTo(StudentTopicProgressStatus.AVAILABLE);
+            .get().extracting(StudentTopicProgressEntity::status)
+            .isEqualTo(StudentTopicProgressStatus.AVAILABLE);
         assertThat(studentTopicProgressRepository.findById(secondStudentProgram.id(), topic.id()))
-                .get().extracting(StudentTopicProgressEntity::status)
-                .isEqualTo(StudentTopicProgressStatus.LOCKED);
+            .get().extracting(StudentTopicProgressEntity::status)
+            .isEqualTo(StudentTopicProgressStatus.LOCKED);
         assertThat(jdbcTemplate.queryForObject(
-                "select count(*) from student_topic_progress where topic_id = ?",
-                Integer.class,
-                topic.id()
+            "select count(*) from student_topic_progress where topic_id = ?",
+            Integer.class,
+            topic.id()
         )).isEqualTo(2);
     }
 
@@ -242,16 +255,16 @@ class ProgramPersistenceIntegrationTest {
         StudentEntity student = createStudent(fixture.teacher(), "Интервал");
 
         assertThatThrownBy(() -> jdbcTemplate.update(
-                """
-                        insert into student_programs (
-                            id, student_id, learning_program_id, assigned_by_teacher_id,
-                            status, report_interval_minutes
-                        ) values (?, ?, ?, ?, 'ACTIVE', 0)
-                        """,
-                UUID.randomUUID(),
-                student.getId(),
-                fixture.learningProgram().getId(),
-                fixture.teacher().id()
+            """
+                insert into student_programs (
+                    id, student_id, learning_program_id, assigned_by_teacher_id,
+                    status, report_interval_minutes
+                ) values (?, ?, ?, ?, 'ACTIVE', 0)
+                """,
+            UUID.randomUUID(),
+            student.getId(),
+            fixture.learningProgram().getId(),
+            fixture.teacher().id()
         )).isInstanceOf(DataIntegrityViolationException.class);
     }
 
@@ -265,65 +278,65 @@ class ProgramPersistenceIntegrationTest {
         TopicEntity topic = createTopic(module, 0);
 
         assertOptimisticLocking(
-                fixture.learningProgram().getId(),
-                learningProgramRepository::findById,
-                learningProgramRepository::saveAndFlush,
-                value -> {
-                    value.update("Первая версия", value.getDescription(), value.getStatus());
-                    return value;
-                },
-                value -> {
-                    value.update("Устаревшая версия", value.getDescription(), value.getStatus());
-                    return value;
-                },
-                "LearningProgramEntity"
+            fixture.learningProgram().getId(),
+            learningProgramRepository::findById,
+            learningProgramRepository::saveAndFlush,
+            value -> {
+                value.update("Первая версия", value.getDescription(), value.getStatus());
+                return value;
+            },
+            value -> {
+                value.update("Устаревшая версия", value.getDescription(), value.getStatus());
+                return value;
+            },
+            "LearningProgramEntity"
         );
         assertThat(learningProgramRepository.findById(fixture.learningProgram().getId()))
-                .get().extracting(LearningProgramEntity::getTitle)
-                .isEqualTo("Первая версия");
+            .get().extracting(LearningProgramEntity::getTitle)
+            .isEqualTo("Первая версия");
 
         assertOptimisticLocking(
-                studentProgram.id(),
-                studentProgramRepository::findById,
-                studentProgramRepository::saveAndFlush,
-                value -> copyWithStatus(value, StudentProgramStatus.PAUSED),
-                value -> copyWithStatus(value, StudentProgramStatus.COMPLETED),
-                "StudentProgramEntity"
+            studentProgram.id(),
+            studentProgramRepository::findById,
+            studentProgramRepository::saveAndFlush,
+            value -> copyWithStatus(value, StudentProgramStatus.PAUSED),
+            value -> copyWithStatus(value, StudentProgramStatus.COMPLETED),
+            "StudentProgramEntity"
         );
         assertThat(studentProgramRepository.findById(studentProgram.id()))
-                .get().extracting(StudentProgramEntity::status)
-                .isEqualTo(StudentProgramStatus.PAUSED);
+            .get().extracting(StudentProgramEntity::status)
+            .isEqualTo(StudentProgramStatus.PAUSED);
 
         assertOptimisticLocking(
-                topic.id(),
-                topicRepository::findById,
-                topicRepository::saveAndFlush,
-                value -> copyWithTitle(value, "Первая версия"),
-                value -> copyWithTitle(value, "Устаревшая версия"),
-                "TopicEntity"
+            topic.id(),
+            topicRepository::findById,
+            topicRepository::saveAndFlush,
+            value -> copyWithTitle(value, "Первая версия"),
+            value -> copyWithTitle(value, "Устаревшая версия"),
+            "TopicEntity"
         );
         assertThat(topicRepository.findById(topic.id()))
-                .get().extracting(TopicEntity::title)
-                .isEqualTo("Первая версия");
+            .get().extracting(TopicEntity::title)
+            .isEqualTo("Первая версия");
     }
 
     private ProgramFixture createProgramFixture(String email) {
         TeacherEntity teacher = createTeacher(email);
         SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
-                UUID.randomUUID(),
-                teacher.id(),
-                null,
-                "Предмет " + UUID.randomUUID(),
-                null,
-                SubjectStatus.ACTIVE
+            UUID.randomUUID(),
+            teacher.id(),
+            null,
+            "Предмет " + UUID.randomUUID(),
+            null,
+            SubjectStatus.ACTIVE
         ));
         LearningProgramEntity learningProgram = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-                UUID.randomUUID(),
-                teacher.id(),
-                subject.id(),
-                "Программа",
-                null,
-                LearningProgramStatus.DRAFT
+            UUID.randomUUID(),
+            teacher.id(),
+            subject.id(),
+            "Программа",
+            null,
+            LearningProgramStatus.DRAFT
         ));
         return new ProgramFixture(teacher, subject, learningProgram);
     }
@@ -337,7 +350,7 @@ class ProgramPersistenceIntegrationTest {
 
     private StudentEntity createStudent(TeacherEntity teacher, String firstName) {
         StudentEntity student = studentRepository.saveAndFlush(new StudentEntity(
-                UUID.randomUUID(), firstName, null, StudentStatus.ACTIVE
+            UUID.randomUUID(), firstName, null, StudentStatus.ACTIVE
         ));
         teacherStudentLinkRepository.saveAndFlush(new TeacherStudentLinkEntity(teacher, student));
         return student;
@@ -345,51 +358,51 @@ class ProgramPersistenceIntegrationTest {
 
     private StudentProgramEntity createStudentProgram(ProgramFixture fixture, StudentEntity student) {
         return studentProgramRepository.saveAndFlush(new StudentProgramEntity(
-                UUID.randomUUID(),
-                student.getId(),
-                fixture.learningProgram().getId(),
-                fixture.teacher().id(),
-                StudentProgramStatus.ACTIVE,
-                480,
-                Instant.now(),
-                null
+            UUID.randomUUID(),
+            student.getId(),
+            fixture.learningProgram().getId(),
+            fixture.teacher().id(),
+            StudentProgramStatus.ACTIVE,
+            480,
+            Instant.now(),
+            null
         ));
     }
 
     private ModuleEntity createModule(LearningProgramEntity learningProgram, int position) {
         return moduleRepository.saveAndFlush(new ModuleEntity(
-                UUID.randomUUID(), learningProgram.getId(), "Модуль", null, position
+            UUID.randomUUID(), learningProgram.getId(), "Модуль", null, position
         ));
     }
 
     private TopicEntity createTopic(ModuleEntity module, int position) {
         return topicRepository.saveAndFlush(new TopicEntity(
-                UUID.randomUUID(), module.id(), "Тема", null, position, TopicStatus.DRAFT
+            UUID.randomUUID(), module.id(), "Тема", null, position, TopicStatus.DRAFT
         ));
     }
 
     private StudentProgramEntity copyWithStatus(StudentProgramEntity source, StudentProgramStatus status) {
         return new StudentProgramEntity(
-                source.id(), source.studentId(), source.learningProgramId(), source.assignedByTeacherId(),
-                status, source.reportIntervalMinutes(), source.startedAt(), source.completedAt(),
-                source.version(), source.createdAt(), source.updatedAt()
+            source.id(), source.studentId(), source.learningProgramId(), source.assignedByTeacherId(),
+            status, source.reportIntervalMinutes(), source.startedAt(), source.completedAt(),
+            source.version(), source.createdAt(), source.updatedAt()
         );
     }
 
     private TopicEntity copyWithTitle(TopicEntity source, String title) {
         return new TopicEntity(
-                source.id(), source.moduleId(), title, source.description(), source.position(),
-                source.status(), source.version(), source.createdAt(), source.updatedAt()
+            source.id(), source.moduleId(), title, source.description(), source.position(),
+            source.status(), source.version(), source.createdAt(), source.updatedAt()
         );
     }
 
     private <T> void assertOptimisticLocking(
-            UUID id,
-            Function<UUID, Optional<T>> findById,
-            Function<T, T> saveAndFlush,
-            UnaryOperator<T> firstChange,
-            UnaryOperator<T> staleChange,
-            String entityName
+        UUID id,
+        Function<UUID, Optional<T>> findById,
+        Function<T, T> saveAndFlush,
+        UnaryOperator<T> firstChange,
+        UnaryOperator<T> staleChange,
+        String entityName
     ) {
         TransactionTemplate transaction = new TransactionTemplate(transactionManager);
         transaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -400,12 +413,12 @@ class ProgramPersistenceIntegrationTest {
         transaction.executeWithoutResult(status -> saveAndFlush.apply(firstChange.apply(first)));
 
         Throwable thrown = catchThrowable(() -> transaction.executeWithoutResult(
-                status -> saveAndFlush.apply(staleChange.apply(stale))
+            status -> saveAndFlush.apply(staleChange.apply(stale))
         ));
         assertThat(thrown).as("stale %s update", entityName).isNotNull();
         assertThat(hasOptimisticLockCause(thrown))
-                .as("%s must fail specifically because of optimistic locking", entityName)
-                .isTrue();
+            .as("%s must fail specifically because of optimistic locking", entityName)
+            .isTrue();
     }
 
     private boolean hasOptimisticLockCause(Throwable throwable) {
@@ -420,9 +433,9 @@ class ProgramPersistenceIntegrationTest {
     }
 
     private record ProgramFixture(
-            TeacherEntity teacher,
-            SubjectEntity subject,
-            LearningProgramEntity learningProgram
+        TeacherEntity teacher,
+        SubjectEntity subject,
+        LearningProgramEntity learningProgram
     ) {
     }
 }

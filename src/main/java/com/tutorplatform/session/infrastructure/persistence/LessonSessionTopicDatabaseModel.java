@@ -34,14 +34,14 @@ public class LessonSessionTopicDatabaseModel {
 
     LessonSessionTopicDatabaseModel(LessonSessionTopicEntity lessonSessionTopic) {
         id = new LessonSessionTopicId(
-                lessonSessionTopic.lessonSessionId(), lessonSessionTopic.topicId()
+            lessonSessionTopic.lessonSessionId(), lessonSessionTopic.topicId()
         );
         primary = lessonSessionTopic.primary();
     }
 
     LessonSessionTopicEntity toEntity() {
         return new LessonSessionTopicEntity(
-                id.getLessonSessionId(), id.getTopicId(), primary, createdAt
+            id.getLessonSessionId(), id.getTopicId(), primary, createdAt
         );
     }
 }

@@ -19,7 +19,7 @@ public class JpaModuleRepository implements ModuleRepository {
     @Override
     public ModuleEntity saveAndFlush(ModuleEntity module) {
         ModuleDatabaseModel model = databaseRepository.findById(module.id())
-                .orElseGet(() -> new ModuleDatabaseModel(module));
+            .orElseGet(() -> new ModuleDatabaseModel(module));
         model.updateFrom(module);
         return databaseRepository.saveAndFlush(model).toEntity();
     }

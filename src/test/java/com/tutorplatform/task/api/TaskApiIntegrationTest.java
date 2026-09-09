@@ -49,6 +49,28 @@ class TaskApiIntegrationTest {
 
     @Container
     private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
+    @Autowired
+    private MockMvc mockMvc;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private TaskService taskService;
+    @Autowired
+    private TaskRepository taskRepository;
+    @Autowired
+    private TopicTaskRepository topicTaskRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TeacherRepository teacherRepository;
+    @Autowired
+    private SubjectRepository subjectRepository;
+    @Autowired
+    private LearningProgramRepository learningProgramRepository;
+    @Autowired
+    private ModuleRepository moduleRepository;
+    @Autowired
+    private TopicRepository topicRepository;
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
@@ -57,18 +79,6 @@ class TaskApiIntegrationTest {
         registry.add("spring.datasource.password", POSTGRES::getPassword);
         registry.add("spring.flyway.target", () -> "007");
     }
-
-    @Autowired private MockMvc mockMvc;
-    @Autowired private ObjectMapper objectMapper;
-    @Autowired private TaskService taskService;
-    @Autowired private TaskRepository taskRepository;
-    @Autowired private TopicTaskRepository topicTaskRepository;
-    @Autowired private UserRepository userRepository;
-    @Autowired private TeacherRepository teacherRepository;
-    @Autowired private SubjectRepository subjectRepository;
-    @Autowired private LearningProgramRepository learningProgramRepository;
-    @Autowired private ModuleRepository moduleRepository;
-    @Autowired private TopicRepository topicRepository;
 
     @Test
     void teacherCreatesTextTaskWithServerDefaults() throws Exception {
@@ -99,8 +109,8 @@ class TaskApiIntegrationTest {
         UUID taskId = UUID.fromString(json(result).required("id").textValue());
 
         assertThat(taskRepository.findById(taskId))
-                .get().extracting(TaskEntity::getTeacherId)
-                .isEqualTo(fixture.teacher().id());
+            .get().extracting(TaskEntity::getTeacherId)
+            .isEqualTo(fixture.teacher().id());
     }
 
     @Test
@@ -155,8 +165,8 @@ class TaskApiIntegrationTest {
     void systemSubjectIsAvailableToTeacher() throws Exception {
         TaskFixture fixture = createFixture();
         SubjectEntity systemSubject = subjectRepository.saveAndFlush(new SubjectEntity(
-                UUID.randomUUID(), null, "SYSTEM_" + UUID.randomUUID(), "System subject", null,
-                SubjectStatus.ACTIVE
+            UUID.randomUUID(), null, "SYSTEM_" + UUID.randomUUID(), "System subject", null,
+            SubjectStatus.ACTIVE
         ));
 
         mockMvc.perform(post(tasksUrl()).with(user(fixture.principal())).with(csrf())
@@ -206,7 +216,7 @@ class TaskApiIntegrationTest {
         createTask(fixture, "Match", TaskDifficulty.HARD, TaskStatus.ACTIVE);
         createTask(fixture, "Wrong difficulty", TaskDifficulty.EASY, TaskStatus.ACTIVE);
         taskService.createTask(fixture.principal(), new CreateTaskCommand(
-                secondSubject.id(), "Wrong subject", "Ответ", TaskDifficulty.HARD
+            secondSubject.id(), "Wrong subject", "Ответ", TaskDifficulty.HARD
         ));
 
         mockMvc.perform(get(tasksUrl()).with(user(fixture.principal()))
@@ -298,7 +308,7 @@ class TaskApiIntegrationTest {
             .andExpect(jsonPath("$.required").value(false));
 
         assertThat(topicTaskRepository.findAllByTopicIdOrderByPosition(fixture.topic().id()))
-                .singleElement().satisfies(link -> assertThat(link.required()).isFalse());
+            .singleElement().satisfies(link -> assertThat(link.required()).isFalse());
     }
 
     @Test
@@ -358,7 +368,7 @@ class TaskApiIntegrationTest {
         TaskFixture fixture = createFixture();
         SubjectEntity secondSubject = createSubject(fixture.teacher());
         TaskResult task = taskService.createTask(fixture.principal(), new CreateTaskCommand(
-                secondSubject.id(), "Other subject", "Text", TaskDifficulty.EASY
+            secondSubject.id(), "Other subject", "Text", TaskDifficulty.EASY
         ));
 
         mockMvc.perform(post(attachmentUrl(fixture.topic().id(), task.id()))
@@ -372,8 +382,8 @@ class TaskApiIntegrationTest {
     void teacherTaskApiEnforcesAuthenticationCsrfAndRole() throws Exception {
         TaskFixture fixture = createFixture();
         AuthenticatedUser student = new AuthenticatedUser(
-                UUID.randomUUID(), "student-task@example.com", "password", true,
-                List.of(new SimpleGrantedAuthority("ROLE_STUDENT"))
+            UUID.randomUUID(), "student-task@example.com", "password", true,
+            List.of(new SimpleGrantedAuthority("ROLE_STUDENT"))
         );
 
         mockMvc.perform(get(tasksUrl()))
@@ -415,41 +425,41 @@ class TaskApiIntegrationTest {
         userEntity.addRole(UserRole.TEACHER);
         userRepository.saveAndFlush(userEntity);
         TeacherEntity teacher = teacherRepository.saveAndFlush(new TeacherEntity(
-                UUID.randomUUID(), userEntity, "Teacher"
+            UUID.randomUUID(), userEntity, "Teacher"
         ));
         SubjectEntity subject = createSubject(teacher);
         LearningProgramEntity program = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-                UUID.randomUUID(), teacher.id(), subject.id(), "Program", null,
-                LearningProgramStatus.DRAFT
+            UUID.randomUUID(), teacher.id(), subject.id(), "Program", null,
+            LearningProgramStatus.DRAFT
         ));
         ModuleEntity module = moduleRepository.saveAndFlush(new ModuleEntity(
-                UUID.randomUUID(), program.getId(), "Module", null, 0
+            UUID.randomUUID(), program.getId(), "Module", null, 0
         ));
         TopicEntity topic = topicRepository.saveAndFlush(new TopicEntity(
-                UUID.randomUUID(), module.id(), "Topic", null, 0, TopicStatus.DRAFT
+            UUID.randomUUID(), module.id(), "Topic", null, 0, TopicStatus.DRAFT
         ));
         AuthenticatedUser principal = new AuthenticatedUser(
-                userEntity.id(), email, "password-hash", true,
-                List.of(new SimpleGrantedAuthority("ROLE_TEACHER"))
+            userEntity.id(), email, "password-hash", true,
+            List.of(new SimpleGrantedAuthority("ROLE_TEACHER"))
         );
         return new TaskFixture(principal, teacher, subject, topic);
     }
 
     private SubjectEntity createSubject(TeacherEntity teacher) {
         return subjectRepository.saveAndFlush(new SubjectEntity(
-                UUID.randomUUID(), teacher.id(), null, "Subject " + UUID.randomUUID(), null,
-                SubjectStatus.ACTIVE
+            UUID.randomUUID(), teacher.id(), null, "Subject " + UUID.randomUUID(), null,
+            SubjectStatus.ACTIVE
         ));
     }
 
     private TaskResult createTask(
-            TaskFixture fixture,
-            String title,
-            TaskDifficulty difficulty,
-            TaskStatus desiredStatus
+        TaskFixture fixture,
+        String title,
+        TaskDifficulty difficulty,
+        TaskStatus desiredStatus
     ) throws Exception {
         TaskResult task = taskService.createTask(fixture.principal(), new CreateTaskCommand(
-                fixture.subject().id(), title, "Text", difficulty
+            fixture.subject().id(), title, "Text", difficulty
         ));
         if (desiredStatus != TaskStatus.DRAFT) {
             mockMvc.perform(patch(taskUrl(task.id())).with(user(fixture.principal())).with(csrf())
@@ -477,25 +487,25 @@ class TaskApiIntegrationTest {
     }
 
     private String createRequest(
-            UUID subjectId,
-            String title,
-            String descriptionMarkdown,
-            String difficulty
+        UUID subjectId,
+        String title,
+        String descriptionMarkdown,
+        String difficulty
     ) throws Exception {
         return objectMapper.writeValueAsString(new CreateBody(
-                subjectId, title, descriptionMarkdown, difficulty
+            subjectId, title, descriptionMarkdown, difficulty
         ));
     }
 
     private String updateRequest(
-            String title,
-            String descriptionMarkdown,
-            String difficulty,
-            String status,
-            long version
+        String title,
+        String descriptionMarkdown,
+        String difficulty,
+        String status,
+        long version
     ) throws Exception {
         return objectMapper.writeValueAsString(new UpdateBody(
-                title, descriptionMarkdown, difficulty, status, version
+            title, descriptionMarkdown, difficulty, status, version
         ));
     }
 
@@ -520,27 +530,27 @@ class TaskApiIntegrationTest {
     }
 
     private record TaskFixture(
-            AuthenticatedUser principal,
-            TeacherEntity teacher,
-            SubjectEntity subject,
-            TopicEntity topic
+        AuthenticatedUser principal,
+        TeacherEntity teacher,
+        SubjectEntity subject,
+        TopicEntity topic
     ) {
     }
 
     private record CreateBody(
-            UUID subjectId,
-            String title,
-            String descriptionMarkdown,
-            String difficulty
+        UUID subjectId,
+        String title,
+        String descriptionMarkdown,
+        String difficulty
     ) {
     }
 
     private record UpdateBody(
-            String title,
-            String descriptionMarkdown,
-            String difficulty,
-            String status,
-            long version
+        String title,
+        String descriptionMarkdown,
+        String difficulty,
+        String status,
+        long version
     ) {
     }
 

@@ -24,7 +24,7 @@ public class JpaTaskSkillRepository implements TaskSkillRepository {
     @Override
     public List<TaskSkillEntity> findAllByTaskId(UUID taskId) {
         return databaseRepository.findAllByIdTaskId(taskId).stream()
-                .map(TaskSkillDatabaseModel::toEntity)
-                .toList();
+            .map(TaskSkillDatabaseModel::toEntity)
+            .toList();
     }
 }

@@ -17,8 +17,8 @@ interface HomeworkDatabaseRepository extends JpaRepository<HomeworkDatabaseModel
     Optional<HomeworkDatabaseModel> findWithItemsById(UUID homeworkId);
 
     Page<HomeworkDatabaseModel> findAllByStudentProgramIdOrderByAssignedAtDesc(
-            UUID studentProgramId,
-            Pageable pageable
+        UUID studentProgramId,
+        Pageable pageable
     );
 
     @Query("""
@@ -30,11 +30,11 @@ interface HomeworkDatabaseRepository extends JpaRepository<HomeworkDatabaseModel
           and (:status is null or homework.status = :status)
         """)
     Page<HomeworkDatabaseModel> findPageByTeacherAndStudent(
-            @Param("teacherId") UUID teacherId,
-            @Param("studentId") UUID studentId,
-            @Param("studentProgramId") UUID studentProgramId,
-            @Param("status") HomeworkStatus status,
-            Pageable pageable
+        @Param("teacherId") UUID teacherId,
+        @Param("studentId") UUID studentId,
+        @Param("studentProgramId") UUID studentProgramId,
+        @Param("status") HomeworkStatus status,
+        Pageable pageable
     );
 
     boolean existsByIdAndStudentProgramId(UUID homeworkId, UUID studentProgramId);

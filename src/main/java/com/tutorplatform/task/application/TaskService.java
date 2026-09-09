@@ -21,7 +21,7 @@ import java.util.UUID;
 public class TaskService {
 
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
-            "createdAt", "updatedAt", "title", "difficulty"
+        "createdAt", "updatedAt", "title", "difficulty"
     );
 
     private final TeacherRepository teacherRepository;
@@ -32,12 +32,12 @@ public class TaskService {
     private final TopicTaskRepository topicTaskRepository;
 
     public TaskService(
-            TeacherRepository teacherRepository,
-            SubjectRepository subjectRepository,
-            ProgramQuery programQuery,
-            TaskRepository taskRepository,
-            TaskQuery taskQuery,
-            TopicTaskRepository topicTaskRepository
+        TeacherRepository teacherRepository,
+        SubjectRepository subjectRepository,
+        ProgramQuery programQuery,
+        TaskRepository taskRepository,
+        TaskQuery taskQuery,
+        TopicTaskRepository topicTaskRepository
     ) {
         this.teacherRepository = teacherRepository;
         this.subjectRepository = subjectRepository;
@@ -52,18 +52,18 @@ public class TaskService {
         UUID teacherId = currentTeacherId(principal);
         requireAccessibleSubject(command.subjectId(), teacherId);
         String title = validateAndNormalizeTask(
-                command.title(), command.descriptionMarkdown(), command.difficulty()
+            command.title(), command.descriptionMarkdown(), command.difficulty()
         );
 
         TaskEntity task = taskRepository.saveAndFlush(new TaskEntity(
-                UUID.randomUUID(),
-                teacherId,
-                command.subjectId(),
-                title,
-                command.descriptionMarkdown(),
-                TaskType.TEXT,
-                command.difficulty(),
-                TaskStatus.DRAFT
+            UUID.randomUUID(),
+            teacherId,
+            command.subjectId(),
+            title,
+            command.descriptionMarkdown(),
+            TaskType.TEXT,
+            command.difficulty(),
+            TaskStatus.DRAFT
         ));
         return toResult(task);
     }
@@ -75,44 +75,44 @@ public class TaskService {
 
     @Transactional(readOnly = true)
     public TaskPageResult listTasks(
-            AuthenticatedUser principal,
-            UUID subjectId,
-            TaskStatus status,
-            TaskDifficulty difficulty,
-            int page,
-            int size,
-            String sort
+        AuthenticatedUser principal,
+        UUID subjectId,
+        TaskStatus status,
+        TaskDifficulty difficulty,
+        int page,
+        int size,
+        String sort
     ) {
         SortParameters sortParameters = validateListParameters(page, size, sort);
         TaskPage result = taskQuery.findTeacherTextTasks(
-                currentTeacherId(principal),
-                subjectId,
-                status,
-                difficulty,
-                page,
-                size,
-                sortParameters.field(),
-                sortParameters.ascending()
+            currentTeacherId(principal),
+            subjectId,
+            status,
+            difficulty,
+            page,
+            size,
+            sortParameters.field(),
+            sortParameters.ascending()
         );
         return new TaskPageResult(
-                result.items().stream().map(this::toResult).toList(),
-                page,
-                size,
-                result.totalElements(),
-                result.totalPages()
+            result.items().stream().map(this::toResult).toList(),
+            page,
+            size,
+            result.totalElements(),
+            result.totalPages()
         );
     }
 
     @Transactional
     public TaskResult updateTask(
-            AuthenticatedUser principal,
-            UUID taskId,
-            UpdateTaskCommand command
+        AuthenticatedUser principal,
+        UUID taskId,
+        UpdateTaskCommand command
     ) {
         UUID teacherId = currentTeacherId(principal);
         TaskEntity current = requireOwnedTextTask(taskId, teacherId);
         String title = validateAndNormalizeTask(
-                command.title(), command.descriptionMarkdown(), command.difficulty()
+            command.title(), command.descriptionMarkdown(), command.difficulty()
         );
         if (command.status() == null) {
             throw new InvalidTaskException("status", "is required");
@@ -122,17 +122,17 @@ public class TaskService {
         }
 
         TaskEntity updated = new TaskEntity(
-                current.getId(),
-                current.getTeacherId(),
-                current.getSubjectId(),
-                title,
-                command.descriptionMarkdown(),
-                current.getTaskType(),
-                command.difficulty(),
-                command.status(),
-                command.version(),
-                current.getCreatedAt(),
-                current.getUpdatedAt()
+            current.getId(),
+            current.getTeacherId(),
+            current.getSubjectId(),
+            title,
+            command.descriptionMarkdown(),
+            current.getTaskType(),
+            command.difficulty(),
+            command.status(),
+            command.version(),
+            current.getCreatedAt(),
+            current.getUpdatedAt()
         );
         try {
             return toResult(taskRepository.saveAndFlush(updated));
@@ -143,15 +143,15 @@ public class TaskService {
 
     @Transactional
     public TopicTaskResult attachTaskToTopic(
-            AuthenticatedUser principal,
-            UUID topicId,
-            UUID taskId,
-            AttachTaskToTopicCommand command
+        AuthenticatedUser principal,
+        UUID topicId,
+        UUID taskId,
+        AttachTaskToTopicCommand command
     ) {
         UUID teacherId = currentTeacherId(principal);
         TaskEntity task = requireOwnedTextTask(taskId, teacherId);
         ProgramQuery.TopicContext topic = programQuery.findTopic(topicId)
-                .orElseThrow(TaskTopicNotFoundException::new);
+            .orElseThrow(TaskTopicNotFoundException::new);
         if (!topic.isOwnedBy(teacherId)) {
             throw new TaskTopicNotFoundException();
         }
@@ -170,7 +170,7 @@ public class TaskService {
 
         try {
             return toResult(topicTaskRepository.saveAndFlush(new TopicTaskEntity(
-                    topicId, taskId, command.position(), command.required()
+                topicId, taskId, command.position(), command.required()
             )));
         } catch (DataIntegrityViolationException exception) {
             throw new TaskTopicPositionConflictException(exception);
@@ -186,7 +186,7 @@ public class TaskService {
             throw new TaskSubjectNotFoundException();
         }
         SubjectEntity subject = subjectRepository.findById(subjectId)
-                .orElseThrow(TaskSubjectNotFoundException::new);
+            .orElseThrow(TaskSubjectNotFoundException::new);
         if (subject.ownerTeacherId() != null && !subject.ownerTeacherId().equals(teacherId)) {
             throw new TaskSubjectNotFoundException();
         }
@@ -195,7 +195,7 @@ public class TaskService {
 
     private TaskEntity requireOwnedTextTask(UUID taskId, UUID teacherId) {
         TaskEntity task = taskRepository.findOwnedById(taskId, teacherId)
-                .orElseThrow(TaskNotFoundException::new);
+            .orElseThrow(TaskNotFoundException::new);
         if (task.getTaskType() != TaskType.TEXT) {
             throw new TaskNotFoundException();
         }
@@ -203,9 +203,9 @@ public class TaskService {
     }
 
     private String validateAndNormalizeTask(
-            String title,
-            String descriptionMarkdown,
-            TaskDifficulty difficulty
+        String title,
+        String descriptionMarkdown,
+        TaskDifficulty difficulty
     ) {
         if (title == null || title.isBlank()) {
             throw new InvalidTaskException("title", "is required");
@@ -233,7 +233,7 @@ public class TaskService {
         String[] sortParts = sort.split(",", -1);
         if (sortParts.length != 2 || !ALLOWED_SORT_FIELDS.contains(sortParts[0])) {
             throw new InvalidTaskListParameterException(
-                    "sort", "must use createdAt, updatedAt, title, or difficulty"
+                "sort", "must use createdAt, updatedAt, title, or difficulty"
             );
         }
         if (!sortParts[1].equals("asc") && !sortParts[1].equals("desc")) {
@@ -244,26 +244,26 @@ public class TaskService {
 
     private TaskResult toResult(TaskEntity task) {
         return new TaskResult(
-                task.getId(),
-                task.getSubjectId(),
-                task.getTitle(),
-                task.getDescriptionMarkdown(),
-                task.getTaskType(),
-                task.getDifficulty(),
-                task.getStatus(),
-                task.getVersion(),
-                task.getCreatedAt(),
-                task.getUpdatedAt()
+            task.getId(),
+            task.getSubjectId(),
+            task.getTitle(),
+            task.getDescriptionMarkdown(),
+            task.getTaskType(),
+            task.getDifficulty(),
+            task.getStatus(),
+            task.getVersion(),
+            task.getCreatedAt(),
+            task.getUpdatedAt()
         );
     }
 
     private TopicTaskResult toResult(TopicTaskEntity topicTask) {
         return new TopicTaskResult(
-                topicTask.topicId(),
-                topicTask.taskId(),
-                topicTask.position(),
-                topicTask.required(),
-                topicTask.createdAt()
+            topicTask.topicId(),
+            topicTask.taskId(),
+            topicTask.position(),
+            topicTask.required(),
+            topicTask.createdAt()
         );
     }
 

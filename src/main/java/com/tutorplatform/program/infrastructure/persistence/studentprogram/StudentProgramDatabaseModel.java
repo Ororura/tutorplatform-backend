@@ -17,7 +17,8 @@ import java.util.UUID;
 @Table(name = "student_programs")
 public class StudentProgramDatabaseModel {
 
-    @Id private UUID id;
+    @Id
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "student_id", nullable = false, insertable = false, updatable = false)
@@ -86,8 +87,8 @@ public class StudentProgramDatabaseModel {
 
     StudentProgramEntity toEntity() {
         return new StudentProgramEntity(
-                id, studentId, learningProgramId, assignedByTeacherId, status, reportIntervalMinutes,
-                startedAt, completedAt, version, createdAt, updatedAt
+            id, studentId, learningProgramId, assignedByTeacherId, status, reportIntervalMinutes,
+            startedAt, completedAt, version, createdAt, updatedAt
         );
     }
 }

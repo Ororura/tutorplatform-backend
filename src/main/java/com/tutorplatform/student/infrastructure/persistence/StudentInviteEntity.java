@@ -54,12 +54,12 @@ public class StudentInviteEntity {
     }
 
     public StudentInviteEntity(
-            UUID id,
-            StudentEntity student,
-            TeacherEntity createdByTeacher,
-            String email,
-            String tokenHash,
-            Instant expiresAt
+        UUID id,
+        StudentEntity student,
+        TeacherEntity createdByTeacher,
+        String email,
+        String tokenHash,
+        Instant expiresAt
     ) {
         this.id = Objects.requireNonNull(id);
         this.studentId = Objects.requireNonNull(student).getId();

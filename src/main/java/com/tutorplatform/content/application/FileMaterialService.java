@@ -35,8 +35,8 @@ public class FileMaterialService {
     private final LessonMaterialService materialService;
 
     public FileMaterialService(TeacherRepository teachers, ProgramQuery programs,
-            LessonMaterialRepository materials, FileAssetRepository assets, FileStorage storage,
-            FileMaterialPolicy policy, LessonMaterialService materialService) {
+                               LessonMaterialRepository materials, FileAssetRepository assets, FileStorage storage,
+                               FileMaterialPolicy policy, LessonMaterialService materialService) {
         this.teachers = teachers;
         this.programs = programs;
         this.materials = materials;
@@ -48,8 +48,8 @@ public class FileMaterialService {
 
     @Transactional
     public LessonMaterialResult upload(AuthenticatedUser principal, UUID topicId,
-            LessonMaterialType type, String title, int position, String filename,
-            String mimeType, long size, InputStream input) {
+                                       LessonMaterialType type, String title, int position, String filename,
+                                       String mimeType, long size, InputStream input) {
         UUID teacherId = teachers.findByUserId(principal.id()).orElseThrow().id();
         if (!programs.findTopic(topicId).orElseThrow(TopicNotFoundException::new).isOwnedBy(teacherId)) {
             throw new TopicNotFoundException();
@@ -62,7 +62,7 @@ public class FileMaterialService {
         }
         if (position < 0) throw new InvalidLessonMaterialException("position", "must be nonnegative");
         if (filename == null || filename.isBlank() || filename.length() > 255
-                || filename.codePoints().anyMatch(Character::isISOControl)) {
+            || filename.codePoints().anyMatch(Character::isISOControl)) {
             throw new InvalidLessonMaterialException("file", "invalid original filename");
         }
         byte[] content = policy.readAndValidate(input, size, mimeType, type);
@@ -133,5 +133,6 @@ public class FileMaterialService {
         }
     }
 
-    public record Download(String filename, String mimeType, byte[] content) {}
+    public record Download(String filename, String mimeType, byte[] content) {
+    }
 }

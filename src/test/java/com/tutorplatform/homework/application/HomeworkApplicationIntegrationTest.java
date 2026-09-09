@@ -46,6 +46,28 @@ class HomeworkApplicationIntegrationTest {
 
     @Container
     private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
+    @Autowired
+    private HomeworkService homeworkService;
+    @Autowired
+    private HomeworkRepository homeworkRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TeacherRepository teacherRepository;
+    @Autowired
+    private StudentRepository studentRepository;
+    @Autowired
+    private TeacherStudentLinkRepository teacherStudentLinkRepository;
+    @Autowired
+    private SubjectRepository subjectRepository;
+    @Autowired
+    private LearningProgramRepository learningProgramRepository;
+    @Autowired
+    private StudentProgramRepository studentProgramRepository;
+    @Autowired
+    private TaskRepository taskRepository;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
@@ -54,18 +76,6 @@ class HomeworkApplicationIntegrationTest {
         registry.add("spring.datasource.password", POSTGRES::getPassword);
         registry.add("spring.flyway.target", () -> "007");
     }
-
-    @Autowired private HomeworkService homeworkService;
-    @Autowired private HomeworkRepository homeworkRepository;
-    @Autowired private UserRepository userRepository;
-    @Autowired private TeacherRepository teacherRepository;
-    @Autowired private StudentRepository studentRepository;
-    @Autowired private TeacherStudentLinkRepository teacherStudentLinkRepository;
-    @Autowired private SubjectRepository subjectRepository;
-    @Autowired private LearningProgramRepository learningProgramRepository;
-    @Autowired private StudentProgramRepository studentProgramRepository;
-    @Autowired private TaskRepository taskRepository;
-    @Autowired private JdbcTemplate jdbcTemplate;
 
     @Test
     void teacherCreatesHomeworkWithServerAssignmentContextAndMultipleItems() {
@@ -77,9 +87,9 @@ class HomeworkApplicationIntegrationTest {
         assertThat(created.studentProgramId()).isEqualTo(fixture.studentProgram().id());
         assertThat(created.status()).isEqualTo(HomeworkStatus.ASSIGNED);
         assertThat(created.items()).extracting(HomeworkItemResult::taskId)
-                .containsExactly(fixture.firstTask().getId(), fixture.secondTask().getId());
+            .containsExactly(fixture.firstTask().getId(), fixture.secondTask().getId());
         assertThat(homeworkRepository.findById(created.id()).orElseThrow().getAssignedByTeacherId())
-                .isEqualTo(fixture.teacher().id());
+            .isEqualTo(fixture.teacher().id());
         assertThat(created.assignedAt()).isNotNull();
     }
 
@@ -89,7 +99,7 @@ class HomeworkApplicationIntegrationTest {
         Fixture foreign = createFixture("task-foreign@example.com");
 
         assertThatThrownBy(() -> createHomework(
-                fixture, "ДЗ", null, List.of(foreign.firstTask())
+            fixture, "ДЗ", null, List.of(foreign.firstTask())
         )).isInstanceOf(TaskNotFoundException.class);
     }
 
@@ -99,7 +109,7 @@ class HomeworkApplicationIntegrationTest {
         Fixture foreign = createFixture("student-foreign@example.com");
 
         assertThatThrownBy(() -> homeworkService.createHomework(
-                foreign.principal(), createCommand(owner, "ДЗ", null, owner.tasks())
+            foreign.principal(), createCommand(owner, "ДЗ", null, owner.tasks())
         )).isInstanceOf(StudentNotFoundException.class);
     }
 
@@ -109,12 +119,12 @@ class HomeworkApplicationIntegrationTest {
         Fixture first = createFixture(teacher, "Первый");
         Fixture second = createFixture(teacher, "Второй");
         CreateHomeworkCommand command = new CreateHomeworkCommand(
-                first.student().getId(), second.studentProgram().id(), "ДЗ", null, null,
-                itemInputs(first.tasks())
+            first.student().getId(), second.studentProgram().id(), "ДЗ", null, null,
+            itemInputs(first.tasks())
         );
 
         assertThatThrownBy(() -> homeworkService.createHomework(teacher.principal(), command))
-                .isInstanceOf(HomeworkStudentProgramNotFoundException.class);
+            .isInstanceOf(HomeworkStudentProgramNotFoundException.class);
     }
 
     @Test
@@ -124,7 +134,7 @@ class HomeworkApplicationIntegrationTest {
         Fixture otherSubject = createFixture(teacher, "Второй");
 
         assertThatThrownBy(() -> createHomework(
-                first, "ДЗ", null, List.of(otherSubject.firstTask())
+            first, "ДЗ", null, List.of(otherSubject.firstTask())
         )).isInstanceOf(HomeworkTaskSubjectMismatchException.class);
     }
 
@@ -132,22 +142,22 @@ class HomeworkApplicationIntegrationTest {
     void codeTaskIsRejectedInTextSlice() {
         Fixture fixture = createFixture("code-task@example.com");
         TaskEntity codeTask = createTask(
-                fixture.teacher(), fixture.subject(), "CODE", TaskType.CODE, TaskStatus.ACTIVE
+            fixture.teacher(), fixture.subject(), "CODE", TaskType.CODE, TaskStatus.ACTIVE
         );
 
         assertThatThrownBy(() -> createHomework(fixture, "ДЗ", null, List.of(codeTask)))
-                .isInstanceOf(HomeworkTaskNotAssignableException.class);
+            .isInstanceOf(HomeworkTaskNotAssignableException.class);
     }
 
     @Test
     void inactiveTaskIsRejected() {
         Fixture fixture = createFixture("inactive-task@example.com");
         TaskEntity draft = createTask(
-                fixture.teacher(), fixture.subject(), "Черновик", TaskType.TEXT, TaskStatus.DRAFT
+            fixture.teacher(), fixture.subject(), "Черновик", TaskType.TEXT, TaskStatus.DRAFT
         );
 
         assertThatThrownBy(() -> createHomework(fixture, "ДЗ", null, List.of(draft)))
-                .isInstanceOf(HomeworkTaskNotAssignableException.class);
+            .isInstanceOf(HomeworkTaskNotAssignableException.class);
     }
 
     @Test
@@ -155,13 +165,13 @@ class HomeworkApplicationIntegrationTest {
         Fixture fixture = createFixture("duplicate-task@example.com");
 
         assertThatThrownBy(() -> homeworkService.createHomework(
-                fixture.principal(), new CreateHomeworkCommand(
-                        fixture.student().getId(), fixture.studentProgram().id(), "ДЗ", null, null,
-                        List.of(
-                                new HomeworkItemInput(fixture.firstTask().getId(), 0, true),
-                                new HomeworkItemInput(fixture.firstTask().getId(), 1, true)
-                        )
+            fixture.principal(), new CreateHomeworkCommand(
+                fixture.student().getId(), fixture.studentProgram().id(), "ДЗ", null, null,
+                List.of(
+                    new HomeworkItemInput(fixture.firstTask().getId(), 0, true),
+                    new HomeworkItemInput(fixture.firstTask().getId(), 1, true)
                 )
+            )
         )).isInstanceOf(InvalidHomeworkException.class);
     }
 
@@ -170,13 +180,13 @@ class HomeworkApplicationIntegrationTest {
         Fixture fixture = createFixture("duplicate-position@example.com");
 
         assertThatThrownBy(() -> homeworkService.createHomework(
-                fixture.principal(), new CreateHomeworkCommand(
-                        fixture.student().getId(), fixture.studentProgram().id(), "ДЗ", null, null,
-                        List.of(
-                                new HomeworkItemInput(fixture.firstTask().getId(), 0, true),
-                                new HomeworkItemInput(fixture.secondTask().getId(), 0, true)
-                        )
+            fixture.principal(), new CreateHomeworkCommand(
+                fixture.student().getId(), fixture.studentProgram().id(), "ДЗ", null, null,
+                List.of(
+                    new HomeworkItemInput(fixture.firstTask().getId(), 0, true),
+                    new HomeworkItemInput(fixture.secondTask().getId(), 0, true)
                 )
+            )
         )).isInstanceOf(HomeworkItemPositionConflictException.class);
     }
 
@@ -185,10 +195,10 @@ class HomeworkApplicationIntegrationTest {
         Fixture fixture = createFixture("negative-position@example.com");
 
         assertThatThrownBy(() -> homeworkService.createHomework(
-                fixture.principal(), new CreateHomeworkCommand(
-                        fixture.student().getId(), fixture.studentProgram().id(), "ДЗ", null, null,
-                        List.of(new HomeworkItemInput(fixture.firstTask().getId(), -1, true))
-                )
+            fixture.principal(), new CreateHomeworkCommand(
+                fixture.student().getId(), fixture.studentProgram().id(), "ДЗ", null, null,
+                List.of(new HomeworkItemInput(fixture.firstTask().getId(), -1, true))
+            )
         )).isInstanceOf(InvalidHomeworkException.class);
     }
 
@@ -198,13 +208,13 @@ class HomeworkApplicationIntegrationTest {
         long before = homeworkCount();
 
         assertThatThrownBy(() -> homeworkService.createHomework(
-                fixture.principal(), new CreateHomeworkCommand(
-                        fixture.student().getId(), fixture.studentProgram().id(), "ДЗ", null, null,
-                        List.of(
-                                new HomeworkItemInput(fixture.firstTask().getId(), 0, true),
-                                new HomeworkItemInput(UUID.randomUUID(), 1, true)
-                        )
+            fixture.principal(), new CreateHomeworkCommand(
+                fixture.student().getId(), fixture.studentProgram().id(), "ДЗ", null, null,
+                List.of(
+                    new HomeworkItemInput(fixture.firstTask().getId(), 0, true),
+                    new HomeworkItemInput(UUID.randomUUID(), 1, true)
                 )
+            )
         )).isInstanceOf(TaskNotFoundException.class);
 
         assertThat(homeworkCount()).isEqualTo(before);
@@ -214,23 +224,23 @@ class HomeworkApplicationIntegrationTest {
     void teacherReadsOwnedHomeworkWithItemsOrderedByPosition() {
         Fixture fixture = createFixture("read-homework@example.com");
         HomeworkResult created = homeworkService.createHomework(
-                fixture.principal(), new CreateHomeworkCommand(
-                        fixture.student().getId(), fixture.studentProgram().id(), "ДЗ", "Описание", null,
-                        List.of(
-                                new HomeworkItemInput(fixture.secondTask().getId(), 1, false),
-                                new HomeworkItemInput(fixture.firstTask().getId(), 0, true)
-                        )
+            fixture.principal(), new CreateHomeworkCommand(
+                fixture.student().getId(), fixture.studentProgram().id(), "ДЗ", "Описание", null,
+                List.of(
+                    new HomeworkItemInput(fixture.secondTask().getId(), 1, false),
+                    new HomeworkItemInput(fixture.firstTask().getId(), 0, true)
                 )
+            )
         );
 
         HomeworkResult found = homeworkService.getHomework(
-                fixture.principal(), fixture.student().getId(), created.id()
+            fixture.principal(), fixture.student().getId(), created.id()
         );
 
         assertThat(found.id()).isEqualTo(created.id());
         assertThat(found.items()).extracting(HomeworkItemResult::position).containsExactly(0, 1);
         assertThat(found.items()).extracting(HomeworkItemResult::taskTitle)
-                .containsExactly("Первая задача", "Вторая задача");
+            .containsExactly("Первая задача", "Вторая задача");
     }
 
     @Test
@@ -241,7 +251,7 @@ class HomeworkApplicationIntegrationTest {
         HomeworkResult homework = createHomework(first, "ДЗ", null, first.tasks());
 
         assertThatThrownBy(() -> homeworkService.getHomework(
-                teacher.principal(), second.student().getId(), homework.id()
+            teacher.principal(), second.student().getId(), homework.id()
         )).isInstanceOf(HomeworkNotFoundException.class);
     }
 
@@ -276,7 +286,7 @@ class HomeworkApplicationIntegrationTest {
         assertThat(result.items()).extracting(HomeworkSummaryResult::id).containsExactly(cancelled.id());
         assertThat(result.items()).extracting(HomeworkSummaryResult::id).doesNotContain(assigned.id());
         assertThat(result.items()).allSatisfy(item ->
-                assertThat(item.studentProgramId()).isEqualTo(fixture.studentProgram().id())
+            assertThat(item.studentProgramId()).isEqualTo(fixture.studentProgram().id())
         );
     }
 
@@ -285,14 +295,14 @@ class HomeworkApplicationIntegrationTest {
         Fixture fixture = createFixture("invalid-sort@example.com");
 
         assertThatThrownBy(() -> list(fixture, null, 0, 20, "assignedByTeacherId,asc"))
-                .isInstanceOf(InvalidHomeworkException.class);
+            .isInstanceOf(InvalidHomeworkException.class);
     }
 
     @Test
     void assignedPastDueHomeworkIsOverdue() {
         Fixture fixture = createFixture("past-due@example.com");
         HomeworkResult result = createHomework(
-                fixture, "ДЗ", Instant.now().minusSeconds(3600), fixture.tasks()
+            fixture, "ДЗ", Instant.now().minusSeconds(3600), fixture.tasks()
         );
 
         assertThat(result.overdue()).isTrue();
@@ -302,7 +312,7 @@ class HomeworkApplicationIntegrationTest {
     void futureDueHomeworkIsNotOverdue() {
         Fixture fixture = createFixture("future-due@example.com");
         HomeworkResult result = createHomework(
-                fixture, "ДЗ", Instant.now().plusSeconds(3600), fixture.tasks()
+            fixture, "ДЗ", Instant.now().plusSeconds(3600), fixture.tasks()
         );
 
         assertThat(result.overdue()).isFalse();
@@ -312,11 +322,11 @@ class HomeworkApplicationIntegrationTest {
     void cancelledHomeworkIsNotOverdue() {
         Fixture fixture = createFixture("cancelled-overdue@example.com");
         HomeworkResult created = createHomework(
-                fixture, "ДЗ", Instant.now().minusSeconds(3600), fixture.tasks()
+            fixture, "ДЗ", Instant.now().minusSeconds(3600), fixture.tasks()
         );
 
         HomeworkResult cancelled = homeworkService.cancelHomework(
-                fixture.principal(), fixture.student().getId(), created.id()
+            fixture.principal(), fixture.student().getId(), created.id()
         );
 
         assertThat(cancelled.status()).isEqualTo(HomeworkStatus.CANCELLED);
@@ -337,11 +347,11 @@ class HomeworkApplicationIntegrationTest {
         Instant dueAt = Instant.now().plusSeconds(7200);
 
         HomeworkResult updated = homeworkService.updateHomework(
-                fixture.principal(), fixture.student().getId(), created.id(),
-                new UpdateHomeworkCommand(
-                        "  New  ", "New description", dueAt, created.version(),
-                        List.of(new HomeworkItemInput(fixture.secondTask().getId(), 0, false))
-                )
+            fixture.principal(), fixture.student().getId(), created.id(),
+            new UpdateHomeworkCommand(
+                "  New  ", "New description", dueAt, created.version(),
+                List.of(new HomeworkItemInput(fixture.secondTask().getId(), 0, false))
+            )
         );
 
         assertThat(updated.title()).isEqualTo("New");
@@ -364,15 +374,15 @@ class HomeworkApplicationIntegrationTest {
         HomeworkResult created = createHomework(fixture, "Original", null, fixture.tasks());
 
         assertThatThrownBy(() -> homeworkService.updateHomework(
-                fixture.principal(), fixture.student().getId(), created.id(),
-                new UpdateHomeworkCommand(
-                        "Changed", "Changed", null, created.version(),
-                        List.of(new HomeworkItemInput(UUID.randomUUID(), 0, true))
-                )
+            fixture.principal(), fixture.student().getId(), created.id(),
+            new UpdateHomeworkCommand(
+                "Changed", "Changed", null, created.version(),
+                List.of(new HomeworkItemInput(UUID.randomUUID(), 0, true))
+            )
         )).isInstanceOf(TaskNotFoundException.class);
 
         HomeworkResult unchanged = homeworkService.getHomework(
-                fixture.principal(), fixture.student().getId(), created.id()
+            fixture.principal(), fixture.student().getId(), created.id()
         );
         assertThat(unchanged.title()).isEqualTo("Original");
         assertThat(unchanged.items()).hasSize(2);
@@ -385,8 +395,8 @@ class HomeworkApplicationIntegrationTest {
         HomeworkResult homework = createHomework(owner, "ДЗ", null, owner.tasks());
 
         assertThatThrownBy(() -> homeworkService.updateHomework(
-                foreign.principal(), owner.student().getId(), homework.id(),
-                new UpdateHomeworkCommand("X", null, null, homework.version(), itemInputs(owner.tasks()))
+            foreign.principal(), owner.student().getId(), homework.id(),
+            new UpdateHomeworkCommand("X", null, null, homework.version(), itemInputs(owner.tasks()))
         )).isInstanceOf(StudentNotFoundException.class);
     }
 
@@ -395,59 +405,59 @@ class HomeworkApplicationIntegrationTest {
         Fixture fixture = createFixture("version-homework@example.com");
         HomeworkResult created = createHomework(fixture, "Initial", null, fixture.tasks());
         UpdateHomeworkCommand first = new UpdateHomeworkCommand(
-                "First", null, null, created.version(), itemInputs(fixture.tasks())
+            "First", null, null, created.version(), itemInputs(fixture.tasks())
         );
         homeworkService.updateHomework(
-                fixture.principal(), fixture.student().getId(), created.id(), first
+            fixture.principal(), fixture.student().getId(), created.id(), first
         );
 
         assertThatThrownBy(() -> homeworkService.updateHomework(
-                fixture.principal(), fixture.student().getId(), created.id(),
-                new UpdateHomeworkCommand(
-                        "Stale", null, null, created.version(), itemInputs(fixture.tasks())
-                )
+            fixture.principal(), fixture.student().getId(), created.id(),
+            new UpdateHomeworkCommand(
+                "Stale", null, null, created.version(), itemInputs(fixture.tasks())
+            )
         )).isInstanceOf(HomeworkVersionConflictException.class);
     }
 
     private HomeworkResult createHomework(
-            Fixture fixture,
-            String title,
-            Instant dueAt,
-            List<TaskEntity> tasks
+        Fixture fixture,
+        String title,
+        Instant dueAt,
+        List<TaskEntity> tasks
     ) {
         return homeworkService.createHomework(
-                fixture.principal(), createCommand(fixture, title, dueAt, tasks)
+            fixture.principal(), createCommand(fixture, title, dueAt, tasks)
         );
     }
 
     private CreateHomeworkCommand createCommand(
-            Fixture fixture,
-            String title,
-            Instant dueAt,
-            List<TaskEntity> tasks
+        Fixture fixture,
+        String title,
+        Instant dueAt,
+        List<TaskEntity> tasks
     ) {
         return new CreateHomeworkCommand(
-                fixture.student().getId(), fixture.studentProgram().id(), title,
-                "Описание", dueAt, itemInputs(tasks)
+            fixture.student().getId(), fixture.studentProgram().id(), title,
+            "Описание", dueAt, itemInputs(tasks)
         );
     }
 
     private List<HomeworkItemInput> itemInputs(List<TaskEntity> tasks) {
         return java.util.stream.IntStream.range(0, tasks.size())
-                .mapToObj(index -> new HomeworkItemInput(tasks.get(index).getId(), index, true))
-                .toList();
+            .mapToObj(index -> new HomeworkItemInput(tasks.get(index).getId(), index, true))
+            .toList();
     }
 
     private HomeworkPageResult list(
-            Fixture fixture,
-            HomeworkStatus status,
-            int page,
-            int size,
-            String sort
+        Fixture fixture,
+        HomeworkStatus status,
+        int page,
+        int size,
+        String sort
     ) {
         return homeworkService.listHomeworks(
-                fixture.principal(), fixture.student().getId(), fixture.studentProgram().id(),
-                status, page, size, sort
+            fixture.principal(), fixture.student().getId(), fixture.studentProgram().id(),
+            status, page, size, sort
         );
     }
 
@@ -461,32 +471,32 @@ class HomeworkApplicationIntegrationTest {
 
     private Fixture createFixture(TeacherFixture teacherFixture, String studentName) {
         StudentEntity student = studentRepository.saveAndFlush(new StudentEntity(
-                UUID.randomUUID(), studentName, null, StudentStatus.ACTIVE
+            UUID.randomUUID(), studentName, null, StudentStatus.ACTIVE
         ));
         teacherStudentLinkRepository.saveAndFlush(new TeacherStudentLinkEntity(
-                teacherFixture.teacher(), student
+            teacherFixture.teacher(), student
         ));
         SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
-                UUID.randomUUID(), teacherFixture.teacher().id(), null,
-                "Предмет " + UUID.randomUUID(), null, SubjectStatus.ACTIVE
+            UUID.randomUUID(), teacherFixture.teacher().id(), null,
+            "Предмет " + UUID.randomUUID(), null, SubjectStatus.ACTIVE
         ));
         LearningProgramEntity program = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-                UUID.randomUUID(), teacherFixture.teacher().id(), subject.id(),
-                "Программа", null, LearningProgramStatus.ACTIVE
+            UUID.randomUUID(), teacherFixture.teacher().id(), subject.id(),
+            "Программа", null, LearningProgramStatus.ACTIVE
         ));
         StudentProgramEntity studentProgram = studentProgramRepository.saveAndFlush(new StudentProgramEntity(
-                UUID.randomUUID(), student.getId(), program.getId(), teacherFixture.teacher().id(),
-                StudentProgramStatus.ACTIVE, 480, Instant.now(), null
+            UUID.randomUUID(), student.getId(), program.getId(), teacherFixture.teacher().id(),
+            StudentProgramStatus.ACTIVE, 480, Instant.now(), null
         ));
         TaskEntity first = createTask(
-                teacherFixture.teacher(), subject, "Первая задача", TaskType.TEXT, TaskStatus.ACTIVE
+            teacherFixture.teacher(), subject, "Первая задача", TaskType.TEXT, TaskStatus.ACTIVE
         );
         TaskEntity second = createTask(
-                teacherFixture.teacher(), subject, "Вторая задача", TaskType.TEXT, TaskStatus.ACTIVE
+            teacherFixture.teacher(), subject, "Вторая задача", TaskType.TEXT, TaskStatus.ACTIVE
         );
         return new Fixture(
-                teacherFixture.teacher(), teacherFixture.principal(), student, subject,
-                studentProgram, first, second
+            teacherFixture.teacher(), teacherFixture.principal(), student, subject,
+            studentProgram, first, second
         );
     }
 
@@ -495,25 +505,25 @@ class HomeworkApplicationIntegrationTest {
         user.addRole(UserRole.TEACHER);
         userRepository.saveAndFlush(user);
         TeacherEntity teacher = teacherRepository.saveAndFlush(new TeacherEntity(
-                UUID.randomUUID(), user, "Teacher"
+            UUID.randomUUID(), user, "Teacher"
         ));
         AuthenticatedUser principal = new AuthenticatedUser(
-                user.id(), email, "password-hash", true,
-                List.of(new SimpleGrantedAuthority("ROLE_TEACHER"))
+            user.id(), email, "password-hash", true,
+            List.of(new SimpleGrantedAuthority("ROLE_TEACHER"))
         );
         return new TeacherFixture(teacher, principal);
     }
 
     private TaskEntity createTask(
-            TeacherEntity teacher,
-            SubjectEntity subject,
-            String title,
-            TaskType type,
-            TaskStatus status
+        TeacherEntity teacher,
+        SubjectEntity subject,
+        String title,
+        TaskType type,
+        TaskStatus status
     ) {
         return taskRepository.saveAndFlush(new TaskEntity(
-                UUID.randomUUID(), teacher.id(), subject.id(), title, "Условие",
-                type, TaskDifficulty.EASY, status
+            UUID.randomUUID(), teacher.id(), subject.id(), title, "Условие",
+            type, TaskDifficulty.EASY, status
         ));
     }
 
@@ -521,13 +531,13 @@ class HomeworkApplicationIntegrationTest {
     }
 
     private record Fixture(
-            TeacherEntity teacher,
-            AuthenticatedUser principal,
-            StudentEntity student,
-            SubjectEntity subject,
-            StudentProgramEntity studentProgram,
-            TaskEntity firstTask,
-            TaskEntity secondTask
+        TeacherEntity teacher,
+        AuthenticatedUser principal,
+        StudentEntity student,
+        SubjectEntity subject,
+        StudentProgramEntity studentProgram,
+        TaskEntity firstTask,
+        TaskEntity secondTask
     ) {
         List<TaskEntity> tasks() {
             return List.of(firstTask, secondTask);

@@ -51,6 +51,31 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class FileMaterialApiIntegrationTest {
     @Container
     private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
+    private static final Path STORAGE = temporaryStorage();
+    @Autowired
+    private MockMvc mockMvc;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private LessonMaterialService lessonMaterialService;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TeacherRepository teacherRepository;
+    @Autowired
+    private SubjectRepository subjectRepository;
+    @Autowired
+    private LearningProgramRepository learningProgramRepository;
+    @Autowired
+    private ModuleRepository moduleRepository;
+    @Autowired
+    private TopicRepository topicRepository;
+    @Autowired
+    private FileAssetRepository assets;
+    @Autowired
+    private JdbcTemplate jdbc;
+    @org.springframework.test.context.bean.override.mockito.MockitoSpyBean
+    private com.tutorplatform.file.application.FileStorage storage;
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
@@ -62,26 +87,12 @@ class FileMaterialApiIntegrationTest {
         registry.add("app.material-files.max-size-bytes", () -> "1024");
     }
 
-    @Autowired private MockMvc mockMvc;
-    @Autowired private ObjectMapper objectMapper;
-    @Autowired private LessonMaterialService lessonMaterialService;
-    @Autowired private UserRepository userRepository;
-    @Autowired private TeacherRepository teacherRepository;
-    @Autowired private SubjectRepository subjectRepository;
-    @Autowired private LearningProgramRepository learningProgramRepository;
-    @Autowired private ModuleRepository moduleRepository;
-    @Autowired private TopicRepository topicRepository;
-
-
-    private static final Path STORAGE = temporaryStorage();
-    @Autowired private FileAssetRepository assets;
-    @Autowired private JdbcTemplate jdbc;
-    @org.springframework.test.context.bean.override.mockito.MockitoSpyBean
-    private com.tutorplatform.file.application.FileStorage storage;
-
     private static Path temporaryStorage() {
-        try { return Files.createTempDirectory("material-api-"); }
-        catch (java.io.IOException exception) { throw new java.io.UncheckedIOException(exception); }
+        try {
+            return Files.createTempDirectory("material-api-");
+        } catch (java.io.IOException exception) {
+            throw new java.io.UncheckedIOException(exception);
+        }
     }
 
     @org.junit.jupiter.api.AfterAll
@@ -92,7 +103,7 @@ class FileMaterialApiIntegrationTest {
     }
 
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder upload(
-            ContentFixture fixture, String type, String name, String mime, byte[] bytes, int position) {
+        ContentFixture fixture, String type, String name, String mime, byte[] bytes, int position) {
         return multipart(materialsUrl(fixture.topic().id()) + "/upload")
             .file(new MockMultipartFile("file", name, mime, bytes))
             .param("materialType", type).param("title", "Attachment").param("position", "" + position);
@@ -152,7 +163,7 @@ class FileMaterialApiIntegrationTest {
         var fixture = createFixture(UUID.randomUUID() + "@example.com");
         long count = objectCount();
         mockMvc.perform(upload(fixture, "FILE", "big.txt", "text/plain", new byte[1025], 0)
-            .with(user(fixture.principal())).with(csrf()))
+                .with(user(fixture.principal())).with(csrf()))
             .andExpect(status().isPayloadTooLarge())
             .andExpect(jsonPath("$.code").value("FILE_TOO_LARGE"));
         mockMvc.perform(upload(fixture, "FILE", "bad.exe", "application/x-executable", new byte[]{1, 2}, 0)
@@ -237,12 +248,14 @@ class FileMaterialApiIntegrationTest {
 
     @Test
     void failedCompensationReportsOpaqueKeyForManualCleanup(
-            org.springframework.boot.test.system.CapturedOutput output) throws Exception {
+        org.springframework.boot.test.system.CapturedOutput output) throws Exception {
         var fixture = createFixture(UUID.randomUUID() + "@example.com");
         lessonMaterialService.createLessonMaterial(fixture.principal(), new CreateLessonMaterialCommand(
             fixture.topic().id(), LessonMaterialType.TEXT, "Existing", "text", null, null, 0));
         java.util.Set<Path> before;
-        try (var paths = Files.list(STORAGE)) { before = paths.collect(java.util.stream.Collectors.toSet()); }
+        try (var paths = Files.list(STORAGE)) {
+            before = paths.collect(java.util.stream.Collectors.toSet());
+        }
         org.mockito.Mockito.doThrow(new com.tutorplatform.file.application.FileStorageException(
             new java.io.IOException("Test delete failure"))).when(storage).delete(org.mockito.ArgumentMatchers.anyString());
         try {
@@ -263,8 +276,11 @@ class FileMaterialApiIntegrationTest {
     }
 
     private long objectCount() throws Exception {
-        try (var paths = Files.list(STORAGE)) { return paths.count(); }
+        try (var paths = Files.list(STORAGE)) {
+            return paths.count();
+        }
     }
+
     private ContentFixture createFixture(String email) {
         UserEntity user = new UserEntity(UUID.randomUUID(), email, "password-hash", UserStatus.ACTIVE);
         user.addRole(UserRole.TEACHER);

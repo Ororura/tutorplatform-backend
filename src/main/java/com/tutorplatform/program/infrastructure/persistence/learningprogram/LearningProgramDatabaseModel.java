@@ -16,7 +16,8 @@ import java.util.UUID;
 @Table(name = "learning_programs")
 public class LearningProgramDatabaseModel {
 
-    @Id private UUID id;
+    @Id
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "teacher_id", nullable = false, insertable = false, updatable = false)
@@ -35,7 +36,8 @@ public class LearningProgramDatabaseModel {
     @Column(nullable = false, length = 200)
     private String title;
 
-    @Column private String description;
+    @Column
+    private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 24)
@@ -72,7 +74,7 @@ public class LearningProgramDatabaseModel {
 
     LearningProgramEntity toEntity() {
         return new LearningProgramEntity(
-                id, teacherId, subjectId, title, description, status, version, createdAt, updatedAt
+            id, teacherId, subjectId, title, description, status, version, createdAt, updatedAt
         );
     }
 }

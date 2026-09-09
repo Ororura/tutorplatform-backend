@@ -57,21 +57,49 @@ import static org.assertj.core.api.Assertions.*;
 @Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
-        JpaUserRepository.class,
-        JpaTeacherRepository.class,
-        JpaStudentRepository.class,
-        JpaSubjectRepository.class,
-        JpaLearningProgramRepository.class,
-        JpaStudentProgramRepository.class,
-        JpaModuleRepository.class,
-        JpaTopicRepository.class,
-        JpaLessonSessionRepository.class,
-        JpaLessonSessionTopicRepository.class
+    JpaUserRepository.class,
+    JpaTeacherRepository.class,
+    JpaStudentRepository.class,
+    JpaSubjectRepository.class,
+    JpaLearningProgramRepository.class,
+    JpaStudentProgramRepository.class,
+    JpaModuleRepository.class,
+    JpaTopicRepository.class,
+    JpaLessonSessionRepository.class,
+    JpaLessonSessionTopicRepository.class
 })
 class SessionPersistenceIntegrationTest {
 
     @Container
     private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TeacherRepository teacherRepository;
+    @Autowired
+    private StudentRepository studentRepository;
+    @Autowired
+    private TeacherStudentLinkRepository teacherStudentLinkRepository;
+    @Autowired
+    private SubjectRepository subjectRepository;
+    @Autowired
+    private LearningProgramRepository learningProgramRepository;
+    @Autowired
+    private StudentProgramRepository studentProgramRepository;
+    @Autowired
+    private ModuleRepository moduleRepository;
+    @Autowired
+    private TopicRepository topicRepository;
+    @Autowired
+    private LessonSessionRepository lessonSessionRepository;
+    @Autowired
+    private LessonSessionTopicRepository lessonSessionTopicRepository;
+    @Autowired
+    private Flyway flyway;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private PlatformTransactionManager transactionManager;
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
@@ -81,37 +109,22 @@ class SessionPersistenceIntegrationTest {
         registry.add("spring.flyway.target", () -> "007");
     }
 
-    @Autowired private UserRepository userRepository;
-    @Autowired private TeacherRepository teacherRepository;
-    @Autowired private StudentRepository studentRepository;
-    @Autowired private TeacherStudentLinkRepository teacherStudentLinkRepository;
-    @Autowired private SubjectRepository subjectRepository;
-    @Autowired private LearningProgramRepository learningProgramRepository;
-    @Autowired private StudentProgramRepository studentProgramRepository;
-    @Autowired private ModuleRepository moduleRepository;
-    @Autowired private TopicRepository topicRepository;
-    @Autowired private LessonSessionRepository lessonSessionRepository;
-    @Autowired private LessonSessionTopicRepository lessonSessionTopicRepository;
-    @Autowired private Flyway flyway;
-    @Autowired private JdbcTemplate jdbcTemplate;
-    @Autowired private PlatformTransactionManager transactionManager;
-
     @Test
     void flywayV006AppliesSuccessfully() {
         assertThat(Arrays.stream(flyway.info().applied())
-                .map(migration -> migration.getVersion().toString()))
-                .containsExactly("001", "002", "003", "004", "005", "006", "007");
+            .map(migration -> migration.getVersion().toString()))
+            .containsExactly("001", "002", "003", "004", "005", "006", "007");
 
         assertThat(jdbcTemplate.queryForObject(
-                """
-                        select count(*)
-                        from information_schema.tables
-                        where table_schema = 'public'
-                          and table_name in (
-                            'lesson_sessions', 'lesson_session_topics', 'teacher_assessments'
-                          )
-                        """,
-                Integer.class
+            """
+                select count(*)
+                from information_schema.tables
+                where table_schema = 'public'
+                  and table_name in (
+                    'lesson_sessions', 'lesson_session_topics', 'teacher_assessments'
+                  )
+                """,
+            Integer.class
         )).isEqualTo(3);
     }
 
@@ -120,7 +133,7 @@ class SessionPersistenceIntegrationTest {
         SessionFixture fixture = createSessionFixture("session-save@example.com", AttendanceStatus.ATTENDED);
 
         LessonSessionEntity persisted = lessonSessionRepository.findById(fixture.lessonSession().id())
-                .orElseThrow();
+            .orElseThrow();
 
         assertThat(persisted.durationMinutes()).isEqualTo(60);
         assertThat(persisted.summary()).isEqualTo("Разобрали тему");
@@ -129,8 +142,8 @@ class SessionPersistenceIntegrationTest {
         assertThat(persisted.createdAt()).isNotNull();
         assertThat(persisted.updatedAt()).isNotNull();
         assertThat(lessonSessionRepository.findAll())
-                .extracting(LessonSessionEntity::id)
-                .contains(fixture.lessonSession().id());
+            .extracting(LessonSessionEntity::id)
+            .contains(fixture.lessonSession().id());
     }
 
     @Test
@@ -153,7 +166,7 @@ class SessionPersistenceIntegrationTest {
         SessionFixture fixture = createSessionFixture("zero-duration@example.com", AttendanceStatus.ATTENDED);
 
         assertThatThrownBy(() -> insertSessionWithDuration(fixture, 0))
-                .isInstanceOf(DataIntegrityViolationException.class);
+            .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
@@ -161,7 +174,7 @@ class SessionPersistenceIntegrationTest {
         SessionFixture fixture = createSessionFixture("long-duration@example.com", AttendanceStatus.ATTENDED);
 
         assertThatThrownBy(() -> insertSessionWithDuration(fixture, 601))
-                .isInstanceOf(DataIntegrityViolationException.class);
+            .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
@@ -169,8 +182,8 @@ class SessionPersistenceIntegrationTest {
         SessionFixture fixture = createSessionFixture("program-link@example.com", AttendanceStatus.ATTENDED);
 
         assertThat(lessonSessionRepository.findById(fixture.lessonSession().id()))
-                .get().extracting(LessonSessionEntity::studentProgramId)
-                .isEqualTo(fixture.studentProgram().id());
+            .get().extracting(LessonSessionEntity::studentProgramId)
+            .isEqualTo(fixture.studentProgram().id());
     }
 
     @Test
@@ -197,16 +210,16 @@ class SessionPersistenceIntegrationTest {
     void lessonSessionTopicIsLinkedToTopic() {
         SessionFixture fixture = createSessionFixture("topic-link@example.com", AttendanceStatus.ATTENDED);
         LessonSessionTopicEntity link = lessonSessionTopicRepository.saveAndFlush(new LessonSessionTopicEntity(
-                fixture.lessonSession().id(), fixture.topic().id(), true
+            fixture.lessonSession().id(), fixture.topic().id(), true
         ));
 
         assertThat(link.createdAt()).isNotNull();
         assertThat(lessonSessionTopicRepository.findAllByLessonSessionId(fixture.lessonSession().id()))
-                .singleElement()
-                .satisfies(persisted -> {
-                    assertThat(persisted.topicId()).isEqualTo(fixture.topic().id());
-                    assertThat(persisted.primary()).isTrue();
-                });
+            .singleElement()
+            .satisfies(persisted -> {
+                assertThat(persisted.topicId()).isEqualTo(fixture.topic().id());
+                assertThat(persisted.primary()).isTrue();
+            });
     }
 
     @Test
@@ -229,16 +242,16 @@ class SessionPersistenceIntegrationTest {
     void duplicateLessonSessionTopicIsRejected() {
         SessionFixture fixture = createSessionFixture("duplicate-topic-link@example.com", AttendanceStatus.ATTENDED);
         lessonSessionTopicRepository.saveAndFlush(new LessonSessionTopicEntity(
-                fixture.lessonSession().id(), fixture.topic().id(), false
+            fixture.lessonSession().id(), fixture.topic().id(), false
         ));
 
         assertThatThrownBy(() -> jdbcTemplate.update(
-                """
-                        insert into lesson_session_topics (lesson_session_id, topic_id)
-                        values (?, ?)
-                        """,
-                fixture.lessonSession().id(),
-                fixture.topic().id()
+            """
+                insert into lesson_session_topics (lesson_session_id, topic_id)
+                values (?, ?)
+                """,
+            fixture.lessonSession().id(),
+            fixture.topic().id()
         )).isInstanceOf(DataIntegrityViolationException.class);
     }
 
@@ -246,15 +259,15 @@ class SessionPersistenceIntegrationTest {
     void deletingLessonSessionCascadesToTopics() {
         SessionFixture fixture = createSessionFixture("session-cascade@example.com", AttendanceStatus.ATTENDED);
         lessonSessionTopicRepository.saveAndFlush(new LessonSessionTopicEntity(
-                fixture.lessonSession().id(), fixture.topic().id(), false
+            fixture.lessonSession().id(), fixture.topic().id(), false
         ));
 
         jdbcTemplate.update("delete from lesson_sessions where id = ?", fixture.lessonSession().id());
 
         assertThat(jdbcTemplate.queryForObject(
-                "select count(*) from lesson_session_topics where lesson_session_id = ?",
-                Integer.class,
-                fixture.lessonSession().id()
+            "select count(*) from lesson_session_topics where lesson_session_id = ?",
+            Integer.class,
+            fixture.lessonSession().id()
         )).isZero();
     }
 
@@ -266,29 +279,29 @@ class SessionPersistenceIntegrationTest {
         transaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 
         LessonSessionEntity first = transaction.execute(status -> lessonSessionRepository
-                .findById(fixture.lessonSession().id()).orElseThrow());
+            .findById(fixture.lessonSession().id()).orElseThrow());
         LessonSessionEntity stale = transaction.execute(status -> lessonSessionRepository
-                .findById(fixture.lessonSession().id()).orElseThrow());
+            .findById(fixture.lessonSession().id()).orElseThrow());
 
         transaction.executeWithoutResult(status -> lessonSessionRepository.saveAndFlush(
-                copyWithSummary(first, "Первая версия")
+            copyWithSummary(first, "Первая версия")
         ));
         Throwable thrown = catchThrowable(() -> transaction.executeWithoutResult(status ->
-                lessonSessionRepository.saveAndFlush(copyWithSummary(stale, "Устаревшая версия"))
+            lessonSessionRepository.saveAndFlush(copyWithSummary(stale, "Устаревшая версия"))
         ));
 
         assertThat(thrown).isNotNull();
         assertThat(hasOptimisticLockCause(thrown)).isTrue();
         assertThat(lessonSessionRepository.findById(fixture.lessonSession().id()))
-                .get().extracting(LessonSessionEntity::summary)
-                .isEqualTo("Первая версия");
+            .get().extracting(LessonSessionEntity::summary)
+            .isEqualTo("Первая версия");
     }
 
     private void assertStatusSaved(AttendanceStatus status, String email) {
         SessionFixture fixture = createSessionFixture(email, status);
         assertThat(lessonSessionRepository.findById(fixture.lessonSession().id()))
-                .get().extracting(LessonSessionEntity::attendanceStatus)
-                .isEqualTo(status);
+            .get().extracting(LessonSessionEntity::attendanceStatus)
+            .isEqualTo(status);
     }
 
     private SessionFixture createSessionFixture(String email, AttendanceStatus status) {
@@ -296,56 +309,56 @@ class SessionPersistenceIntegrationTest {
         user.addRole(UserRole.TEACHER);
         userRepository.saveAndFlush(user);
         TeacherEntity teacher = teacherRepository.saveAndFlush(new TeacherEntity(
-                UUID.randomUUID(), user, "Teacher"
+            UUID.randomUUID(), user, "Teacher"
         ));
         StudentEntity student = studentRepository.saveAndFlush(new StudentEntity(
-                UUID.randomUUID(), "Ученик", null, StudentStatus.ACTIVE
+            UUID.randomUUID(), "Ученик", null, StudentStatus.ACTIVE
         ));
         teacherStudentLinkRepository.saveAndFlush(new TeacherStudentLinkEntity(teacher, student));
         SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
-                UUID.randomUUID(), teacher.id(), null, "Предмет " + UUID.randomUUID(), null, SubjectStatus.ACTIVE
+            UUID.randomUUID(), teacher.id(), null, "Предмет " + UUID.randomUUID(), null, SubjectStatus.ACTIVE
         ));
         LearningProgramEntity learningProgram = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-                UUID.randomUUID(), teacher.id(), subject.id(), "Программа", null, LearningProgramStatus.DRAFT
+            UUID.randomUUID(), teacher.id(), subject.id(), "Программа", null, LearningProgramStatus.DRAFT
         ));
         StudentProgramEntity studentProgram = studentProgramRepository.saveAndFlush(new StudentProgramEntity(
-                UUID.randomUUID(), student.getId(), learningProgram.getId(), teacher.id(),
-                StudentProgramStatus.ACTIVE, 480, Instant.now(), null
+            UUID.randomUUID(), student.getId(), learningProgram.getId(), teacher.id(),
+            StudentProgramStatus.ACTIVE, 480, Instant.now(), null
         ));
         ModuleEntity module = moduleRepository.saveAndFlush(new ModuleEntity(
-                UUID.randomUUID(), learningProgram.getId(), "Модуль", null, 0
+            UUID.randomUUID(), learningProgram.getId(), "Модуль", null, 0
         ));
         TopicEntity topic = topicRepository.saveAndFlush(new TopicEntity(
-                UUID.randomUUID(), module.id(), "Тема", null, 0, TopicStatus.DRAFT
+            UUID.randomUUID(), module.id(), "Тема", null, 0, TopicStatus.DRAFT
         ));
         LessonSessionEntity lessonSession = lessonSessionRepository.saveAndFlush(new LessonSessionEntity(
-                UUID.randomUUID(), studentProgram.id(), teacher.id(), Instant.now(), 60, status,
-                "Разобрали тему", "Заметка преподавателя"
+            UUID.randomUUID(), studentProgram.id(), teacher.id(), Instant.now(), 60, status,
+            "Разобрали тему", "Заметка преподавателя"
         ));
         return new SessionFixture(teacher, studentProgram, topic, lessonSession);
     }
 
     private void insertSessionWithDuration(SessionFixture fixture, int durationMinutes) {
         jdbcTemplate.update(
-                """
-                        insert into lesson_sessions (
-                            id, student_program_id, teacher_id, started_at,
-                            duration_minutes, attendance_status
-                        ) values (?, ?, ?, ?, ?, 'ATTENDED')
-                        """,
-                UUID.randomUUID(),
-                fixture.studentProgram().id(),
-                fixture.teacher().id(),
-                Timestamp.from(Instant.now()),
-                durationMinutes
+            """
+                insert into lesson_sessions (
+                    id, student_program_id, teacher_id, started_at,
+                    duration_minutes, attendance_status
+                ) values (?, ?, ?, ?, ?, 'ATTENDED')
+                """,
+            UUID.randomUUID(),
+            fixture.studentProgram().id(),
+            fixture.teacher().id(),
+            Timestamp.from(Instant.now()),
+            durationMinutes
         );
     }
 
     private LessonSessionEntity copyWithSummary(LessonSessionEntity source, String summary) {
         return new LessonSessionEntity(
-                source.id(), source.studentProgramId(), source.teacherId(), source.startedAt(),
-                source.durationMinutes(), source.attendanceStatus(), summary, source.privateNotes(),
-                source.version(), source.createdAt(), source.updatedAt()
+            source.id(), source.studentProgramId(), source.teacherId(), source.startedAt(),
+            source.durationMinutes(), source.attendanceStatus(), summary, source.privateNotes(),
+            source.version(), source.createdAt(), source.updatedAt()
         );
     }
 
@@ -361,10 +374,10 @@ class SessionPersistenceIntegrationTest {
     }
 
     private record SessionFixture(
-            TeacherEntity teacher,
-            StudentProgramEntity studentProgram,
-            TopicEntity topic,
-            LessonSessionEntity lessonSession
+        TeacherEntity teacher,
+        StudentProgramEntity studentProgram,
+        TopicEntity topic,
+        LessonSessionEntity lessonSession
     ) {
     }
 }

@@ -8,20 +8,20 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public record CreateTaskRequest(
-        @NotNull
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "uuid")
-        UUID subjectId,
+    @NotNull
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "uuid")
+    UUID subjectId,
 
-        @NotBlank
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 220)
-        String title,
+    @NotBlank
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 220)
+    String title,
 
-        @NotNull
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-        String descriptionMarkdown,
+    @NotNull
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
+    String descriptionMarkdown,
 
-        @NotNull
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-        TaskDifficulty difficulty
+    @NotNull
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
+    TaskDifficulty difficulty
 ) {
 }

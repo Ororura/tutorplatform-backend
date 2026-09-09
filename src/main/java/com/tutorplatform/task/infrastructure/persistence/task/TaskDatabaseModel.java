@@ -78,7 +78,7 @@ public class TaskDatabaseModel {
 
     void updateFrom(TaskEntity task) {
         if (!Objects.requireNonNull(task.getTeacherId()).equals(teacherId)
-                || !Objects.requireNonNull(task.getSubjectId()).equals(subjectId)) {
+            || !Objects.requireNonNull(task.getSubjectId()).equals(subjectId)) {
             throw new IllegalArgumentException("Task ownership and subject cannot be changed");
         }
         title = Objects.requireNonNull(task.getTitle());
@@ -90,15 +90,32 @@ public class TaskDatabaseModel {
 
     TaskEntity toEntity() {
         return new TaskEntity(
-                id, teacherId, subjectId, title, descriptionMarkdown, taskType, difficulty, status,
-                version, createdAt, updatedAt
+            id, teacherId, subjectId, title, descriptionMarkdown, taskType, difficulty, status,
+            version, createdAt, updatedAt
         );
     }
 
-    public UUID getId() { return id; }
-    public UUID getTeacherId() { return teacherId; }
-    public UUID getSubjectId() { return subjectId; }
-    public String getTitle() { return title; }
-    public TaskType getTaskType() { return taskType; }
-    public TaskStatus getStatus() { return status; }
+    public UUID getId() {
+        return id;
+    }
+
+    public UUID getTeacherId() {
+        return teacherId;
+    }
+
+    public UUID getSubjectId() {
+        return subjectId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public TaskType getTaskType() {
+        return taskType;
+    }
+
+    public TaskStatus getStatus() {
+        return status;
+    }
 }

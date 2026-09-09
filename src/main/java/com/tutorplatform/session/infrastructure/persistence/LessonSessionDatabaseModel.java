@@ -16,7 +16,8 @@ import java.util.UUID;
 @Table(name = "lesson_sessions")
 public class LessonSessionDatabaseModel {
 
-    @Id private UUID id;
+    @Id
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "student_program_id", nullable = false, insertable = false, updatable = false)
@@ -42,7 +43,8 @@ public class LessonSessionDatabaseModel {
     @Column(name = "attendance_status", nullable = false, length = 24)
     private AttendanceStatus attendanceStatus;
 
-    @Column private String summary;
+    @Column
+    private String summary;
 
     @Column(name = "private_notes")
     private String privateNotes;
@@ -80,8 +82,8 @@ public class LessonSessionDatabaseModel {
 
     LessonSessionEntity toEntity() {
         return new LessonSessionEntity(
-                id, studentProgramId, teacherId, startedAt, durationMinutes, attendanceStatus,
-                summary, privateNotes, version, createdAt, updatedAt
+            id, studentProgramId, teacherId, startedAt, durationMinutes, attendanceStatus,
+            summary, privateNotes, version, createdAt, updatedAt
         );
     }
 }

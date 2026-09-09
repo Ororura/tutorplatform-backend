@@ -12,37 +12,37 @@ public class SubmissionEntity {
     private final UUID taskId;
     private final UUID homeworkItemId;
     private final int attemptNo;
-    private SubmissionStatus status;
     private final String textAnswer;
     private final Instant submittedAt;
     private final Instant createdAt;
+    private SubmissionStatus status;
 
     public SubmissionEntity(
-            UUID id,
-            UUID studentId,
-            UUID studentProgramId,
-            UUID taskId,
-            UUID homeworkItemId,
-            int attemptNo,
-            SubmissionStatus status,
-            String textAnswer,
-            Instant submittedAt
+        UUID id,
+        UUID studentId,
+        UUID studentProgramId,
+        UUID taskId,
+        UUID homeworkItemId,
+        int attemptNo,
+        SubmissionStatus status,
+        String textAnswer,
+        Instant submittedAt
     ) {
         this(id, studentId, studentProgramId, taskId, homeworkItemId, attemptNo, status,
-                textAnswer, submittedAt, null);
+            textAnswer, submittedAt, null);
     }
 
     public SubmissionEntity(
-            UUID id,
-            UUID studentId,
-            UUID studentProgramId,
-            UUID taskId,
-            UUID homeworkItemId,
-            int attemptNo,
-            SubmissionStatus status,
-            String textAnswer,
-            Instant submittedAt,
-            Instant createdAt
+        UUID id,
+        UUID studentId,
+        UUID studentProgramId,
+        UUID taskId,
+        UUID homeworkItemId,
+        int attemptNo,
+        SubmissionStatus status,
+        String textAnswer,
+        Instant submittedAt,
+        Instant createdAt
     ) {
         this.id = Objects.requireNonNull(id);
         this.studentId = Objects.requireNonNull(studentId);
@@ -59,16 +59,45 @@ public class SubmissionEntity {
         this.createdAt = createdAt;
     }
 
-    public UUID getId() { return id; }
-    public UUID getStudentId() { return studentId; }
-    public UUID getStudentProgramId() { return studentProgramId; }
-    public UUID getTaskId() { return taskId; }
-    public UUID getHomeworkItemId() { return homeworkItemId; }
-    public int getAttemptNo() { return attemptNo; }
-    public SubmissionStatus getStatus() { return status; }
-    public String getTextAnswer() { return textAnswer; }
-    public Instant getSubmittedAt() { return submittedAt; }
-    public Instant getCreatedAt() { return createdAt; }
+    public UUID getId() {
+        return id;
+    }
+
+    public UUID getStudentId() {
+        return studentId;
+    }
+
+    public UUID getStudentProgramId() {
+        return studentProgramId;
+    }
+
+    public UUID getTaskId() {
+        return taskId;
+    }
+
+    public UUID getHomeworkItemId() {
+        return homeworkItemId;
+    }
+
+    public int getAttemptNo() {
+        return attemptNo;
+    }
+
+    public SubmissionStatus getStatus() {
+        return status;
+    }
+
+    public String getTextAnswer() {
+        return textAnswer;
+    }
+
+    public Instant getSubmittedAt() {
+        return submittedAt;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
 
     public void review(SubmissionStatus reviewStatus) {
         if (status != SubmissionStatus.NEEDS_REVIEW) {

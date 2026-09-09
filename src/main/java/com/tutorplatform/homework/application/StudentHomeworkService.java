@@ -20,7 +20,7 @@ import java.util.UUID;
 public class StudentHomeworkService {
 
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
-            "assignedAt", "dueAt", "createdAt", "title"
+        "assignedAt", "dueAt", "createdAt", "title"
     );
 
     private final StudentOwnershipQuery studentOwnershipQuery;
@@ -28,9 +28,9 @@ public class StudentHomeworkService {
     private final HomeworkQuery homeworkQuery;
 
     public StudentHomeworkService(
-            StudentOwnershipQuery studentOwnershipQuery,
-            ProgramQuery programQuery,
-            HomeworkQuery homeworkQuery
+        StudentOwnershipQuery studentOwnershipQuery,
+        ProgramQuery programQuery,
+        HomeworkQuery homeworkQuery
     ) {
         this.studentOwnershipQuery = studentOwnershipQuery;
         this.programQuery = programQuery;
@@ -38,12 +38,12 @@ public class StudentHomeworkService {
     }
 
     public StudentHomeworkPageResult listHomeworks(
-            AuthenticatedUser principal,
-            UUID studentProgramId,
-            HomeworkStatus status,
-            int page,
-            int size,
-            String sort
+        AuthenticatedUser principal,
+        UUID studentProgramId,
+        HomeworkStatus status,
+        int page,
+        int size,
+        String sort
     ) {
         SortParameters sortParameters = validateListParameters(page, size, sort);
         UUID studentId = currentStudentId(principal);
@@ -51,63 +51,63 @@ public class StudentHomeworkService {
             requireOwnedStudentProgram(studentId, studentProgramId);
         }
         StudentHomeworkPage result = homeworkQuery.findPageByStudent(
-                studentId, studentProgramId, status, page, size,
-                sortParameters.field(), sortParameters.ascending()
+            studentId, studentProgramId, status, page, size,
+            sortParameters.field(), sortParameters.ascending()
         );
         Instant now = Instant.now();
         return new StudentHomeworkPageResult(
-                result.items().stream().map(item -> new StudentHomeworkSummaryResult(
-                        item.id(), item.studentProgramId(), item.title(), item.status(),
-                        item.assignedAt(), item.dueAt(), isOverdue(
-                                item.dueAt(), item.status(), item.completedAt(), now
-                        ), item.itemsCount(), item.createdAt()
-                )).toList(),
-                page,
-                size,
-                result.totalElements(),
-                result.totalPages()
+            result.items().stream().map(item -> new StudentHomeworkSummaryResult(
+                item.id(), item.studentProgramId(), item.title(), item.status(),
+                item.assignedAt(), item.dueAt(), isOverdue(
+                item.dueAt(), item.status(), item.completedAt(), now
+            ), item.itemsCount(), item.createdAt()
+            )).toList(),
+            page,
+            size,
+            result.totalElements(),
+            result.totalPages()
         );
     }
 
     public StudentHomeworkDetailsResult getHomework(
-            AuthenticatedUser principal,
-            UUID homeworkId
+        AuthenticatedUser principal,
+        UUID homeworkId
     ) {
         UUID studentId = currentStudentId(principal);
         StudentHomeworkDetails homework = homeworkQuery.findDetailsByStudent(studentId, homeworkId)
-                .orElseThrow(HomeworkNotFoundException::new);
+            .orElseThrow(HomeworkNotFoundException::new);
         return new StudentHomeworkDetailsResult(
-                homework.id(), homework.studentProgramId(), homework.title(), homework.description(),
-                homework.status(), homework.assignedAt(), homework.dueAt(), isOverdue(
-                        homework.dueAt(), homework.status(), homework.completedAt(), Instant.now()
-                ), homework.completedAt(), homework.items()
+            homework.id(), homework.studentProgramId(), homework.title(), homework.description(),
+            homework.status(), homework.assignedAt(), homework.dueAt(), isOverdue(
+            homework.dueAt(), homework.status(), homework.completedAt(), Instant.now()
+        ), homework.completedAt(), homework.items()
         );
     }
 
     private UUID currentStudentId(AuthenticatedUser principal) {
         return studentOwnershipQuery.findStudentIdByUserId(principal.id())
-                .orElseThrow(StudentNotFoundException::new);
+            .orElseThrow(StudentNotFoundException::new);
     }
 
     private void requireOwnedStudentProgram(UUID studentId, UUID studentProgramId) {
         ProgramQuery.StudentProgramContext studentProgram = programQuery
-                .findStudentProgram(studentProgramId)
-                .orElseThrow(HomeworkStudentProgramNotFoundException::new);
+            .findStudentProgram(studentProgramId)
+            .orElseThrow(HomeworkStudentProgramNotFoundException::new);
         if (!studentProgram.belongsToStudent(studentId)) {
             throw new HomeworkStudentProgramNotFoundException();
         }
     }
 
     private boolean isOverdue(
-            Instant dueAt,
-            HomeworkStatus status,
-            Instant completedAt,
-            Instant now
+        Instant dueAt,
+        HomeworkStatus status,
+        Instant completedAt,
+        Instant now
     ) {
         return dueAt != null
-                && dueAt.isBefore(now)
-                && status == HomeworkStatus.ASSIGNED
-                && completedAt == null;
+            && dueAt.isBefore(now)
+            && status == HomeworkStatus.ASSIGNED
+            && completedAt == null;
     }
 
     private SortParameters validateListParameters(int page, int size, String sort) {
@@ -120,7 +120,7 @@ public class StudentHomeworkService {
         String[] parts = sort.split(",", -1);
         if (parts.length != 2 || !ALLOWED_SORT_FIELDS.contains(parts[0])) {
             throw new InvalidHomeworkException(
-                    "sort", "must use assignedAt, dueAt, createdAt, or title"
+                "sort", "must use assignedAt, dueAt, createdAt, or title"
             );
         }
         if (!parts[1].equals("asc") && !parts[1].equals("desc")) {

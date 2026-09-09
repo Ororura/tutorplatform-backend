@@ -24,8 +24,13 @@ public class TopicTaskId implements Serializable {
         this.taskId = Objects.requireNonNull(taskId);
     }
 
-    public UUID getTopicId() { return topicId; }
-    public UUID getTaskId() { return taskId; }
+    public UUID getTopicId() {
+        return topicId;
+    }
+
+    public UUID getTaskId() {
+        return taskId;
+    }
 
     @Override
     public boolean equals(Object other) {

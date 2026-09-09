@@ -58,6 +58,30 @@ class SessionApiIntegrationTest {
 
     @Container
     private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
+    @Autowired
+    private MockMvc mockMvc;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private LessonSessionService lessonSessionService;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TeacherRepository teacherRepository;
+    @Autowired
+    private StudentRepository studentRepository;
+    @Autowired
+    private TeacherStudentLinkRepository teacherStudentLinkRepository;
+    @Autowired
+    private SubjectRepository subjectRepository;
+    @Autowired
+    private LearningProgramRepository learningProgramRepository;
+    @Autowired
+    private StudentProgramRepository studentProgramRepository;
+    @Autowired
+    private ModuleRepository moduleRepository;
+    @Autowired
+    private TopicRepository topicRepository;
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
@@ -66,19 +90,6 @@ class SessionApiIntegrationTest {
         registry.add("spring.datasource.password", POSTGRES::getPassword);
         registry.add("spring.flyway.target", () -> "007");
     }
-
-    @Autowired private MockMvc mockMvc;
-    @Autowired private ObjectMapper objectMapper;
-    @Autowired private LessonSessionService lessonSessionService;
-    @Autowired private UserRepository userRepository;
-    @Autowired private TeacherRepository teacherRepository;
-    @Autowired private StudentRepository studentRepository;
-    @Autowired private TeacherStudentLinkRepository teacherStudentLinkRepository;
-    @Autowired private SubjectRepository subjectRepository;
-    @Autowired private LearningProgramRepository learningProgramRepository;
-    @Autowired private StudentProgramRepository studentProgramRepository;
-    @Autowired private ModuleRepository moduleRepository;
-    @Autowired private TopicRepository topicRepository;
 
     @Test
     void postCreatesLessonSession() throws Exception {
@@ -156,10 +167,10 @@ class SessionApiIntegrationTest {
               ]
             }
             """.formatted(
-                fixture.studentProgram().id(),
-                fixture.topic().id(),
-                fixture.secondTopic().id()
-            );
+            fixture.studentProgram().id(),
+            fixture.topic().id(),
+            fixture.secondTopic().id()
+        );
 
         mockMvc.perform(post(sessionsUrl(fixture.student().getId()))
                 .with(user(fixture.principal()))

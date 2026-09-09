@@ -41,13 +41,13 @@ public class JpaTaskRepository implements TaskRepository {
 
     @Override
     public List<TaskEntity> findAllByTeacherId(
-            UUID teacherId,
-            UUID subjectId,
-            TaskStatus status,
-            TaskType taskType
+        UUID teacherId,
+        UUID subjectId,
+        TaskStatus status,
+        TaskType taskType
     ) {
         return databaseRepository.findAllByTeacherId(teacherId, subjectId, status, taskType).stream()
-                .map(TaskDatabaseModel::toEntity)
-                .toList();
+            .map(TaskDatabaseModel::toEntity)
+            .toList();
     }
 }

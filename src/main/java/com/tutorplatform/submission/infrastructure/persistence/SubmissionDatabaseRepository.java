@@ -17,15 +17,15 @@ interface SubmissionDatabaseRepository extends JpaRepository<SubmissionDatabaseM
     Page<SubmissionDatabaseModel> findAllByStudentId(UUID studentId, Pageable pageable);
 
     Page<SubmissionDatabaseModel> findAllByStudentIdAndTaskId(
-            UUID studentId,
-            UUID taskId,
-            Pageable pageable
+        UUID studentId,
+        UUID taskId,
+        Pageable pageable
     );
 
     Page<SubmissionDatabaseModel> findAllByStudentIdAndStatus(
-            UUID studentId,
-            SubmissionStatus status,
-            Pageable pageable
+        UUID studentId,
+        SubmissionStatus status,
+        Pageable pageable
     );
 
     @Query("""
@@ -38,11 +38,11 @@ interface SubmissionDatabaseRepository extends JpaRepository<SubmissionDatabaseM
                or submission.homeworkItemId = :homeworkItemId)
         """)
     Page<SubmissionDatabaseModel> findAttempts(
-            @Param("studentId") UUID studentId,
-            @Param("studentProgramId") UUID studentProgramId,
-            @Param("taskId") UUID taskId,
-            @Param("homeworkItemId") UUID homeworkItemId,
-            Pageable pageable
+        @Param("studentId") UUID studentId,
+        @Param("studentProgramId") UUID studentProgramId,
+        @Param("taskId") UUID taskId,
+        @Param("homeworkItemId") UUID homeworkItemId,
+        Pageable pageable
     );
 
     @Query("""
@@ -57,10 +57,10 @@ interface SubmissionDatabaseRepository extends JpaRepository<SubmissionDatabaseM
         limit 1
         """)
     Optional<SubmissionDatabaseModel> findLatestAttempt(
-            @Param("studentId") UUID studentId,
-            @Param("studentProgramId") UUID studentProgramId,
-            @Param("taskId") UUID taskId,
-            @Param("homeworkItemId") UUID homeworkItemId
+        @Param("studentId") UUID studentId,
+        @Param("studentProgramId") UUID studentProgramId,
+        @Param("taskId") UUID taskId,
+        @Param("homeworkItemId") UUID homeworkItemId
     );
 
     @Query("""
@@ -74,11 +74,11 @@ interface SubmissionDatabaseRepository extends JpaRepository<SubmissionDatabaseM
           and submission.status = :status
         """)
     boolean existsByStatus(
-            @Param("studentId") UUID studentId,
-            @Param("studentProgramId") UUID studentProgramId,
-            @Param("taskId") UUID taskId,
-            @Param("homeworkItemId") UUID homeworkItemId,
-            @Param("status") SubmissionStatus status
+        @Param("studentId") UUID studentId,
+        @Param("studentProgramId") UUID studentProgramId,
+        @Param("taskId") UUID taskId,
+        @Param("homeworkItemId") UUID homeworkItemId,
+        @Param("status") SubmissionStatus status
     );
 
     @Query("""
@@ -91,10 +91,10 @@ interface SubmissionDatabaseRepository extends JpaRepository<SubmissionDatabaseM
                or submission.homeworkItemId = :homeworkItemId)
         """)
     int findMaxAttemptNo(
-            @Param("studentId") UUID studentId,
-            @Param("studentProgramId") UUID studentProgramId,
-            @Param("taskId") UUID taskId,
-            @Param("homeworkItemId") UUID homeworkItemId
+        @Param("studentId") UUID studentId,
+        @Param("studentProgramId") UUID studentProgramId,
+        @Param("taskId") UUID taskId,
+        @Param("homeworkItemId") UUID homeworkItemId
     );
 
     @Query(value = "select id from student_programs where id = :studentProgramId for update", nativeQuery = true)

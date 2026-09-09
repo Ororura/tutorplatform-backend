@@ -39,13 +39,13 @@ public class StudentInviteService {
     private final String publicFrontendBaseUrl;
 
     public StudentInviteService(
-            TeacherRepository teacherRepository,
-            StudentRepository studentRepository,
-            StudentInviteRepository studentInviteRepository,
-            UserRepository userRepository,
-            StudentInviteTokenService tokenService,
-            @Value("${app.student-invites.ttl}") Duration ttl,
-            @Value("${app.student-invites.public-frontend-base-url}") URI publicFrontendBaseUrl
+        TeacherRepository teacherRepository,
+        StudentRepository studentRepository,
+        StudentInviteRepository studentInviteRepository,
+        UserRepository userRepository,
+        StudentInviteTokenService tokenService,
+        @Value("${app.student-invites.ttl}") Duration ttl,
+        @Value("${app.student-invites.public-frontend-base-url}") URI publicFrontendBaseUrl
     ) {
         if (ttl.isZero() || ttl.isNegative()) {
             throw new IllegalArgumentException("Student invite TTL must be positive");
@@ -59,15 +59,23 @@ public class StudentInviteService {
         this.publicFrontendBaseUrl = stripTrailingSlash(publicFrontendBaseUrl.toString());
     }
 
+    private static String stripTrailingSlash(String value) {
+        int end = value.length();
+        while (end > 0 && value.charAt(end - 1) == '/') {
+            end--;
+        }
+        return value.substring(0, end);
+    }
+
     @Transactional
     public StudentInviteCreatedResponse createInvite(
-            AuthenticatedUser principal,
-            UUID studentId,
-            CreateStudentInviteRequest request
+        AuthenticatedUser principal,
+        UUID studentId,
+        CreateStudentInviteRequest request
     ) {
         TeacherEntity teacher = currentTeacher(principal);
         StudentEntity student = studentRepository.findOwnedStudentForUpdate(teacher.id(), studentId)
-                .orElseThrow(StudentNotFoundException::new);
+            .orElseThrow(StudentNotFoundException::new);
 
         if (student.getUserId() != null) {
             throw new StudentAlreadyRegisteredException();
@@ -81,21 +89,21 @@ public class StudentInviteService {
 
         StudentInviteTokenService.Token token = tokenService.createToken();
         StudentInviteEntity invite = studentInviteRepository.saveAndFlush(new StudentInviteEntity(
-                UUID.randomUUID(),
-                student,
-                teacher,
-                request.email(),
-                token.hash(),
-                now.plus(ttl)
+            UUID.randomUUID(),
+            student,
+            teacher,
+            request.email(),
+            token.hash(),
+            now.plus(ttl)
         ));
 
         return new StudentInviteCreatedResponse(
-                invite.getId(),
-                studentId,
-                invite.getEmail(),
-                invite.getExpiresAt(),
-                publicFrontendBaseUrl + "/invite/student/" + token.rawValue(),
-                invite.getCreatedAt()
+            invite.getId(),
+            studentId,
+            invite.getEmail(),
+            invite.getExpiresAt(),
+            publicFrontendBaseUrl + "/invite/student/" + token.rawValue(),
+            invite.getCreatedAt()
         );
     }
 
@@ -103,29 +111,29 @@ public class StudentInviteService {
     public StudentInviteListResponse listInvites(AuthenticatedUser principal, UUID studentId) {
         UUID teacherId = currentTeacher(principal).id();
         studentRepository.findOwnedStudent(teacherId, studentId)
-                .orElseThrow(StudentNotFoundException::new);
+            .orElseThrow(StudentNotFoundException::new);
 
         Instant now = Instant.now();
         return new StudentInviteListResponse(studentInviteRepository.findAllByStudent_IdOrderByCreatedAtDesc(studentId)
-                .stream()
-                .map(invite -> new StudentInviteSummaryResponse(
-                        invite.getId(),
-                        invite.getEmail(),
-                        status(invite, now),
-                        invite.getExpiresAt(),
-                        invite.getCreatedAt()
-                ))
-                .toList());
+            .stream()
+            .map(invite -> new StudentInviteSummaryResponse(
+                invite.getId(),
+                invite.getEmail(),
+                status(invite, now),
+                invite.getExpiresAt(),
+                invite.getCreatedAt()
+            ))
+            .toList());
     }
 
     @Transactional
     public void revokeInvite(AuthenticatedUser principal, UUID studentId, UUID inviteId) {
         UUID teacherId = currentTeacher(principal).id();
         studentRepository.findOwnedStudent(teacherId, studentId)
-                .orElseThrow(StudentNotFoundException::new);
+            .orElseThrow(StudentNotFoundException::new);
 
         StudentInviteEntity invite = studentInviteRepository.findByIdAndStudent_Id(inviteId, studentId)
-                .orElseThrow(StudentInviteNotFoundException::new);
+            .orElseThrow(StudentInviteNotFoundException::new);
         if (invite.getAcceptedAt() != null) {
             throw new StudentInviteAlreadyAcceptedException();
         }
@@ -150,13 +158,5 @@ public class StudentInviteService {
             return StudentInviteStatus.EXPIRED;
         }
         return StudentInviteStatus.ACTIVE;
-    }
-
-    private static String stripTrailingSlash(String value) {
-        int end = value.length();
-        while (end > 0 && value.charAt(end - 1) == '/') {
-            end--;
-        }
-        return value.substring(0, end);
     }
 }

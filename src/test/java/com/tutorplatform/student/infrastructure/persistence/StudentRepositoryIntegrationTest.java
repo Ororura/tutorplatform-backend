@@ -37,7 +37,23 @@ class StudentRepositoryIntegrationTest {
 
     @Container
     private static final PostgreSQLContainer POSTGRES =
-            new PostgreSQLContainer("postgres:16-alpine");
+        new PostgreSQLContainer("postgres:16-alpine");
+    @Autowired
+    private StudentRepository studentRepository;
+    @Autowired
+    private TeacherStudentLinkRepository teacherStudentLinkRepository;
+    @Autowired
+    private StudentInviteRepository studentInviteRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TeacherRepository teacherRepository;
+    @Autowired
+    private EntityManager entityManager;
+    @Autowired
+    private Flyway flyway;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
@@ -47,39 +63,15 @@ class StudentRepositoryIntegrationTest {
         registry.add("spring.flyway.target", () -> "007");
     }
 
-    @Autowired
-    private StudentRepository studentRepository;
-
-    @Autowired
-    private TeacherStudentLinkRepository teacherStudentLinkRepository;
-
-    @Autowired
-    private StudentInviteRepository studentInviteRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private TeacherRepository teacherRepository;
-
-    @Autowired
-    private EntityManager entityManager;
-
-    @Autowired
-    private Flyway flyway;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
     @Test
     void studentCanBePersistedWithoutUserAccount() {
         UUID studentId = UUID.randomUUID();
 
         studentRepository.saveAndFlush(new StudentEntity(
-                studentId,
-                "Андрей",
-                null,
-                StudentStatus.ACTIVE
+            studentId,
+            "Андрей",
+            null,
+            StudentStatus.ACTIVE
         ));
         entityManager.clear();
 
@@ -94,16 +86,16 @@ class StudentRepositoryIntegrationTest {
         TeacherEntity firstTeacher = createTeacher("first-teacher@example.com");
         TeacherEntity secondTeacher = createTeacher("second-teacher@example.com");
         StudentEntity student = studentRepository.saveAndFlush(new StudentEntity(
-                UUID.randomUUID(),
-                "Андрей",
-                "Иванов",
-                StudentStatus.ACTIVE
+            UUID.randomUUID(),
+            "Андрей",
+            "Иванов",
+            StudentStatus.ACTIVE
         ));
 
         teacherStudentLinkRepository.saveAndFlush(new TeacherStudentLinkEntity(firstTeacher, student));
 
         assertThatThrownBy(() -> teacherStudentLinkRepository.saveAndFlush(
-                new TeacherStudentLinkEntity(secondTeacher, student)
+            new TeacherStudentLinkEntity(secondTeacher, student)
         )).isInstanceOf(DataIntegrityViolationException.class);
     }
 
@@ -111,46 +103,46 @@ class StudentRepositoryIntegrationTest {
     void inviteTokenHashMustBeUnique() {
         TeacherEntity teacher = createTeacher("invite-teacher@example.com");
         StudentEntity student = studentRepository.saveAndFlush(new StudentEntity(
-                UUID.randomUUID(),
-                "Мария",
-                null,
-                StudentStatus.ACTIVE
+            UUID.randomUUID(),
+            "Мария",
+            null,
+            StudentStatus.ACTIVE
         ));
         Instant expiresAt = Instant.now().plus(7, ChronoUnit.DAYS);
 
         studentInviteRepository.saveAndFlush(new StudentInviteEntity(
-                UUID.randomUUID(),
-                student,
-                teacher,
-                "first@example.com",
-                "same-token-hash",
-                expiresAt
+            UUID.randomUUID(),
+            student,
+            teacher,
+            "first@example.com",
+            "same-token-hash",
+            expiresAt
         ));
 
         assertThatThrownBy(() -> studentInviteRepository.saveAndFlush(new StudentInviteEntity(
-                UUID.randomUUID(),
-                student,
-                teacher,
-                "second@example.com",
-                "same-token-hash",
-                expiresAt
+            UUID.randomUUID(),
+            student,
+            teacher,
+            "second@example.com",
+            "same-token-hash",
+            expiresAt
         ))).isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
     void cleanPostgresIsMigratedThroughV006() {
         assertThat(Arrays.stream(flyway.info().applied())
-                .map(migration -> migration.getVersion().toString()))
-                .containsExactly("001", "002", "003", "004", "005", "006", "007");
+            .map(migration -> migration.getVersion().toString()))
+            .containsExactly("001", "002", "003", "004", "005", "006", "007");
 
         assertThat(jdbcTemplate.queryForObject(
-                """
-                        select count(*)
-                        from information_schema.tables
-                        where table_schema = 'public'
-                          and table_name in ('students', 'teacher_student_links', 'student_invites')
-                        """,
-                Integer.class
+            """
+                select count(*)
+                from information_schema.tables
+                where table_schema = 'public'
+                  and table_name in ('students', 'teacher_student_links', 'student_invites')
+                """,
+            Integer.class
         )).isEqualTo(3);
     }
 
@@ -160,9 +152,9 @@ class StudentRepositoryIntegrationTest {
         userRepository.saveAndFlush(user);
 
         return teacherRepository.saveAndFlush(new TeacherEntity(
-                UUID.randomUUID(),
-                user,
-                "Teacher"
+            UUID.randomUUID(),
+            user,
+            "Teacher"
         ));
     }
 }

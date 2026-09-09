@@ -24,8 +24,13 @@ public class LessonSessionTopicId implements Serializable {
         this.topicId = Objects.requireNonNull(topicId);
     }
 
-    public UUID getLessonSessionId() { return lessonSessionId; }
-    public UUID getTopicId() { return topicId; }
+    public UUID getLessonSessionId() {
+        return lessonSessionId;
+    }
+
+    public UUID getTopicId() {
+        return topicId;
+    }
 
     @Override
     public boolean equals(Object other) {

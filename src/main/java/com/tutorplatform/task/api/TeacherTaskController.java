@@ -34,37 +34,37 @@ public class TeacherTaskController implements TeacherTaskApi {
     @Override
     @PostMapping("/tasks")
     public ResponseEntity<TaskResponse> createTask(
-            @AuthenticationPrincipal AuthenticatedUser principal,
-            @Valid @RequestBody CreateTaskRequest request
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @Valid @RequestBody CreateTaskRequest request
     ) {
         var created = taskService.createTask(principal, new CreateTaskCommand(
-                request.subjectId(), request.title(), request.descriptionMarkdown(), request.difficulty()
+            request.subjectId(), request.title(), request.descriptionMarkdown(), request.difficulty()
         ));
         return ResponseEntity.created(URI.create("/api/v1/teacher/tasks/" + created.id()))
-                .body(TaskResponse.from(created));
+            .body(TaskResponse.from(created));
     }
 
     @Override
     @GetMapping("/tasks")
     public TaskPageResponse listTasks(
-            @AuthenticationPrincipal AuthenticatedUser principal,
-            @RequestParam(required = false) UUID subjectId,
-            @RequestParam(required = false) TaskStatus status,
-            @RequestParam(required = false) TaskDifficulty difficulty,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "createdAt,desc") String sort
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @RequestParam(required = false) UUID subjectId,
+        @RequestParam(required = false) TaskStatus status,
+        @RequestParam(required = false) TaskDifficulty difficulty,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(defaultValue = "createdAt,desc") String sort
     ) {
         return TaskPageResponse.from(taskService.listTasks(
-                principal, subjectId, status, difficulty, page, size, sort
+            principal, subjectId, status, difficulty, page, size, sort
         ));
     }
 
     @Override
     @GetMapping("/tasks/{taskId}")
     public TaskResponse getTask(
-            @AuthenticationPrincipal AuthenticatedUser principal,
-            @PathVariable UUID taskId
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID taskId
     ) {
         return TaskResponse.from(taskService.getTask(principal, taskId));
     }
@@ -72,32 +72,32 @@ public class TeacherTaskController implements TeacherTaskApi {
     @Override
     @PatchMapping("/tasks/{taskId}")
     public TaskResponse updateTask(
-            @AuthenticationPrincipal AuthenticatedUser principal,
-            @PathVariable UUID taskId,
-            @Valid @RequestBody UpdateTaskRequest request
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID taskId,
+        @Valid @RequestBody UpdateTaskRequest request
     ) {
         return TaskResponse.from(taskService.updateTask(principal, taskId, new UpdateTaskCommand(
-                request.title(), request.descriptionMarkdown(), request.difficulty(),
-                request.status(), request.version()
+            request.title(), request.descriptionMarkdown(), request.difficulty(),
+            request.status(), request.version()
         )));
     }
 
     @Override
     @PostMapping("/topics/{topicId}/tasks/{taskId}")
     public ResponseEntity<TopicTaskResponse> attachTaskToTopic(
-            @AuthenticationPrincipal AuthenticatedUser principal,
-            @PathVariable UUID topicId,
-            @PathVariable UUID taskId,
-            @Valid @RequestBody AttachTaskToTopicRequest request
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID topicId,
+        @PathVariable UUID taskId,
+        @Valid @RequestBody AttachTaskToTopicRequest request
     ) {
         var attached = taskService.attachTaskToTopic(
-                principal,
-                topicId,
-                taskId,
-                new AttachTaskToTopicCommand(request.position(), request.required())
+            principal,
+            topicId,
+            taskId,
+            new AttachTaskToTopicCommand(request.position(), request.required())
         );
         return ResponseEntity.created(URI.create(
-                "/api/v1/teacher/topics/" + topicId + "/tasks/" + taskId
+            "/api/v1/teacher/topics/" + topicId + "/tasks/" + taskId
         )).body(TopicTaskResponse.from(attached));
     }
 }

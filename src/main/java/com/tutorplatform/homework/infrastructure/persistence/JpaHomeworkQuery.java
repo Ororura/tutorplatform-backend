@@ -28,56 +28,56 @@ public class JpaHomeworkQuery implements HomeworkQuery {
 
     @Override
     public HomeworkPage findPageByTeacherAndStudent(
-            UUID teacherId,
-            UUID studentId,
-            UUID studentProgramId,
-            HomeworkStatus status,
-            int page,
-            int size,
-            String sortField,
-            boolean ascending
+        UUID teacherId,
+        UUID studentId,
+        UUID studentProgramId,
+        HomeworkStatus status,
+        int page,
+        int size,
+        String sortField,
+        boolean ascending
     ) {
         Sort.Direction direction = ascending ? Sort.Direction.ASC : Sort.Direction.DESC;
         var result = databaseRepository.findPageByTeacherAndStudent(
-                teacherId,
-                studentId,
-                studentProgramId,
-                status,
-                PageRequest.of(page, size, Sort.by(
-                        new Sort.Order(direction, sortField),
-                        Sort.Order.desc("id")
-                ))
+            teacherId,
+            studentId,
+            studentProgramId,
+            status,
+            PageRequest.of(page, size, Sort.by(
+                new Sort.Order(direction, sortField),
+                Sort.Order.desc("id")
+            ))
         );
         return new HomeworkPage(
-                result.getContent().stream()
-                        .map(homework -> new HomeworkListItem(
-                                homework.getId(),
-                                homework.getStudentProgramId(),
-                                homework.getTitle(),
-                                homework.getStatus(),
-                                homework.getAssignedAt(),
-                                homework.getDueAt(),
-                                homework.getCompletedAt(),
-                                homework.getCreatedAt()
-                        ))
-                        .toList(),
-                result.getTotalElements(),
-                result.getTotalPages()
+            result.getContent().stream()
+                .map(homework -> new HomeworkListItem(
+                    homework.getId(),
+                    homework.getStudentProgramId(),
+                    homework.getTitle(),
+                    homework.getStatus(),
+                    homework.getAssignedAt(),
+                    homework.getDueAt(),
+                    homework.getCompletedAt(),
+                    homework.getCreatedAt()
+                ))
+                .toList(),
+            result.getTotalElements(),
+            result.getTotalPages()
         );
     }
 
     @Override
     public StudentHomeworkPage findPageByStudent(
-            UUID studentId,
-            UUID studentProgramId,
-            HomeworkStatus status,
-            int page,
-            int size,
-            String sortField,
-            boolean ascending
+        UUID studentId,
+        UUID studentProgramId,
+        HomeworkStatus status,
+        int page,
+        int size,
+        String sortField,
+        boolean ascending
     ) {
         StringBuilder filters = new StringBuilder(
-                " where homework.studentProgram.studentId = :studentId"
+            " where homework.studentProgram.studentId = :studentId"
         );
         if (studentProgramId != null) {
             filters.append(" and homework.studentProgramId = :studentProgramId");
@@ -94,37 +94,37 @@ public class JpaHomeworkQuery implements HomeworkQuery {
         };
         String direction = ascending ? "asc" : "desc";
         String pageHql = "select homework.id, homework.studentProgramId, homework.title, homework.status, "
-                + "homework.assignedAt, homework.dueAt, homework.completedAt, "
-                + "count(item.id), homework.createdAt "
-                + "from HomeworkDatabaseModel homework left join homework.items item"
-                + filters
-                + " group by homework.id, homework.studentProgramId, homework.title, homework.status, "
-                + "homework.assignedAt, homework.dueAt, homework.completedAt, homework.createdAt"
-                + " order by " + orderProperty + " " + direction + ", homework.id desc";
+            + "homework.assignedAt, homework.dueAt, homework.completedAt, "
+            + "count(item.id), homework.createdAt "
+            + "from HomeworkDatabaseModel homework left join homework.items item"
+            + filters
+            + " group by homework.id, homework.studentProgramId, homework.title, homework.status, "
+            + "homework.assignedAt, homework.dueAt, homework.completedAt, homework.createdAt"
+            + " order by " + orderProperty + " " + direction + ", homework.id desc";
         var query = entityManager.createQuery(pageHql, Object[].class);
         bindStudentFilters(query, studentId, studentProgramId, status);
         query.setFirstResult(page * size);
         query.setMaxResults(size);
 
         var countQuery = entityManager.createQuery(
-                "select count(homework.id) from HomeworkDatabaseModel homework" + filters,
-                Long.class
+            "select count(homework.id) from HomeworkDatabaseModel homework" + filters,
+            Long.class
         );
         bindStudentFilters(countQuery, studentId, studentProgramId, status);
         long totalElements = countQuery.getSingleResult();
         List<StudentHomeworkListItem> items = query.getResultList().stream()
-                .map(row -> new StudentHomeworkListItem(
-                        (UUID) row[0],
-                        (UUID) row[1],
-                        (String) row[2],
-                        (HomeworkStatus) row[3],
-                        (Instant) row[4],
-                        (Instant) row[5],
-                        (Instant) row[6],
-                        (Long) row[7],
-                        (Instant) row[8]
-                ))
-                .toList();
+            .map(row -> new StudentHomeworkListItem(
+                (UUID) row[0],
+                (UUID) row[1],
+                (String) row[2],
+                (HomeworkStatus) row[3],
+                (Instant) row[4],
+                (Instant) row[5],
+                (Instant) row[6],
+                (Long) row[7],
+                (Instant) row[8]
+            ))
+            .toList();
         int totalPages = totalElements == 0 ? 0 : (int) ((totalElements + size - 1) / size);
         return new StudentHomeworkPage(items, totalElements, totalPages);
     }
@@ -143,9 +143,9 @@ public class JpaHomeworkQuery implements HomeworkQuery {
                   and homework.studentProgram.studentId = :studentId
                 order by item.position asc
                 """, Object[].class)
-                .setParameter("homeworkId", homeworkId)
-                .setParameter("studentId", studentId)
-                .getResultList();
+            .setParameter("homeworkId", homeworkId)
+            .setParameter("studentId", studentId)
+            .getResultList();
         if (rows.isEmpty()) {
             return Optional.empty();
         }
@@ -153,29 +153,29 @@ public class JpaHomeworkQuery implements HomeworkQuery {
         List<StudentHomeworkDetails.Item> items = new ArrayList<>(rows.size());
         for (Object[] row : rows) {
             items.add(new StudentHomeworkDetails.Item(
-                    (UUID) row[8],
-                    (UUID) row[9],
-                    (Integer) row[10],
-                    (Boolean) row[11],
-                    new StudentHomeworkDetails.Task(
-                            (UUID) row[12],
-                            (String) row[13],
-                            (String) row[14],
-                            (TaskType) row[15],
-                            (TaskDifficulty) row[16]
-                    )
+                (UUID) row[8],
+                (UUID) row[9],
+                (Integer) row[10],
+                (Boolean) row[11],
+                new StudentHomeworkDetails.Task(
+                    (UUID) row[12],
+                    (String) row[13],
+                    (String) row[14],
+                    (TaskType) row[15],
+                    (TaskDifficulty) row[16]
+                )
             ));
         }
         return Optional.of(new StudentHomeworkDetails(
-                (UUID) first[0],
-                (UUID) first[1],
-                (String) first[2],
-                (String) first[3],
-                (HomeworkStatus) first[4],
-                (Instant) first[5],
-                (Instant) first[6],
-                (Instant) first[7],
-                List.copyOf(items)
+            (UUID) first[0],
+            (UUID) first[1],
+            (String) first[2],
+            (String) first[3],
+            (HomeworkStatus) first[4],
+            (Instant) first[5],
+            (Instant) first[6],
+            (Instant) first[7],
+            List.copyOf(items)
         ));
     }
 
@@ -188,20 +188,20 @@ public class JpaHomeworkQuery implements HomeworkQuery {
                 join homework.items item
                 where item.id = :homeworkItemId
                 """, Object[].class)
-                .setParameter("homeworkItemId", homeworkItemId)
-                .getResultStream()
-                .findFirst()
-                .map(row -> new HomeworkSubmissionContext(
-                        (UUID) row[0], (UUID) row[1], (UUID) row[2], (HomeworkStatus) row[3],
-                        (UUID) row[4], (UUID) row[5]
-                ));
+            .setParameter("homeworkItemId", homeworkItemId)
+            .getResultStream()
+            .findFirst()
+            .map(row -> new HomeworkSubmissionContext(
+                (UUID) row[0], (UUID) row[1], (UUID) row[2], (HomeworkStatus) row[3],
+                (UUID) row[4], (UUID) row[5]
+            ));
     }
 
     private void bindStudentFilters(
-            jakarta.persistence.Query query,
-            UUID studentId,
-            UUID studentProgramId,
-            HomeworkStatus status
+        jakarta.persistence.Query query,
+        UUID studentId,
+        UUID studentProgramId,
+        HomeworkStatus status
     ) {
         query.setParameter("studentId", studentId);
         if (studentProgramId != null) {

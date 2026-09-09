@@ -26,12 +26,12 @@ public interface TeacherSubmissionApi {
         @ApiResponse(responseCode = "404", description = "Student not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     TeacherSubmissionPageResponse listTeacherStudentSubmissions(
-            @Parameter(hidden = true) AuthenticatedUser principal,
-            @Parameter(schema = @Schema(format = "uuid")) UUID studentId,
-            SubmissionStatus status,
-            @Parameter(description = "Zero-based page index", example = "0") int page,
-            @Parameter(description = "Page size from 1 to 100", example = "20") int size,
-            @Parameter(description = "Sort as submittedAt|attemptNo|status,asc|desc", example = "submittedAt,desc") String sort
+        @Parameter(hidden = true) AuthenticatedUser principal,
+        @Parameter(schema = @Schema(format = "uuid")) UUID studentId,
+        SubmissionStatus status,
+        @Parameter(description = "Zero-based page index", example = "0") int page,
+        @Parameter(description = "Page size from 1 to 100", example = "20") int size,
+        @Parameter(description = "Sort as submittedAt|attemptNo|status,asc|desc", example = "submittedAt,desc") String sort
     );
 
     @Operation(operationId = "reviewTextSubmission", summary = "Review a text submission")
@@ -44,9 +44,9 @@ public interface TeacherSubmissionApi {
         @ApiResponse(responseCode = "409", description = "Submission is not reviewable", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     TeacherSubmissionResponse reviewTextSubmission(
-            @Parameter(hidden = true) AuthenticatedUser principal,
-            @Parameter(schema = @Schema(format = "uuid")) UUID studentId,
-            @Parameter(schema = @Schema(format = "uuid")) UUID submissionId,
-            ReviewTextSubmissionRequest request
+        @Parameter(hidden = true) AuthenticatedUser principal,
+        @Parameter(schema = @Schema(format = "uuid")) UUID studentId,
+        @Parameter(schema = @Schema(format = "uuid")) UUID submissionId,
+        ReviewTextSubmissionRequest request
     );
 }

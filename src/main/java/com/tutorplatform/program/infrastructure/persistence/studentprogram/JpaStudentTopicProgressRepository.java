@@ -19,10 +19,10 @@ public class JpaStudentTopicProgressRepository implements StudentTopicProgressRe
     @Override
     public StudentTopicProgressEntity saveAndFlush(StudentTopicProgressEntity progress) {
         StudentTopicProgressId id = new StudentTopicProgressId(
-                progress.studentProgramId(), progress.topicId()
+            progress.studentProgramId(), progress.topicId()
         );
         StudentTopicProgressDatabaseModel model = databaseRepository.findById(id)
-                .orElseGet(() -> new StudentTopicProgressDatabaseModel(progress));
+            .orElseGet(() -> new StudentTopicProgressDatabaseModel(progress));
         model.updateFrom(progress);
         return databaseRepository.saveAndFlush(model).toEntity();
     }
@@ -30,6 +30,6 @@ public class JpaStudentTopicProgressRepository implements StudentTopicProgressRe
     @Override
     public Optional<StudentTopicProgressEntity> findById(UUID studentProgramId, UUID topicId) {
         return databaseRepository.findById(new StudentTopicProgressId(studentProgramId, topicId))
-                .map(StudentTopicProgressDatabaseModel::toEntity);
+            .map(StudentTopicProgressDatabaseModel::toEntity);
     }
 }

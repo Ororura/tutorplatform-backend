@@ -26,10 +26,10 @@ interface TaskDatabaseRepository extends JpaRepository<TaskDatabaseModel, UUID> 
         order by task.createdAt desc
         """)
     List<TaskDatabaseModel> findAllByTeacherId(
-            @Param("teacherId") UUID teacherId,
-            @Param("subjectId") UUID subjectId,
-            @Param("status") TaskStatus status,
-            @Param("taskType") TaskType taskType
+        @Param("teacherId") UUID teacherId,
+        @Param("subjectId") UUID subjectId,
+        @Param("status") TaskStatus status,
+        @Param("taskType") TaskType taskType
     );
 
     @Query("""
@@ -42,11 +42,11 @@ interface TaskDatabaseRepository extends JpaRepository<TaskDatabaseModel, UUID> 
           and (:difficulty is null or task.difficulty = :difficulty)
         """)
     Page<TaskDatabaseModel> findPageByTeacher(
-            @Param("teacherId") UUID teacherId,
-            @Param("taskType") TaskType taskType,
-            @Param("subjectId") UUID subjectId,
-            @Param("status") TaskStatus status,
-            @Param("difficulty") com.tutorplatform.task.domain.task.TaskDifficulty difficulty,
-            Pageable pageable
+        @Param("teacherId") UUID teacherId,
+        @Param("taskType") TaskType taskType,
+        @Param("subjectId") UUID subjectId,
+        @Param("status") TaskStatus status,
+        @Param("difficulty") com.tutorplatform.task.domain.task.TaskDifficulty difficulty,
+        Pageable pageable
     );
 }

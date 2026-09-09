@@ -17,8 +17,8 @@ public class JpaHomeworkRepository implements HomeworkRepository {
     private final HomeworkItemDatabaseRepository itemDatabaseRepository;
 
     JpaHomeworkRepository(
-            HomeworkDatabaseRepository databaseRepository,
-            HomeworkItemDatabaseRepository itemDatabaseRepository
+        HomeworkDatabaseRepository databaseRepository,
+        HomeworkItemDatabaseRepository itemDatabaseRepository
     ) {
         this.databaseRepository = databaseRepository;
         this.itemDatabaseRepository = itemDatabaseRepository;
@@ -48,13 +48,13 @@ public class JpaHomeworkRepository implements HomeworkRepository {
             throw new IllegalArgumentException("size must be greater than 0");
         }
         return databaseRepository.findAllByStudentProgramIdOrderByAssignedAtDesc(
-                        studentProgramId, PageRequest.of(page, size)
-                ).stream()
-                .map(HomeworkDatabaseModel::getId)
-                .map(databaseRepository::findWithItemsById)
-                .flatMap(Optional::stream)
-                .map(HomeworkDatabaseModel::toEntity)
-                .toList();
+                studentProgramId, PageRequest.of(page, size)
+            ).stream()
+            .map(HomeworkDatabaseModel::getId)
+            .map(databaseRepository::findWithItemsById)
+            .flatMap(Optional::stream)
+            .map(HomeworkDatabaseModel::toEntity)
+            .toList();
     }
 
     @Override
@@ -65,6 +65,6 @@ public class JpaHomeworkRepository implements HomeworkRepository {
     @Override
     public Optional<HomeworkItemEntity> findItemById(UUID homeworkId, UUID homeworkItemId) {
         return itemDatabaseRepository.findByHomeworkIdAndId(homeworkId, homeworkItemId)
-                .map(item -> item.toEntity(homeworkId));
+            .map(item -> item.toEntity(homeworkId));
     }
 }

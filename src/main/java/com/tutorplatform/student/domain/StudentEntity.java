@@ -7,25 +7,25 @@ import java.util.UUID;
 public class StudentEntity {
 
     private final UUID id;
-    private UUID userId;
-    private String firstName;
-    private String lastName;
     private final StudentStatus status;
     private final Instant createdAt;
     private final Instant updatedAt;
+    private UUID userId;
+    private String firstName;
+    private String lastName;
 
     public StudentEntity(UUID id, String firstName, String lastName, StudentStatus status) {
         this(id, null, firstName, lastName, status, null, null);
     }
 
     public StudentEntity(
-            UUID id,
-            UUID userId,
-            String firstName,
-            String lastName,
-            StudentStatus status,
-            Instant createdAt,
-            Instant updatedAt
+        UUID id,
+        UUID userId,
+        String firstName,
+        String lastName,
+        StudentStatus status,
+        Instant createdAt,
+        Instant updatedAt
     ) {
         this.id = Objects.requireNonNull(id);
         this.userId = userId;

@@ -26,38 +26,38 @@ public class JpaTaskQuery implements TaskQuery {
     @Override
     public Optional<TaskContext> findTask(UUID taskId) {
         return databaseRepository.findById(taskId).map(task -> new TaskContext(
-                task.getId(), task.getTeacherId(), task.getSubjectId(), task.getTitle(),
-                task.getTaskType(), task.getStatus()
+            task.getId(), task.getTeacherId(), task.getSubjectId(), task.getTitle(),
+            task.getTaskType(), task.getStatus()
         ));
     }
 
     @Override
     public TaskPage findTeacherTextTasks(
-            UUID teacherId,
-            UUID subjectId,
-            TaskStatus status,
-            TaskDifficulty difficulty,
-            int page,
-            int size,
-            String sortField,
-            boolean ascending
+        UUID teacherId,
+        UUID subjectId,
+        TaskStatus status,
+        TaskDifficulty difficulty,
+        int page,
+        int size,
+        String sortField,
+        boolean ascending
     ) {
         Sort.Direction direction = ascending ? Sort.Direction.ASC : Sort.Direction.DESC;
         var result = databaseRepository.findPageByTeacher(
-                teacherId,
-                TaskType.TEXT,
-                subjectId,
-                status,
-                difficulty,
-                PageRequest.of(page, size, Sort.by(
-                        new Sort.Order(direction, sortField),
-                        Sort.Order.desc("id")
-                ))
+            teacherId,
+            TaskType.TEXT,
+            subjectId,
+            status,
+            difficulty,
+            PageRequest.of(page, size, Sort.by(
+                new Sort.Order(direction, sortField),
+                Sort.Order.desc("id")
+            ))
         );
         return new TaskPage(
-                result.getContent().stream().map(TaskDatabaseModel::toEntity).toList(),
-                result.getTotalElements(),
-                result.getTotalPages()
+            result.getContent().stream().map(TaskDatabaseModel::toEntity).toList(),
+            result.getTotalElements(),
+            result.getTotalPages()
         );
     }
 
@@ -67,14 +67,14 @@ public class JpaTaskQuery implements TaskQuery {
             return List.of();
         }
         return databaseRepository.findAllById(taskIds).stream()
-                .map(task -> new TaskContext(
-                        task.getId(),
-                        task.getTeacherId(),
-                        task.getSubjectId(),
-                        task.getTitle(),
-                        task.getTaskType(),
-                        task.getStatus()
-                ))
-                .toList();
+            .map(task -> new TaskContext(
+                task.getId(),
+                task.getTeacherId(),
+                task.getSubjectId(),
+                task.getTitle(),
+                task.getTaskType(),
+                task.getStatus()
+            ))
+            .toList();
     }
 }

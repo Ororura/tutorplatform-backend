@@ -38,6 +38,14 @@ public class StudentQueryRepository {
         this.jdbcClient = jdbcClient;
     }
 
+    private static StudentSummaryRow mapSummary(ResultSet resultSet, int rowNumber) throws SQLException {
+        return new StudentSummaryRow(resultSet.getObject("id", UUID.class), resultSet.getString("first_name"), resultSet.getString("last_name"), StudentStatus.valueOf(resultSet.getString("status")), StudentAccountStatus.valueOf(resultSet.getString("account_status")), resultSet.getTimestamp("created_at").toInstant());
+    }
+
+    private static StudentDetailsRow mapDetails(ResultSet resultSet, int rowNumber) throws SQLException {
+        return new StudentDetailsRow(resultSet.getObject("id", UUID.class), resultSet.getString("first_name"), resultSet.getString("last_name"), StudentStatus.valueOf(resultSet.getString("status")), StudentAccountStatus.valueOf(resultSet.getString("account_status")), resultSet.getString("account_email"), TeacherStudentRelationType.valueOf(resultSet.getString("relation_type")), resultSet.getTimestamp("started_at").toInstant(), resultSet.getTimestamp("created_at").toInstant(), resultSet.getTimestamp("updated_at").toInstant());
+    }
+
     public StudentPage findStudents(UUID teacherId, int page, int size, String searchPattern, StudentAccountStatus accountStatus, String sortField, boolean ascending) {
         String filters = ("""
             FROM teacher_student_links link
@@ -113,14 +121,6 @@ public class StudentQueryRepository {
 
     private JdbcClient.StatementSpec statement(String sql, UUID teacherId, String searchPattern, StudentAccountStatus accountStatus) {
         return jdbcClient.sql(sql).param("teacherId", teacherId).param("searchPattern", searchPattern, Types.VARCHAR).param("accountStatus", accountStatus == null ? null : accountStatus.name(), Types.VARCHAR);
-    }
-
-    private static StudentSummaryRow mapSummary(ResultSet resultSet, int rowNumber) throws SQLException {
-        return new StudentSummaryRow(resultSet.getObject("id", UUID.class), resultSet.getString("first_name"), resultSet.getString("last_name"), StudentStatus.valueOf(resultSet.getString("status")), StudentAccountStatus.valueOf(resultSet.getString("account_status")), resultSet.getTimestamp("created_at").toInstant());
-    }
-
-    private static StudentDetailsRow mapDetails(ResultSet resultSet, int rowNumber) throws SQLException {
-        return new StudentDetailsRow(resultSet.getObject("id", UUID.class), resultSet.getString("first_name"), resultSet.getString("last_name"), StudentStatus.valueOf(resultSet.getString("status")), StudentAccountStatus.valueOf(resultSet.getString("account_status")), resultSet.getString("account_email"), TeacherStudentRelationType.valueOf(resultSet.getString("relation_type")), resultSet.getTimestamp("started_at").toInstant(), resultSet.getTimestamp("created_at").toInstant(), resultSet.getTimestamp("updated_at").toInstant());
     }
 
     public record StudentPage(List<StudentSummaryRow> items, long totalElements) {

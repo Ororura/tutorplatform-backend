@@ -24,8 +24,8 @@ public class JpaTopicTaskRepository implements TopicTaskRepository {
     @Override
     public List<TopicTaskEntity> findAllByTopicIdOrderByPosition(UUID topicId) {
         return databaseRepository.findAllByIdTopicIdOrderByPositionAsc(topicId).stream()
-                .map(TopicTaskDatabaseModel::toEntity)
-                .toList();
+            .map(TopicTaskDatabaseModel::toEntity)
+            .toList();
     }
 
     @Override

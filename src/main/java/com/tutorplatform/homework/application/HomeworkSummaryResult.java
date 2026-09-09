@@ -6,13 +6,13 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record HomeworkSummaryResult(
-        UUID id,
-        UUID studentProgramId,
-        String title,
-        HomeworkStatus status,
-        Instant assignedAt,
-        Instant dueAt,
-        boolean overdue,
-        Instant createdAt
+    UUID id,
+    UUID studentProgramId,
+    String title,
+    HomeworkStatus status,
+    Instant assignedAt,
+    Instant dueAt,
+    boolean overdue,
+    Instant createdAt
 ) {
 }

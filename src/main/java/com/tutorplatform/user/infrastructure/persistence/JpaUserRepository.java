@@ -18,18 +18,33 @@ public class JpaUserRepository implements UserRepository {
     @Override
     public UserEntity saveAndFlush(UserEntity user) {
         UserDatabaseModel model = databaseRepository.findById(user.id())
-                .orElseGet(() -> new UserDatabaseModel(user));
+            .orElseGet(() -> new UserDatabaseModel(user));
         model.updateFrom(user);
         return databaseRepository.saveAndFlush(model).toEntity();
     }
 
-    @Override public Optional<UserEntity> findById(UUID id) {
+    @Override
+    public Optional<UserEntity> findById(UUID id) {
         return databaseRepository.findById(id).map(UserDatabaseModel::toEntity);
     }
-    @Override public Optional<UserEntity> findByEmail(String email) {
+
+    @Override
+    public Optional<UserEntity> findByEmail(String email) {
         return databaseRepository.findByEmail(email).map(UserDatabaseModel::toEntity);
     }
-    @Override public boolean existsByEmail(String email) { return databaseRepository.existsByEmail(email); }
-    @Override public long count() { return databaseRepository.count(); }
-    @Override public void deleteAll() { databaseRepository.deleteAll(); }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return databaseRepository.existsByEmail(email);
+    }
+
+    @Override
+    public long count() {
+        return databaseRepository.count();
+    }
+
+    @Override
+    public void deleteAll() {
+        databaseRepository.deleteAll();
+    }
 }

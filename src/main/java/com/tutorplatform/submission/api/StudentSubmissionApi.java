@@ -27,9 +27,9 @@ public interface StudentSubmissionApi {
         @ApiResponse(responseCode = "409", description = "Homework does not accept submissions", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     ResponseEntity<StudentSubmissionResponse> submitTextAnswer(
-            @Parameter(hidden = true) AuthenticatedUser principal,
-            @Parameter(schema = @Schema(format = "uuid")) UUID taskId,
-            SubmitTextAnswerRequest request
+        @Parameter(hidden = true) AuthenticatedUser principal,
+        @Parameter(schema = @Schema(format = "uuid")) UUID taskId,
+        SubmitTextAnswerRequest request
     );
 
     @Operation(operationId = "listStudentTaskSubmissions", summary = "List the current student's task submissions")
@@ -41,11 +41,11 @@ public interface StudentSubmissionApi {
         @ApiResponse(responseCode = "404", description = "Task or homework item not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     StudentSubmissionPageResponse listStudentTaskSubmissions(
-            @Parameter(hidden = true) AuthenticatedUser principal,
-            @Parameter(schema = @Schema(format = "uuid")) UUID taskId,
-            @Parameter(description = "Optional homework item context", schema = @Schema(format = "uuid")) UUID homeworkItemId,
-            @Parameter(description = "Zero-based page index", example = "0") int page,
-            @Parameter(description = "Page size from 1 to 100", example = "20") int size
+        @Parameter(hidden = true) AuthenticatedUser principal,
+        @Parameter(schema = @Schema(format = "uuid")) UUID taskId,
+        @Parameter(description = "Optional homework item context", schema = @Schema(format = "uuid")) UUID homeworkItemId,
+        @Parameter(description = "Zero-based page index", example = "0") int page,
+        @Parameter(description = "Page size from 1 to 100", example = "20") int size
     );
 
     @Operation(operationId = "getStudentSubmission", summary = "Get one submission owned by the current student")
@@ -56,7 +56,7 @@ public interface StudentSubmissionApi {
         @ApiResponse(responseCode = "404", description = "Submission not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     StudentSubmissionResponse getStudentSubmission(
-            @Parameter(hidden = true) AuthenticatedUser principal,
-            @Parameter(schema = @Schema(format = "uuid")) UUID submissionId
+        @Parameter(hidden = true) AuthenticatedUser principal,
+        @Parameter(schema = @Schema(format = "uuid")) UUID submissionId
     );
 }

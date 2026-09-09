@@ -40,13 +40,13 @@ public interface TeacherTaskApi {
         @ApiResponse(responseCode = "403", description = "Teacher role required", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     TaskPageResponse listTasks(
-            AuthenticatedUser principal,
-            UUID subjectId,
-            TaskStatus status,
-            TaskDifficulty difficulty,
-            @Parameter(description = "Zero-based page index", example = "0") int page,
-            @Parameter(description = "Page size from 1 to 100", example = "20") int size,
-            @Parameter(description = "Sort as field,direction", example = "createdAt,desc") String sort
+        AuthenticatedUser principal,
+        UUID subjectId,
+        TaskStatus status,
+        TaskDifficulty difficulty,
+        @Parameter(description = "Zero-based page index", example = "0") int page,
+        @Parameter(description = "Page size from 1 to 100", example = "20") int size,
+        @Parameter(description = "Sort as field,direction", example = "createdAt,desc") String sort
     );
 
     @Operation(operationId = "getTask", summary = "Get a text task")
@@ -79,9 +79,9 @@ public interface TeacherTaskApi {
         @ApiResponse(responseCode = "409", description = "Attachment conflict", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     ResponseEntity<TopicTaskResponse> attachTaskToTopic(
-            AuthenticatedUser principal,
-            UUID topicId,
-            UUID taskId,
-            AttachTaskToTopicRequest request
+        AuthenticatedUser principal,
+        UUID topicId,
+        UUID taskId,
+        AttachTaskToTopicRequest request
     );
 }

@@ -17,14 +17,14 @@ public class AuthExceptionHandler {
     @ExceptionHandler(EmailAlreadyRegisteredException.class)
     ResponseEntity<ApiError> handleEmailAlreadyRegistered(EmailAlreadyRegisteredException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                ApiError.of("EMAIL_ALREADY_REGISTERED", "Email is already registered", MDC.get("traceId"))
+            ApiError.of("EMAIL_ALREADY_REGISTERED", "Email is already registered", MDC.get("traceId"))
         );
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
     ResponseEntity<ApiError> handleInvalidCredentials(InvalidCredentialsException exception) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                ApiError.of("AUTH_INVALID_CREDENTIALS", "Invalid email or password", MDC.get("traceId"))
+            ApiError.of("AUTH_INVALID_CREDENTIALS", "Invalid email or password", MDC.get("traceId"))
         );
     }
 }

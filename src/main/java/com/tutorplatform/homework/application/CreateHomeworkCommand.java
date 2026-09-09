@@ -5,11 +5,11 @@ import java.util.List;
 import java.util.UUID;
 
 public record CreateHomeworkCommand(
-        UUID studentId,
-        UUID studentProgramId,
-        String title,
-        String description,
-        Instant dueAt,
-        List<HomeworkItemInput> items
+    UUID studentId,
+    UUID studentProgramId,
+    String title,
+    String description,
+    Instant dueAt,
+    List<HomeworkItemInput> items
 ) {
 }

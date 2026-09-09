@@ -7,16 +7,16 @@ import jakarta.validation.constraints.PositiveOrZero;
 import java.util.UUID;
 
 public record HomeworkItemRequest(
-        @NotNull
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "uuid")
-        UUID taskId,
+    @NotNull
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "uuid")
+    UUID taskId,
 
-        @PositiveOrZero
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED, minimum = "0")
-        int position,
+    @PositiveOrZero
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, minimum = "0")
+    int position,
 
-        @NotNull
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-        Boolean required
+    @NotNull
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
+    Boolean required
 ) {
 }

@@ -11,7 +11,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class FileMaterialPolicyTest {
-    @Test void enforcesActualSizeEvenIfDeclaredSizeIsFalse() {
+    @Test
+    void enforcesActualSizeEvenIfDeclaredSizeIsFalse() {
         var policy = new FileMaterialPolicy(4, Set.of("text/plain"));
         assertThatThrownBy(() -> policy.readAndValidate(new ByteArrayInputStream("hello".getBytes()),
             1, "text/plain", LessonMaterialType.FILE)).isInstanceOf(FileTooLargeException.class);
@@ -19,7 +20,8 @@ class FileMaterialPolicyTest {
             4, "text/plain", LessonMaterialType.FILE)).isEqualTo("four".getBytes());
     }
 
-    @Test void configurableAllowlistCannotBypassVerification() {
+    @Test
+    void configurableAllowlistCannotBypassVerification() {
         var policy = new FileMaterialPolicy(100, Set.of("application/pdf", "application/octet-stream"));
         assertThatThrownBy(() -> policy.readAndValidate(new ByteArrayInputStream("hello".getBytes()),
             5, "text/plain", LessonMaterialType.FILE)).isInstanceOf(InvalidLessonMaterialException.class);
@@ -29,9 +31,10 @@ class FileMaterialPolicyTest {
             1, "application/octet-stream", LessonMaterialType.FILE)).isInstanceOf(InvalidLessonMaterialException.class);
     }
 
-    @Test void textMustBeNonemptyUtf8WithoutBinaryControlCharacters() {
+    @Test
+    void textMustBeNonemptyUtf8WithoutBinaryControlCharacters() {
         var policy = new FileMaterialPolicy(100, Set.of("text/plain"));
-        for (byte[] invalid : new byte[][]{new byte[0], new byte[]{0}, new byte[]{(byte)255}}) {
+        for (byte[] invalid : new byte[][]{new byte[0], new byte[]{0}, new byte[]{(byte) 255}}) {
             assertThatThrownBy(() -> policy.readAndValidate(new ByteArrayInputStream(invalid),
                 invalid.length, "text/plain", LessonMaterialType.FILE)).isInstanceOf(InvalidLessonMaterialException.class);
         }

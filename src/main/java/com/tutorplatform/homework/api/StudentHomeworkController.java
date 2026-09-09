@@ -23,26 +23,26 @@ public class StudentHomeworkController implements StudentHomeworkApi {
     @Override
     @GetMapping
     public StudentHomeworkPageResponse listStudentHomeworks(
-            @AuthenticationPrincipal AuthenticatedUser principal,
-            @RequestParam(required = false) UUID studentProgramId,
-            @RequestParam(required = false) HomeworkStatus status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "assignedAt,desc") String sort
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @RequestParam(required = false) UUID studentProgramId,
+        @RequestParam(required = false) HomeworkStatus status,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(defaultValue = "assignedAt,desc") String sort
     ) {
         return StudentHomeworkPageResponse.from(studentHomeworkService.listHomeworks(
-                principal, studentProgramId, status, page, size, sort
+            principal, studentProgramId, status, page, size, sort
         ));
     }
 
     @Override
     @GetMapping("/{homeworkId}")
     public StudentHomeworkDetailsResponse getStudentHomework(
-            @AuthenticationPrincipal AuthenticatedUser principal,
-            @PathVariable UUID homeworkId
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID homeworkId
     ) {
         return StudentHomeworkDetailsResponse.from(
-                studentHomeworkService.getHomework(principal, homeworkId)
+            studentHomeworkService.getHomework(principal, homeworkId)
         );
     }
 }

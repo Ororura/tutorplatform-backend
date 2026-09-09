@@ -54,6 +54,28 @@ class StudentHomeworkApiIntegrationTest {
 
     @Container
     private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
+    @Autowired
+    private MockMvc mockMvc;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TeacherRepository teacherRepository;
+    @Autowired
+    private StudentRepository studentRepository;
+    @Autowired
+    private TeacherStudentLinkRepository teacherStudentLinkRepository;
+    @Autowired
+    private SubjectRepository subjectRepository;
+    @Autowired
+    private LearningProgramRepository learningProgramRepository;
+    @Autowired
+    private StudentProgramRepository studentProgramRepository;
+    @Autowired
+    private TaskRepository taskRepository;
+    @Autowired
+    private HomeworkRepository homeworkRepository;
+    @Autowired
+    private EntityManagerFactory entityManagerFactory;
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
@@ -64,35 +86,23 @@ class StudentHomeworkApiIntegrationTest {
         registry.add("spring.jpa.properties.hibernate.generate_statistics", () -> "true");
     }
 
-    @Autowired private MockMvc mockMvc;
-    @Autowired private UserRepository userRepository;
-    @Autowired private TeacherRepository teacherRepository;
-    @Autowired private StudentRepository studentRepository;
-    @Autowired private TeacherStudentLinkRepository teacherStudentLinkRepository;
-    @Autowired private SubjectRepository subjectRepository;
-    @Autowired private LearningProgramRepository learningProgramRepository;
-    @Autowired private StudentProgramRepository studentProgramRepository;
-    @Autowired private TaskRepository taskRepository;
-    @Autowired private HomeworkRepository homeworkRepository;
-    @Autowired private EntityManagerFactory entityManagerFactory;
-
     @Test
     void authenticationAndRoleAreEnforced() throws Exception {
         mockMvc.perform(get("/api/v1/student/homeworks"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"));
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"));
 
         AuthenticatedUser teacher = new AuthenticatedUser(
-                UUID.randomUUID(), "teacher-role@example.com", "hash", true,
-                List.of(new SimpleGrantedAuthority("ROLE_TEACHER"))
+            UUID.randomUUID(), "teacher-role@example.com", "hash", true,
+            List.of(new SimpleGrantedAuthority("ROLE_TEACHER"))
         );
         mockMvc.perform(get("/api/v1/student/homeworks").with(user(teacher)))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value("ACCESS_DENIED"));
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.code").value("ACCESS_DENIED"));
 
         Fixture fixture = createFixture("auth");
         mockMvc.perform(get("/api/v1/student/homeworks").with(user(fixture.studentPrincipal())))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
     }
 
     @Test
@@ -100,44 +110,44 @@ class StudentHomeworkApiIntegrationTest {
         Fixture owner = createFixture("list-owner");
         Fixture foreign = createFixture("list-foreign");
         HomeworkEntity first = createHomework(owner, "First", Instant.now().minusSeconds(20),
-                Instant.now().plusSeconds(3600), HomeworkStatus.ASSIGNED, null,
-                owner.tasks().subList(0, 2));
+            Instant.now().plusSeconds(3600), HomeworkStatus.ASSIGNED, null,
+            owner.tasks().subList(0, 2));
         HomeworkEntity second = createHomework(owner, "Second", Instant.now().minusSeconds(10),
-                null, HomeworkStatus.ASSIGNED, null, List.of(owner.tasks().getFirst()));
+            null, HomeworkStatus.ASSIGNED, null, List.of(owner.tasks().getFirst()));
         createHomework(foreign, "Foreign", Instant.now(), null, HomeworkStatus.ASSIGNED, null, foreign.tasks());
 
         mockMvc.perform(get("/api/v1/student/homeworks").with(user(owner.studentPrincipal())))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items.length()").value(2))
-                .andExpect(jsonPath("$.items[0].id").value(second.getId().toString()))
-                .andExpect(jsonPath("$.items[1].id").value(first.getId().toString()))
-                .andExpect(jsonPath("$.items[0].itemsCount").value(1))
-                .andExpect(jsonPath("$.items[1].itemsCount").value(2))
-                .andExpect(jsonPath("$.totalElements").value(2));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.items.length()").value(2))
+            .andExpect(jsonPath("$.items[0].id").value(second.getId().toString()))
+            .andExpect(jsonPath("$.items[1].id").value(first.getId().toString()))
+            .andExpect(jsonPath("$.items[0].itemsCount").value(1))
+            .andExpect(jsonPath("$.items[1].itemsCount").value(2))
+            .andExpect(jsonPath("$.totalElements").value(2));
     }
 
     @Test
     void paginationAndSortingAreAppliedInDatabase() throws Exception {
         Fixture fixture = createFixture("page-sort");
         createHomework(fixture, "Zulu", Instant.now().minusSeconds(30), null,
-                HomeworkStatus.ASSIGNED, null, fixture.tasks());
+            HomeworkStatus.ASSIGNED, null, fixture.tasks());
         createHomework(fixture, "Alpha", Instant.now().minusSeconds(20), null,
-                HomeworkStatus.ASSIGNED, null, fixture.tasks());
+            HomeworkStatus.ASSIGNED, null, fixture.tasks());
         createHomework(fixture, "Mike", Instant.now().minusSeconds(10), null,
-                HomeworkStatus.ASSIGNED, null, fixture.tasks());
+            HomeworkStatus.ASSIGNED, null, fixture.tasks());
 
         mockMvc.perform(get("/api/v1/student/homeworks")
-                        .with(user(fixture.studentPrincipal()))
-                        .param("page", "1")
-                        .param("size", "1")
-                        .param("sort", "title,asc"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items.length()").value(1))
-                .andExpect(jsonPath("$.items[0].title").value("Mike"))
-                .andExpect(jsonPath("$.page").value(1))
-                .andExpect(jsonPath("$.size").value(1))
-                .andExpect(jsonPath("$.totalElements").value(3))
-                .andExpect(jsonPath("$.totalPages").value(3));
+                .with(user(fixture.studentPrincipal()))
+                .param("page", "1")
+                .param("size", "1")
+                .param("sort", "title,asc"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.items.length()").value(1))
+            .andExpect(jsonPath("$.items[0].title").value("Mike"))
+            .andExpect(jsonPath("$.page").value(1))
+            .andExpect(jsonPath("$.size").value(1))
+            .andExpect(jsonPath("$.totalElements").value(3))
+            .andExpect(jsonPath("$.totalPages").value(3));
     }
 
     @Test
@@ -149,34 +159,34 @@ class StudentHomeworkApiIntegrationTest {
         createHomework(fixture, otherProgram, "Other program", HomeworkStatus.ASSIGNED);
 
         mockMvc.perform(get("/api/v1/student/homeworks")
-                        .with(user(fixture.studentPrincipal()))
-                        .param("studentProgramId", fixture.studentProgram().id().toString())
-                        .param("status", "ASSIGNED"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items.length()").value(1))
-                .andExpect(jsonPath("$.items[0].title").value("Assigned"));
+                .with(user(fixture.studentPrincipal()))
+                .param("studentProgramId", fixture.studentProgram().id().toString())
+                .param("status", "ASSIGNED"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.items.length()").value(1))
+            .andExpect(jsonPath("$.items[0].title").value("Assigned"));
 
         Fixture foreign = createFixture("foreign-program");
         mockMvc.perform(get("/api/v1/student/homeworks")
-                        .with(user(fixture.studentPrincipal()))
-                        .param("studentProgramId", foreign.studentProgram().id().toString()))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value("STUDENT_PROGRAM_NOT_FOUND"));
+                .with(user(fixture.studentPrincipal()))
+                .param("studentProgramId", foreign.studentProgram().id().toString()))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("STUDENT_PROGRAM_NOT_FOUND"));
     }
 
     @Test
     void invalidSortAndPaginationAreRejected() throws Exception {
         Fixture fixture = createFixture("invalid-list");
         mockMvc.perform(get("/api/v1/student/homeworks")
-                        .with(user(fixture.studentPrincipal()))
-                        .param("sort", "assignedByTeacherId,asc"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.details[0].field").value("sort"));
+                .with(user(fixture.studentPrincipal()))
+                .param("sort", "assignedByTeacherId,asc"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.details[0].field").value("sort"));
         mockMvc.perform(get("/api/v1/student/homeworks")
-                        .with(user(fixture.studentPrincipal()))
-                        .param("size", "101"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.details[0].field").value("size"));
+                .with(user(fixture.studentPrincipal()))
+                .param("size", "101"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.details[0].field").value("size"));
     }
 
     @Test
@@ -185,58 +195,58 @@ class StudentHomeworkApiIntegrationTest {
         Instant past = Instant.now().minusSeconds(3600);
         Instant future = Instant.now().plusSeconds(3600);
         createHomework(fixture, "Past assigned", Instant.now(), past,
-                HomeworkStatus.ASSIGNED, null, fixture.tasks());
+            HomeworkStatus.ASSIGNED, null, fixture.tasks());
         createHomework(fixture, "Future", Instant.now(), future,
-                HomeworkStatus.ASSIGNED, null, fixture.tasks());
+            HomeworkStatus.ASSIGNED, null, fixture.tasks());
         createHomework(fixture, "No due", Instant.now(), null,
-                HomeworkStatus.ASSIGNED, null, fixture.tasks());
+            HomeworkStatus.ASSIGNED, null, fixture.tasks());
         createHomework(fixture, "Cancelled", Instant.now(), past,
-                HomeworkStatus.CANCELLED, null, fixture.tasks());
+            HomeworkStatus.CANCELLED, null, fixture.tasks());
         createHomework(fixture, "Completed", Instant.now(), past,
-                HomeworkStatus.COMPLETED, Instant.now().minusSeconds(30), fixture.tasks());
+            HomeworkStatus.COMPLETED, Instant.now().minusSeconds(30), fixture.tasks());
 
         mockMvc.perform(get("/api/v1/student/homeworks")
-                        .with(user(fixture.studentPrincipal()))
-                        .param("sort", "title,asc"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items[?(@.title == 'Past assigned')].overdue").value(true))
-                .andExpect(jsonPath("$.items[?(@.title == 'Future')].overdue").value(false))
-                .andExpect(jsonPath("$.items[?(@.title == 'No due')].overdue").value(false))
-                .andExpect(jsonPath("$.items[?(@.title == 'Cancelled')].overdue").value(false))
-                .andExpect(jsonPath("$.items[?(@.title == 'Completed')].overdue").value(false));
+                .with(user(fixture.studentPrincipal()))
+                .param("sort", "title,asc"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.items[?(@.title == 'Past assigned')].overdue").value(true))
+            .andExpect(jsonPath("$.items[?(@.title == 'Future')].overdue").value(false))
+            .andExpect(jsonPath("$.items[?(@.title == 'No due')].overdue").value(false))
+            .andExpect(jsonPath("$.items[?(@.title == 'Cancelled')].overdue").value(false))
+            .andExpect(jsonPath("$.items[?(@.title == 'Completed')].overdue").value(false));
     }
 
     @Test
     void detailReturnsOrderedItemsAndStudentTaskProjectionOnly() throws Exception {
         Fixture fixture = createFixture("detail");
         HomeworkEntity homework = createHomework(
-                fixture, "Detailed", Instant.now(), Instant.now().plusSeconds(3600),
-                HomeworkStatus.ASSIGNED, null,
-                List.of(fixture.tasks().get(1), fixture.tasks().getFirst())
+            fixture, "Detailed", Instant.now(), Instant.now().plusSeconds(3600),
+            HomeworkStatus.ASSIGNED, null,
+            List.of(fixture.tasks().get(1), fixture.tasks().getFirst())
         );
         createHomework(fixture, "Another", Instant.now(), null, HomeworkStatus.ASSIGNED,
-                null, List.of(fixture.tasks().get(2)));
+            null, List.of(fixture.tasks().get(2)));
 
         mockMvc.perform(get("/api/v1/student/homeworks/{homeworkId}", homework.getId())
-                        .with(user(fixture.studentPrincipal())))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(homework.getId().toString()))
-                .andExpect(jsonPath("$.description").value("Homework description"))
-                .andExpect(jsonPath("$.items.length()").value(2))
-                .andExpect(jsonPath("$.items[0].position").value(0))
-                .andExpect(jsonPath("$.items[0].taskId").value(fixture.tasks().get(1).getId().toString()))
-                .andExpect(jsonPath("$.items[0].task.id").value(fixture.tasks().get(1).getId().toString()))
-                .andExpect(jsonPath("$.items[0].task.title").value("Task 1"))
-                .andExpect(jsonPath("$.items[0].task.descriptionMarkdown").value("Description 1"))
-                .andExpect(jsonPath("$.items[0].task.taskType").value("TEXT"))
-                .andExpect(jsonPath("$.items[0].task.difficulty").value("MEDIUM"))
-                .andExpect(jsonPath("$.items[1].position").value(1))
-                .andExpect(jsonPath("$.items[?(@.taskId == '" + fixture.tasks().get(2).getId() + "')]").isEmpty())
-                .andExpect(jsonPath("$.assignedByTeacherId").doesNotExist())
-                .andExpect(jsonPath("$.version").doesNotExist())
-                .andExpect(jsonPath("$.items[0].task.teacherId").doesNotExist())
-                .andExpect(jsonPath("$.items[0].task.subjectId").doesNotExist())
-                .andExpect(jsonPath("$.items[0].task.status").doesNotExist());
+                .with(user(fixture.studentPrincipal())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(homework.getId().toString()))
+            .andExpect(jsonPath("$.description").value("Homework description"))
+            .andExpect(jsonPath("$.items.length()").value(2))
+            .andExpect(jsonPath("$.items[0].position").value(0))
+            .andExpect(jsonPath("$.items[0].taskId").value(fixture.tasks().get(1).getId().toString()))
+            .andExpect(jsonPath("$.items[0].task.id").value(fixture.tasks().get(1).getId().toString()))
+            .andExpect(jsonPath("$.items[0].task.title").value("Task 1"))
+            .andExpect(jsonPath("$.items[0].task.descriptionMarkdown").value("Description 1"))
+            .andExpect(jsonPath("$.items[0].task.taskType").value("TEXT"))
+            .andExpect(jsonPath("$.items[0].task.difficulty").value("MEDIUM"))
+            .andExpect(jsonPath("$.items[1].position").value(1))
+            .andExpect(jsonPath("$.items[?(@.taskId == '" + fixture.tasks().get(2).getId() + "')]").isEmpty())
+            .andExpect(jsonPath("$.assignedByTeacherId").doesNotExist())
+            .andExpect(jsonPath("$.version").doesNotExist())
+            .andExpect(jsonPath("$.items[0].task.teacherId").doesNotExist())
+            .andExpect(jsonPath("$.items[0].task.subjectId").doesNotExist())
+            .andExpect(jsonPath("$.items[0].task.status").doesNotExist());
     }
 
     @Test
@@ -244,12 +254,12 @@ class StudentHomeworkApiIntegrationTest {
         Fixture owner = createFixture("detail-owner");
         Fixture foreign = createFixture("detail-foreign");
         HomeworkEntity homework = createHomework(owner, "Secret", Instant.now(), null,
-                HomeworkStatus.ASSIGNED, null, owner.tasks());
+            HomeworkStatus.ASSIGNED, null, owner.tasks());
 
         mockMvc.perform(get("/api/v1/student/homeworks/{homeworkId}", homework.getId())
-                        .with(user(foreign.studentPrincipal())))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value("HOMEWORK_NOT_FOUND"));
+                .with(user(foreign.studentPrincipal())))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("HOMEWORK_NOT_FOUND"));
     }
 
     @Test
@@ -257,16 +267,16 @@ class StudentHomeworkApiIntegrationTest {
         Fixture fixture = createFixture("list-performance");
         for (int i = 0; i < 8; i++) {
             createHomework(fixture, "Homework " + i, Instant.now().plusSeconds(i), null,
-                    HomeworkStatus.ASSIGNED, null, fixture.tasks());
+                HomeworkStatus.ASSIGNED, null, fixture.tasks());
         }
         Statistics statistics = statistics();
         statistics.clear();
 
         mockMvc.perform(get("/api/v1/student/homeworks")
-                        .with(user(fixture.studentPrincipal()))
-                        .param("size", "5"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items.length()").value(5));
+                .with(user(fixture.studentPrincipal()))
+                .param("size", "5"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.items.length()").value(5));
 
         assertThat(statistics.getPrepareStatementCount()).isLessThanOrEqualTo(3);
     }
@@ -279,14 +289,14 @@ class StudentHomeworkApiIntegrationTest {
             tasks.add(createTask(fixture, i));
         }
         HomeworkEntity homework = createHomework(fixture, "Large", Instant.now(), null,
-                HomeworkStatus.ASSIGNED, null, tasks);
+            HomeworkStatus.ASSIGNED, null, tasks);
         Statistics statistics = statistics();
         statistics.clear();
 
         mockMvc.perform(get("/api/v1/student/homeworks/{homeworkId}", homework.getId())
-                        .with(user(fixture.studentPrincipal())))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items.length()").value(10));
+                .with(user(fixture.studentPrincipal())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.items.length()").value(10));
 
         assertThat(statistics.getPrepareStatementCount()).isLessThanOrEqualTo(2);
     }
@@ -294,62 +304,62 @@ class StudentHomeworkApiIntegrationTest {
     @Test
     void openApiPublishesStudentHomeworkOperationsAndSchemas() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.paths['/api/v1/student/homeworks'].get.operationId")
-                        .value("listStudentHomeworks"))
-                .andExpect(jsonPath("$.paths['/api/v1/student/homeworks/{homeworkId}'].get.operationId")
-                        .value("getStudentHomework"))
-                .andExpect(jsonPath("$.components.schemas.StudentHomeworkSummaryResponse.properties.id.format")
-                        .value("uuid"))
-                .andExpect(jsonPath("$.components.schemas.StudentHomeworkSummaryResponse.properties.assignedAt.format")
-                        .value("date-time"))
-                .andExpect(jsonPath("$.components.schemas.StudentHomeworkSummaryResponse.properties.status.enum.length()")
-                        .value(3))
-                .andExpect(jsonPath("$.components.schemas.StudentTaskResponse.properties.taskType.enum.length()")
-                        .value(5))
-                .andExpect(jsonPath("$.components.schemas.StudentTaskResponse.properties.difficulty.enum.length()")
-                        .value(3))
-                .andExpect(jsonPath("$.components.schemas.ApiError").exists());
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.paths['/api/v1/student/homeworks'].get.operationId")
+                .value("listStudentHomeworks"))
+            .andExpect(jsonPath("$.paths['/api/v1/student/homeworks/{homeworkId}'].get.operationId")
+                .value("getStudentHomework"))
+            .andExpect(jsonPath("$.components.schemas.StudentHomeworkSummaryResponse.properties.id.format")
+                .value("uuid"))
+            .andExpect(jsonPath("$.components.schemas.StudentHomeworkSummaryResponse.properties.assignedAt.format")
+                .value("date-time"))
+            .andExpect(jsonPath("$.components.schemas.StudentHomeworkSummaryResponse.properties.status.enum.length()")
+                .value(3))
+            .andExpect(jsonPath("$.components.schemas.StudentTaskResponse.properties.taskType.enum.length()")
+                .value(5))
+            .andExpect(jsonPath("$.components.schemas.StudentTaskResponse.properties.difficulty.enum.length()")
+                .value(3))
+            .andExpect(jsonPath("$.components.schemas.ApiError").exists());
     }
 
     private Fixture createFixture(String label) {
         UserEntity teacherUser = new UserEntity(
-                UUID.randomUUID(), label + "-teacher-" + UUID.randomUUID() + "@example.com",
-                "hash", UserStatus.ACTIVE
+            UUID.randomUUID(), label + "-teacher-" + UUID.randomUUID() + "@example.com",
+            "hash", UserStatus.ACTIVE
         );
         teacherUser.addRole(UserRole.TEACHER);
         userRepository.saveAndFlush(teacherUser);
         TeacherEntity teacher = teacherRepository.saveAndFlush(new TeacherEntity(
-                UUID.randomUUID(), teacherUser, "Teacher"
+            UUID.randomUUID(), teacherUser, "Teacher"
         ));
 
         UserEntity studentUser = new UserEntity(
-                UUID.randomUUID(), label + "-student-" + UUID.randomUUID() + "@example.com",
-                "hash", UserStatus.ACTIVE
+            UUID.randomUUID(), label + "-student-" + UUID.randomUUID() + "@example.com",
+            "hash", UserStatus.ACTIVE
         );
         studentUser.addRole(UserRole.STUDENT);
         userRepository.saveAndFlush(studentUser);
         StudentEntity student = studentRepository.saveAndFlush(new StudentEntity(
-                UUID.randomUUID(), studentUser.id(), "Student", null,
-                StudentStatus.ACTIVE, null, null
+            UUID.randomUUID(), studentUser.id(), "Student", null,
+            StudentStatus.ACTIVE, null, null
         ));
         teacherStudentLinkRepository.saveAndFlush(new TeacherStudentLinkEntity(teacher, student));
 
         SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
-                UUID.randomUUID(), teacher.id(), null, "Subject " + UUID.randomUUID(), null,
-                SubjectStatus.ACTIVE
+            UUID.randomUUID(), teacher.id(), null, "Subject " + UUID.randomUUID(), null,
+            SubjectStatus.ACTIVE
         ));
         LearningProgramEntity program = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-                UUID.randomUUID(), teacher.id(), subject.id(), "Program", null,
-                LearningProgramStatus.ACTIVE
+            UUID.randomUUID(), teacher.id(), subject.id(), "Program", null,
+            LearningProgramStatus.ACTIVE
         ));
         StudentProgramEntity studentProgram = studentProgramRepository.saveAndFlush(new StudentProgramEntity(
-                UUID.randomUUID(), student.getId(), program.getId(), teacher.id(),
-                StudentProgramStatus.ACTIVE, 480, Instant.now(), null
+            UUID.randomUUID(), student.getId(), program.getId(), teacher.id(),
+            StudentProgramStatus.ACTIVE, 480, Instant.now(), null
         ));
         AuthenticatedUser principal = new AuthenticatedUser(
-                studentUser.id(), studentUser.email(), "hash", true,
-                List.of(new SimpleGrantedAuthority("ROLE_STUDENT"))
+            studentUser.id(), studentUser.email(), "hash", true,
+            List.of(new SimpleGrantedAuthority("ROLE_STUDENT"))
         );
         Fixture fixture = new Fixture(teacher, student, principal, subject, program, studentProgram, new ArrayList<>());
         fixture.tasks().add(createTask(fixture, 0));
@@ -360,55 +370,55 @@ class StudentHomeworkApiIntegrationTest {
 
     private StudentProgramEntity createStudentProgram(Fixture fixture) {
         LearningProgramEntity program = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-                UUID.randomUUID(), fixture.teacher().id(), fixture.subject().id(), "Other program", null,
-                LearningProgramStatus.ACTIVE
+            UUID.randomUUID(), fixture.teacher().id(), fixture.subject().id(), "Other program", null,
+            LearningProgramStatus.ACTIVE
         ));
         return studentProgramRepository.saveAndFlush(new StudentProgramEntity(
-                UUID.randomUUID(), fixture.student().getId(), program.getId(), fixture.teacher().id(),
-                StudentProgramStatus.ACTIVE, 480, Instant.now(), null
+            UUID.randomUUID(), fixture.student().getId(), program.getId(), fixture.teacher().id(),
+            StudentProgramStatus.ACTIVE, 480, Instant.now(), null
         ));
     }
 
     private TaskEntity createTask(Fixture fixture, int index) {
         return taskRepository.saveAndFlush(new TaskEntity(
-                UUID.randomUUID(), fixture.teacher().id(), fixture.subject().id(),
-                "Task " + index, "Description " + index,
-                TaskType.TEXT, TaskDifficulty.MEDIUM, TaskStatus.ACTIVE
+            UUID.randomUUID(), fixture.teacher().id(), fixture.subject().id(),
+            "Task " + index, "Description " + index,
+            TaskType.TEXT, TaskDifficulty.MEDIUM, TaskStatus.ACTIVE
         ));
     }
 
     private HomeworkEntity createHomework(
-            Fixture fixture,
-            StudentProgramEntity studentProgram,
-            String title,
-            HomeworkStatus status
+        Fixture fixture,
+        StudentProgramEntity studentProgram,
+        String title,
+        HomeworkStatus status
     ) {
         return createHomework(fixture, studentProgram, title, Instant.now(), null, status, null,
-                List.of(fixture.tasks().getFirst()));
+            List.of(fixture.tasks().getFirst()));
     }
 
     private HomeworkEntity createHomework(
-            Fixture fixture,
-            String title,
-            Instant assignedAt,
-            Instant dueAt,
-            HomeworkStatus status,
-            Instant completedAt,
-            List<TaskEntity> tasks
+        Fixture fixture,
+        String title,
+        Instant assignedAt,
+        Instant dueAt,
+        HomeworkStatus status,
+        Instant completedAt,
+        List<TaskEntity> tasks
     ) {
         return createHomework(fixture, fixture.studentProgram(), title, assignedAt, dueAt,
-                status, completedAt, tasks);
+            status, completedAt, tasks);
     }
 
     private HomeworkEntity createHomework(
-            Fixture fixture,
-            StudentProgramEntity studentProgram,
-            String title,
-            Instant assignedAt,
-            Instant dueAt,
-            HomeworkStatus status,
-            Instant completedAt,
-            List<TaskEntity> tasks
+        Fixture fixture,
+        StudentProgramEntity studentProgram,
+        String title,
+        Instant assignedAt,
+        Instant dueAt,
+        HomeworkStatus status,
+        Instant completedAt,
+        List<TaskEntity> tasks
     ) {
         UUID homeworkId = UUID.randomUUID();
         List<HomeworkItemEntity> items = new ArrayList<>();
@@ -416,8 +426,8 @@ class StudentHomeworkApiIntegrationTest {
             items.add(new HomeworkItemEntity(UUID.randomUUID(), homeworkId, tasks.get(i).getId(), i, true));
         }
         return homeworkRepository.saveAndFlush(new HomeworkEntity(
-                homeworkId, studentProgram.id(), fixture.teacher().id(), title,
-                "Homework description", assignedAt, dueAt, status, completedAt, items
+            homeworkId, studentProgram.id(), fixture.teacher().id(), title,
+            "Homework description", assignedAt, dueAt, status, completedAt, items
         ));
     }
 
@@ -426,13 +436,13 @@ class StudentHomeworkApiIntegrationTest {
     }
 
     private record Fixture(
-            TeacherEntity teacher,
-            StudentEntity student,
-            AuthenticatedUser studentPrincipal,
-            SubjectEntity subject,
-            LearningProgramEntity program,
-            StudentProgramEntity studentProgram,
-            List<TaskEntity> tasks
+        TeacherEntity teacher,
+        StudentEntity student,
+        AuthenticatedUser studentPrincipal,
+        SubjectEntity subject,
+        LearningProgramEntity program,
+        StudentProgramEntity studentProgram,
+        List<TaskEntity> tasks
     ) {
     }
 }

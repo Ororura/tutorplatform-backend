@@ -48,7 +48,7 @@ public class FileMaterialPolicy {
         }
         // Small explicit allowlist with signature/UTF-8 checks, not an antivirus or full format parser.
         if (mimeType == null || !allowedMimeTypes.contains(mimeType) || !matches(content, mimeType)
-                || (type == LessonMaterialType.IMAGE && !mimeType.startsWith("image/"))) {
+            || (type == LessonMaterialType.IMAGE && !mimeType.startsWith("image/"))) {
             throw new InvalidLessonMaterialException("file", "unsupported or mismatched MIME type");
         }
         return content;
@@ -57,8 +57,8 @@ public class FileMaterialPolicy {
     private boolean matches(byte[] bytes, String mime) {
         return switch (mime) {
             case "application/pdf" -> startsWith(bytes, new byte[]{37, 80, 68, 70, 45});
-            case "image/png" -> startsWith(bytes, new byte[]{(byte)137, 80, 78, 71, 13, 10, 26, 10});
-            case "image/jpeg" -> startsWith(bytes, new byte[]{(byte)255, (byte)216, (byte)255});
+            case "image/png" -> startsWith(bytes, new byte[]{(byte) 137, 80, 78, 71, 13, 10, 26, 10});
+            case "image/jpeg" -> startsWith(bytes, new byte[]{(byte) 255, (byte) 216, (byte) 255});
             case "text/plain" -> isText(bytes);
             default -> false; // Enabling another format also requires a minimal verifier.
         };

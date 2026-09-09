@@ -33,50 +33,50 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(
-            HttpSecurity http,
-            CsrfTokenRepository csrfTokenRepository,
-            SecurityContextRepository securityContextRepository,
-            RestAuthenticationEntryPoint authenticationEntryPoint,
-            RestAccessDeniedHandler accessDeniedHandler
+        HttpSecurity http,
+        CsrfTokenRepository csrfTokenRepository,
+        SecurityContextRepository securityContextRepository,
+        RestAuthenticationEntryPoint authenticationEntryPoint,
+        RestAccessDeniedHandler accessDeniedHandler
     ) throws Exception {
         http
-                .csrf(csrf -> csrf.csrfTokenRepository(csrfTokenRepository))
-                .securityContext(context -> context
-                        .securityContextRepository(securityContextRepository)
-                        .requireExplicitSave(true)
-                )
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/actuator/health/**",
-                                "/v3/api-docs/**",
-                                "/swagger-ui.html",
-                                "/swagger-ui/**",
-                                "/api/v1/auth/csrf",
-                                "/api/v1/auth/login",
-                                "/api/v1/auth/register/teacher",
-                                "/api/v1/public/student-invitations/**"
-                        ).permitAll()
-                        .requestMatchers("/api/v1/teacher/**").hasRole("TEACHER")
-                        .requestMatchers("/api/v1/student/**").hasRole("STUDENT")
-                        .anyRequest().authenticated()
-                )
-                .exceptionHandling(exceptions -> exceptions
-                        .authenticationEntryPoint(authenticationEntryPoint)
-                        .accessDeniedHandler(accessDeniedHandler)
-                )
-                .sessionManagement(session -> session
-                        .sessionFixation(fixation -> fixation.migrateSession())
-                )
-                .logout(logout -> logout
-                        .logoutUrl("/api/v1/auth/logout")
-                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(NO_CONTENT))
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
-                        .permitAll()
-                )
-                .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .cors(AbstractHttpConfigurer::disable);
+            .csrf(csrf -> csrf.csrfTokenRepository(csrfTokenRepository))
+            .securityContext(context -> context
+                .securityContextRepository(securityContextRepository)
+                .requireExplicitSave(true)
+            )
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                    "/actuator/health/**",
+                    "/v3/api-docs/**",
+                    "/swagger-ui.html",
+                    "/swagger-ui/**",
+                    "/api/v1/auth/csrf",
+                    "/api/v1/auth/login",
+                    "/api/v1/auth/register/teacher",
+                    "/api/v1/public/student-invitations/**"
+                ).permitAll()
+                .requestMatchers("/api/v1/teacher/**").hasRole("TEACHER")
+                .requestMatchers("/api/v1/student/**").hasRole("STUDENT")
+                .anyRequest().authenticated()
+            )
+            .exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint(authenticationEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler)
+            )
+            .sessionManagement(session -> session
+                .sessionFixation(fixation -> fixation.migrateSession())
+            )
+            .logout(logout -> logout
+                .logoutUrl("/api/v1/auth/logout")
+                .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(NO_CONTENT))
+                .invalidateHttpSession(true)
+                .clearAuthentication(true)
+                .permitAll()
+            )
+            .formLogin(AbstractHttpConfigurer::disable)
+            .httpBasic(AbstractHttpConfigurer::disable)
+            .cors(AbstractHttpConfigurer::disable);
 
         return http.build();
     }
@@ -96,8 +96,8 @@ public class SecurityConfig {
 
     @Bean
     AuthenticationManager authenticationManager(
-            UserDetailsService userDetailsService,
-            PasswordEncoder passwordEncoder
+        UserDetailsService userDetailsService,
+        PasswordEncoder passwordEncoder
     ) {
         var provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
@@ -116,7 +116,7 @@ public class SecurityConfig {
 
     @Bean
     CookieSerializer cookieSerializer(
-            @Value("${app.security.session-cookie-secure:false}") boolean secure
+        @Value("${app.security.session-cookie-secure:false}") boolean secure
     ) {
         var serializer = new DefaultCookieSerializer();
         serializer.setCookieName("TUTOR_SESSION");

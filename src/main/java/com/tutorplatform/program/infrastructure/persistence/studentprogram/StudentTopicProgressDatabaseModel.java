@@ -54,7 +54,7 @@ public class StudentTopicProgressDatabaseModel {
 
     StudentTopicProgressEntity toEntity() {
         return new StudentTopicProgressEntity(
-                id.getStudentProgramId(), id.getTopicId(), status, startedAt, completedAt, updatedAt
+            id.getStudentProgramId(), id.getTopicId(), status, startedAt, completedAt, updatedAt
         );
     }
 }

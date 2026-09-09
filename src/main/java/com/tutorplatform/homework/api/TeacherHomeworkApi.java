@@ -28,9 +28,9 @@ public interface TeacherHomeworkApi {
         @ApiResponse(responseCode = "404", description = "Student, program, or task not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     ResponseEntity<HomeworkDetailsResponse> createHomework(
-            AuthenticatedUser principal,
-            UUID studentId,
-            CreateHomeworkRequest request
+        AuthenticatedUser principal,
+        UUID studentId,
+        CreateHomeworkRequest request
     );
 
     @Operation(operationId = "listHomeworks", summary = "List homework for a student")
@@ -42,13 +42,13 @@ public interface TeacherHomeworkApi {
         @ApiResponse(responseCode = "404", description = "Student or program not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     HomeworkPageResponse listHomeworks(
-            AuthenticatedUser principal,
-            UUID studentId,
-            UUID studentProgramId,
-            HomeworkStatus status,
-            @Parameter(description = "Zero-based page index", example = "0") int page,
-            @Parameter(description = "Page size from 1 to 100", example = "20") int size,
-            @Parameter(description = "Sort as field,direction", example = "assignedAt,desc") String sort
+        AuthenticatedUser principal,
+        UUID studentId,
+        UUID studentProgramId,
+        HomeworkStatus status,
+        @Parameter(description = "Zero-based page index", example = "0") int page,
+        @Parameter(description = "Page size from 1 to 100", example = "20") int size,
+        @Parameter(description = "Sort as field,direction", example = "assignedAt,desc") String sort
     );
 
     @Operation(operationId = "getHomework", summary = "Get homework details")
@@ -70,10 +70,10 @@ public interface TeacherHomeworkApi {
         @ApiResponse(responseCode = "409", description = "Version or item conflict", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     HomeworkDetailsResponse updateHomework(
-            AuthenticatedUser principal,
-            UUID studentId,
-            UUID homeworkId,
-            UpdateHomeworkRequest request
+        AuthenticatedUser principal,
+        UUID studentId,
+        UUID homeworkId,
+        UpdateHomeworkRequest request
     );
 
     @Operation(operationId = "cancelHomework", summary = "Cancel assigned homework")

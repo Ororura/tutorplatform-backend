@@ -21,54 +21,54 @@ public class ContentExceptionHandler {
     @ExceptionHandler(InvalidLessonMaterialException.class)
     ResponseEntity<ApiError> handleInvalidLessonMaterial(InvalidLessonMaterialException exception) {
         return ResponseEntity.badRequest().body(new ApiError(
-                "VALIDATION_ERROR",
-                "Request validation failed",
-                Instant.now(),
-                MDC.get("traceId"),
-                List.of(new ApiErrorDetail(exception.getField(), exception.getMessage()))
+            "VALIDATION_ERROR",
+            "Request validation failed",
+            Instant.now(),
+            MDC.get("traceId"),
+            List.of(new ApiErrorDetail(exception.getField(), exception.getMessage()))
         ));
     }
 
     @ExceptionHandler(TopicNotFoundException.class)
     ResponseEntity<ApiError> handleTopicNotFound(TopicNotFoundException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                ApiError.of("TOPIC_NOT_FOUND", "Topic not found", MDC.get("traceId"))
+            ApiError.of("TOPIC_NOT_FOUND", "Topic not found", MDC.get("traceId"))
         );
     }
 
     @ExceptionHandler(LessonMaterialNotFoundException.class)
     ResponseEntity<ApiError> handleLessonMaterialNotFound(LessonMaterialNotFoundException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                ApiError.of("LESSON_MATERIAL_NOT_FOUND", "Lesson material not found", MDC.get("traceId"))
+            ApiError.of("LESSON_MATERIAL_NOT_FOUND", "Lesson material not found", MDC.get("traceId"))
         );
     }
 
     @ExceptionHandler(LessonMaterialPositionConflictException.class)
     ResponseEntity<ApiError> handleLessonMaterialPositionConflict(
-            LessonMaterialPositionConflictException exception
+        LessonMaterialPositionConflictException exception
     ) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiError.of(
-                "LESSON_MATERIAL_POSITION_CONFLICT",
-                "Material position is already used by this topic",
-                MDC.get("traceId")
+            "LESSON_MATERIAL_POSITION_CONFLICT",
+            "Material position is already used by this topic",
+            MDC.get("traceId")
         ));
     }
 
     @ExceptionHandler(LessonMaterialVersionConflictException.class)
     ResponseEntity<ApiError> handleLessonMaterialVersionConflict(
-            LessonMaterialVersionConflictException exception
+        LessonMaterialVersionConflictException exception
     ) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiError.of(
-                "LESSON_MATERIAL_VERSION_CONFLICT",
-                "Lesson material was modified by another request",
-                MDC.get("traceId")
+            "LESSON_MATERIAL_VERSION_CONFLICT",
+            "Lesson material was modified by another request",
+            MDC.get("traceId")
         ));
     }
 
     @ExceptionHandler(FileTooLargeException.class)
     ResponseEntity<ApiError> handleFileTooLarge(FileTooLargeException exception) {
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(
-                ApiError.of("FILE_TOO_LARGE", "File exceeds upload limit", MDC.get("traceId"))
+            ApiError.of("FILE_TOO_LARGE", "File exceeds upload limit", MDC.get("traceId"))
         );
     }
 }

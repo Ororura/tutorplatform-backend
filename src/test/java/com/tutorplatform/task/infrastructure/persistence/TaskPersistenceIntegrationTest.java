@@ -55,21 +55,47 @@ import static org.assertj.core.api.Assertions.*;
 @Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
-        JpaUserRepository.class,
-        JpaTeacherRepository.class,
-        JpaSubjectRepository.class,
-        JpaLearningProgramRepository.class,
-        JpaModuleRepository.class,
-        JpaTopicRepository.class,
-        JpaTaskRepository.class,
-        JpaTopicTaskRepository.class,
-        JpaSkillRepository.class,
-        JpaTaskSkillRepository.class
+    JpaUserRepository.class,
+    JpaTeacherRepository.class,
+    JpaSubjectRepository.class,
+    JpaLearningProgramRepository.class,
+    JpaModuleRepository.class,
+    JpaTopicRepository.class,
+    JpaTaskRepository.class,
+    JpaTopicTaskRepository.class,
+    JpaSkillRepository.class,
+    JpaTaskSkillRepository.class
 })
 class TaskPersistenceIntegrationTest {
 
     @Container
     private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TeacherRepository teacherRepository;
+    @Autowired
+    private SubjectRepository subjectRepository;
+    @Autowired
+    private LearningProgramRepository learningProgramRepository;
+    @Autowired
+    private ModuleRepository moduleRepository;
+    @Autowired
+    private TopicRepository topicRepository;
+    @Autowired
+    private TaskRepository taskRepository;
+    @Autowired
+    private TopicTaskRepository topicTaskRepository;
+    @Autowired
+    private SkillRepository skillRepository;
+    @Autowired
+    private TaskSkillRepository taskSkillRepository;
+    @Autowired
+    private Flyway flyway;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private PlatformTransactionManager transactionManager;
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
@@ -79,37 +105,23 @@ class TaskPersistenceIntegrationTest {
         registry.add("spring.flyway.target", () -> "007");
     }
 
-    @Autowired private UserRepository userRepository;
-    @Autowired private TeacherRepository teacherRepository;
-    @Autowired private SubjectRepository subjectRepository;
-    @Autowired private LearningProgramRepository learningProgramRepository;
-    @Autowired private ModuleRepository moduleRepository;
-    @Autowired private TopicRepository topicRepository;
-    @Autowired private TaskRepository taskRepository;
-    @Autowired private TopicTaskRepository topicTaskRepository;
-    @Autowired private SkillRepository skillRepository;
-    @Autowired private TaskSkillRepository taskSkillRepository;
-    @Autowired private Flyway flyway;
-    @Autowired private JdbcTemplate jdbcTemplate;
-    @Autowired private PlatformTransactionManager transactionManager;
-
     @Test
     void flywayMigrationV006AppliesSuccessfully() {
         assertThat(Arrays.stream(flyway.info().applied())
-                .map(migration -> migration.getVersion().toString()))
-                .containsExactly("001", "002", "003", "004", "005", "006", "007");
+            .map(migration -> migration.getVersion().toString()))
+            .containsExactly("001", "002", "003", "004", "005", "006", "007");
 
         assertThat(jdbcTemplate.queryForObject(
-                """
-                    select count(*)
-                    from information_schema.tables
-                    where table_schema = 'public'
-                      and table_name in (
-                        'tasks', 'topic_tasks', 'skills', 'task_skills',
-                        'programming_task_configs', 'task_test_cases'
-                      )
-                    """,
-                Integer.class
+            """
+                select count(*)
+                from information_schema.tables
+                where table_schema = 'public'
+                  and table_name in (
+                    'tasks', 'topic_tasks', 'skills', 'task_skills',
+                    'programming_task_configs', 'task_test_cases'
+                  )
+                """,
+            Integer.class
         )).isEqualTo(6);
     }
 
@@ -131,8 +143,8 @@ class TaskPersistenceIntegrationTest {
         TaskFixture fixture = createTaskFixture(TaskType.TEXT, TaskDifficulty.EASY, TaskStatus.DRAFT);
 
         assertThat(taskRepository.findById(fixture.task().getId()))
-                .get().extracting(TaskEntity::getTaskType)
-                .isEqualTo(TaskType.TEXT);
+            .get().extracting(TaskEntity::getTaskType)
+            .isEqualTo(TaskType.TEXT);
     }
 
     @Test
@@ -140,8 +152,8 @@ class TaskPersistenceIntegrationTest {
         TaskFixture fixture = createTaskFixture(TaskType.TEXT, TaskDifficulty.HARD, TaskStatus.DRAFT);
 
         assertThat(taskRepository.findById(fixture.task().getId()))
-                .get().extracting(TaskEntity::getDifficulty)
-                .isEqualTo(TaskDifficulty.HARD);
+            .get().extracting(TaskEntity::getDifficulty)
+            .isEqualTo(TaskDifficulty.HARD);
     }
 
     @Test
@@ -149,8 +161,8 @@ class TaskPersistenceIntegrationTest {
         TaskFixture fixture = createTaskFixture(TaskType.TEXT, TaskDifficulty.MEDIUM, TaskStatus.ACTIVE);
 
         assertThat(taskRepository.findById(fixture.task().getId()))
-                .get().extracting(TaskEntity::getStatus)
-                .isEqualTo(TaskStatus.ACTIVE);
+            .get().extracting(TaskEntity::getStatus)
+            .isEqualTo(TaskStatus.ACTIVE);
     }
 
     @Test
@@ -158,8 +170,8 @@ class TaskPersistenceIntegrationTest {
         TaskFixture fixture = createTaskFixture(TaskType.TEXT, TaskDifficulty.EASY, TaskStatus.DRAFT);
 
         assertThat(taskRepository.findById(fixture.task().getId()))
-                .get().extracting(TaskEntity::getTeacherId)
-                .isEqualTo(fixture.teacher().id());
+            .get().extracting(TaskEntity::getTeacherId)
+            .isEqualTo(fixture.teacher().id());
         assertThat(taskRepository.findOwnedById(fixture.task().getId(), fixture.teacher().id())).isPresent();
         assertThat(taskRepository.findOwnedById(fixture.task().getId(), UUID.randomUUID())).isEmpty();
     }
@@ -169,13 +181,13 @@ class TaskPersistenceIntegrationTest {
         TaskFixture fixture = createTaskFixture(TaskType.TEXT, TaskDifficulty.EASY, TaskStatus.ACTIVE);
 
         assertThat(taskRepository.findById(fixture.task().getId()))
-                .get().extracting(TaskEntity::getSubjectId)
-                .isEqualTo(fixture.subject().id());
+            .get().extracting(TaskEntity::getSubjectId)
+            .isEqualTo(fixture.subject().id());
         assertThat(taskRepository.findAllByTeacherId(
-                fixture.teacher().id(), fixture.subject().id(), TaskStatus.ACTIVE, TaskType.TEXT
+            fixture.teacher().id(), fixture.subject().id(), TaskStatus.ACTIVE, TaskType.TEXT
         )).extracting(TaskEntity::getId).containsExactly(fixture.task().getId());
         assertThat(taskRepository.findAllByTeacherId(
-                fixture.teacher().id(), fixture.subject().id(), TaskStatus.DRAFT, TaskType.TEXT
+            fixture.teacher().id(), fixture.subject().id(), TaskStatus.DRAFT, TaskType.TEXT
         )).isEmpty();
     }
 
@@ -189,8 +201,8 @@ class TaskPersistenceIntegrationTest {
         topicTaskRepository.saveAndFlush(new TopicTaskEntity(topic.id(), fixture.task().getId(), 0, true));
 
         assertThat(topicTaskRepository.findAllByTopicIdOrderByPosition(topic.id()))
-                .extracting(TopicTaskEntity::taskId)
-                .containsExactly(fixture.task().getId(), secondTask.getId());
+            .extracting(TopicTaskEntity::taskId)
+            .containsExactly(fixture.task().getId(), secondTask.getId());
     }
 
     @Test
@@ -200,8 +212,8 @@ class TaskPersistenceIntegrationTest {
         topicTaskRepository.saveAndFlush(new TopicTaskEntity(topic.id(), fixture.task().getId(), 0, true));
 
         assertThatThrownBy(() -> jdbcTemplate.update(
-                "insert into topic_tasks(topic_id, task_id, position) values (?, ?, ?)",
-                topic.id(), fixture.task().getId(), 1
+            "insert into topic_tasks(topic_id, task_id, position) values (?, ?, ?)",
+            topic.id(), fixture.task().getId(), 1
         )).isInstanceOf(DataIntegrityViolationException.class);
     }
 
@@ -213,7 +225,7 @@ class TaskPersistenceIntegrationTest {
         topicTaskRepository.saveAndFlush(new TopicTaskEntity(topic.id(), fixture.task().getId(), 0, true));
 
         assertThatThrownBy(() -> topicTaskRepository.saveAndFlush(
-                new TopicTaskEntity(topic.id(), secondTask.getId(), 0, true)
+            new TopicTaskEntity(topic.id(), secondTask.getId(), 0, true)
         )).isInstanceOf(DataIntegrityViolationException.class);
     }
 
@@ -223,8 +235,8 @@ class TaskPersistenceIntegrationTest {
         TopicEntity topic = createTopic(fixture.learningProgram());
 
         assertThatThrownBy(() -> jdbcTemplate.update(
-                "insert into topic_tasks(topic_id, task_id, position) values (?, ?, ?)",
-                topic.id(), fixture.task().getId(), -1
+            "insert into topic_tasks(topic_id, task_id, position) values (?, ?, ?)",
+            topic.id(), fixture.task().getId(), -1
         )).isInstanceOf(DataIntegrityViolationException.class);
     }
 
@@ -232,11 +244,11 @@ class TaskPersistenceIntegrationTest {
     void skillIsUniqueBySubjectAndCode() {
         TaskFixture fixture = createTaskFixture(TaskType.TEXT, TaskDifficulty.EASY, TaskStatus.DRAFT);
         skillRepository.saveAndFlush(new SkillEntity(
-                UUID.randomUUID(), fixture.subject().id(), "LOOPS", "Циклы", null
+            UUID.randomUUID(), fixture.subject().id(), "LOOPS", "Циклы", null
         ));
 
         assertThatThrownBy(() -> skillRepository.saveAndFlush(new SkillEntity(
-                UUID.randomUUID(), fixture.subject().id(), "LOOPS", "Другие циклы", null
+            UUID.randomUUID(), fixture.subject().id(), "LOOPS", "Другие циклы", null
         ))).isInstanceOf(DataIntegrityViolationException.class);
     }
 
@@ -249,11 +261,11 @@ class TaskPersistenceIntegrationTest {
         taskSkillRepository.saveAndFlush(new TaskSkillEntity(fixture.task().getId(), second.id()));
 
         assertThat(taskSkillRepository.findAllByTaskId(fixture.task().getId()))
-                .extracting(TaskSkillEntity::skillId)
-                .containsExactlyInAnyOrder(first.id(), second.id());
+            .extracting(TaskSkillEntity::skillId)
+            .containsExactlyInAnyOrder(first.id(), second.id());
         assertThatThrownBy(() -> jdbcTemplate.update(
-                "insert into task_skills(task_id, skill_id) values (?, ?)",
-                fixture.task().getId(), first.id()
+            "insert into task_skills(task_id, skill_id) values (?, ?)",
+            fixture.task().getId(), first.id()
         )).isInstanceOf(DataIntegrityViolationException.class);
     }
 
@@ -268,20 +280,20 @@ class TaskPersistenceIntegrationTest {
         TaskEntity stale = transaction.execute(status -> taskRepository.findById(fixture.task().getId()).orElseThrow());
 
         first.update("Первая версия", first.getDescriptionMarkdown(), first.getTaskType(),
-                first.getDifficulty(), first.getStatus());
+            first.getDifficulty(), first.getStatus());
         transaction.executeWithoutResult(status -> taskRepository.saveAndFlush(first));
 
         stale.update("Устаревшая версия", stale.getDescriptionMarkdown(), stale.getTaskType(),
-                stale.getDifficulty(), stale.getStatus());
+            stale.getDifficulty(), stale.getStatus());
         Throwable thrown = catchThrowable(() -> transaction.executeWithoutResult(
-                status -> taskRepository.saveAndFlush(stale)
+            status -> taskRepository.saveAndFlush(stale)
         ));
 
         assertThat(thrown).isNotNull();
         assertThat(hasOptimisticLockCause(thrown)).isTrue();
         assertThat(taskRepository.findById(fixture.task().getId()))
-                .get().extracting(TaskEntity::getTitle)
-                .isEqualTo("Первая версия");
+            .get().extracting(TaskEntity::getTitle)
+            .isEqualTo("Первая версия");
     }
 
     @Test
@@ -294,59 +306,59 @@ class TaskPersistenceIntegrationTest {
         taskSkillRepository.saveAndFlush(new TaskSkillEntity(fixture.task().getId(), skill.id()));
         UUID testCaseId = UUID.randomUUID();
         jdbcTemplate.update(
-                "insert into programming_task_configs(task_id, language) values (?, 'PYTHON')",
-                fixture.task().getId()
+            "insert into programming_task_configs(task_id, language) values (?, 'PYTHON')",
+            fixture.task().getId()
         );
         jdbcTemplate.update(
-                "insert into task_test_cases(id, task_id, expected_output, position) values (?, ?, '', 0)",
-                testCaseId, fixture.task().getId()
+            "insert into task_test_cases(id, task_id, expected_output, position) values (?, ?, '', 0)",
+            testCaseId, fixture.task().getId()
         );
 
         assertThatThrownBy(() -> jdbcTemplate.update("delete from skills where id = ?", skill.id()))
-                .isInstanceOf(DataIntegrityViolationException.class);
+            .isInstanceOf(DataIntegrityViolationException.class);
 
         jdbcTemplate.update("delete from tasks where id = ?", fixture.task().getId());
 
         assertThat(jdbcTemplate.queryForObject(
-                "select count(*) from topic_tasks where task_id = ?", Integer.class, fixture.task().getId()
+            "select count(*) from topic_tasks where task_id = ?", Integer.class, fixture.task().getId()
         )).isZero();
         assertThat(jdbcTemplate.queryForObject(
-                "select count(*) from task_skills where task_id = ?", Integer.class, fixture.task().getId()
+            "select count(*) from task_skills where task_id = ?", Integer.class, fixture.task().getId()
         )).isZero();
         assertThat(jdbcTemplate.queryForObject(
-                "select count(*) from programming_task_configs where task_id = ?",
-                Integer.class, fixture.task().getId()
+            "select count(*) from programming_task_configs where task_id = ?",
+            Integer.class, fixture.task().getId()
         )).isZero();
         assertThat(jdbcTemplate.queryForObject(
-                "select count(*) from task_test_cases where task_id = ?", Integer.class, fixture.task().getId()
+            "select count(*) from task_test_cases where task_id = ?", Integer.class, fixture.task().getId()
         )).isZero();
         assertThat(skillRepository.findById(skill.id())).isPresent();
     }
 
     private TaskFixture createTaskFixture(
-            TaskType taskType,
-            TaskDifficulty difficulty,
-            TaskStatus status
+        TaskType taskType,
+        TaskDifficulty difficulty,
+        TaskStatus status
     ) {
         TeacherEntity teacher = createTeacher();
         SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
-                UUID.randomUUID(), teacher.id(), null, "Предмет " + UUID.randomUUID(), null,
-                SubjectStatus.ACTIVE
+            UUID.randomUUID(), teacher.id(), null, "Предмет " + UUID.randomUUID(), null,
+            SubjectStatus.ACTIVE
         ));
         LearningProgramEntity learningProgram = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-                UUID.randomUUID(), teacher.id(), subject.id(), "Программа", null,
-                LearningProgramStatus.DRAFT
+            UUID.randomUUID(), teacher.id(), subject.id(), "Программа", null,
+            LearningProgramStatus.DRAFT
         ));
         TaskEntity task = taskRepository.saveAndFlush(new TaskEntity(
-                UUID.randomUUID(), teacher.id(), subject.id(), "Текстовое задание", "**Условие**",
-                taskType, difficulty, status
+            UUID.randomUUID(), teacher.id(), subject.id(), "Текстовое задание", "**Условие**",
+            taskType, difficulty, status
         ));
         return new TaskFixture(teacher, subject, learningProgram, task);
     }
 
     private TeacherEntity createTeacher() {
         UserEntity user = new UserEntity(
-                UUID.randomUUID(), UUID.randomUUID() + "@example.com", "password-hash", UserStatus.ACTIVE
+            UUID.randomUUID(), UUID.randomUUID() + "@example.com", "password-hash", UserStatus.ACTIVE
         );
         user.addRole(UserRole.TEACHER);
         userRepository.saveAndFlush(user);
@@ -355,23 +367,23 @@ class TaskPersistenceIntegrationTest {
 
     private TaskEntity createTask(TeacherEntity teacher, SubjectEntity subject, String title) {
         return taskRepository.saveAndFlush(new TaskEntity(
-                UUID.randomUUID(), teacher.id(), subject.id(), title, "Условие",
-                TaskType.TEXT, TaskDifficulty.EASY, TaskStatus.DRAFT
+            UUID.randomUUID(), teacher.id(), subject.id(), title, "Условие",
+            TaskType.TEXT, TaskDifficulty.EASY, TaskStatus.DRAFT
         ));
     }
 
     private TopicEntity createTopic(LearningProgramEntity learningProgram) {
         ModuleEntity module = moduleRepository.saveAndFlush(new ModuleEntity(
-                UUID.randomUUID(), learningProgram.getId(), "Модуль", null, 0
+            UUID.randomUUID(), learningProgram.getId(), "Модуль", null, 0
         ));
         return topicRepository.saveAndFlush(new TopicEntity(
-                UUID.randomUUID(), module.id(), "Тема", null, 0, TopicStatus.DRAFT
+            UUID.randomUUID(), module.id(), "Тема", null, 0, TopicStatus.DRAFT
         ));
     }
 
     private SkillEntity createSkill(SubjectEntity subject, String code) {
         return skillRepository.saveAndFlush(new SkillEntity(
-                UUID.randomUUID(), subject.id(), code, "Навык " + code, null
+            UUID.randomUUID(), subject.id(), code, "Навык " + code, null
         ));
     }
 
@@ -387,10 +399,10 @@ class TaskPersistenceIntegrationTest {
     }
 
     private record TaskFixture(
-            TeacherEntity teacher,
-            SubjectEntity subject,
-            LearningProgramEntity learningProgram,
-            TaskEntity task
+        TeacherEntity teacher,
+        SubjectEntity subject,
+        LearningProgramEntity learningProgram,
+        TaskEntity task
     ) {
     }
 }

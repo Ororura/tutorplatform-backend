@@ -14,7 +14,8 @@ import java.util.UUID;
 @Table(name = "file_assets")
 public class FileAssetDatabaseModel {
 
-    @Id private UUID id;
+    @Id
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "uploaded_by_teacher_id", nullable = false, insertable = false, updatable = false)
@@ -63,8 +64,8 @@ public class FileAssetDatabaseModel {
 
     FileAssetEntity toEntity() {
         return new FileAssetEntity(
-                id, uploadedByTeacherId, storageProvider, storageKey, originalFilename,
-                mimeType, sizeBytes, sha256, createdAt
+            id, uploadedByTeacherId, storageProvider, storageKey, originalFilename,
+            mimeType, sizeBytes, sha256, createdAt
         );
     }
 }

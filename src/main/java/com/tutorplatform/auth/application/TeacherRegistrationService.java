@@ -17,9 +17,9 @@ public class TeacherRegistrationService {
     private final PasswordEncoder passwordEncoder;
 
     public TeacherRegistrationService(
-            UserRepository userRepository,
-            TeacherRepository teacherRepository,
-            PasswordEncoder passwordEncoder
+        UserRepository userRepository,
+        TeacherRepository teacherRepository,
+        PasswordEncoder passwordEncoder
     ) {
         this.userRepository = userRepository;
         this.teacherRepository = teacherRepository;
@@ -33,10 +33,10 @@ public class TeacherRegistrationService {
         }
 
         UserEntity user = new UserEntity(
-                UUID.randomUUID(),
-                request.email(),
-                passwordEncoder.encode(request.password()),
-                UserStatus.ACTIVE
+            UUID.randomUUID(),
+            request.email(),
+            passwordEncoder.encode(request.password()),
+            UserStatus.ACTIVE
         );
         user.addRole(UserRole.TEACHER);
 

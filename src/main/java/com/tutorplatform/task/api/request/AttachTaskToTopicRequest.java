@@ -5,12 +5,12 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
 public record AttachTaskToTopicRequest(
-        @PositiveOrZero
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED, minimum = "0")
-        int position,
+    @PositiveOrZero
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, minimum = "0")
+    int position,
 
-        @NotNull
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-        Boolean required
+    @NotNull
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
+    Boolean required
 ) {
 }

@@ -5,5 +5,6 @@ import java.util.UUID;
 
 public interface ModuleRepository {
     ModuleEntity saveAndFlush(ModuleEntity module);
+
     Optional<ModuleEntity> findById(UUID moduleId);
 }

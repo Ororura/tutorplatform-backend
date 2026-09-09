@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.UUID;
 
 interface LessonSessionTopicDatabaseRepository
-        extends JpaRepository<LessonSessionTopicDatabaseModel, LessonSessionTopicId> {
+    extends JpaRepository<LessonSessionTopicDatabaseModel, LessonSessionTopicId> {
     List<LessonSessionTopicDatabaseModel> findAllByIdLessonSessionId(UUID lessonSessionId);
 
     List<LessonSessionTopicDatabaseModel> findAllByIdLessonSessionIdIn(Set<UUID> lessonSessionIds);

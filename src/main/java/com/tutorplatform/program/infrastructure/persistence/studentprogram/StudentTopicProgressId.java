@@ -24,8 +24,13 @@ public class StudentTopicProgressId implements Serializable {
         this.topicId = Objects.requireNonNull(topicId);
     }
 
-    public UUID getStudentProgramId() { return studentProgramId; }
-    public UUID getTopicId() { return topicId; }
+    public UUID getStudentProgramId() {
+        return studentProgramId;
+    }
+
+    public UUID getTopicId() {
+        return topicId;
+    }
 
     @Override
     public boolean equals(Object other) {

@@ -21,7 +21,7 @@ public class FileExceptionHandler {
     ResponseEntity<ApiError> handleStorageFailure(FileStorageException exception) {
         log.error("File storage operation failed", exception);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                ApiError.of("FILE_STORAGE_ERROR", "File storage operation failed", MDC.get("traceId"))
+            ApiError.of("FILE_STORAGE_ERROR", "File storage operation failed", MDC.get("traceId"))
         );
     }
 }

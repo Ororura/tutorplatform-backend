@@ -5,8 +5,12 @@ import java.util.UUID;
 
 public interface TeacherRepository {
     TeacherEntity save(TeacherEntity teacher);
+
     TeacherEntity saveAndFlush(TeacherEntity teacher);
+
     Optional<TeacherEntity> findByUserId(UUID userId);
+
     long count();
+
     void deleteAll();
 }

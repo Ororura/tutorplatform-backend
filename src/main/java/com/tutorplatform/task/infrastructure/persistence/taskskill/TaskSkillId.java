@@ -24,8 +24,13 @@ public class TaskSkillId implements Serializable {
         this.skillId = Objects.requireNonNull(skillId);
     }
 
-    public UUID getTaskId() { return taskId; }
-    public UUID getSkillId() { return skillId; }
+    public UUID getTaskId() {
+        return taskId;
+    }
+
+    public UUID getSkillId() {
+        return skillId;
+    }
 
     @Override
     public boolean equals(Object other) {

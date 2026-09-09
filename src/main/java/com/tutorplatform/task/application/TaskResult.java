@@ -8,15 +8,15 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record TaskResult(
-        UUID id,
-        UUID subjectId,
-        String title,
-        String descriptionMarkdown,
-        TaskType taskType,
-        TaskDifficulty difficulty,
-        TaskStatus status,
-        long version,
-        Instant createdAt,
-        Instant updatedAt
+    UUID id,
+    UUID subjectId,
+    String title,
+    String descriptionMarkdown,
+    TaskType taskType,
+    TaskDifficulty difficulty,
+    TaskStatus status,
+    long version,
+    Instant createdAt,
+    Instant updatedAt
 ) {
 }

@@ -9,44 +9,44 @@ public class LessonMaterialEntity {
     private final UUID id;
     private final UUID topicId;
     private final UUID createdByTeacherId;
+    private final Long version;
+    private final Instant createdAt;
+    private final Instant updatedAt;
     private LessonMaterialType materialType;
     private String title;
     private String content;
     private UUID fileAssetId;
     private String externalUrl;
     private int position;
-    private final Long version;
-    private final Instant createdAt;
-    private final Instant updatedAt;
 
     public LessonMaterialEntity(
-            UUID id,
-            UUID topicId,
-            UUID createdByTeacherId,
-            LessonMaterialType materialType,
-            String title,
-            String content,
-            UUID fileAssetId,
-            String externalUrl,
-            int position
+        UUID id,
+        UUID topicId,
+        UUID createdByTeacherId,
+        LessonMaterialType materialType,
+        String title,
+        String content,
+        UUID fileAssetId,
+        String externalUrl,
+        int position
     ) {
         this(id, topicId, createdByTeacherId, materialType, title, content, fileAssetId,
-                externalUrl, position, null, null, null);
+            externalUrl, position, null, null, null);
     }
 
     public LessonMaterialEntity(
-            UUID id,
-            UUID topicId,
-            UUID createdByTeacherId,
-            LessonMaterialType materialType,
-            String title,
-            String content,
-            UUID fileAssetId,
-            String externalUrl,
-            int position,
-            Long version,
-            Instant createdAt,
-            Instant updatedAt
+        UUID id,
+        UUID topicId,
+        UUID createdByTeacherId,
+        LessonMaterialType materialType,
+        String title,
+        String content,
+        UUID fileAssetId,
+        String externalUrl,
+        int position,
+        Long version,
+        Instant createdAt,
+        Instant updatedAt
     ) {
         this.id = Objects.requireNonNull(id);
         this.topicId = Objects.requireNonNull(topicId);
@@ -58,23 +58,23 @@ public class LessonMaterialEntity {
     }
 
     public void update(
-            LessonMaterialType materialType,
-            String title,
-            String content,
-            UUID fileAssetId,
-            String externalUrl,
-            int position
+        LessonMaterialType materialType,
+        String title,
+        String content,
+        UUID fileAssetId,
+        String externalUrl,
+        int position
     ) {
         applyChanges(materialType, title, content, fileAssetId, externalUrl, position);
     }
 
     private void applyChanges(
-            LessonMaterialType materialType,
-            String title,
-            String content,
-            UUID fileAssetId,
-            String externalUrl,
-            int position
+        LessonMaterialType materialType,
+        String title,
+        String content,
+        UUID fileAssetId,
+        String externalUrl,
+        int position
     ) {
         LessonMaterialType requiredType = Objects.requireNonNull(materialType);
         if (position < 0) {
@@ -105,24 +105,59 @@ public class LessonMaterialEntity {
 
     private boolean requiresContent(LessonMaterialType type) {
         return type == LessonMaterialType.MARKDOWN
-                || type == LessonMaterialType.TEXT
-                || type == LessonMaterialType.CODE_EXAMPLE;
+            || type == LessonMaterialType.TEXT
+            || type == LessonMaterialType.CODE_EXAMPLE;
     }
 
     private boolean requiresFileAsset(LessonMaterialType type) {
         return type == LessonMaterialType.IMAGE || type == LessonMaterialType.FILE;
     }
 
-    public UUID getId() { return id; }
-    public UUID getTopicId() { return topicId; }
-    public UUID getCreatedByTeacherId() { return createdByTeacherId; }
-    public LessonMaterialType getMaterialType() { return materialType; }
-    public String getTitle() { return title; }
-    public String getContent() { return content; }
-    public UUID getFileAssetId() { return fileAssetId; }
-    public String getExternalUrl() { return externalUrl; }
-    public int getPosition() { return position; }
-    public Long getVersion() { return version; }
-    public Instant getCreatedAt() { return createdAt; }
-    public Instant getUpdatedAt() { return updatedAt; }
+    public UUID getId() {
+        return id;
+    }
+
+    public UUID getTopicId() {
+        return topicId;
+    }
+
+    public UUID getCreatedByTeacherId() {
+        return createdByTeacherId;
+    }
+
+    public LessonMaterialType getMaterialType() {
+        return materialType;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public UUID getFileAssetId() {
+        return fileAssetId;
+    }
+
+    public String getExternalUrl() {
+        return externalUrl;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
 }

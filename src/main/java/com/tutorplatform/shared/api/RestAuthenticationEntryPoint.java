@@ -21,14 +21,14 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            AuthenticationException authException
+        HttpServletRequest request,
+        HttpServletResponse response,
+        AuthenticationException authException
     ) throws IOException {
         writer.write(
-                response,
-                HttpStatus.UNAUTHORIZED.value(),
-                ApiError.of("AUTH_REQUIRED", "Authentication is required", MDC.get("traceId"))
+            response,
+            HttpStatus.UNAUTHORIZED.value(),
+            ApiError.of("AUTH_REQUIRED", "Authentication is required", MDC.get("traceId"))
         );
     }
 }

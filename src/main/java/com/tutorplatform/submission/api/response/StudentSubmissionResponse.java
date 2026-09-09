@@ -8,18 +8,18 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record StudentSubmissionResponse(
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "uuid") UUID id,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "uuid") UUID taskId,
-        @Schema(nullable = true, format = "uuid") UUID homeworkItemId,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED, minimum = "1") int attemptNo,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) SubmissionStatus status,
-        @Schema(nullable = true) String textAnswer,
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "date-time") Instant submittedAt
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "uuid") UUID id,
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "uuid") UUID taskId,
+    @Schema(nullable = true, format = "uuid") UUID homeworkItemId,
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, minimum = "1") int attemptNo,
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED) SubmissionStatus status,
+    @Schema(nullable = true) String textAnswer,
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "date-time") Instant submittedAt
 ) {
     public static StudentSubmissionResponse from(SubmissionResult result) {
         return new StudentSubmissionResponse(
-                result.id(), result.taskId(), result.homeworkItemId(), result.attemptNo(),
-                result.status(), result.textAnswer(), result.submittedAt()
+            result.id(), result.taskId(), result.homeworkItemId(), result.attemptNo(),
+            result.status(), result.textAnswer(), result.submittedAt()
         );
     }
 }

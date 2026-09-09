@@ -20,7 +20,7 @@ public class JpaStudentRepository implements StudentRepository {
     @Override
     public StudentEntity saveAndFlush(StudentEntity student) {
         StudentDatabaseModel model = databaseRepository.findById(student.getId())
-                .orElseGet(() -> new StudentDatabaseModel(student));
+            .orElseGet(() -> new StudentDatabaseModel(student));
         model.updateFrom(student);
         return databaseRepository.saveAndFlush(model).toEntity();
     }
@@ -48,7 +48,7 @@ public class JpaStudentRepository implements StudentRepository {
     @Override
     public Optional<StudentEntity> findOwnedStudentForUpdate(UUID teacherId, UUID studentId) {
         return databaseRepository.findOwnedStudentForUpdate(teacherId, studentId, TeacherStudentRelationType.PRIMARY)
-                .map(StudentDatabaseModel::toEntity);
+            .map(StudentDatabaseModel::toEntity);
     }
 
     @Override

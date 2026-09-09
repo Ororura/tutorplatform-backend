@@ -23,20 +23,20 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
 
     @Override
     public void handle(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            AccessDeniedException accessDeniedException
+        HttpServletRequest request,
+        HttpServletResponse response,
+        AccessDeniedException accessDeniedException
     ) throws IOException {
         boolean csrfFailure = accessDeniedException instanceof MissingCsrfTokenException
-                || accessDeniedException instanceof InvalidCsrfTokenException;
+            || accessDeniedException instanceof InvalidCsrfTokenException;
 
         String code = csrfFailure ? "CSRF_INVALID" : "ACCESS_DENIED";
         String message = csrfFailure ? "Missing or invalid CSRF token" : "Access denied";
 
         writer.write(
-                response,
-                HttpStatus.FORBIDDEN.value(),
-                ApiError.of(code, message, MDC.get("traceId"))
+            response,
+            HttpStatus.FORBIDDEN.value(),
+            ApiError.of(code, message, MDC.get("traceId"))
         );
     }
 }

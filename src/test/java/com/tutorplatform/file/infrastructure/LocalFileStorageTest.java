@@ -11,9 +11,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class LocalFileStorageTest {
-    @TempDir Path directory;
+    @TempDir
+    Path directory;
 
-    @Test void keysCannotTraverseAndDeleteIsIdempotent() throws Exception {
+    @Test
+    void keysCannotTraverseAndDeleteIsIdempotent() throws Exception {
         var storage = new LocalFileStorage(directory.toString());
         var object = storage.store(new byte[]{1, 2});
         assertThat(storage.read(object.key(), 2)).containsExactly(1, 2);
@@ -25,7 +27,8 @@ class LocalFileStorageTest {
         assertThat(Files.exists(directory.resolve(object.key()))).isFalse();
     }
 
-    @Test void refusesSymlinksAndReportsIoErrors() throws Exception {
+    @Test
+    void refusesSymlinksAndReportsIoErrors() throws Exception {
         var storage = new LocalFileStorage(directory.toString());
         Path outside = Files.createTempFile(directory, "outside", ".txt");
         String key = java.util.UUID.randomUUID().toString();

@@ -14,25 +14,25 @@ public interface TaskQuery {
     Optional<TaskContext> findTask(UUID taskId);
 
     TaskPage findTeacherTextTasks(
-            UUID teacherId,
-            UUID subjectId,
-            TaskStatus status,
-            TaskDifficulty difficulty,
-            int page,
-            int size,
-            String sortField,
-            boolean ascending
+        UUID teacherId,
+        UUID subjectId,
+        TaskStatus status,
+        TaskDifficulty difficulty,
+        int page,
+        int size,
+        String sortField,
+        boolean ascending
     );
 
     List<TaskContext> findTasksByIds(Set<UUID> taskIds);
 
     record TaskContext(
-            UUID id,
-            UUID teacherId,
-            UUID subjectId,
-            String title,
-            TaskType type,
-            TaskStatus status
+        UUID id,
+        UUID teacherId,
+        UUID subjectId,
+        String title,
+        TaskType type,
+        TaskStatus status
     ) {
         public boolean isOwnedBy(UUID expectedTeacherId) {
             return teacherId.equals(expectedTeacherId);

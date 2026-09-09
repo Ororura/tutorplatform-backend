@@ -7,12 +7,12 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public record SubmitTextAnswerRequest(
-        @NotNull
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "uuid")
-        UUID homeworkItemId,
+    @NotNull
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "uuid")
+    UUID homeworkItemId,
 
-        @NotBlank
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-        String textAnswer
+    @NotBlank
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
+    String textAnswer
 ) {
 }
