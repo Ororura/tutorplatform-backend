@@ -63,3 +63,12 @@ app:
   student-invites:
     ttl: ${STUDENT_INVITE_TTL:P7D}
     public-frontend-base-url: ${PUBLIC_FRONTEND_BASE_URL:http://localhost:3000}
+
+execution:
+  worker:
+    base-url: ${EXECUTION_WORKER_BASE_URL:http://localhost:8090}
+    connect-timeout: ${EXECUTION_WORKER_CONNECT_TIMEOUT:2s}
+    # Safety margin added to the task time limit; total wait is capped at 60s.
+    read-timeout: ${EXECUTION_WORKER_READ_TIMEOUT:5s}
+  output:
+    max-bytes: ${EXECUTION_OUTPUT_MAX_BYTES:16384}
