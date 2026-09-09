@@ -28,13 +28,13 @@ public class CurrentUserService {
     @Transactional(readOnly = true)
     public CurrentUserResponse getCurrentUser(AuthenticatedUser principal) {
         UserEntity user = userRepository.findById(principal.id()).orElseThrow();
-        String displayName = currentUserQueryRepository.findDisplayName(user.getId()).orElseThrow();
+        String displayName = currentUserQueryRepository.findDisplayName(user.id()).orElseThrow();
 
         return new CurrentUserResponse(
-                user.getId(),
-                user.getEmail(),
+                user.id(),
+                user.email(),
                 displayName,
-                user.getRoles().stream()
+                user.roles().stream()
                         .map(role -> UserRole.valueOf(role.name()))
                         .sorted(Comparator.comparing(UserRole::name))
                         .toList()

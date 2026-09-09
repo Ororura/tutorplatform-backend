@@ -94,7 +94,7 @@ class HomeworkApiIntegrationTest {
                 .content(createRequest(fixture)))
             .andExpect(status().isCreated())
             .andExpect(header().string("Location", org.hamcrest.Matchers.containsString("/homeworks/")))
-            .andExpect(jsonPath("$.studentProgramId").value(fixture.studentProgram().getId().toString()))
+            .andExpect(jsonPath("$.studentProgramId").value(fixture.studentProgram().id().toString()))
             .andExpect(jsonPath("$.title").value("Домашнее задание №1"))
             .andExpect(jsonPath("$.status").value("ASSIGNED"))
             .andExpect(jsonPath("$.assignedAt").isNotEmpty())
@@ -235,7 +235,7 @@ class HomeworkApiIntegrationTest {
               "title": " ",
               "items": []
             }
-            """.formatted(fixture.studentProgram().getId());
+            """.formatted(fixture.studentProgram().id());
 
         mockMvc.perform(post(homeworksUrl(fixture.student().getId()))
                 .with(user(fixture.principal()))
@@ -275,7 +275,7 @@ class HomeworkApiIntegrationTest {
         return homeworkService.createHomework(
                 fixture.principal(),
                 new CreateHomeworkCommand(
-                        fixture.student().getId(), fixture.studentProgram().getId(),
+                        fixture.student().getId(), fixture.studentProgram().id(),
                         "Домашнее задание №1", "Описание", Instant.now().plusSeconds(3600),
                         List.of(
                                 new HomeworkItemInput(fixture.firstTask().getId(), 0, true),
@@ -298,7 +298,7 @@ class HomeworkApiIntegrationTest {
               ]
             }
             """.formatted(
-                fixture.studentProgram().getId(),
+                fixture.studentProgram().id(),
                 fixture.firstTask().getId(),
                 fixture.secondTask().getId()
             );
@@ -326,7 +326,7 @@ class HomeworkApiIntegrationTest {
                 UUID.randomUUID(), user, "Teacher"
         ));
         AuthenticatedUser principal = new AuthenticatedUser(
-                user.getId(), email, "password-hash", true,
+                user.id(), email, "password-hash", true,
                 List.of(new SimpleGrantedAuthority("ROLE_TEACHER"))
         );
         StudentEntity student = studentRepository.saveAndFlush(new StudentEntity(
@@ -334,15 +334,15 @@ class HomeworkApiIntegrationTest {
         ));
         teacherStudentLinkRepository.saveAndFlush(new TeacherStudentLinkEntity(teacher, student));
         SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
-                UUID.randomUUID(), teacher.getId(), null, "Предмет " + UUID.randomUUID(), null,
+                UUID.randomUUID(), teacher.id(), null, "Предмет " + UUID.randomUUID(), null,
                 SubjectStatus.ACTIVE
         ));
         LearningProgramEntity program = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-                UUID.randomUUID(), teacher.getId(), subject.getId(), "Программа", null,
+                UUID.randomUUID(), teacher.id(), subject.id(), "Программа", null,
                 LearningProgramStatus.ACTIVE
         ));
         StudentProgramEntity studentProgram = studentProgramRepository.saveAndFlush(new StudentProgramEntity(
-                UUID.randomUUID(), student.getId(), program.getId(), teacher.getId(),
+                UUID.randomUUID(), student.getId(), program.getId(), teacher.id(),
                 StudentProgramStatus.ACTIVE, 480, Instant.now(), null
         ));
         TaskEntity first = createTask(teacher, subject, "Первая задача");
@@ -352,7 +352,7 @@ class HomeworkApiIntegrationTest {
 
     private TaskEntity createTask(TeacherEntity teacher, SubjectEntity subject, String title) {
         return taskRepository.saveAndFlush(new TaskEntity(
-                UUID.randomUUID(), teacher.getId(), subject.getId(), title, "Условие",
+                UUID.randomUUID(), teacher.id(), subject.id(), title, "Условие",
                 TaskType.TEXT, TaskDifficulty.EASY, TaskStatus.ACTIVE
         ));
     }

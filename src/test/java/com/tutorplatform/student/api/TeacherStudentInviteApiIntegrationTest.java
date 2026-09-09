@@ -190,7 +190,7 @@ class TeacherStudentInviteApiIntegrationTest {
                 .andExpect(jsonPath("$.code").value("EMAIL_ALREADY_REGISTERED"));
 
         UserEntity studentUser = createUser("registered@example.com", UserRole.STUDENT);
-        jdbcTemplate.update("update students set user_id = ? where id = ?", studentUser.getId(), student.getId());
+        jdbcTemplate.update("update students set user_id = ? where id = ?", studentUser.id(), student.getId());
 
         createInvite(owner, student.getId(), "available@example.com")
                 .andExpect(status().isConflict())
@@ -307,7 +307,7 @@ class TeacherStudentInviteApiIntegrationTest {
         UserEntity user = createUser(email, UserRole.TEACHER);
         TeacherEntity teacher = teacherRepository.saveAndFlush(new TeacherEntity(UUID.randomUUID(), user, "Teacher"));
         AuthenticatedUser principal = new AuthenticatedUser(
-                user.getId(),
+                user.id(),
                 email,
                 "password-hash",
                 true,

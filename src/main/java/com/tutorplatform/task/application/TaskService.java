@@ -190,7 +190,7 @@ public class TaskService {
     }
 
     private UUID currentTeacherId(AuthenticatedUser principal) {
-        return teacherRepository.findByUserId(principal.id()).orElseThrow().getId();
+        return teacherRepository.findByUserId(principal.id()).orElseThrow().id();
     }
 
     private SubjectEntity requireAccessibleSubject(UUID subjectId, UUID teacherId) {
@@ -199,7 +199,7 @@ public class TaskService {
         }
         SubjectEntity subject = subjectRepository.findById(subjectId)
                 .orElseThrow(TaskSubjectNotFoundException::new);
-        if (subject.getOwnerTeacherId() != null && !subject.getOwnerTeacherId().equals(teacherId)) {
+        if (subject.ownerTeacherId() != null && !subject.ownerTeacherId().equals(teacherId)) {
             throw new TaskSubjectNotFoundException();
         }
         return subject;
@@ -271,11 +271,11 @@ public class TaskService {
 
     private TopicTaskResult toResult(TopicTaskEntity topicTask) {
         return new TopicTaskResult(
-                topicTask.getTopicId(),
-                topicTask.getTaskId(),
-                topicTask.getPosition(),
-                topicTask.isRequired(),
-                topicTask.getCreatedAt()
+                topicTask.topicId(),
+                topicTask.taskId(),
+                topicTask.position(),
+                topicTask.required(),
+                topicTask.createdAt()
         );
     }
 

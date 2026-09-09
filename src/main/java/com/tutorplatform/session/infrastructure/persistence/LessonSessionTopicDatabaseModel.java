@@ -40,9 +40,9 @@ public class LessonSessionTopicDatabaseModel {
 
     LessonSessionTopicDatabaseModel(LessonSessionTopicEntity lessonSessionTopic) {
         id = new LessonSessionTopicId(
-                lessonSessionTopic.getLessonSessionId(), lessonSessionTopic.getTopicId()
+                lessonSessionTopic.lessonSessionId(), lessonSessionTopic.topicId()
         );
-        primary = lessonSessionTopic.isPrimary();
+        primary = lessonSessionTopic.primary();
     }
 
     LessonSessionTopicEntity toEntity() {

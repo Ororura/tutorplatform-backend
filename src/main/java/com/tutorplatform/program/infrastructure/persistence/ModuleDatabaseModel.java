@@ -49,15 +49,15 @@ public class ModuleDatabaseModel {
     }
 
     ModuleDatabaseModel(ModuleEntity module) {
-        id = Objects.requireNonNull(module.getId());
+        id = Objects.requireNonNull(module.id());
         updateFrom(module);
     }
 
     void updateFrom(ModuleEntity module) {
-        learningProgramId = Objects.requireNonNull(module.getLearningProgramId());
-        title = Objects.requireNonNull(module.getTitle());
-        description = module.getDescription();
-        position = module.getPosition();
+        learningProgramId = Objects.requireNonNull(module.learningProgramId());
+        title = Objects.requireNonNull(module.title());
+        description = module.description();
+        position = module.position();
     }
 
     ModuleEntity toEntity() {

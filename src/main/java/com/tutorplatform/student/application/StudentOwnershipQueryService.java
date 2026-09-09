@@ -30,7 +30,7 @@ public class StudentOwnershipQueryService implements StudentOwnershipQuery {
 
     @Override
     public Optional<UUID> findTeacherIdByUserId(UUID userId) {
-        return teacherRepository.findByUserId(userId).map(teacher -> teacher.getId());
+        return teacherRepository.findByUserId(userId).map(teacher -> teacher.id());
     }
 
     @Override

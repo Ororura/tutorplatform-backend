@@ -162,7 +162,7 @@ public class HomeworkService {
         );
         Map<Integer, UUID> existingIdsByPosition = new HashMap<>();
         for (HomeworkItemEntity item : current.getItems()) {
-            existingIdsByPosition.put(item.getPosition(), item.getId());
+            existingIdsByPosition.put(item.position(), item.id());
         }
         HomeworkEntity updated = new HomeworkEntity(
                 current.getId(),
@@ -315,13 +315,13 @@ public class HomeworkService {
                         input.position(),
                         input.required()
                 ))
-                .sorted(Comparator.comparingInt(HomeworkItemEntity::getPosition))
+                .sorted(Comparator.comparingInt(HomeworkItemEntity::position))
                 .toList();
     }
 
     private Map<UUID, TaskQuery.TaskContext> taskMap(List<HomeworkItemEntity> items) {
         Set<UUID> taskIds = new HashSet<>();
-        items.forEach(item -> taskIds.add(item.getTaskId()));
+        items.forEach(item -> taskIds.add(item.taskId()));
         Map<UUID, TaskQuery.TaskContext> result = new HashMap<>();
         taskQuery.findTasksByIds(taskIds).forEach(task -> result.put(task.id(), task));
         return result;
@@ -334,12 +334,12 @@ public class HomeworkService {
         Instant now = Instant.now();
         List<HomeworkItemResult> items = new ArrayList<>();
         homework.getItems().stream()
-                .sorted(Comparator.comparingInt(HomeworkItemEntity::getPosition))
+                .sorted(Comparator.comparingInt(HomeworkItemEntity::position))
                 .forEach(item -> {
-                    TaskQuery.TaskContext task = tasksById.get(item.getTaskId());
+                    TaskQuery.TaskContext task = tasksById.get(item.taskId());
                     items.add(new HomeworkItemResult(
-                            item.getId(), item.getTaskId(), task == null ? null : task.title(),
-                            item.getPosition(), item.isRequired()
+                            item.id(), item.taskId(), task == null ? null : task.title(),
+                            item.position(), item.required()
                     ));
                 });
         return new HomeworkResult(

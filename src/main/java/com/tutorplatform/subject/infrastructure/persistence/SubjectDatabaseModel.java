@@ -58,16 +58,16 @@ public class SubjectDatabaseModel {
     }
 
     SubjectDatabaseModel(SubjectEntity subject) {
-        id = Objects.requireNonNull(subject.getId());
+        id = Objects.requireNonNull(subject.id());
         updateFrom(subject);
     }
 
     void updateFrom(SubjectEntity subject) {
-        ownerTeacherId = subject.getOwnerTeacherId();
-        code = subject.getCode();
-        name = Objects.requireNonNull(subject.getName());
-        description = subject.getDescription();
-        status = Objects.requireNonNull(subject.getStatus());
+        ownerTeacherId = subject.ownerTeacherId();
+        code = subject.code();
+        name = Objects.requireNonNull(subject.name());
+        description = subject.description();
+        status = Objects.requireNonNull(subject.status());
     }
 
     SubjectEntity toEntity() {

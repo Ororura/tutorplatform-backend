@@ -101,15 +101,15 @@ class SessionApiIntegrationTest {
                 .with(user(fixture.principal()))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(createRequest(fixture.studentProgram().getId(), fixture.topic().getId(), 60)))
+                .content(createRequest(fixture.studentProgram().id(), fixture.topic().id(), 60)))
             .andExpect(status().isCreated())
             .andExpect(header().string("Location", org.hamcrest.Matchers.containsString("/sessions/")))
-            .andExpect(jsonPath("$.studentProgramId").value(fixture.studentProgram().getId().toString()))
+            .andExpect(jsonPath("$.studentProgramId").value(fixture.studentProgram().id().toString()))
             .andExpect(jsonPath("$.durationMinutes").value(60))
             .andExpect(jsonPath("$.attendanceStatus").value("ATTENDED"))
             .andExpect(jsonPath("$.summary").value("Разобрали циклы"))
             .andExpect(jsonPath("$.privateNotes").value("Повторить вложенные циклы"))
-            .andExpect(jsonPath("$.topics[0].topicId").value(fixture.topic().getId().toString()))
+            .andExpect(jsonPath("$.topics[0].topicId").value(fixture.topic().id().toString()))
             .andExpect(jsonPath("$.topics[0].isPrimary").value(true))
             .andExpect(jsonPath("$.version").value(0))
             .andReturn();
@@ -127,8 +127,8 @@ class SessionApiIntegrationTest {
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(createRequest(
-                    fixture.studentProgram().getId(),
-                    fixture.topic().getId(),
+                    fixture.studentProgram().id(),
+                    fixture.topic().id(),
                     60,
                     statusValue
                 )))
@@ -146,8 +146,8 @@ class SessionApiIntegrationTest {
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(createRequest(
-                    fixture.studentProgram().getId(),
-                    fixture.topic().getId(),
+                    fixture.studentProgram().id(),
+                    fixture.topic().id(),
                     durationMinutes
                 )))
             .andExpect(status().isCreated())
@@ -169,9 +169,9 @@ class SessionApiIntegrationTest {
               ]
             }
             """.formatted(
-                fixture.studentProgram().getId(),
-                fixture.topic().getId(),
-                fixture.secondTopic().getId()
+                fixture.studentProgram().id(),
+                fixture.topic().id(),
+                fixture.secondTopic().id()
             );
 
         mockMvc.perform(post(sessionsUrl(fixture.student().getId()))
@@ -182,8 +182,8 @@ class SessionApiIntegrationTest {
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.topics.length()").value(2))
             .andExpect(jsonPath("$.topics[*].topicId").value(org.hamcrest.Matchers.containsInAnyOrder(
-                fixture.topic().getId().toString(),
-                fixture.secondTopic().getId().toString()
+                fixture.topic().id().toString(),
+                fixture.secondTopic().id().toString()
             )));
     }
 
@@ -217,7 +217,7 @@ class SessionApiIntegrationTest {
                 .with(user(fixture.principal())))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(session.id().toString()))
-            .andExpect(jsonPath("$.studentProgramId").value(fixture.studentProgram().getId().toString()))
+            .andExpect(jsonPath("$.studentProgramId").value(fixture.studentProgram().id().toString()))
             .andExpect(jsonPath("$.startedAt").isNotEmpty())
             .andExpect(jsonPath("$.privateNotes").value("Заметка"))
             .andExpect(jsonPath("$.createdAt").isNotEmpty())
@@ -233,7 +233,7 @@ class SessionApiIntegrationTest {
                 .with(user(fixture.principal()))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(updateRequest(session, fixture.topic().getId())))
+                .content(updateRequest(session, fixture.topic().id())))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.durationMinutes").value(75))
             .andExpect(jsonPath("$.attendanceStatus").value("CANCELLED"))
@@ -245,7 +245,7 @@ class SessionApiIntegrationTest {
     void stalePatchReturnsLessonSessionVersionConflict() throws Exception {
         SessionFixture fixture = createFixture("api-stale-session@example.com");
         LessonSessionResult session = createSession(fixture, 60, AttendanceStatus.ATTENDED);
-        String update = updateRequest(session, fixture.topic().getId());
+        String update = updateRequest(session, fixture.topic().id());
 
         mockMvc.perform(patch(sessionUrl(fixture.student().getId(), session.id()))
                 .with(user(fixture.principal()))
@@ -288,7 +288,7 @@ class SessionApiIntegrationTest {
         mockMvc.perform(post(sessionsUrl(fixture.student().getId()))
                 .with(user(fixture.principal()))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(createRequest(fixture.studentProgram().getId(), fixture.topic().getId(), 60)))
+                .content(createRequest(fixture.studentProgram().id(), fixture.topic().id(), 60)))
             .andExpect(status().isForbidden());
     }
 
@@ -300,7 +300,7 @@ class SessionApiIntegrationTest {
         mockMvc.perform(patch(sessionUrl(fixture.student().getId(), session.id()))
                 .with(user(fixture.principal()))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(updateRequest(session, fixture.topic().getId())))
+                .content(updateRequest(session, fixture.topic().id())))
             .andExpect(status().isForbidden());
     }
 
@@ -334,7 +334,7 @@ class SessionApiIntegrationTest {
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(createRequest(
-                    owner.studentProgram().getId(), owner.topic().getId(), 60
+                    owner.studentProgram().id(), owner.topic().id(), 60
                 )))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.code").value("STUDENT_NOT_FOUND"));
@@ -350,7 +350,7 @@ class SessionApiIntegrationTest {
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(createRequest(
-                    fixture.studentProgram().getId(), fixture.topic().getId(), durationMinutes
+                    fixture.studentProgram().id(), fixture.topic().id(), durationMinutes
                 )))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
@@ -372,7 +372,7 @@ class SessionApiIntegrationTest {
                 .with(user(other.principal()))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(updateRequest(session, owner.topic().getId())))
+                .content(updateRequest(session, owner.topic().id())))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.code").value("STUDENT_NOT_FOUND"));
     }
@@ -385,7 +385,7 @@ class SessionApiIntegrationTest {
                 .with(user(fixture.principal()))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(createRequest(UUID.randomUUID(), fixture.topic().getId(), 60)))
+                .content(createRequest(UUID.randomUUID(), fixture.topic().id(), 60)))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.code").value("STUDENT_PROGRAM_NOT_FOUND"));
     }
@@ -398,7 +398,7 @@ class SessionApiIntegrationTest {
                 .with(user(fixture.principal()))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(createRequest(fixture.studentProgram().getId(), UUID.randomUUID(), 60)))
+                .content(createRequest(fixture.studentProgram().id(), UUID.randomUUID(), 60)))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value("LESSON_SESSION_TOPIC_INVALID"));
     }
@@ -414,7 +414,7 @@ class SessionApiIntegrationTest {
               "attendanceStatus": "ATTENDED",
               "topics": [null]
             }
-            """.formatted(fixture.studentProgram().getId());
+            """.formatted(fixture.studentProgram().id());
 
         mockMvc.perform(post(sessionsUrl(fixture.student().getId()))
                 .with(user(fixture.principal()))
@@ -470,13 +470,13 @@ class SessionApiIntegrationTest {
             fixture.principal(),
             new CreateLessonSessionCommand(
                 fixture.student().getId(),
-                fixture.studentProgram().getId(),
+                fixture.studentProgram().id(),
                 Instant.now(),
                 durationMinutes,
                 status,
                 "Итог",
                 "Заметка",
-                List.of(new LessonSessionTopicInput(fixture.topic().getId(), true))
+                List.of(new LessonSessionTopicInput(fixture.topic().id(), true))
             )
         );
     }
@@ -526,7 +526,7 @@ class SessionApiIntegrationTest {
             UUID.randomUUID(), user, "Teacher"
         ));
         AuthenticatedUser principal = new AuthenticatedUser(
-            user.getId(),
+            user.id(),
             email,
             "password-hash",
             true,
@@ -538,7 +538,7 @@ class SessionApiIntegrationTest {
         teacherStudentLinkRepository.saveAndFlush(new TeacherStudentLinkEntity(teacher, student));
         SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
             UUID.randomUUID(),
-            teacher.getId(),
+            teacher.id(),
             null,
             "Предмет " + UUID.randomUUID(),
             null,
@@ -547,8 +547,8 @@ class SessionApiIntegrationTest {
         LearningProgramEntity learningProgram = learningProgramRepository.saveAndFlush(
             new LearningProgramEntity(
                 UUID.randomUUID(),
-                teacher.getId(),
-                subject.getId(),
+                teacher.id(),
+                subject.id(),
                 "Программа",
                 null,
                 LearningProgramStatus.DRAFT
@@ -559,7 +559,7 @@ class SessionApiIntegrationTest {
                 UUID.randomUUID(),
                 student.getId(),
                 learningProgram.getId(),
-                teacher.getId(),
+                teacher.id(),
                 StudentProgramStatus.ACTIVE,
                 480,
                 Instant.now(),
@@ -570,10 +570,10 @@ class SessionApiIntegrationTest {
             UUID.randomUUID(), learningProgram.getId(), "Модуль", null, 0
         ));
         TopicEntity topic = topicRepository.saveAndFlush(new TopicEntity(
-            UUID.randomUUID(), module.getId(), "Тема", null, 0, TopicStatus.DRAFT
+            UUID.randomUUID(), module.id(), "Тема", null, 0, TopicStatus.DRAFT
         ));
         TopicEntity secondTopic = topicRepository.saveAndFlush(new TopicEntity(
-            UUID.randomUUID(), module.getId(), "Вторая тема", null, 1, TopicStatus.DRAFT
+            UUID.randomUUID(), module.id(), "Вторая тема", null, 1, TopicStatus.DRAFT
         ));
         return new SessionFixture(teacher, principal, student, studentProgram, topic, secondTopic);
     }

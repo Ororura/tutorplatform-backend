@@ -62,9 +62,9 @@ class IdentityRepositoryIntegrationTest {
         entityManager.clear();
 
         UserEntity persisted = userRepository.findById(userId).orElseThrow();
-        assertThat(persisted.getRoles()).containsExactlyInAnyOrder(UserRole.TEACHER, UserRole.STUDENT);
-        assertThat(persisted.getCreatedAt()).isNotNull();
-        assertThat(persisted.getUpdatedAt()).isNotNull();
+        assertThat(persisted.roles()).containsExactlyInAnyOrder(UserRole.TEACHER, UserRole.STUDENT);
+        assertThat(persisted.createdAt()).isNotNull();
+        assertThat(persisted.updatedAt()).isNotNull();
     }
 
     @Test
@@ -99,9 +99,9 @@ class IdentityRepositoryIntegrationTest {
         entityManager.clear();
 
         TeacherEntity persisted = teacherRepository.findByUserId(userId).orElseThrow();
-        assertThat(persisted.getId()).isEqualTo(teacherId);
-        assertThat(persisted.getUserId()).isEqualTo(userId);
-        assertThat(persisted.getDisplayName()).isEqualTo("Егор");
+        assertThat(persisted.id()).isEqualTo(teacherId);
+        assertThat(persisted.userId()).isEqualTo(userId);
+        assertThat(persisted.displayName()).isEqualTo("Егор");
     }
 
     @Test
@@ -116,7 +116,7 @@ class IdentityRepositoryIntegrationTest {
         entityManager.clear();
 
         assertThat(userRepository.findByEmail("lookup@example.com"))
-                .map(UserEntity::getId)
+                .map(UserEntity::id)
                 .contains(userId);
         assertThat(userRepository.existsByEmail("LOOKUP@example.com")).isTrue();
     }

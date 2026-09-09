@@ -69,7 +69,7 @@ public class HomeworkDatabaseModel {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "homework_id", nullable = false)
     @OrderBy("position ASC")
-    private List<HomeworkItemDatabaseModel> items = new ArrayList<>();
+    private final List<HomeworkItemDatabaseModel> items = new ArrayList<>();
 
     @Version
     @Column(nullable = false)

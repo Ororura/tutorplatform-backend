@@ -89,15 +89,15 @@ class SessionApplicationIntegrationTest {
         LessonSessionResult created = createSession(
             fixture,
             AttendanceStatus.ATTENDED,
-            List.of(new LessonSessionTopicInput(fixture.firstTopic().getId(), true))
+            List.of(new LessonSessionTopicInput(fixture.firstTopic().id(), true))
         );
 
-        assertThat(created.teacherId()).isEqualTo(fixture.teacher().getId());
-        assertThat(created.studentProgramId()).isEqualTo(fixture.studentProgram().getId());
+        assertThat(created.teacherId()).isEqualTo(fixture.teacher().id());
+        assertThat(created.studentProgramId()).isEqualTo(fixture.studentProgram().id());
         assertThat(created.durationMinutes()).isEqualTo(60);
         assertThat(created.attendanceStatus()).isEqualTo(AttendanceStatus.ATTENDED);
         assertThat(created.topics()).singleElement().satisfies(topic -> {
-            assertThat(topic.topicId()).isEqualTo(fixture.firstTopic().getId());
+            assertThat(topic.topicId()).isEqualTo(fixture.firstTopic().id());
             assertThat(topic.primary()).isTrue();
         });
     }
@@ -121,7 +121,7 @@ class SessionApplicationIntegrationTest {
 
         CreateLessonSessionCommand command = new CreateLessonSessionCommand(
             first.student().getId(),
-            second.studentProgram().getId(),
+            second.studentProgram().id(),
             Instant.now(),
             60,
             AttendanceStatus.ATTENDED,
@@ -143,7 +143,7 @@ class SessionApplicationIntegrationTest {
         assertThatThrownBy(() -> lessonSessionService.createLessonSession(
             teacher.principal(),
             createCommand(first, List.of(
-                new LessonSessionTopicInput(second.firstTopic().getId(), true)
+                new LessonSessionTopicInput(second.firstTopic().id(), true)
             ))
         )).isInstanceOf(TopicOutsideStudentProgramException.class);
     }
@@ -151,7 +151,7 @@ class SessionApplicationIntegrationTest {
     @Test
     void rejectsDuplicateTopic() {
         SessionFixture fixture = createFixture("duplicate-app-topic@example.com", "Ученик");
-        UUID topicId = fixture.firstTopic().getId();
+        UUID topicId = fixture.firstTopic().id();
 
         assertThatThrownBy(() -> lessonSessionService.createLessonSession(
             fixture.principal(),
@@ -169,8 +169,8 @@ class SessionApplicationIntegrationTest {
         assertThatThrownBy(() -> lessonSessionService.createLessonSession(
             fixture.principal(),
             createCommand(fixture, List.of(
-                new LessonSessionTopicInput(fixture.firstTopic().getId(), true),
-                new LessonSessionTopicInput(fixture.secondTopic().getId(), true)
+                new LessonSessionTopicInput(fixture.firstTopic().id(), true),
+                new LessonSessionTopicInput(fixture.secondTopic().id(), true)
             ))
         )).isInstanceOf(InvalidLessonSessionTopicsException.class);
     }
@@ -185,8 +185,8 @@ class SessionApplicationIntegrationTest {
         assertThatThrownBy(() -> lessonSessionService.createLessonSession(
             teacher.principal(),
             createCommand(target, List.of(
-                new LessonSessionTopicInput(target.firstTopic().getId(), true),
-                new LessonSessionTopicInput(otherProgram.firstTopic().getId(), false)
+                new LessonSessionTopicInput(target.firstTopic().id(), true),
+                new LessonSessionTopicInput(otherProgram.firstTopic().id(), false)
             ))
         )).isInstanceOf(TopicOutsideStudentProgramException.class);
 
@@ -199,7 +199,7 @@ class SessionApplicationIntegrationTest {
         LessonSessionResult created = createSession(
             fixture,
             AttendanceStatus.MISSED,
-            List.of(new LessonSessionTopicInput(fixture.firstTopic().getId(), true))
+            List.of(new LessonSessionTopicInput(fixture.firstTopic().id(), true))
         );
 
         LessonSessionResult found = lessonSessionService.getLessonSession(
@@ -209,7 +209,7 @@ class SessionApplicationIntegrationTest {
         assertThat(found.id()).isEqualTo(created.id());
         assertThat(found.attendanceStatus()).isEqualTo(AttendanceStatus.MISSED);
         assertThat(found.topics()).extracting(LessonSessionTopicResult::topicId)
-            .containsExactly(fixture.firstTopic().getId());
+            .containsExactly(fixture.firstTopic().id());
     }
 
     @Test
@@ -218,7 +218,7 @@ class SessionApplicationIntegrationTest {
         SessionFixture other = createFixture(fixture.teacherFixture(), "Другой");
         createSession(fixture, AttendanceStatus.ATTENDED, List.of());
         createSession(fixture, AttendanceStatus.MISSED, List.of(
-            new LessonSessionTopicInput(fixture.firstTopic().getId(), false)
+            new LessonSessionTopicInput(fixture.firstTopic().id(), false)
         ));
         createSession(fixture, AttendanceStatus.CANCELLED, List.of());
         createSession(other, AttendanceStatus.ATTENDED, List.of());
@@ -235,7 +235,7 @@ class SessionApplicationIntegrationTest {
         assertThat(firstPage.totalElements()).isEqualTo(3);
         assertThat(firstPage.totalPages()).isEqualTo(2);
         assertThat(firstPage.items()).allSatisfy(session ->
-            assertThat(session.studentProgramId()).isEqualTo(fixture.studentProgram().getId())
+            assertThat(session.studentProgramId()).isEqualTo(fixture.studentProgram().id())
         );
     }
 
@@ -274,7 +274,7 @@ class SessionApplicationIntegrationTest {
     void replacesLessonSessionTopicsAtomically() {
         SessionFixture fixture = createFixture("update-topics@example.com", "Ученик");
         LessonSessionResult created = createSession(fixture, AttendanceStatus.ATTENDED, List.of(
-            new LessonSessionTopicInput(fixture.firstTopic().getId(), true)
+            new LessonSessionTopicInput(fixture.firstTopic().id(), true)
         ));
 
         LessonSessionResult updated = lessonSessionService.updateLessonSession(
@@ -282,26 +282,26 @@ class SessionApplicationIntegrationTest {
             fixture.student().getId(),
             created.id(),
             updateCommand(created, List.of(
-                new LessonSessionTopicInput(fixture.secondTopic().getId(), true)
+                new LessonSessionTopicInput(fixture.secondTopic().id(), true)
             ))
         );
 
         assertThat(updated.topics()).extracting(LessonSessionTopicResult::topicId)
-            .containsExactly(fixture.secondTopic().getId());
+            .containsExactly(fixture.secondTopic().id());
         assertThat(lessonSessionTopicRepository.findAllByLessonSessionId(created.id()))
             .singleElement()
-            .extracting(topic -> topic.getTopicId())
-            .isEqualTo(fixture.secondTopic().getId());
+            .extracting(topic -> topic.topicId())
+            .isEqualTo(fixture.secondTopic().id());
     }
 
     @Test
     void rejectsStaleUpdateWithOptimisticLockingAndKeepsTopics() {
         SessionFixture fixture = createFixture("app-optimistic-lock@example.com", "Ученик");
         LessonSessionResult created = createSession(fixture, AttendanceStatus.ATTENDED, List.of(
-            new LessonSessionTopicInput(fixture.firstTopic().getId(), true)
+            new LessonSessionTopicInput(fixture.firstTopic().id(), true)
         ));
         UpdateLessonSessionCommand firstUpdate = updateCommand(created, List.of(
-            new LessonSessionTopicInput(fixture.secondTopic().getId(), true)
+            new LessonSessionTopicInput(fixture.secondTopic().id(), true)
         ));
         UpdateLessonSessionCommand staleUpdate = updateCommand(created, List.of());
 
@@ -319,7 +319,7 @@ class SessionApplicationIntegrationTest {
         );
         assertThat(persisted.version()).isEqualTo(updated.version());
         assertThat(persisted.topics()).extracting(LessonSessionTopicResult::topicId)
-            .containsExactly(fixture.secondTopic().getId());
+            .containsExactly(fixture.secondTopic().id());
     }
 
     private LessonSessionResult createSession(
@@ -347,7 +347,7 @@ class SessionApplicationIntegrationTest {
     ) {
         return new CreateLessonSessionCommand(
             fixture.student().getId(),
-            fixture.studentProgram().getId(),
+            fixture.studentProgram().id(),
             Instant.now(),
             60,
             status,
@@ -385,7 +385,7 @@ class SessionApplicationIntegrationTest {
         ));
         SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
             UUID.randomUUID(),
-            teacherFixture.teacher().getId(),
+            teacherFixture.teacher().id(),
             null,
             "Предмет " + UUID.randomUUID(),
             null,
@@ -394,8 +394,8 @@ class SessionApplicationIntegrationTest {
         LearningProgramEntity learningProgram = learningProgramRepository.saveAndFlush(
             new LearningProgramEntity(
                 UUID.randomUUID(),
-                teacherFixture.teacher().getId(),
-                subject.getId(),
+                teacherFixture.teacher().id(),
+                subject.id(),
                 "Программа",
                 null,
                 LearningProgramStatus.DRAFT
@@ -406,7 +406,7 @@ class SessionApplicationIntegrationTest {
                 UUID.randomUUID(),
                 student.getId(),
                 learningProgram.getId(),
-                teacherFixture.teacher().getId(),
+                teacherFixture.teacher().id(),
                 StudentProgramStatus.ACTIVE,
                 480,
                 Instant.now(),
@@ -417,10 +417,10 @@ class SessionApplicationIntegrationTest {
             UUID.randomUUID(), learningProgram.getId(), "Модуль", null, 0
         ));
         TopicEntity firstTopic = topicRepository.saveAndFlush(new TopicEntity(
-            UUID.randomUUID(), module.getId(), "Первая тема", null, 0, TopicStatus.DRAFT
+            UUID.randomUUID(), module.id(), "Первая тема", null, 0, TopicStatus.DRAFT
         ));
         TopicEntity secondTopic = topicRepository.saveAndFlush(new TopicEntity(
-            UUID.randomUUID(), module.getId(), "Вторая тема", null, 1, TopicStatus.DRAFT
+            UUID.randomUUID(), module.id(), "Вторая тема", null, 1, TopicStatus.DRAFT
         ));
         return new SessionFixture(
             teacherFixture,
@@ -439,7 +439,7 @@ class SessionApplicationIntegrationTest {
             UUID.randomUUID(), user, "Teacher"
         ));
         AuthenticatedUser principal = new AuthenticatedUser(
-            user.getId(),
+            user.id(),
             email,
             "",
             true,

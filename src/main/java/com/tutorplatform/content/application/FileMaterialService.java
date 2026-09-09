@@ -55,7 +55,7 @@ public class FileMaterialService {
     public LessonMaterialResult upload(AuthenticatedUser principal, UUID topicId,
             LessonMaterialType type, String title, int position, String filename,
             String mimeType, long size, InputStream input) {
-        UUID teacherId = teachers.findByUserId(principal.id()).orElseThrow().getId();
+        UUID teacherId = teachers.findByUserId(principal.id()).orElseThrow().id();
         if (!programs.findTopic(topicId).orElseThrow(TopicNotFoundException::new).isOwnedBy(teacherId)) {
             throw new TopicNotFoundException();
         }
@@ -111,7 +111,7 @@ public class FileMaterialService {
         LessonMaterialEntity material;
         try {
             material = materials.saveAndFlush(new LessonMaterialEntity(UUID.randomUUID(), topicId,
-                teacherId, type, title, null, asset.getId(), null, position));
+                teacherId, type, title, null, asset.id(), null, position));
         } catch (DataIntegrityViolationException exception) {
             throw new LessonMaterialPositionConflictException(exception);
         }
@@ -126,8 +126,8 @@ public class FileMaterialService {
         }
         FileAssetEntity asset = assets.findById(material.fileAssetId())
             .orElseThrow(LessonMaterialNotFoundException::new);
-        return new Download(asset.getOriginalFilename(), asset.getMimeType(),
-            storage.read(asset.getStorageKey(), asset.getSizeBytes()));
+        return new Download(asset.originalFilename(), asset.mimeType(),
+            storage.read(asset.storageKey(), asset.sizeBytes()));
     }
 
     private String sha256(byte[] bytes) {

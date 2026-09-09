@@ -83,14 +83,14 @@ class LessonMaterialApiIntegrationTest {
     void postCreatesMarkdownMaterial() throws Exception {
         ContentFixture fixture = createFixture("api-markdown-material@example.com");
 
-        MvcResult result = mockMvc.perform(post(materialsUrl(fixture.topic().getId()))
+        MvcResult result = mockMvc.perform(post(materialsUrl(fixture.topic().id()))
                 .with(user(fixture.principal()))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(createRequest("MARKDOWN", "Цикл for", "# Цикл", null, 0)))
             .andExpect(status().isCreated())
             .andExpect(header().string("Location", org.hamcrest.Matchers.containsString("/materials/")))
-            .andExpect(jsonPath("$.topicId").value(fixture.topic().getId().toString()))
+            .andExpect(jsonPath("$.topicId").value(fixture.topic().id().toString()))
             .andExpect(jsonPath("$.materialType").value("MARKDOWN"))
             .andExpect(jsonPath("$.title").value("Цикл for"))
             .andExpect(jsonPath("$.content").value("# Цикл"))
@@ -107,7 +107,7 @@ class LessonMaterialApiIntegrationTest {
     void postCreatesTextMaterial() throws Exception {
         ContentFixture fixture = createFixture("api-text-material@example.com");
 
-        mockMvc.perform(post(materialsUrl(fixture.topic().getId()))
+        mockMvc.perform(post(materialsUrl(fixture.topic().id()))
                 .with(user(fixture.principal()))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -121,7 +121,7 @@ class LessonMaterialApiIntegrationTest {
     void postCreatesLinkMaterial() throws Exception {
         ContentFixture fixture = createFixture("api-link-material@example.com");
 
-        mockMvc.perform(post(materialsUrl(fixture.topic().getId()))
+        mockMvc.perform(post(materialsUrl(fixture.topic().id()))
                 .with(user(fixture.principal()))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -140,7 +140,7 @@ class LessonMaterialApiIntegrationTest {
         LessonMaterialResult second = createMaterial(fixture, "Второй", 1);
         LessonMaterialResult first = createMaterial(fixture, "Первый", 0);
 
-        mockMvc.perform(get(materialsUrl(fixture.topic().getId()))
+        mockMvc.perform(get(materialsUrl(fixture.topic().id()))
                 .with(user(fixture.principal())))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].id").value(first.id().toString()))
@@ -154,11 +154,11 @@ class LessonMaterialApiIntegrationTest {
         ContentFixture fixture = createFixture("api-get-material@example.com");
         LessonMaterialResult material = createMaterial(fixture, "Материал", 0);
 
-        mockMvc.perform(get(materialUrl(fixture.topic().getId(), material.id()))
+        mockMvc.perform(get(materialUrl(fixture.topic().id(), material.id()))
                 .with(user(fixture.principal())))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(material.id().toString()))
-            .andExpect(jsonPath("$.topicId").value(fixture.topic().getId().toString()))
+            .andExpect(jsonPath("$.topicId").value(fixture.topic().id().toString()))
             .andExpect(jsonPath("$.title").value("Материал"));
     }
 
@@ -177,7 +177,7 @@ class LessonMaterialApiIntegrationTest {
             }
             """.formatted(material.version());
 
-        mockMvc.perform(patch(materialUrl(fixture.topic().getId(), material.id()))
+        mockMvc.perform(patch(materialUrl(fixture.topic().id(), material.id()))
                 .with(user(fixture.principal()))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -203,14 +203,14 @@ class LessonMaterialApiIntegrationTest {
         ContentFixture fixture = createFixture("api-material-csrf@example.com");
         LessonMaterialResult material = createMaterial(fixture, "Материал", 0);
 
-        mockMvc.perform(post(materialsUrl(fixture.topic().getId()))
+        mockMvc.perform(post(materialsUrl(fixture.topic().id()))
                 .with(user(fixture.principal()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(createRequest("TEXT", "Новый", "Содержимое", null, 1)))
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.code").value("CSRF_INVALID"));
 
-        mockMvc.perform(patch(materialUrl(fixture.topic().getId(), material.id()))
+        mockMvc.perform(patch(materialUrl(fixture.topic().id(), material.id()))
                 .with(user(fixture.principal()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updateTextRequest(material)))
@@ -238,7 +238,7 @@ class LessonMaterialApiIntegrationTest {
         ContentFixture owner = createFixture("api-material-owner@example.com");
         ContentFixture foreign = createFixture("api-material-foreign@example.com");
 
-        mockMvc.perform(get(materialsUrl(owner.topic().getId()))
+        mockMvc.perform(get(materialsUrl(owner.topic().id()))
                 .with(user(foreign.principal())))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.code").value("TOPIC_NOT_FOUND"));
@@ -248,7 +248,7 @@ class LessonMaterialApiIntegrationTest {
     void invalidBodyReturnsValidationError() throws Exception {
         ContentFixture fixture = createFixture("api-invalid-material@example.com");
 
-        mockMvc.perform(post(materialsUrl(fixture.topic().getId()))
+        mockMvc.perform(post(materialsUrl(fixture.topic().id()))
                 .with(user(fixture.principal()))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -266,7 +266,7 @@ class LessonMaterialApiIntegrationTest {
             "api-unsupported-" + type.name().toLowerCase() + "@example.com"
         );
 
-        mockMvc.perform(post(materialsUrl(fixture.topic().getId()))
+        mockMvc.perform(post(materialsUrl(fixture.topic().id()))
                 .with(user(fixture.principal()))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -306,7 +306,7 @@ class LessonMaterialApiIntegrationTest {
         return lessonMaterialService.createLessonMaterial(
             fixture.principal(),
             new CreateLessonMaterialCommand(
-                fixture.topic().getId(), LessonMaterialType.TEXT, title, "Содержимое",
+                fixture.topic().id(), LessonMaterialType.TEXT, title, "Содержимое",
                 null, null, position
             )
         );
@@ -338,21 +338,21 @@ class LessonMaterialApiIntegrationTest {
             UUID.randomUUID(), user, "Teacher"
         ));
         SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
-            UUID.randomUUID(), teacher.getId(), null, "Предмет " + UUID.randomUUID(),
+            UUID.randomUUID(), teacher.id(), null, "Предмет " + UUID.randomUUID(),
             null, SubjectStatus.ACTIVE
         ));
         LearningProgramEntity learningProgram = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-            UUID.randomUUID(), teacher.getId(), subject.getId(), "Программа", null,
+            UUID.randomUUID(), teacher.id(), subject.id(), "Программа", null,
             LearningProgramStatus.DRAFT
         ));
         ModuleEntity module = moduleRepository.saveAndFlush(new ModuleEntity(
             UUID.randomUUID(), learningProgram.getId(), "Модуль", null, 0
         ));
         TopicEntity topic = topicRepository.saveAndFlush(new TopicEntity(
-            UUID.randomUUID(), module.getId(), "Тема", null, 0, TopicStatus.DRAFT
+            UUID.randomUUID(), module.id(), "Тема", null, 0, TopicStatus.DRAFT
         ));
         AuthenticatedUser principal = new AuthenticatedUser(
-            user.getId(),
+            user.id(),
             email,
             "password-hash",
             true,

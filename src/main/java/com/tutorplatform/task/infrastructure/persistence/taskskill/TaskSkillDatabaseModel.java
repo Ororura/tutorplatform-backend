@@ -37,7 +37,7 @@ public class TaskSkillDatabaseModel {
     }
 
     TaskSkillDatabaseModel(TaskSkillEntity taskSkill) {
-        id = new TaskSkillId(taskSkill.getTaskId(), taskSkill.getSkillId());
+        id = new TaskSkillId(taskSkill.taskId(), taskSkill.skillId());
     }
 
     TaskSkillEntity toEntity() {

@@ -105,7 +105,7 @@ class FileMaterialApiIntegrationTest {
 
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder upload(
             ContentFixture fixture, String type, String name, String mime, byte[] bytes, int position) {
-        return multipart(materialsUrl(fixture.topic().getId()) + "/upload")
+        return multipart(materialsUrl(fixture.topic().id()) + "/upload")
             .file(new MockMultipartFile("file", name, mime, bytes))
             .param("materialType", type).param("title", "Attachment").param("position", "" + position);
     }
@@ -123,26 +123,26 @@ class FileMaterialApiIntegrationTest {
             .andExpect(status().isCreated()).andExpect(jsonPath("$.materialType").value(type.name()))
             .andExpect(jsonPath("$.storageKey").doesNotExist()).andReturn();
         UUID materialId = UUID.fromString(json(result).get("id").asText());
-        var material = lessonMaterialService.getLessonMaterial(fixture.principal(), fixture.topic().getId(), materialId);
+        var material = lessonMaterialService.getLessonMaterial(fixture.principal(), fixture.topic().id(), materialId);
         var asset = assets.findById(material.fileAssetId()).orElseThrow();
-        assertThat(asset.getUploadedByTeacherId()).isEqualTo(fixture.teacher().getId());
-        assertThat(asset.getOriginalFilename()).isEqualTo(name);
-        assertThat(asset.getMimeType()).isEqualTo(mime);
-        assertThat(asset.getSizeBytes()).isEqualTo(bytes.length);
-        assertThat(asset.getStorageProvider()).isEqualTo(com.tutorplatform.content.domain.StorageProvider.LOCAL);
-        assertThat(asset.getCreatedAt()).isNotNull();
-        assertThat(asset.getSha256()).isEqualTo(java.util.HexFormat.of().formatHex(
+        assertThat(asset.uploadedByTeacherId()).isEqualTo(fixture.teacher().id());
+        assertThat(asset.originalFilename()).isEqualTo(name);
+        assertThat(asset.mimeType()).isEqualTo(mime);
+        assertThat(asset.sizeBytes()).isEqualTo(bytes.length);
+        assertThat(asset.storageProvider()).isEqualTo(com.tutorplatform.content.domain.StorageProvider.LOCAL);
+        assertThat(asset.createdAt()).isNotNull();
+        assertThat(asset.sha256()).isEqualTo(java.util.HexFormat.of().formatHex(
             java.security.MessageDigest.getInstance("SHA-256").digest(bytes)));
-        assertThat(UUID.fromString(asset.getStorageKey()).toString()).isEqualTo(asset.getStorageKey());
-        assertThat(Files.readAllBytes(STORAGE.resolve(asset.getStorageKey()))).isEqualTo(bytes);
+        assertThat(UUID.fromString(asset.storageKey()).toString()).isEqualTo(asset.storageKey());
+        assertThat(Files.readAllBytes(STORAGE.resolve(asset.storageKey()))).isEqualTo(bytes);
         var duplicate = mockMvc.perform(upload(fixture, type.name(), name, mime, bytes, 1)
             .with(user(fixture.principal())).with(csrf())).andExpect(status().isCreated()).andReturn();
-        var otherMaterial = lessonMaterialService.getLessonMaterial(fixture.principal(), fixture.topic().getId(),
+        var otherMaterial = lessonMaterialService.getLessonMaterial(fixture.principal(), fixture.topic().id(),
             UUID.fromString(json(duplicate).get("id").asText()));
         var otherAsset = assets.findById(otherMaterial.fileAssetId()).orElseThrow();
-        assertThat(otherAsset.getStorageKey()).isNotEqualTo(asset.getStorageKey());
-        assertThat(Files.exists(STORAGE.resolve(otherAsset.getStorageKey()))).isTrue();
-        mockMvc.perform(get(materialUrl(fixture.topic().getId(), materialId) + "/download")
+        assertThat(otherAsset.storageKey()).isNotEqualTo(asset.storageKey());
+        assertThat(Files.exists(STORAGE.resolve(otherAsset.storageKey()))).isTrue();
+        mockMvc.perform(get(materialUrl(fixture.topic().id(), materialId) + "/download")
                 .with(user(fixture.principal())))
             .andExpect(status().isOk()).andExpect(content().bytes(bytes)).andExpect(content().contentType(mime))
             .andExpect(header().string("Cache-Control", "no-store"))
@@ -150,12 +150,12 @@ class FileMaterialApiIntegrationTest {
             .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.allOf(
                 org.hamcrest.Matchers.startsWith("attachment;"),
                 org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString(STORAGE.toString())),
-                org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString(asset.getStorageKey())),
+                org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString(asset.storageKey())),
                 org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("../")))));
         var stranger = createFixture(UUID.randomUUID() + "@example.com");
-        mockMvc.perform(get(materialUrl(fixture.topic().getId(), materialId) + "/download")
+        mockMvc.perform(get(materialUrl(fixture.topic().id(), materialId) + "/download")
             .with(user(stranger.principal()))).andExpect(status().isNotFound());
-        mockMvc.perform(get(materialUrl(fixture.topic().getId(), materialId) + "/download"))
+        mockMvc.perform(get(materialUrl(fixture.topic().id(), materialId) + "/download"))
             .andExpect(status().isUnauthorized());
     }
 
@@ -175,7 +175,7 @@ class FileMaterialApiIntegrationTest {
             .with(user(fixture.principal())).with(csrf())).andExpect(status().isBadRequest());
         assertThat(objectCount()).isEqualTo(count);
         assertThat(jdbc.queryForObject("select count(*) from file_assets where uploaded_by_teacher_id = ?",
-            Long.class, fixture.teacher().getId())).isZero();
+            Long.class, fixture.teacher().id())).isZero();
     }
 
     @Test
@@ -196,14 +196,14 @@ class FileMaterialApiIntegrationTest {
     void databaseFailureRollsBackMetadataAndDeletesObject() throws Exception {
         var fixture = createFixture(UUID.randomUUID() + "@example.com");
         lessonMaterialService.createLessonMaterial(fixture.principal(), new CreateLessonMaterialCommand(
-            fixture.topic().getId(), LessonMaterialType.TEXT, "Existing", "text", null, null, 0));
+            fixture.topic().id(), LessonMaterialType.TEXT, "Existing", "text", null, null, 0));
         long count = objectCount();
         mockMvc.perform(upload(fixture, "FILE", "a.txt", "text/plain", "hello".getBytes(), 0)
             .with(user(fixture.principal())).with(csrf())).andExpect(status().isConflict());
         assertThat(objectCount()).isEqualTo(count);
         assertThat(jdbc.queryForObject("select count(*) from file_assets where uploaded_by_teacher_id = ?",
-            Long.class, fixture.teacher().getId())).isZero();
-        assertThat(lessonMaterialService.listLessonMaterials(fixture.principal(), fixture.topic().getId())).hasSize(1);
+            Long.class, fixture.teacher().id())).isZero();
+        assertThat(lessonMaterialService.listLessonMaterials(fixture.principal(), fixture.topic().id())).hasSize(1);
     }
 
     @Test
@@ -240,7 +240,7 @@ class FileMaterialApiIntegrationTest {
                 .with(user(fixture.principal())).with(csrf())).andExpect(status().is5xxServerError());
             assertThat(objectCount()).isEqualTo(count);
             assertThat(jdbc.queryForObject("select count(*) from file_assets where uploaded_by_teacher_id = ?",
-                Long.class, fixture.teacher().getId())).isZero();
+                Long.class, fixture.teacher().id())).isZero();
         } finally {
             jdbc.execute("DROP TRIGGER reject_file_material_commit ON lesson_materials");
             jdbc.execute("DROP FUNCTION reject_file_material_commit()");
@@ -252,7 +252,7 @@ class FileMaterialApiIntegrationTest {
             org.springframework.boot.test.system.CapturedOutput output) throws Exception {
         var fixture = createFixture(UUID.randomUUID() + "@example.com");
         lessonMaterialService.createLessonMaterial(fixture.principal(), new CreateLessonMaterialCommand(
-            fixture.topic().getId(), LessonMaterialType.TEXT, "Existing", "text", null, null, 0));
+            fixture.topic().id(), LessonMaterialType.TEXT, "Existing", "text", null, null, 0));
         java.util.Set<Path> before;
         try (var paths = Files.list(STORAGE)) { before = paths.collect(java.util.stream.Collectors.toSet()); }
         org.mockito.Mockito.doThrow(new com.tutorplatform.file.application.FileStorageException(
@@ -285,21 +285,21 @@ class FileMaterialApiIntegrationTest {
             UUID.randomUUID(), user, "Teacher"
         ));
         SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
-            UUID.randomUUID(), teacher.getId(), null, "Предмет " + UUID.randomUUID(),
+            UUID.randomUUID(), teacher.id(), null, "Предмет " + UUID.randomUUID(),
             null, SubjectStatus.ACTIVE
         ));
         LearningProgramEntity learningProgram = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-            UUID.randomUUID(), teacher.getId(), subject.getId(), "Программа", null,
+            UUID.randomUUID(), teacher.id(), subject.id(), "Программа", null,
             LearningProgramStatus.DRAFT
         ));
         ModuleEntity module = moduleRepository.saveAndFlush(new ModuleEntity(
             UUID.randomUUID(), learningProgram.getId(), "Модуль", null, 0
         ));
         TopicEntity topic = topicRepository.saveAndFlush(new TopicEntity(
-            UUID.randomUUID(), module.getId(), "Тема", null, 0, TopicStatus.DRAFT
+            UUID.randomUUID(), module.id(), "Тема", null, 0, TopicStatus.DRAFT
         ));
         AuthenticatedUser principal = new AuthenticatedUser(
-            user.getId(),
+            user.id(),
             email,
             "password-hash",
             true,

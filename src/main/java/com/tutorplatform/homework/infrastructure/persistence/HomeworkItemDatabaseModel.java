@@ -43,10 +43,10 @@ public class HomeworkItemDatabaseModel {
     }
 
     HomeworkItemDatabaseModel(HomeworkItemEntity item) {
-        id = Objects.requireNonNull(item.getId());
-        taskId = Objects.requireNonNull(item.getTaskId());
-        position = item.getPosition();
-        required = item.isRequired();
+        id = Objects.requireNonNull(item.id());
+        taskId = Objects.requireNonNull(item.taskId());
+        position = item.position();
+        required = item.required();
     }
 
     HomeworkItemEntity toEntity(UUID homeworkId) {

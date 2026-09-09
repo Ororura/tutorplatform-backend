@@ -78,19 +78,19 @@ public class StudentProgramDatabaseModel {
     }
 
     StudentProgramDatabaseModel(StudentProgramEntity studentProgram) {
-        id = Objects.requireNonNull(studentProgram.getId());
+        id = Objects.requireNonNull(studentProgram.id());
         updateFrom(studentProgram);
-        version = studentProgram.getVersion();
+        version = studentProgram.version();
     }
 
     void updateFrom(StudentProgramEntity studentProgram) {
-        studentId = Objects.requireNonNull(studentProgram.getStudentId());
-        learningProgramId = Objects.requireNonNull(studentProgram.getLearningProgramId());
-        assignedByTeacherId = Objects.requireNonNull(studentProgram.getAssignedByTeacherId());
-        status = Objects.requireNonNull(studentProgram.getStatus());
-        reportIntervalMinutes = studentProgram.getReportIntervalMinutes();
-        startedAt = Objects.requireNonNull(studentProgram.getStartedAt());
-        completedAt = studentProgram.getCompletedAt();
+        studentId = Objects.requireNonNull(studentProgram.studentId());
+        learningProgramId = Objects.requireNonNull(studentProgram.learningProgramId());
+        assignedByTeacherId = Objects.requireNonNull(studentProgram.assignedByTeacherId());
+        status = Objects.requireNonNull(studentProgram.status());
+        reportIntervalMinutes = studentProgram.reportIntervalMinutes();
+        startedAt = Objects.requireNonNull(studentProgram.startedAt());
+        completedAt = studentProgram.completedAt();
     }
 
     StudentProgramEntity toEntity() {

@@ -69,7 +69,7 @@ public class StudentInviteEntity {
     ) {
         this.id = Objects.requireNonNull(id);
         this.studentId = Objects.requireNonNull(student).getId();
-        this.createdByTeacherId = Objects.requireNonNull(createdByTeacher).getId();
+        this.createdByTeacherId = Objects.requireNonNull(createdByTeacher).id();
         this.email = Objects.requireNonNull(email);
         this.tokenHash = Objects.requireNonNull(tokenHash);
         this.expiresAt = Objects.requireNonNull(expiresAt);

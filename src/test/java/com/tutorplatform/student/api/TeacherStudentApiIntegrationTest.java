@@ -115,7 +115,7 @@ class TeacherStudentApiIntegrationTest {
         UUID studentId = UUID.fromString(json(result).required("id").textValue());
         StudentEntity student = studentRepository.findById(studentId).orElseThrow();
         assertThat(student.getUserId()).isNull();
-        assertThat(teacherStudentLinkRepository.existsByIdTeacherIdAndIdStudentIdAndRelationTypeAndEndedAtIsNull(teacher.teacher().getId(), studentId, TeacherStudentRelationType.PRIMARY)).isTrue();
+        assertThat(teacherStudentLinkRepository.existsByIdTeacherIdAndIdStudentIdAndRelationTypeAndEndedAtIsNull(teacher.teacher().id(), studentId, TeacherStudentRelationType.PRIMARY)).isTrue();
     }
 
     @Test
@@ -308,7 +308,7 @@ class TeacherStudentApiIntegrationTest {
                 "Teacher"
         ));
         AuthenticatedUser principal = new AuthenticatedUser(
-                user.getId(),
+                user.id(),
                 email,
                 "password-hash",
                 true,

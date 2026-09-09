@@ -19,7 +19,7 @@ public class JpaStudentTopicProgressRepository implements StudentTopicProgressRe
     @Override
     public StudentTopicProgressEntity saveAndFlush(StudentTopicProgressEntity progress) {
         StudentTopicProgressId id = new StudentTopicProgressId(
-                progress.getStudentProgramId(), progress.getTopicId()
+                progress.studentProgramId(), progress.topicId()
         );
         StudentTopicProgressDatabaseModel model = databaseRepository.findById(id)
                 .orElseGet(() -> new StudentTopicProgressDatabaseModel(progress));

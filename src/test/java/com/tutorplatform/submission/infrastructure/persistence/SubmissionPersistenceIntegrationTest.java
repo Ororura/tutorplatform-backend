@@ -338,19 +338,19 @@ class SubmissionPersistenceIntegrationTest {
                 UUID.randomUUID(), "Ученик", null, StudentStatus.ACTIVE
         ));
         SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
-                UUID.randomUUID(), teacher.getId(), null, "Предмет " + UUID.randomUUID(), null,
+                UUID.randomUUID(), teacher.id(), null, "Предмет " + UUID.randomUUID(), null,
                 SubjectStatus.ACTIVE
         ));
         LearningProgramEntity program = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-                UUID.randomUUID(), teacher.getId(), subject.getId(), "Программа", null,
+                UUID.randomUUID(), teacher.id(), subject.id(), "Программа", null,
                 LearningProgramStatus.ACTIVE
         ));
         StudentProgramEntity studentProgram = studentProgramRepository.saveAndFlush(new StudentProgramEntity(
-                UUID.randomUUID(), student.getId(), program.getId(), teacher.getId(),
+                UUID.randomUUID(), student.getId(), program.getId(), teacher.id(),
                 StudentProgramStatus.ACTIVE, 480, Instant.now(), null
         ));
         TaskEntity task = taskRepository.saveAndFlush(new TaskEntity(
-                UUID.randomUUID(), teacher.getId(), subject.getId(), "Текстовое задание", "Условие",
+                UUID.randomUUID(), teacher.id(), subject.id(), "Текстовое задание", "Условие",
                 TaskType.TEXT, TaskDifficulty.EASY, TaskStatus.ACTIVE
         ));
         UUID homeworkItemId = null;
@@ -358,13 +358,13 @@ class SubmissionPersistenceIntegrationTest {
             UUID homeworkId = UUID.randomUUID();
             homeworkItemId = UUID.randomUUID();
             HomeworkEntity homework = homeworkRepository.saveAndFlush(new HomeworkEntity(
-                    homeworkId, studentProgram.getId(), teacher.getId(), "Домашняя работа", null,
+                    homeworkId, studentProgram.id(), teacher.id(), "Домашняя работа", null,
                     Instant.now(), null, HomeworkStatus.ASSIGNED, null,
                     List.of(new HomeworkItemEntity(homeworkItemId, homeworkId, task.getId(), 0, true))
             ));
-            homeworkItemId = homework.getItems().getFirst().getId();
+            homeworkItemId = homework.getItems().getFirst().id();
         }
-        return new Fixture(student.getId(), studentProgram.getId(), task.getId(), homeworkItemId);
+        return new Fixture(student.getId(), studentProgram.id(), task.getId(), homeworkItemId);
     }
 
     private enum ForeignKey {

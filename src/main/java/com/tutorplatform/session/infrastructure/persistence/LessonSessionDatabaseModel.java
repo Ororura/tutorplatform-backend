@@ -72,19 +72,19 @@ public class LessonSessionDatabaseModel {
     }
 
     LessonSessionDatabaseModel(LessonSessionEntity lessonSession) {
-        id = Objects.requireNonNull(lessonSession.getId());
+        id = Objects.requireNonNull(lessonSession.id());
         updateFrom(lessonSession);
-        version = lessonSession.getVersion();
+        version = lessonSession.version();
     }
 
     void updateFrom(LessonSessionEntity lessonSession) {
-        studentProgramId = Objects.requireNonNull(lessonSession.getStudentProgramId());
-        teacherId = Objects.requireNonNull(lessonSession.getTeacherId());
-        startedAt = Objects.requireNonNull(lessonSession.getStartedAt());
-        durationMinutes = lessonSession.getDurationMinutes();
-        attendanceStatus = Objects.requireNonNull(lessonSession.getAttendanceStatus());
-        summary = lessonSession.getSummary();
-        privateNotes = lessonSession.getPrivateNotes();
+        studentProgramId = Objects.requireNonNull(lessonSession.studentProgramId());
+        teacherId = Objects.requireNonNull(lessonSession.teacherId());
+        startedAt = Objects.requireNonNull(lessonSession.startedAt());
+        durationMinutes = lessonSession.durationMinutes();
+        attendanceStatus = Objects.requireNonNull(lessonSession.attendanceStatus());
+        summary = lessonSession.summary();
+        privateNotes = lessonSession.privateNotes();
     }
 
     LessonSessionEntity toEntity() {

@@ -76,7 +76,7 @@ class LessonMaterialApplicationIntegrationTest {
 
         assertThat(created.materialType()).isEqualTo(LessonMaterialType.TEXT);
         assertThat(created.content()).isEqualTo("Содержимое");
-        assertThat(created.createdByTeacherId()).isEqualTo(fixture.teacher().getId());
+        assertThat(created.createdByTeacherId()).isEqualTo(fixture.teacher().id());
         assertThat(created.version()).isZero();
     }
 
@@ -126,7 +126,7 @@ class LessonMaterialApplicationIntegrationTest {
 
         assertThatThrownBy(() -> lessonMaterialService.createLessonMaterial(
             current.principal(),
-            createCommand(foreign.topic().getId(), LessonMaterialType.TEXT, "Текст", "Содержимое", null, 0)
+            createCommand(foreign.topic().id(), LessonMaterialType.TEXT, "Текст", "Содержимое", null, 0)
         )).isInstanceOf(TopicNotFoundException.class);
     }
 
@@ -146,7 +146,7 @@ class LessonMaterialApplicationIntegrationTest {
 
         assertThatThrownBy(() -> lessonMaterialService.createLessonMaterial(
             fixture.principal(),
-            createCommand(fixture.topic().getId(), LessonMaterialType.TEXT, "Текст", null, null, 0)
+            createCommand(fixture.topic().id(), LessonMaterialType.TEXT, "Текст", null, null, 0)
         )).isInstanceOf(InvalidLessonMaterialException.class)
             .extracting("field")
             .isEqualTo("content");
@@ -158,7 +158,7 @@ class LessonMaterialApplicationIntegrationTest {
 
         assertThatThrownBy(() -> lessonMaterialService.createLessonMaterial(
             fixture.principal(),
-            createCommand(fixture.topic().getId(), LessonMaterialType.LINK, "Ссылка", null, null, 0)
+            createCommand(fixture.topic().id(), LessonMaterialType.LINK, "Ссылка", null, null, 0)
         )).isInstanceOf(InvalidLessonMaterialException.class)
             .extracting("field")
             .isEqualTo("externalUrl");
@@ -170,7 +170,7 @@ class LessonMaterialApplicationIntegrationTest {
 
         assertThatThrownBy(() -> lessonMaterialService.createLessonMaterial(
             fixture.principal(),
-            createCommand(fixture.topic().getId(), LessonMaterialType.TEXT, "Текст", "Содержимое", null, -1)
+            createCommand(fixture.topic().id(), LessonMaterialType.TEXT, "Текст", "Содержимое", null, -1)
         )).isInstanceOf(InvalidLessonMaterialException.class)
             .extracting("field")
             .isEqualTo("position");
@@ -193,7 +193,7 @@ class LessonMaterialApplicationIntegrationTest {
         LessonMaterialResult second = createTextMaterial(fixture, "Второй", 1);
 
         assertThat(lessonMaterialService.listLessonMaterials(
-            fixture.principal(), fixture.topic().getId()
+            fixture.principal(), fixture.topic().id()
         )).extracting(LessonMaterialResult::id)
             .containsExactly(first.id(), second.id(), third.id());
     }
@@ -205,7 +205,7 @@ class LessonMaterialApplicationIntegrationTest {
         LessonMaterialResult foreignMaterial = createTextMaterial(foreign, "Чужой", 0);
 
         assertThatThrownBy(() -> lessonMaterialService.getLessonMaterial(
-            current.principal(), current.topic().getId(), foreignMaterial.id()
+            current.principal(), current.topic().id(), foreignMaterial.id()
         )).isInstanceOf(LessonMaterialNotFoundException.class);
     }
 
@@ -216,7 +216,7 @@ class LessonMaterialApplicationIntegrationTest {
 
         LessonMaterialResult updated = lessonMaterialService.updateLessonMaterial(
             fixture.principal(),
-            fixture.topic().getId(),
+            fixture.topic().id(),
             created.id(),
             new UpdateLessonMaterialCommand(
                 LessonMaterialType.LINK,
@@ -246,7 +246,7 @@ class LessonMaterialApplicationIntegrationTest {
 
         assertThatThrownBy(() -> lessonMaterialService.updateLessonMaterial(
             fixture.principal(),
-            fixture.topic().getId(),
+            fixture.topic().id(),
             created.id(),
             new UpdateLessonMaterialCommand(
                 LessonMaterialType.LINK,
@@ -260,7 +260,7 @@ class LessonMaterialApplicationIntegrationTest {
         )).isInstanceOf(InvalidLessonMaterialException.class);
 
         assertThat(lessonMaterialService.getLessonMaterial(
-            fixture.principal(), fixture.topic().getId(), created.id()
+            fixture.principal(), fixture.topic().id(), created.id()
         ).materialType()).isEqualTo(LessonMaterialType.TEXT);
     }
 
@@ -271,7 +271,7 @@ class LessonMaterialApplicationIntegrationTest {
         assertThatThrownBy(() -> lessonMaterialService.createLessonMaterial(
             fixture.principal(),
             new CreateLessonMaterialCommand(
-                fixture.topic().getId(), LessonMaterialType.FILE, "Файл", null,
+                fixture.topic().id(), LessonMaterialType.FILE, "Файл", null,
                 UUID.randomUUID(), null, 0
             )
         )).isInstanceOf(InvalidLessonMaterialException.class)
@@ -280,7 +280,7 @@ class LessonMaterialApplicationIntegrationTest {
         assertThatThrownBy(() -> lessonMaterialService.createLessonMaterial(
             fixture.principal(),
             new CreateLessonMaterialCommand(
-                fixture.topic().getId(), LessonMaterialType.IMAGE, "Изображение", null,
+                fixture.topic().id(), LessonMaterialType.IMAGE, "Изображение", null,
                 UUID.randomUUID(), null, 0
             )
         )).isInstanceOf(InvalidLessonMaterialException.class)
@@ -294,7 +294,7 @@ class LessonMaterialApplicationIntegrationTest {
 
         assertThatThrownBy(() -> lessonMaterialService.createLessonMaterial(
             fixture.principal(),
-            createCommand(fixture.topic().getId(), LessonMaterialType.TEXT, " ", "Содержимое", null, 0)
+            createCommand(fixture.topic().id(), LessonMaterialType.TEXT, " ", "Содержимое", null, 0)
         )).isInstanceOf(InvalidLessonMaterialException.class)
             .extracting("field")
             .isEqualTo("title");
@@ -308,16 +308,16 @@ class LessonMaterialApplicationIntegrationTest {
         UpdateLessonMaterialCommand staleUpdate = updateTextCommand(created, "Устаревшая версия");
 
         LessonMaterialResult updated = lessonMaterialService.updateLessonMaterial(
-            fixture.principal(), fixture.topic().getId(), created.id(), firstUpdate
+            fixture.principal(), fixture.topic().id(), created.id(), firstUpdate
         );
         Throwable thrown = catchThrowable(() -> lessonMaterialService.updateLessonMaterial(
-            fixture.principal(), fixture.topic().getId(), created.id(), staleUpdate
+            fixture.principal(), fixture.topic().id(), created.id(), staleUpdate
         ));
 
         assertThat(thrown).isNotNull();
         assertThat(hasOptimisticLockCause(thrown)).isTrue();
         assertThat(lessonMaterialService.getLessonMaterial(
-            fixture.principal(), fixture.topic().getId(), created.id()
+            fixture.principal(), fixture.topic().id(), created.id()
         )).satisfies(persisted -> {
             assertThat(persisted.title()).isEqualTo("Первая версия");
             assertThat(persisted.version()).isEqualTo(updated.version());
@@ -338,7 +338,7 @@ class LessonMaterialApplicationIntegrationTest {
     ) {
         return lessonMaterialService.createLessonMaterial(
             fixture.principal(),
-            createCommand(fixture.topic().getId(), type, title, content, externalUrl, position)
+            createCommand(fixture.topic().id(), type, title, content, externalUrl, position)
         );
     }
 
@@ -378,21 +378,21 @@ class LessonMaterialApplicationIntegrationTest {
             UUID.randomUUID(), user, "Teacher"
         ));
         SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
-            UUID.randomUUID(), teacher.getId(), null, "Предмет " + UUID.randomUUID(),
+            UUID.randomUUID(), teacher.id(), null, "Предмет " + UUID.randomUUID(),
             null, SubjectStatus.ACTIVE
         ));
         LearningProgramEntity learningProgram = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-            UUID.randomUUID(), teacher.getId(), subject.getId(), "Программа", null,
+            UUID.randomUUID(), teacher.id(), subject.id(), "Программа", null,
             LearningProgramStatus.DRAFT
         ));
         ModuleEntity module = moduleRepository.saveAndFlush(new ModuleEntity(
             UUID.randomUUID(), learningProgram.getId(), "Модуль", null, 0
         ));
         TopicEntity topic = topicRepository.saveAndFlush(new TopicEntity(
-            UUID.randomUUID(), module.getId(), "Тема", null, 0, TopicStatus.DRAFT
+            UUID.randomUUID(), module.id(), "Тема", null, 0, TopicStatus.DRAFT
         ));
         AuthenticatedUser principal = new AuthenticatedUser(
-            user.getId(),
+            user.id(),
             email,
             "",
             true,

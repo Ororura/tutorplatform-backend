@@ -74,7 +74,7 @@ public class LessonSessionService {
             command.summary(),
             command.privateNotes()
         ));
-        List<LessonSessionTopicEntity> topics = saveTopics(lessonSession.getId(), command.topics());
+        List<LessonSessionTopicEntity> topics = saveTopics(lessonSession.id(), command.topics());
         return toResult(lessonSession, topics);
     }
 
@@ -125,7 +125,7 @@ public class LessonSessionService {
             sortParameters.ascending()
         );
         Set<UUID> sessionIds = sessions.items().stream()
-            .map(LessonSessionEntity::getId)
+            .map(LessonSessionEntity::id)
             .collect(java.util.stream.Collectors.toSet());
         Map<UUID, List<LessonSessionTopicEntity>> topicsBySession = groupTopics(
             lessonSessionTopicRepository.findAllByLessonSessionIds(sessionIds)
@@ -134,7 +134,7 @@ public class LessonSessionService {
             sessions.items().stream()
                 .map(session -> toResult(
                     session,
-                    topicsBySession.getOrDefault(session.getId(), List.of())
+                    topicsBySession.getOrDefault(session.id(), List.of())
                 ))
                 .toList(),
             page,
@@ -157,24 +157,24 @@ public class LessonSessionService {
             .findOwnedById(lessonSessionId, teacherId, studentId)
             .orElseThrow(LessonSessionNotFoundException::new);
         ProgramQuery.StudentProgramContext studentProgram = requireStudentProgram(
-            current.getStudentProgramId(), studentId, teacherId
+            current.studentProgramId(), studentId, teacherId
         );
         validateTopics(command.topics(), studentProgram.learningProgramId());
 
         LessonSessionEntity updated;
         try {
             updated = lessonSessionRepository.saveAndFlush(new LessonSessionEntity(
-                current.getId(),
-                current.getStudentProgramId(),
-                current.getTeacherId(),
+                current.id(),
+                current.studentProgramId(),
+                current.teacherId(),
                 command.startedAt(),
                 command.durationMinutes(),
                 command.attendanceStatus(),
                 command.summary(),
                 command.privateNotes(),
                 command.version(),
-                current.getCreatedAt(),
-                current.getUpdatedAt()
+                current.createdAt(),
+                current.updatedAt()
             ));
         } catch (ObjectOptimisticLockingFailureException exception) {
             throw new LessonSessionVersionConflictException(exception);
@@ -242,7 +242,7 @@ public class LessonSessionService {
     ) {
         Map<UUID, List<LessonSessionTopicEntity>> result = new HashMap<>();
         for (LessonSessionTopicEntity topic : topics) {
-            result.computeIfAbsent(topic.getLessonSessionId(), ignored -> new java.util.ArrayList<>())
+            result.computeIfAbsent(topic.lessonSessionId(), ignored -> new java.util.ArrayList<>())
                 .add(topic);
         }
         return result;
@@ -253,20 +253,20 @@ public class LessonSessionService {
         List<LessonSessionTopicEntity> topics
     ) {
         return new LessonSessionResult(
-            lessonSession.getId(),
-            lessonSession.getStudentProgramId(),
-            lessonSession.getTeacherId(),
-            lessonSession.getStartedAt(),
-            lessonSession.getDurationMinutes(),
-            lessonSession.getAttendanceStatus(),
-            lessonSession.getSummary(),
-            lessonSession.getPrivateNotes(),
-            lessonSession.getVersion(),
-            lessonSession.getCreatedAt(),
-            lessonSession.getUpdatedAt(),
+            lessonSession.id(),
+            lessonSession.studentProgramId(),
+            lessonSession.teacherId(),
+            lessonSession.startedAt(),
+            lessonSession.durationMinutes(),
+            lessonSession.attendanceStatus(),
+            lessonSession.summary(),
+            lessonSession.privateNotes(),
+            lessonSession.version(),
+            lessonSession.createdAt(),
+            lessonSession.updatedAt(),
             topics.stream()
                 .map(topic -> new LessonSessionTopicResult(
-                    topic.getTopicId(), topic.isPrimary(), topic.getCreatedAt()
+                    topic.topicId(), topic.primary(), topic.createdAt()
                 ))
                 .toList()
         );

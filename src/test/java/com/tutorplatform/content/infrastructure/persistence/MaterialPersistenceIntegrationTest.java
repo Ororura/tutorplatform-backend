@@ -131,7 +131,7 @@ class MaterialPersistenceIntegrationTest {
     void linkMaterialRequiresExternalUrl() {
         ContentFixture fixture = createContentFixture("link-material@example.com");
         LessonMaterialEntity link = lessonMaterialRepository.saveAndFlush(new LessonMaterialEntity(
-                UUID.randomUUID(), fixture.topic().getId(), fixture.teacher().getId(),
+                UUID.randomUUID(), fixture.topic().id(), fixture.teacher().id(),
                 LessonMaterialType.LINK, "Документация", null, null,
                 "https://example.com/docs", 0
         ));
@@ -148,11 +148,11 @@ class MaterialPersistenceIntegrationTest {
         ContentFixture fixture = createContentFixture("file-material@example.com");
         FileAssetEntity fileAsset = createFileAsset(fixture.teacher(), "files/file-material");
         LessonMaterialEntity material = lessonMaterialRepository.saveAndFlush(new LessonMaterialEntity(
-                UUID.randomUUID(), fixture.topic().getId(), fixture.teacher().getId(),
-                LessonMaterialType.FILE, "Файл", null, fileAsset.getId(), null, 0
+                UUID.randomUUID(), fixture.topic().id(), fixture.teacher().id(),
+                LessonMaterialType.FILE, "Файл", null, fileAsset.id(), null, 0
         ));
 
-        assertThat(material.getFileAssetId()).isEqualTo(fileAsset.getId());
+        assertThat(material.getFileAssetId()).isEqualTo(fileAsset.id());
         assertThatThrownBy(() -> insertMaterialWithoutRequiredValue(fixture, "FILE", 1))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
@@ -162,11 +162,11 @@ class MaterialPersistenceIntegrationTest {
         ContentFixture fixture = createContentFixture("image-material@example.com");
         FileAssetEntity fileAsset = createFileAsset(fixture.teacher(), "images/image-material");
         LessonMaterialEntity material = lessonMaterialRepository.saveAndFlush(new LessonMaterialEntity(
-                UUID.randomUUID(), fixture.topic().getId(), fixture.teacher().getId(),
-                LessonMaterialType.IMAGE, "Схема", null, fileAsset.getId(), null, 0
+                UUID.randomUUID(), fixture.topic().id(), fixture.teacher().id(),
+                LessonMaterialType.IMAGE, "Схема", null, fileAsset.id(), null, 0
         ));
 
-        assertThat(material.getFileAssetId()).isEqualTo(fileAsset.getId());
+        assertThat(material.getFileAssetId()).isEqualTo(fileAsset.id());
         assertThatThrownBy(() -> insertMaterialWithoutRequiredValue(fixture, "IMAGE", 1))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
@@ -181,7 +181,7 @@ class MaterialPersistenceIntegrationTest {
                             id, topic_id, created_by_teacher_id, material_type, title, content, position
                         ) values (?, ?, ?, 'TEXT', 'Текст', 'Содержимое', -1)
                         """,
-                UUID.randomUUID(), fixture.topic().getId(), fixture.teacher().getId()
+                UUID.randomUUID(), fixture.topic().id(), fixture.teacher().id()
         )).isInstanceOf(DataIntegrityViolationException.class);
     }
 
@@ -201,8 +201,8 @@ class MaterialPersistenceIntegrationTest {
 
         assertThat(lessonMaterialRepository.findById(material.getId()))
                 .get().extracting(LessonMaterialEntity::getTopicId)
-                .isEqualTo(fixture.topic().getId());
-        assertThat(lessonMaterialRepository.existsByIdAndTopicId(material.getId(), fixture.topic().getId()))
+                .isEqualTo(fixture.topic().id());
+        assertThat(lessonMaterialRepository.existsByIdAndTopicId(material.getId(), fixture.topic().id()))
                 .isTrue();
         assertThat(lessonMaterialRepository.existsByIdAndTopicId(material.getId(), UUID.randomUUID()))
                 .isFalse();
@@ -214,7 +214,7 @@ class MaterialPersistenceIntegrationTest {
         LessonMaterialEntity second = createTextMaterial(fixture, 1, "Второй");
         LessonMaterialEntity first = createTextMaterial(fixture, 0, "Первый");
 
-        assertThat(lessonMaterialRepository.findAllByTopicIdOrderByPosition(fixture.topic().getId()))
+        assertThat(lessonMaterialRepository.findAllByTopicIdOrderByPosition(fixture.topic().id()))
                 .extracting(LessonMaterialEntity::getId)
                 .containsExactly(first.getId(), second.getId());
     }
@@ -224,9 +224,9 @@ class MaterialPersistenceIntegrationTest {
         ContentFixture fixture = createContentFixture("asset-teacher@example.com");
         FileAssetEntity fileAsset = createFileAsset(fixture.teacher(), "files/teacher-link");
 
-        assertThat(fileAssetRepository.findById(fileAsset.getId()))
-                .get().extracting(FileAssetEntity::getUploadedByTeacherId)
-                .isEqualTo(fixture.teacher().getId());
+        assertThat(fileAssetRepository.findById(fileAsset.id()))
+                .get().extracting(FileAssetEntity::uploadedByTeacherId)
+                .isEqualTo(fixture.teacher().id());
     }
 
     @Test
@@ -249,7 +249,7 @@ class MaterialPersistenceIntegrationTest {
                             original_filename, mime_type, size_bytes
                         ) values (?, ?, 'LOCAL', ?, 'file.txt', 'text/plain', -1)
                         """,
-                UUID.randomUUID(), fixture.teacher().getId(), "files/negative-" + UUID.randomUUID()
+                UUID.randomUUID(), fixture.teacher().id(), "files/negative-" + UUID.randomUUID()
         )).isInstanceOf(DataIntegrityViolationException.class);
     }
 
@@ -285,7 +285,7 @@ class MaterialPersistenceIntegrationTest {
     private void assertTextMaterialSaved(LessonMaterialType type, String title, String content) {
         ContentFixture fixture = createContentFixture(type.name().toLowerCase() + "@example.com");
         LessonMaterialEntity material = lessonMaterialRepository.saveAndFlush(new LessonMaterialEntity(
-                UUID.randomUUID(), fixture.topic().getId(), fixture.teacher().getId(),
+                UUID.randomUUID(), fixture.topic().id(), fixture.teacher().id(),
                 type, title, content, null, null, 0
         ));
 
@@ -302,14 +302,14 @@ class MaterialPersistenceIntegrationTest {
 
     private LessonMaterialEntity createTextMaterial(ContentFixture fixture, int position, String title) {
         return lessonMaterialRepository.saveAndFlush(new LessonMaterialEntity(
-                UUID.randomUUID(), fixture.topic().getId(), fixture.teacher().getId(),
+                UUID.randomUUID(), fixture.topic().id(), fixture.teacher().id(),
                 LessonMaterialType.TEXT, title, "Содержимое", null, null, position
         ));
     }
 
     private FileAssetEntity createFileAsset(TeacherEntity teacher, String storageKey) {
         return fileAssetRepository.saveAndFlush(new FileAssetEntity(
-                UUID.randomUUID(), teacher.getId(), StorageProvider.LOCAL, storageKey,
+                UUID.randomUUID(), teacher.id(), StorageProvider.LOCAL, storageKey,
                 "file.txt", "text/plain", 128, null
         ));
     }
@@ -321,7 +321,7 @@ class MaterialPersistenceIntegrationTest {
                             id, topic_id, created_by_teacher_id, material_type, title, position
                         ) values (?, ?, ?, ?, 'Материал', ?)
                         """,
-                UUID.randomUUID(), fixture.topic().getId(), fixture.teacher().getId(), type, position
+                UUID.randomUUID(), fixture.topic().id(), fixture.teacher().id(), type, position
         );
     }
 
@@ -333,18 +333,18 @@ class MaterialPersistenceIntegrationTest {
                 UUID.randomUUID(), user, "Teacher"
         ));
         SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
-                UUID.randomUUID(), teacher.getId(), null, "Предмет " + UUID.randomUUID(),
+                UUID.randomUUID(), teacher.id(), null, "Предмет " + UUID.randomUUID(),
                 null, SubjectStatus.ACTIVE
         ));
         LearningProgramEntity learningProgram = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-                UUID.randomUUID(), teacher.getId(), subject.getId(), "Программа", null,
+                UUID.randomUUID(), teacher.id(), subject.id(), "Программа", null,
                 LearningProgramStatus.DRAFT
         ));
         ModuleEntity module = moduleRepository.saveAndFlush(new ModuleEntity(
                 UUID.randomUUID(), learningProgram.getId(), "Модуль", null, 0
         ));
         TopicEntity topic = topicRepository.saveAndFlush(new TopicEntity(
-                UUID.randomUUID(), module.getId(), "Тема", null, 0, TopicStatus.DRAFT
+                UUID.randomUUID(), module.id(), "Тема", null, 0, TopicStatus.DRAFT
         ));
         return new ContentFixture(teacher, topic);
     }

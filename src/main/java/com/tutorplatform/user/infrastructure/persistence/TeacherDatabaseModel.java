@@ -35,13 +35,13 @@ public class TeacherDatabaseModel {
     protected TeacherDatabaseModel() {}
 
     TeacherDatabaseModel(TeacherEntity teacher) {
-        id = teacher.getId();
+        id = teacher.id();
         updateFrom(teacher);
     }
 
     void updateFrom(TeacherEntity teacher) {
-        userId = teacher.getUserId();
-        displayName = teacher.getDisplayName();
+        userId = teacher.userId();
+        displayName = teacher.displayName();
     }
 
     TeacherEntity toEntity() {

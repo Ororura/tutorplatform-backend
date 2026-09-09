@@ -104,7 +104,7 @@ class SubmissionApiIntegrationTest {
         HomeworkEntity homework = createHomework(
                 fixture, fixture.studentProgram(), HomeworkStatus.ASSIGNED, List.of(fixture.textTask())
         );
-        UUID itemId = homework.getItems().getFirst().getId();
+        UUID itemId = homework.getItems().getFirst().id();
         Instant before = Instant.now();
 
         submit(fixture.studentPrincipal(), fixture.textTask().getId(), itemId,
@@ -135,12 +135,12 @@ class SubmissionApiIntegrationTest {
                 .andExpect(jsonPath("$.attemptNo").value(2));
 
         var attempts = submissionRepository.findAttempts(new SubmissionAttemptContext(
-                fixture.student().getId(), fixture.studentProgram().getId(),
+                fixture.student().getId(), fixture.studentProgram().id(),
                 fixture.textTask().getId(), itemId
         ), 0, 10);
         assertThat(attempts.items()).hasSize(2).allSatisfy(submission -> {
             assertThat(submission.getStudentId()).isEqualTo(fixture.student().getId());
-            assertThat(submission.getStudentProgramId()).isEqualTo(fixture.studentProgram().getId());
+            assertThat(submission.getStudentProgramId()).isEqualTo(fixture.studentProgram().id());
             assertThat(submission.getTaskId()).isEqualTo(fixture.textTask().getId());
             assertThat(submission.getHomeworkItemId()).isEqualTo(itemId);
             assertThat(submission.getSubmittedAt()).isAfterOrEqualTo(before);
@@ -161,9 +161,9 @@ class SubmissionApiIntegrationTest {
         HomeworkEntity secondHomework = createHomework(
                 fixture, fixture.studentProgram(), HomeworkStatus.ASSIGNED, List.of(fixture.textTask())
         );
-        UUID firstTaskItem = firstHomework.getItems().get(0).getId();
-        UUID secondTaskItem = firstHomework.getItems().get(1).getId();
-        UUID otherHomeworkItem = secondHomework.getItems().getFirst().getId();
+        UUID firstTaskItem = firstHomework.getItems().get(0).id();
+        UUID secondTaskItem = firstHomework.getItems().get(1).id();
+        UUID otherHomeworkItem = secondHomework.getItems().getFirst().id();
 
         submit(fixture.studentPrincipal(), fixture.textTask().getId(), firstTaskItem,
                 request(firstTaskItem, "A")).andExpect(jsonPath("$.attemptNo").value(1));
@@ -179,7 +179,7 @@ class SubmissionApiIntegrationTest {
         HomeworkEntity homework = createHomework(
                 fixture, fixture.studentProgram(), HomeworkStatus.ASSIGNED, List.of(fixture.textTask())
         );
-        UUID itemId = homework.getItems().getFirst().getId();
+        UUID itemId = homework.getItems().getFirst().id();
         CyclicBarrier start = new CyclicBarrier(2);
 
         try (var executor = Executors.newFixedThreadPool(2)) {
@@ -214,8 +214,8 @@ class SubmissionApiIntegrationTest {
         HomeworkEntity foreignHomework = createHomework(
                 foreign, foreign.studentProgram(), HomeworkStatus.ASSIGNED, List.of(foreign.textTask())
         );
-        UUID ownerItem = ownerHomework.getItems().getFirst().getId();
-        UUID foreignItem = foreignHomework.getItems().getFirst().getId();
+        UUID ownerItem = ownerHomework.getItems().getFirst().id();
+        UUID foreignItem = foreignHomework.getItems().getFirst().id();
 
         submit(owner.studentPrincipal(), owner.textTask().getId(), foreignItem,
                 request(foreignItem, "Чужой контекст"))
@@ -236,11 +236,11 @@ class SubmissionApiIntegrationTest {
         HomeworkEntity cancelled = createHomework(
                 fixture, fixture.studentProgram(), HomeworkStatus.CANCELLED, List.of(fixture.textTask())
         );
-        UUID cancelledItem = cancelled.getItems().getFirst().getId();
+        UUID cancelledItem = cancelled.getItems().getFirst().id();
         HomeworkEntity codeHomework = createHomework(
                 fixture, fixture.studentProgram(), HomeworkStatus.ASSIGNED, List.of(fixture.codeTask())
         );
-        UUID codeItem = codeHomework.getItems().getFirst().getId();
+        UUID codeItem = codeHomework.getItems().getFirst().id();
 
         submit(fixture.studentPrincipal(), fixture.textTask().getId(), cancelledItem,
                 request(cancelledItem, "Ответ"))
@@ -265,7 +265,7 @@ class SubmissionApiIntegrationTest {
         HomeworkEntity homework = createHomework(
                 fixture, fixture.studentProgram(), HomeworkStatus.ASSIGNED, List.of(fixture.textTask())
         );
-        UUID itemId = homework.getItems().getFirst().getId();
+        UUID itemId = homework.getItems().getFirst().id();
 
         submit(fixture.studentPrincipal(), fixture.textTask().getId(), itemId,
                 "{\"homeworkItemId\":\"" + itemId + "\",\"textAnswer\":null}")
@@ -287,8 +287,8 @@ class SubmissionApiIntegrationTest {
         HomeworkEntity foreignHomework = createHomework(
                 foreign, foreign.studentProgram(), HomeworkStatus.ASSIGNED, List.of(foreign.textTask())
         );
-        UUID ownerItem = ownerHomework.getItems().getFirst().getId();
-        UUID foreignItem = foreignHomework.getItems().getFirst().getId();
+        UUID ownerItem = ownerHomework.getItems().getFirst().id();
+        UUID foreignItem = foreignHomework.getItems().getFirst().id();
         for (int i = 0; i < 3; i++) {
             submit(owner.studentPrincipal(), owner.textTask().getId(), ownerItem,
                     request(ownerItem, "Owner " + i)).andExpect(status().isCreated());
@@ -372,7 +372,7 @@ class SubmissionApiIntegrationTest {
         HomeworkEntity homework = createHomework(
                 fixture, fixture.studentProgram(), HomeworkStatus.ASSIGNED, List.of(fixture.textTask())
         );
-        UUID itemId = homework.getItems().getFirst().getId();
+        UUID itemId = homework.getItems().getFirst().id();
         Instant base = Instant.parse("2026-01-01T00:00:00Z");
         saveSubmission(fixture, fixture.textTask(), itemId, 1, SubmissionStatus.NEEDS_REVIEW, "A", base);
         saveSubmission(fixture, fixture.textTask(), itemId, 2, SubmissionStatus.PASSED, "B", base.plusSeconds(1));
@@ -418,7 +418,7 @@ class SubmissionApiIntegrationTest {
                 foreign, foreign.studentProgram(), HomeworkStatus.ASSIGNED, List.of(foreign.textTask())
         );
         SubmissionEntity foreignSubmission = saveSubmission(
-                foreign, foreign.textTask(), foreignHomework.getItems().getFirst().getId(),
+                foreign, foreign.textTask(), foreignHomework.getItems().getFirst().id(),
                 1, SubmissionStatus.NEEDS_REVIEW, "Foreign", Instant.now()
         );
 
@@ -443,7 +443,7 @@ class SubmissionApiIntegrationTest {
         HomeworkEntity homework = createHomework(
                 fixture, fixture.studentProgram(), HomeworkStatus.ASSIGNED, List.of(fixture.textTask())
         );
-        UUID itemId = homework.getItems().getFirst().getId();
+        UUID itemId = homework.getItems().getFirst().id();
         SubmissionEntity passCandidate = saveSubmission(
                 fixture, fixture.textTask(), itemId, 1, SubmissionStatus.NEEDS_REVIEW,
                 "Keep this answer", Instant.parse("2026-02-01T00:00:00Z")
@@ -488,8 +488,8 @@ class SubmissionApiIntegrationTest {
                 fixture, fixture.studentProgram(), HomeworkStatus.ASSIGNED,
                 List.of(fixture.textTask(), fixture.codeTask())
         );
-        UUID textItem = homework.getItems().get(0).getId();
-        UUID codeItem = homework.getItems().get(1).getId();
+        UUID textItem = homework.getItems().get(0).id();
+        UUID codeItem = homework.getItems().get(1).id();
         SubmissionEntity passed = saveSubmission(
                 fixture, fixture.textTask(), textItem, 1, SubmissionStatus.PASSED, "passed", Instant.now()
         );
@@ -598,7 +598,7 @@ class SubmissionApiIntegrationTest {
             Instant submittedAt
     ) {
         return submissionRepository.saveAndFlush(new SubmissionEntity(
-                UUID.randomUUID(), fixture.student().getId(), fixture.studentProgram().getId(),
+                UUID.randomUUID(), fixture.student().getId(), fixture.studentProgram().id(),
                 task.getId(), homeworkItemId, attemptNo, status, textAnswer, submittedAt
         ));
     }
@@ -626,28 +626,28 @@ class SubmissionApiIntegrationTest {
         studentUser.addRole(UserRole.STUDENT);
         userRepository.saveAndFlush(studentUser);
         StudentEntity student = studentRepository.saveAndFlush(new StudentEntity(
-                UUID.randomUUID(), studentUser.getId(), "Student", null,
+                UUID.randomUUID(), studentUser.id(), "Student", null,
                 StudentStatus.ACTIVE, null, null
         ));
         teacherStudentLinkRepository.saveAndFlush(new TeacherStudentLinkEntity(teacher, student));
         SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
-                UUID.randomUUID(), teacher.getId(), null, "Subject " + UUID.randomUUID(), null,
+                UUID.randomUUID(), teacher.id(), null, "Subject " + UUID.randomUUID(), null,
                 SubjectStatus.ACTIVE
         ));
         LearningProgramEntity program = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-                UUID.randomUUID(), teacher.getId(), subject.getId(), "Program", null,
+                UUID.randomUUID(), teacher.id(), subject.id(), "Program", null,
                 LearningProgramStatus.ACTIVE
         ));
         StudentProgramEntity studentProgram = studentProgramRepository.saveAndFlush(new StudentProgramEntity(
-                UUID.randomUUID(), student.getId(), program.getId(), teacher.getId(),
+                UUID.randomUUID(), student.getId(), program.getId(), teacher.id(),
                 StudentProgramStatus.ACTIVE, 480, Instant.now(), null
         ));
         AuthenticatedUser studentPrincipal = new AuthenticatedUser(
-                studentUser.getId(), studentUser.getEmail(), "hash", true,
+                studentUser.id(), studentUser.email(), "hash", true,
                 List.of(new SimpleGrantedAuthority("ROLE_STUDENT"))
         );
         AuthenticatedUser teacherPrincipal = new AuthenticatedUser(
-                teacherUser.getId(), teacherUser.getEmail(), "hash", true,
+                teacherUser.id(), teacherUser.email(), "hash", true,
                 List.of(new SimpleGrantedAuthority("ROLE_TEACHER"))
         );
         TaskEntity textTask = createTask(teacher, subject, TaskType.TEXT, "Text task");
@@ -664,7 +664,7 @@ class SubmissionApiIntegrationTest {
             String title
     ) {
         return taskRepository.saveAndFlush(new TaskEntity(
-                UUID.randomUUID(), teacher.getId(), subject.getId(), title, "Description",
+                UUID.randomUUID(), teacher.id(), subject.id(), title, "Description",
                 type, TaskDifficulty.MEDIUM, TaskStatus.ACTIVE
         ));
     }
@@ -682,7 +682,7 @@ class SubmissionApiIntegrationTest {
                 ))
                 .toList();
         return homeworkRepository.saveAndFlush(new HomeworkEntity(
-                homeworkId, studentProgram.getId(), fixture.teacher().getId(), "Homework", null,
+                homeworkId, studentProgram.id(), fixture.teacher().id(), "Homework", null,
                 Instant.now(), null, status, null, items
         ));
     }

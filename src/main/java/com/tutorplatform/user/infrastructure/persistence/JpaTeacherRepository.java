@@ -19,7 +19,7 @@ public class JpaTeacherRepository implements TeacherRepository {
     @Override public TeacherEntity saveAndFlush(TeacherEntity teacher) { return saveModel(teacher, true); }
 
     private TeacherEntity saveModel(TeacherEntity teacher, boolean flush) {
-        TeacherDatabaseModel model = databaseRepository.findById(teacher.getId())
+        TeacherDatabaseModel model = databaseRepository.findById(teacher.id())
                 .orElseGet(() -> new TeacherDatabaseModel(teacher));
         model.updateFrom(teacher);
         model = flush ? databaseRepository.saveAndFlush(model) : databaseRepository.save(model);

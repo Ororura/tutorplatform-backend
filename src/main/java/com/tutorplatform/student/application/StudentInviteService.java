@@ -66,7 +66,7 @@ public class StudentInviteService {
             CreateStudentInviteRequest request
     ) {
         TeacherEntity teacher = currentTeacher(principal);
-        StudentEntity student = studentRepository.findOwnedStudentForUpdate(teacher.getId(), studentId)
+        StudentEntity student = studentRepository.findOwnedStudentForUpdate(teacher.id(), studentId)
                 .orElseThrow(StudentNotFoundException::new);
 
         if (student.getUserId() != null) {
@@ -101,7 +101,7 @@ public class StudentInviteService {
 
     @Transactional(readOnly = true)
     public StudentInviteListResponse listInvites(AuthenticatedUser principal, UUID studentId) {
-        UUID teacherId = currentTeacher(principal).getId();
+        UUID teacherId = currentTeacher(principal).id();
         studentRepository.findOwnedStudent(teacherId, studentId)
                 .orElseThrow(StudentNotFoundException::new);
 
@@ -120,7 +120,7 @@ public class StudentInviteService {
 
     @Transactional
     public void revokeInvite(AuthenticatedUser principal, UUID studentId, UUID inviteId) {
-        UUID teacherId = currentTeacher(principal).getId();
+        UUID teacherId = currentTeacher(principal).id();
         studentRepository.findOwnedStudent(teacherId, studentId)
                 .orElseThrow(StudentNotFoundException::new);
 

@@ -99,19 +99,19 @@ class AuthIntegrationTest {
                 .andReturn();
 
         var user = userRepository.findByEmail("TEACHER@example.com").orElseThrow();
-        assertThat(user.getRoles()).containsExactly(UserRole.TEACHER);
-        assertThat(passwordEncoder.matches(PASSWORD, user.getPasswordHash())).isTrue();
-        assertThat(user.getPasswordHash()).startsWith("$argon2");
-        assertThat(teacherRepository.findByUserId(user.getId()))
+        assertThat(user.roles()).containsExactly(UserRole.TEACHER);
+        assertThat(passwordEncoder.matches(PASSWORD, user.passwordHash())).isTrue();
+        assertThat(user.passwordHash()).startsWith("$argon2");
+        assertThat(teacherRepository.findByUserId(user.id()))
                 .get()
-                .extracting(teacher -> teacher.getDisplayName())
+                .extracting(teacher -> teacher.displayName())
                 .isEqualTo("Егор");
 
         Cookie authenticatedSession = sessionCookieFrom(registration, csrf.sessionCookie());
         assertThat(authenticatedSession.getValue()).isNotEqualTo(csrf.sessionCookie().getValue());
         mockMvc.perform(get("/api/v1/auth/me").cookie(authenticatedSession))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(user.getId().toString()))
+                .andExpect(jsonPath("$.id").value(user.id().toString()))
                 .andExpect(jsonPath("$.email").value("teacher@example.com"))
                 .andExpect(jsonPath("$.displayName").value("Егор"))
                 .andExpect(jsonPath("$.roles[0]").value("TEACHER"));

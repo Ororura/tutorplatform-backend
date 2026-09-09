@@ -18,7 +18,7 @@ public class JpaSubjectRepository implements SubjectRepository {
 
     @Override
     public SubjectEntity saveAndFlush(SubjectEntity subject) {
-        SubjectDatabaseModel model = databaseRepository.findById(subject.getId())
+        SubjectDatabaseModel model = databaseRepository.findById(subject.id())
                 .orElseGet(() -> new SubjectDatabaseModel(subject));
         model.updateFrom(subject);
         return databaseRepository.saveAndFlush(model).toEntity();

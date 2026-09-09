@@ -34,8 +34,8 @@ public class ProgramQueryService implements ProgramQuery {
     @Override
     public Optional<TopicContext> findTopic(UUID topicId) {
         return topicRepository.findById(topicId)
-                .flatMap(topic -> moduleRepository.findById(topic.getModuleId()))
-                .flatMap(module -> learningProgramRepository.findById(module.getLearningProgramId()))
+                .flatMap(topic -> moduleRepository.findById(topic.moduleId()))
+                .flatMap(module -> learningProgramRepository.findById(module.learningProgramId()))
                 .map(learningProgram -> new TopicContext(
                         topicId,
                         learningProgram.getId(),
@@ -48,12 +48,12 @@ public class ProgramQueryService implements ProgramQuery {
     public Optional<StudentProgramContext> findStudentProgram(UUID studentProgramId) {
         return studentProgramRepository.findById(studentProgramId)
                 .flatMap(studentProgram -> learningProgramRepository
-                        .findById(studentProgram.getLearningProgramId())
+                        .findById(studentProgram.learningProgramId())
                         .map(learningProgram -> new StudentProgramContext(
-                                studentProgram.getId(),
-                                studentProgram.getStudentId(),
-                                studentProgram.getLearningProgramId(),
-                                studentProgram.getAssignedByTeacherId(),
+                                studentProgram.id(),
+                                studentProgram.studentId(),
+                                studentProgram.learningProgramId(),
+                                studentProgram.assignedByTeacherId(),
                                 learningProgram.getSubjectId()
                         )));
     }
@@ -61,8 +61,8 @@ public class ProgramQueryService implements ProgramQuery {
     @Override
     public boolean topicBelongsToLearningProgram(UUID topicId, UUID learningProgramId) {
         return topicRepository.findById(topicId)
-                .flatMap(topic -> moduleRepository.findById(topic.getModuleId()))
-                .map(module -> module.getLearningProgramId().equals(learningProgramId))
+                .flatMap(topic -> moduleRepository.findById(topic.moduleId()))
+                .map(module -> module.learningProgramId().equals(learningProgramId))
                 .orElse(false);
     }
 }

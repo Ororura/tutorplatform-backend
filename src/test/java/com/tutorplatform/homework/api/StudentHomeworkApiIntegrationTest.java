@@ -159,7 +159,7 @@ class StudentHomeworkApiIntegrationTest {
 
         mockMvc.perform(get("/api/v1/student/homeworks")
                         .with(user(fixture.studentPrincipal()))
-                        .param("studentProgramId", fixture.studentProgram().getId().toString())
+                        .param("studentProgramId", fixture.studentProgram().id().toString())
                         .param("status", "ASSIGNED"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items.length()").value(1))
@@ -168,7 +168,7 @@ class StudentHomeworkApiIntegrationTest {
         Fixture foreign = createFixture("foreign-program");
         mockMvc.perform(get("/api/v1/student/homeworks")
                         .with(user(fixture.studentPrincipal()))
-                        .param("studentProgramId", foreign.studentProgram().getId().toString()))
+                        .param("studentProgramId", foreign.studentProgram().id().toString()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("STUDENT_PROGRAM_NOT_FOUND"));
     }
@@ -339,25 +339,25 @@ class StudentHomeworkApiIntegrationTest {
         studentUser.addRole(UserRole.STUDENT);
         userRepository.saveAndFlush(studentUser);
         StudentEntity student = studentRepository.saveAndFlush(new StudentEntity(
-                UUID.randomUUID(), studentUser.getId(), "Student", null,
+                UUID.randomUUID(), studentUser.id(), "Student", null,
                 StudentStatus.ACTIVE, null, null
         ));
         teacherStudentLinkRepository.saveAndFlush(new TeacherStudentLinkEntity(teacher, student));
 
         SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
-                UUID.randomUUID(), teacher.getId(), null, "Subject " + UUID.randomUUID(), null,
+                UUID.randomUUID(), teacher.id(), null, "Subject " + UUID.randomUUID(), null,
                 SubjectStatus.ACTIVE
         ));
         LearningProgramEntity program = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-                UUID.randomUUID(), teacher.getId(), subject.getId(), "Program", null,
+                UUID.randomUUID(), teacher.id(), subject.id(), "Program", null,
                 LearningProgramStatus.ACTIVE
         ));
         StudentProgramEntity studentProgram = studentProgramRepository.saveAndFlush(new StudentProgramEntity(
-                UUID.randomUUID(), student.getId(), program.getId(), teacher.getId(),
+                UUID.randomUUID(), student.getId(), program.getId(), teacher.id(),
                 StudentProgramStatus.ACTIVE, 480, Instant.now(), null
         ));
         AuthenticatedUser principal = new AuthenticatedUser(
-                studentUser.getId(), studentUser.getEmail(), "hash", true,
+                studentUser.id(), studentUser.email(), "hash", true,
                 List.of(new SimpleGrantedAuthority("ROLE_STUDENT"))
         );
         Fixture fixture = new Fixture(teacher, student, principal, subject, program, studentProgram, new ArrayList<>());
@@ -369,18 +369,18 @@ class StudentHomeworkApiIntegrationTest {
 
     private StudentProgramEntity createStudentProgram(Fixture fixture) {
         LearningProgramEntity program = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-                UUID.randomUUID(), fixture.teacher().getId(), fixture.subject().getId(), "Other program", null,
+                UUID.randomUUID(), fixture.teacher().id(), fixture.subject().id(), "Other program", null,
                 LearningProgramStatus.ACTIVE
         ));
         return studentProgramRepository.saveAndFlush(new StudentProgramEntity(
-                UUID.randomUUID(), fixture.student().getId(), program.getId(), fixture.teacher().getId(),
+                UUID.randomUUID(), fixture.student().getId(), program.getId(), fixture.teacher().id(),
                 StudentProgramStatus.ACTIVE, 480, Instant.now(), null
         ));
     }
 
     private TaskEntity createTask(Fixture fixture, int index) {
         return taskRepository.saveAndFlush(new TaskEntity(
-                UUID.randomUUID(), fixture.teacher().getId(), fixture.subject().getId(),
+                UUID.randomUUID(), fixture.teacher().id(), fixture.subject().id(),
                 "Task " + index, "Description " + index,
                 TaskType.TEXT, TaskDifficulty.MEDIUM, TaskStatus.ACTIVE
         ));
@@ -425,7 +425,7 @@ class StudentHomeworkApiIntegrationTest {
             items.add(new HomeworkItemEntity(UUID.randomUUID(), homeworkId, tasks.get(i).getId(), i, true));
         }
         return homeworkRepository.saveAndFlush(new HomeworkEntity(
-                homeworkId, studentProgram.getId(), fixture.teacher().getId(), title,
+                homeworkId, studentProgram.id(), fixture.teacher().id(), title,
                 "Homework description", assignedAt, dueAt, status, completedAt, items
         ));
     }

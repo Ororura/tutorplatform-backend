@@ -79,7 +79,7 @@ public class StudentService {
             StudentAccountStatus accountStatus,
             String sort
     ) {
-        UUID teacherId = currentTeacher(principal).getId();
+        UUID teacherId = currentTeacher(principal).id();
         ListParameters parameters = validateListParameters(page, size, query, sort);
         StudentQueryRepository.StudentPage result = studentQueryRepository.findStudents(
                 teacherId,
@@ -107,7 +107,7 @@ public class StudentService {
 
     @Transactional(readOnly = true)
     public StudentDetailsResponse getStudent(AuthenticatedUser principal, UUID studentId) {
-        UUID teacherId = currentTeacher(principal).getId();
+        UUID teacherId = currentTeacher(principal).id();
         return toDetails(studentQueryRepository.findDetails(teacherId, studentId)
                 .orElseThrow(StudentNotFoundException::new));
     }
@@ -118,7 +118,7 @@ public class StudentService {
             UUID studentId,
             UpdateStudentRequest request
     ) {
-        UUID teacherId = currentTeacher(principal).getId();
+        UUID teacherId = currentTeacher(principal).id();
         StudentEntity student = studentRepository.findOwnedStudent(teacherId, studentId)
                 .orElseThrow(StudentNotFoundException::new);
         student.updateNames(

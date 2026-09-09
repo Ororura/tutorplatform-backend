@@ -54,7 +54,7 @@ public class TeacherStudentLinkEntity {
     public TeacherStudentLinkEntity(TeacherEntity teacher, StudentEntity student) {
         Objects.requireNonNull(teacher);
         Objects.requireNonNull(student);
-        this.id = new TeacherStudentLinkId(teacher.getId(), student.getId());
+        this.id = new TeacherStudentLinkId(teacher.id(), student.getId());
         this.relationType = TeacherStudentRelationType.PRIMARY;
     }
 

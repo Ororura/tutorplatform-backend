@@ -51,11 +51,11 @@ public class SkillDatabaseModel {
     }
 
     SkillDatabaseModel(SkillEntity skill) {
-        id = Objects.requireNonNull(skill.getId());
-        subjectId = Objects.requireNonNull(skill.getSubjectId());
-        code = Objects.requireNonNull(skill.getCode());
-        name = Objects.requireNonNull(skill.getName());
-        description = skill.getDescription();
+        id = Objects.requireNonNull(skill.id());
+        subjectId = Objects.requireNonNull(skill.subjectId());
+        code = Objects.requireNonNull(skill.code());
+        name = Objects.requireNonNull(skill.name());
+        description = skill.description();
     }
 
     SkillEntity toEntity() {

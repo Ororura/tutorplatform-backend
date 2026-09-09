@@ -104,7 +104,7 @@ public class PublicStudentInvitationService {
             throw new StudentInviteEmailConflictException();
         }
 
-        student.linkUser(user.getId());
+        student.linkUser(user.id());
         invite.accept(now);
         studentRepository.saveAndFlush(student);
         studentInviteRepository.saveAndFlush(invite);

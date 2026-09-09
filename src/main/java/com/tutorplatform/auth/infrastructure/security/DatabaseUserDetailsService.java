@@ -25,11 +25,11 @@ public class DatabaseUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         return new AuthenticatedUser(
-                user.getId(),
-                user.getEmail(),
-                user.getPasswordHash(),
-                user.getStatus() == UserStatus.ACTIVE,
-                user.getRoles().stream()
+                user.id(),
+                user.email(),
+                user.passwordHash(),
+                user.status() == UserStatus.ACTIVE,
+                user.roles().stream()
                         .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
                         .toList()
         );

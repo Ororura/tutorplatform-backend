@@ -41,17 +41,17 @@ public class UserDatabaseModel {
     protected UserDatabaseModel() {}
 
     UserDatabaseModel(UserEntity user) {
-        this.id = user.getId();
+        this.id = user.id();
         updateFrom(user);
     }
 
     void updateFrom(UserEntity user) {
-        email = user.getEmail();
-        passwordHash = user.getPasswordHash();
-        status = user.getStatus();
-        lastLoginAt = user.getLastLoginAt();
+        email = user.email();
+        passwordHash = user.passwordHash();
+        status = user.status();
+        lastLoginAt = user.lastLoginAt();
         roles.clear();
-        roles.addAll(user.getRoles());
+        roles.addAll(user.roles());
     }
 
     UserEntity toEntity() {

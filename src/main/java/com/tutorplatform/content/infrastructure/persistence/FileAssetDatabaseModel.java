@@ -58,15 +58,15 @@ public class FileAssetDatabaseModel {
     }
 
     FileAssetDatabaseModel(FileAssetEntity fileAsset) {
-        id = Objects.requireNonNull(fileAsset.getId());
-        uploadedByTeacherId = Objects.requireNonNull(fileAsset.getUploadedByTeacherId());
-        storageProvider = Objects.requireNonNull(fileAsset.getStorageProvider());
-        storageKey = Objects.requireNonNull(fileAsset.getStorageKey());
-        originalFilename = Objects.requireNonNull(fileAsset.getOriginalFilename());
-        mimeType = Objects.requireNonNull(fileAsset.getMimeType());
-        sizeBytes = fileAsset.getSizeBytes();
-        sha256 = fileAsset.getSha256();
-        createdAt = fileAsset.getCreatedAt();
+        id = Objects.requireNonNull(fileAsset.id());
+        uploadedByTeacherId = Objects.requireNonNull(fileAsset.uploadedByTeacherId());
+        storageProvider = Objects.requireNonNull(fileAsset.storageProvider());
+        storageKey = Objects.requireNonNull(fileAsset.storageKey());
+        originalFilename = Objects.requireNonNull(fileAsset.originalFilename());
+        mimeType = Objects.requireNonNull(fileAsset.mimeType());
+        sizeBytes = fileAsset.sizeBytes();
+        sha256 = fileAsset.sha256();
+        createdAt = fileAsset.createdAt();
     }
 
     FileAssetEntity toEntity() {

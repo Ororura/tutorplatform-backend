@@ -139,8 +139,8 @@ class ProgramPersistenceIntegrationTest {
         LearningProgramEntity persisted = learningProgramRepository.findById(fixture.learningProgram().getId())
                 .orElseThrow();
 
-        assertThat(persisted.getTeacherId()).isEqualTo(fixture.teacher().getId());
-        assertThat(persisted.getSubjectId()).isEqualTo(fixture.subject().getId());
+        assertThat(persisted.getTeacherId()).isEqualTo(fixture.teacher().id());
+        assertThat(persisted.getSubjectId()).isEqualTo(fixture.subject().id());
     }
 
     @Test
@@ -149,11 +149,11 @@ class ProgramPersistenceIntegrationTest {
         StudentEntity student = createStudent(fixture.teacher(), "Анна");
         StudentProgramEntity studentProgram = createStudentProgram(fixture, student);
 
-        StudentProgramEntity persisted = studentProgramRepository.findById(studentProgram.getId()).orElseThrow();
+        StudentProgramEntity persisted = studentProgramRepository.findById(studentProgram.id()).orElseThrow();
 
-        assertThat(persisted.getStudentId()).isEqualTo(student.getId());
-        assertThat(persisted.getLearningProgramId()).isEqualTo(fixture.learningProgram().getId());
-        assertThat(persisted.getAssignedByTeacherId()).isEqualTo(fixture.teacher().getId());
+        assertThat(persisted.studentId()).isEqualTo(student.getId());
+        assertThat(persisted.learningProgramId()).isEqualTo(fixture.learningProgram().getId());
+        assertThat(persisted.assignedByTeacherId()).isEqualTo(fixture.teacher().id());
     }
 
     @Test
@@ -164,8 +164,8 @@ class ProgramPersistenceIntegrationTest {
         StudentProgramEntity firstProgram = createStudentProgram(fixture, firstStudent);
         StudentProgramEntity secondProgram = createStudentProgram(fixture, secondStudent);
 
-        ProgramQuery.StudentProgramContext first = programQuery.findStudentProgram(firstProgram.getId()).orElseThrow();
-        ProgramQuery.StudentProgramContext second = programQuery.findStudentProgram(secondProgram.getId()).orElseThrow();
+        ProgramQuery.StudentProgramContext first = programQuery.findStudentProgram(firstProgram.id()).orElseThrow();
+        ProgramQuery.StudentProgramContext second = programQuery.findStudentProgram(secondProgram.id()).orElseThrow();
 
         assertThat(first.belongsToStudent(firstStudent.getId())).isTrue();
         assertThat(first.belongsToStudent(secondStudent.getId())).isFalse();
@@ -177,7 +177,7 @@ class ProgramPersistenceIntegrationTest {
         ProgramFixture fixture = createProgramFixture("module-owner@example.com");
         ModuleEntity module = createModule(fixture.learningProgram(), 0);
 
-        assertThat(moduleRepository.findById(module.getId()).orElseThrow().getLearningProgramId())
+        assertThat(moduleRepository.findById(module.id()).orElseThrow().learningProgramId())
                 .isEqualTo(fixture.learningProgram().getId());
     }
 
@@ -187,8 +187,8 @@ class ProgramPersistenceIntegrationTest {
         ModuleEntity module = createModule(fixture.learningProgram(), 0);
         TopicEntity topic = createTopic(module, 0);
 
-        assertThat(topicRepository.findById(topic.getId()).orElseThrow().getModuleId())
-                .isEqualTo(module.getId());
+        assertThat(topicRepository.findById(topic.id()).orElseThrow().moduleId())
+                .isEqualTo(module.id());
     }
 
     @Test
@@ -198,9 +198,9 @@ class ProgramPersistenceIntegrationTest {
         ModuleEntity module = createModule(fixture.learningProgram(), 0);
         TopicEntity topic = createTopic(module, 0);
 
-        assertThat(programQuery.topicBelongsToLearningProgram(topic.getId(), fixture.learningProgram().getId()))
+        assertThat(programQuery.topicBelongsToLearningProgram(topic.id(), fixture.learningProgram().getId()))
                 .isTrue();
-        assertThat(programQuery.topicBelongsToLearningProgram(topic.getId(), otherFixture.learningProgram().getId()))
+        assertThat(programQuery.topicBelongsToLearningProgram(topic.id(), otherFixture.learningProgram().getId()))
                 .isFalse();
     }
 
@@ -233,22 +233,22 @@ class ProgramPersistenceIntegrationTest {
         TopicEntity topic = createTopic(createModule(fixture.learningProgram(), 0), 0);
 
         studentTopicProgressRepository.saveAndFlush(new StudentTopicProgressEntity(
-                firstStudentProgram.getId(), topic.getId(), StudentTopicProgressStatus.AVAILABLE, null, null
+                firstStudentProgram.id(), topic.id(), StudentTopicProgressStatus.AVAILABLE, null, null
         ));
         studentTopicProgressRepository.saveAndFlush(new StudentTopicProgressEntity(
-                secondStudentProgram.getId(), topic.getId(), StudentTopicProgressStatus.LOCKED, null, null
+                secondStudentProgram.id(), topic.id(), StudentTopicProgressStatus.LOCKED, null, null
         ));
 
-        assertThat(studentTopicProgressRepository.findById(firstStudentProgram.getId(), topic.getId()))
-                .get().extracting(StudentTopicProgressEntity::getStatus)
+        assertThat(studentTopicProgressRepository.findById(firstStudentProgram.id(), topic.id()))
+                .get().extracting(StudentTopicProgressEntity::status)
                 .isEqualTo(StudentTopicProgressStatus.AVAILABLE);
-        assertThat(studentTopicProgressRepository.findById(secondStudentProgram.getId(), topic.getId()))
-                .get().extracting(StudentTopicProgressEntity::getStatus)
+        assertThat(studentTopicProgressRepository.findById(secondStudentProgram.id(), topic.id()))
+                .get().extracting(StudentTopicProgressEntity::status)
                 .isEqualTo(StudentTopicProgressStatus.LOCKED);
         assertThat(jdbcTemplate.queryForObject(
                 "select count(*) from student_topic_progress where topic_id = ?",
                 Integer.class,
-                topic.getId()
+                topic.id()
         )).isEqualTo(2);
     }
 
@@ -267,7 +267,7 @@ class ProgramPersistenceIntegrationTest {
                 UUID.randomUUID(),
                 student.getId(),
                 fixture.learningProgram().getId(),
-                fixture.teacher().getId()
+                fixture.teacher().id()
         )).isInstanceOf(DataIntegrityViolationException.class);
     }
 
@@ -299,27 +299,27 @@ class ProgramPersistenceIntegrationTest {
                 .isEqualTo("Первая версия");
 
         assertOptimisticLocking(
-                studentProgram.getId(),
+                studentProgram.id(),
                 studentProgramRepository::findById,
                 studentProgramRepository::saveAndFlush,
                 value -> copyWithStatus(value, StudentProgramStatus.PAUSED),
                 value -> copyWithStatus(value, StudentProgramStatus.COMPLETED),
                 "StudentProgramEntity"
         );
-        assertThat(studentProgramRepository.findById(studentProgram.getId()))
-                .get().extracting(StudentProgramEntity::getStatus)
+        assertThat(studentProgramRepository.findById(studentProgram.id()))
+                .get().extracting(StudentProgramEntity::status)
                 .isEqualTo(StudentProgramStatus.PAUSED);
 
         assertOptimisticLocking(
-                topic.getId(),
+                topic.id(),
                 topicRepository::findById,
                 topicRepository::saveAndFlush,
                 value -> copyWithTitle(value, "Первая версия"),
                 value -> copyWithTitle(value, "Устаревшая версия"),
                 "TopicEntity"
         );
-        assertThat(topicRepository.findById(topic.getId()))
-                .get().extracting(TopicEntity::getTitle)
+        assertThat(topicRepository.findById(topic.id()))
+                .get().extracting(TopicEntity::title)
                 .isEqualTo("Первая версия");
     }
 
@@ -327,7 +327,7 @@ class ProgramPersistenceIntegrationTest {
         TeacherEntity teacher = createTeacher(email);
         SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
                 UUID.randomUUID(),
-                teacher.getId(),
+                teacher.id(),
                 null,
                 "Предмет " + UUID.randomUUID(),
                 null,
@@ -335,8 +335,8 @@ class ProgramPersistenceIntegrationTest {
         ));
         LearningProgramEntity learningProgram = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
                 UUID.randomUUID(),
-                teacher.getId(),
-                subject.getId(),
+                teacher.id(),
+                subject.id(),
                 "Программа",
                 null,
                 LearningProgramStatus.DRAFT
@@ -364,7 +364,7 @@ class ProgramPersistenceIntegrationTest {
                 UUID.randomUUID(),
                 student.getId(),
                 fixture.learningProgram().getId(),
-                fixture.teacher().getId(),
+                fixture.teacher().id(),
                 StudentProgramStatus.ACTIVE,
                 480,
                 Instant.now(),
@@ -380,22 +380,22 @@ class ProgramPersistenceIntegrationTest {
 
     private TopicEntity createTopic(ModuleEntity module, int position) {
         return topicRepository.saveAndFlush(new TopicEntity(
-                UUID.randomUUID(), module.getId(), "Тема", null, position, TopicStatus.DRAFT
+                UUID.randomUUID(), module.id(), "Тема", null, position, TopicStatus.DRAFT
         ));
     }
 
     private StudentProgramEntity copyWithStatus(StudentProgramEntity source, StudentProgramStatus status) {
         return new StudentProgramEntity(
-                source.getId(), source.getStudentId(), source.getLearningProgramId(), source.getAssignedByTeacherId(),
-                status, source.getReportIntervalMinutes(), source.getStartedAt(), source.getCompletedAt(),
-                source.getVersion(), source.getCreatedAt(), source.getUpdatedAt()
+                source.id(), source.studentId(), source.learningProgramId(), source.assignedByTeacherId(),
+                status, source.reportIntervalMinutes(), source.startedAt(), source.completedAt(),
+                source.version(), source.createdAt(), source.updatedAt()
         );
     }
 
     private TopicEntity copyWithTitle(TopicEntity source, String title) {
         return new TopicEntity(
-                source.getId(), source.getModuleId(), title, source.getDescription(), source.getPosition(),
-                source.getStatus(), source.getVersion(), source.getCreatedAt(), source.getUpdatedAt()
+                source.id(), source.moduleId(), title, source.description(), source.position(),
+                source.status(), source.version(), source.createdAt(), source.updatedAt()
         );
     }
 

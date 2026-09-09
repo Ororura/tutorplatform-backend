@@ -91,10 +91,10 @@ class TaskApiIntegrationTest {
                 .with(user(fixture.principal()))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(createRequest(fixture.subject().getId(), "  Что выведет программа?  ", "Ответ", "EASY")))
+                .content(createRequest(fixture.subject().id(), "  Что выведет программа?  ", "Ответ", "EASY")))
             .andExpect(status().isCreated())
             .andExpect(header().string("Location", org.hamcrest.Matchers.containsString("/teacher/tasks/")))
-            .andExpect(jsonPath("$.subjectId").value(fixture.subject().getId().toString()))
+            .andExpect(jsonPath("$.subjectId").value(fixture.subject().id().toString()))
             .andExpect(jsonPath("$.title").value("Что выведет программа?"))
             .andExpect(jsonPath("$.descriptionMarkdown").value("Ответ"))
             .andExpect(jsonPath("$.taskType").value("TEXT"))
@@ -113,7 +113,7 @@ class TaskApiIntegrationTest {
 
         assertThat(taskRepository.findById(taskId))
                 .get().extracting(TaskEntity::getTeacherId)
-                .isEqualTo(fixture.teacher().getId());
+                .isEqualTo(fixture.teacher().id());
     }
 
     @Test
@@ -122,7 +122,7 @@ class TaskApiIntegrationTest {
 
         mockMvc.perform(post(tasksUrl()).with(user(fixture.principal())).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(createRequest(fixture.subject().getId(), "   ", "Ответ", "EASY")))
+                .content(createRequest(fixture.subject().id(), "   ", "Ответ", "EASY")))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
     }
@@ -140,7 +140,7 @@ class TaskApiIntegrationTest {
 
         mockMvc.perform(post(tasksUrl()).with(user(owner.principal())).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(createRequest(foreign.subject().getId(), "Foreign", "Ответ", "EASY")))
+                .content(createRequest(foreign.subject().id(), "Foreign", "Ответ", "EASY")))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.code").value("SUBJECT_NOT_FOUND"));
     }
@@ -156,7 +156,7 @@ class TaskApiIntegrationTest {
               "difficulty": "EASY",
               "taskType": "CODE"
             }
-            """.formatted(fixture.subject().getId());
+            """.formatted(fixture.subject().id());
 
         mockMvc.perform(post(tasksUrl()).with(user(fixture.principal())).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON).content(request))
@@ -174,9 +174,9 @@ class TaskApiIntegrationTest {
 
         mockMvc.perform(post(tasksUrl()).with(user(fixture.principal())).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(createRequest(systemSubject.getId(), "System task", "Ответ", "MEDIUM")))
+                .content(createRequest(systemSubject.id(), "System task", "Ответ", "MEDIUM")))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.subjectId").value(systemSubject.getId().toString()));
+            .andExpect(jsonPath("$.subjectId").value(systemSubject.id().toString()));
     }
 
     @Test
@@ -219,11 +219,11 @@ class TaskApiIntegrationTest {
         createTask(fixture, "Match", TaskDifficulty.HARD, TaskStatus.ACTIVE);
         createTask(fixture, "Wrong difficulty", TaskDifficulty.EASY, TaskStatus.ACTIVE);
         taskService.createTask(fixture.principal(), new CreateTaskCommand(
-                secondSubject.getId(), "Wrong subject", "Ответ", TaskDifficulty.HARD
+                secondSubject.id(), "Wrong subject", "Ответ", TaskDifficulty.HARD
         ));
 
         mockMvc.perform(get(tasksUrl()).with(user(fixture.principal()))
-                .param("subjectId", fixture.subject().getId().toString())
+                .param("subjectId", fixture.subject().id().toString())
                 .param("status", "ACTIVE")
                 .param("difficulty", "HARD"))
             .andExpect(status().isOk())
@@ -262,7 +262,7 @@ class TaskApiIntegrationTest {
             .andExpect(jsonPath("$.difficulty").value("HARD"))
             .andExpect(jsonPath("$.status").value("ACTIVE"))
             .andExpect(jsonPath("$.taskType").value("TEXT"))
-            .andExpect(jsonPath("$.subjectId").value(fixture.subject().getId().toString()))
+            .andExpect(jsonPath("$.subjectId").value(fixture.subject().id().toString()))
             .andExpect(jsonPath("$.version").value(task.version() + 1));
     }
 
@@ -301,17 +301,17 @@ class TaskApiIntegrationTest {
         TaskFixture fixture = createFixture();
         TaskResult task = createTask(fixture, "Attach", TaskDifficulty.EASY, TaskStatus.DRAFT);
 
-        mockMvc.perform(post(attachmentUrl(fixture.topic().getId(), task.id()))
+        mockMvc.perform(post(attachmentUrl(fixture.topic().id(), task.id()))
                 .with(user(fixture.principal())).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON).content(attachRequest(0, false)))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.topicId").value(fixture.topic().getId().toString()))
+            .andExpect(jsonPath("$.topicId").value(fixture.topic().id().toString()))
             .andExpect(jsonPath("$.taskId").value(task.id().toString()))
             .andExpect(jsonPath("$.position").value(0))
             .andExpect(jsonPath("$.required").value(false));
 
-        assertThat(topicTaskRepository.findAllByTopicIdOrderByPosition(fixture.topic().getId()))
-                .singleElement().satisfies(link -> assertThat(link.isRequired()).isFalse());
+        assertThat(topicTaskRepository.findAllByTopicIdOrderByPosition(fixture.topic().id()))
+                .singleElement().satisfies(link -> assertThat(link.required()).isFalse());
     }
 
     @Test
@@ -321,13 +321,13 @@ class TaskApiIntegrationTest {
         TaskResult second = createTask(fixture, "Second", TaskDifficulty.EASY, TaskStatus.DRAFT);
         attach(fixture, first.id(), 0, true);
 
-        mockMvc.perform(post(attachmentUrl(fixture.topic().getId(), first.id()))
+        mockMvc.perform(post(attachmentUrl(fixture.topic().id(), first.id()))
                 .with(user(fixture.principal())).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON).content(attachRequest(1, true)))
             .andExpect(status().isConflict())
             .andExpect(jsonPath("$.code").value("TASK_ALREADY_ATTACHED"));
 
-        mockMvc.perform(post(attachmentUrl(fixture.topic().getId(), second.id()))
+        mockMvc.perform(post(attachmentUrl(fixture.topic().id(), second.id()))
                 .with(user(fixture.principal())).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON).content(attachRequest(0, true)))
             .andExpect(status().isConflict())
@@ -339,7 +339,7 @@ class TaskApiIntegrationTest {
         TaskFixture fixture = createFixture();
         TaskResult task = createTask(fixture, "Negative", TaskDifficulty.EASY, TaskStatus.DRAFT);
 
-        mockMvc.perform(post(attachmentUrl(fixture.topic().getId(), task.id()))
+        mockMvc.perform(post(attachmentUrl(fixture.topic().id(), task.id()))
                 .with(user(fixture.principal())).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON).content(attachRequest(-1, true)))
             .andExpect(status().isBadRequest())
@@ -353,13 +353,13 @@ class TaskApiIntegrationTest {
         TaskResult ownerTask = createTask(owner, "Owner", TaskDifficulty.EASY, TaskStatus.DRAFT);
         TaskResult foreignTask = createTask(foreign, "Foreign", TaskDifficulty.EASY, TaskStatus.DRAFT);
 
-        mockMvc.perform(post(attachmentUrl(foreign.topic().getId(), ownerTask.id()))
+        mockMvc.perform(post(attachmentUrl(foreign.topic().id(), ownerTask.id()))
                 .with(user(owner.principal())).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON).content(attachRequest(0, true)))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.code").value("TOPIC_NOT_FOUND"));
 
-        mockMvc.perform(post(attachmentUrl(owner.topic().getId(), foreignTask.id()))
+        mockMvc.perform(post(attachmentUrl(owner.topic().id(), foreignTask.id()))
                 .with(user(owner.principal())).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON).content(attachRequest(0, true)))
             .andExpect(status().isNotFound())
@@ -371,10 +371,10 @@ class TaskApiIntegrationTest {
         TaskFixture fixture = createFixture();
         SubjectEntity secondSubject = createSubject(fixture.teacher());
         TaskResult task = taskService.createTask(fixture.principal(), new CreateTaskCommand(
-                secondSubject.getId(), "Other subject", "Text", TaskDifficulty.EASY
+                secondSubject.id(), "Other subject", "Text", TaskDifficulty.EASY
         ));
 
-        mockMvc.perform(post(attachmentUrl(fixture.topic().getId(), task.id()))
+        mockMvc.perform(post(attachmentUrl(fixture.topic().id(), task.id()))
                 .with(user(fixture.principal())).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON).content(attachRequest(0, true)))
             .andExpect(status().isBadRequest())
@@ -395,7 +395,7 @@ class TaskApiIntegrationTest {
 
         mockMvc.perform(post(tasksUrl()).with(user(fixture.principal()))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(createRequest(fixture.subject().getId(), "No CSRF", "Text", "EASY")))
+                .content(createRequest(fixture.subject().id(), "No CSRF", "Text", "EASY")))
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.code").value("CSRF_INVALID"));
 
@@ -432,17 +432,17 @@ class TaskApiIntegrationTest {
         ));
         SubjectEntity subject = createSubject(teacher);
         LearningProgramEntity program = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-                UUID.randomUUID(), teacher.getId(), subject.getId(), "Program", null,
+                UUID.randomUUID(), teacher.id(), subject.id(), "Program", null,
                 LearningProgramStatus.DRAFT
         ));
         ModuleEntity module = moduleRepository.saveAndFlush(new ModuleEntity(
                 UUID.randomUUID(), program.getId(), "Module", null, 0
         ));
         TopicEntity topic = topicRepository.saveAndFlush(new TopicEntity(
-                UUID.randomUUID(), module.getId(), "Topic", null, 0, TopicStatus.DRAFT
+                UUID.randomUUID(), module.id(), "Topic", null, 0, TopicStatus.DRAFT
         ));
         AuthenticatedUser principal = new AuthenticatedUser(
-                userEntity.getId(), email, "password-hash", true,
+                userEntity.id(), email, "password-hash", true,
                 List.of(new SimpleGrantedAuthority("ROLE_TEACHER"))
         );
         return new TaskFixture(principal, teacher, subject, topic);
@@ -450,7 +450,7 @@ class TaskApiIntegrationTest {
 
     private SubjectEntity createSubject(TeacherEntity teacher) {
         return subjectRepository.saveAndFlush(new SubjectEntity(
-                UUID.randomUUID(), teacher.getId(), null, "Subject " + UUID.randomUUID(), null,
+                UUID.randomUUID(), teacher.id(), null, "Subject " + UUID.randomUUID(), null,
                 SubjectStatus.ACTIVE
         ));
     }
@@ -462,7 +462,7 @@ class TaskApiIntegrationTest {
             TaskStatus desiredStatus
     ) throws Exception {
         TaskResult task = taskService.createTask(fixture.principal(), new CreateTaskCommand(
-                fixture.subject().getId(), title, "Text", difficulty
+                fixture.subject().id(), title, "Text", difficulty
         ));
         if (desiredStatus != TaskStatus.DRAFT) {
             mockMvc.perform(patch(taskUrl(task.id())).with(user(fixture.principal())).with(csrf())
@@ -477,13 +477,13 @@ class TaskApiIntegrationTest {
     private MvcResult createViaApi(TaskFixture fixture, String title, String difficulty) throws Exception {
         return mockMvc.perform(post(tasksUrl()).with(user(fixture.principal())).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(createRequest(fixture.subject().getId(), title, "Text", difficulty)))
+                .content(createRequest(fixture.subject().id(), title, "Text", difficulty)))
             .andExpect(status().isCreated())
             .andReturn();
     }
 
     private void attach(TaskFixture fixture, UUID taskId, int position, boolean required) throws Exception {
-        mockMvc.perform(post(attachmentUrl(fixture.topic().getId(), taskId))
+        mockMvc.perform(post(attachmentUrl(fixture.topic().id(), taskId))
                 .with(user(fixture.principal())).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON).content(attachRequest(position, required)))
             .andExpect(status().isCreated());

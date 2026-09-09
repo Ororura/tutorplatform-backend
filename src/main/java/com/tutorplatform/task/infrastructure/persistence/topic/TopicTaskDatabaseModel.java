@@ -43,9 +43,9 @@ public class TopicTaskDatabaseModel {
     }
 
     TopicTaskDatabaseModel(TopicTaskEntity topicTask) {
-        id = new TopicTaskId(topicTask.getTopicId(), topicTask.getTaskId());
-        position = topicTask.getPosition();
-        required = topicTask.isRequired();
+        id = new TopicTaskId(topicTask.topicId(), topicTask.taskId());
+        position = topicTask.position();
+        required = topicTask.required();
     }
 
     TopicTaskEntity toEntity() {

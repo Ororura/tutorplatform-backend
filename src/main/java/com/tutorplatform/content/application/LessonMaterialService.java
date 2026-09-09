@@ -144,7 +144,7 @@ public class LessonMaterialService {
     }
 
     private UUID currentTeacherId(AuthenticatedUser principal) {
-        return teacherRepository.findByUserId(principal.id()).orElseThrow().getId();
+        return teacherRepository.findByUserId(principal.id()).orElseThrow().id();
     }
 
     private void requireOwnedTopic(UUID topicId, UUID teacherId) {

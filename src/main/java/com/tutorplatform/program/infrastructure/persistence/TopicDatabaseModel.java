@@ -60,17 +60,17 @@ public class TopicDatabaseModel {
     }
 
     TopicDatabaseModel(TopicEntity topic) {
-        id = Objects.requireNonNull(topic.getId());
+        id = Objects.requireNonNull(topic.id());
         updateFrom(topic);
-        version = topic.getVersion();
+        version = topic.version();
     }
 
     void updateFrom(TopicEntity topic) {
-        moduleId = Objects.requireNonNull(topic.getModuleId());
-        title = Objects.requireNonNull(topic.getTitle());
-        description = topic.getDescription();
-        position = topic.getPosition();
-        status = Objects.requireNonNull(topic.getStatus());
+        moduleId = Objects.requireNonNull(topic.moduleId());
+        title = Objects.requireNonNull(topic.title());
+        description = topic.description();
+        position = topic.position();
+        status = Objects.requireNonNull(topic.status());
     }
 
     TopicEntity toEntity() {

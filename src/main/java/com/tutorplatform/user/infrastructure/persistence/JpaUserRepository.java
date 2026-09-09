@@ -17,7 +17,7 @@ public class JpaUserRepository implements UserRepository {
 
     @Override
     public UserEntity saveAndFlush(UserEntity user) {
-        UserDatabaseModel model = databaseRepository.findById(user.getId())
+        UserDatabaseModel model = databaseRepository.findById(user.id())
                 .orElseGet(() -> new UserDatabaseModel(user));
         model.updateFrom(user);
         return databaseRepository.saveAndFlush(model).toEntity();

@@ -50,14 +50,14 @@ public class StudentTopicProgressDatabaseModel {
     }
 
     StudentTopicProgressDatabaseModel(StudentTopicProgressEntity progress) {
-        id = new StudentTopicProgressId(progress.getStudentProgramId(), progress.getTopicId());
+        id = new StudentTopicProgressId(progress.studentProgramId(), progress.topicId());
         updateFrom(progress);
     }
 
     void updateFrom(StudentTopicProgressEntity progress) {
-        status = Objects.requireNonNull(progress.getStatus());
-        startedAt = progress.getStartedAt();
-        completedAt = progress.getCompletedAt();
+        status = Objects.requireNonNull(progress.status());
+        startedAt = progress.startedAt();
+        completedAt = progress.completedAt();
     }
 
     StudentTopicProgressEntity toEntity() {

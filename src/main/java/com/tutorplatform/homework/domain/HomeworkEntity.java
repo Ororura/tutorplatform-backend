@@ -75,7 +75,7 @@ public class HomeworkEntity {
 
     public void replaceItems(List<HomeworkItemEntity> items) {
         List<HomeworkItemEntity> copy = List.copyOf(Objects.requireNonNull(items));
-        if (copy.stream().anyMatch(item -> !id.equals(item.getHomeworkId()))) {
+        if (copy.stream().anyMatch(item -> !id.equals(item.homeworkId()))) {
             throw new IllegalArgumentException("Every homework item must belong to this homework");
         }
         this.items = copy;

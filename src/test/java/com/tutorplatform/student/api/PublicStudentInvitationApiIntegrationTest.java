@@ -133,7 +133,7 @@ class PublicStudentInvitationApiIntegrationTest {
         assertThat(json(result).fieldNames()).toIterable()
                 .containsExactlyInAnyOrder("student", "teacher", "email", "expiresAt");
         assertThat(result.getResponse().getContentAsString())
-                .doesNotContain(student.getId().toString(), teacher.getId().toString(), "tokenHash", "token_hash");
+                .doesNotContain(student.getId().toString(), teacher.id().toString(), "tokenHash", "token_hash");
     }
 
     @Test
@@ -184,15 +184,15 @@ class PublicStudentInvitationApiIntegrationTest {
                 .andReturn();
 
         UserEntity user = userRepository.findByEmail("STUDENT@example.com").orElseThrow();
-        assertThat(user.getRoles()).containsExactly(UserRole.STUDENT);
-        assertThat(passwordEncoder.matches(PASSWORD, user.getPasswordHash())).isTrue();
-        assertThat(studentRepository.findById(student.getId()).orElseThrow().getUserId()).isEqualTo(user.getId());
+        assertThat(user.roles()).containsExactly(UserRole.STUDENT);
+        assertThat(passwordEncoder.matches(PASSWORD, user.passwordHash())).isTrue();
+        assertThat(studentRepository.findById(student.getId()).orElseThrow().getUserId()).isEqualTo(user.id());
         assertThat(studentInviteRepository.findById(invite.getId()).orElseThrow().getAcceptedAt()).isNotNull();
 
         Cookie authenticatedSession = sessionCookieFrom(result, csrf.sessionCookie());
         mockMvc.perform(get("/api/v1/auth/me").cookie(authenticatedSession))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(user.getId().toString()))
+                .andExpect(jsonPath("$.id").value(user.id().toString()))
                 .andExpect(jsonPath("$.displayName").value("Андрей Иванов"))
                 .andExpect(jsonPath("$.roles[0]").value("STUDENT"));
 
