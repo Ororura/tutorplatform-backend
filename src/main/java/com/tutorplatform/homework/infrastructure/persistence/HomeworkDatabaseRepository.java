@@ -16,6 +16,17 @@ interface HomeworkDatabaseRepository extends JpaRepository<HomeworkDatabaseModel
     @EntityGraph(attributePaths = "items")
     Optional<HomeworkDatabaseModel> findWithItemsById(UUID homeworkId);
 
+    @EntityGraph(attributePaths = "items")
+    @Query("""
+        select distinct homework
+        from HomeworkDatabaseModel homework
+        join homework.items matchedItem
+        where matchedItem.id = :homeworkItemId
+        """)
+    Optional<HomeworkDatabaseModel> findWithItemsByHomeworkItemId(
+        @Param("homeworkItemId") UUID homeworkItemId
+    );
+
     Page<HomeworkDatabaseModel> findAllByStudentProgramIdOrderByAssignedAtDesc(
         UUID studentProgramId,
         Pageable pageable

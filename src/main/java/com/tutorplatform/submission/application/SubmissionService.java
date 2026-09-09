@@ -1,8 +1,6 @@
 package com.tutorplatform.submission.application;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
-import com.tutorplatform.homework.application.HomeworkQuery;
-import com.tutorplatform.homework.domain.HomeworkStatus;
 import com.tutorplatform.program.application.ProgramQuery;
 import com.tutorplatform.student.application.StudentOwnershipQuery;
 import com.tutorplatform.student.application.exception.StudentNotFoundException;
@@ -11,6 +9,7 @@ import com.tutorplatform.submission.domain.*;
 import com.tutorplatform.task.application.TaskQuery;
 import com.tutorplatform.task.application.exception.TaskNotFoundException;
 import com.tutorplatform.task.domain.task.TaskType;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,22 +27,25 @@ public class SubmissionService {
 
     private final StudentOwnershipQuery studentOwnershipQuery;
     private final TaskQuery taskQuery;
-    private final HomeworkQuery homeworkQuery;
+    private final SubmissionHomeworkContextQuery homeworkContextQuery;
     private final ProgramQuery programQuery;
     private final SubmissionRepository submissionRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public SubmissionService(
         StudentOwnershipQuery studentOwnershipQuery,
         TaskQuery taskQuery,
-        HomeworkQuery homeworkQuery,
+        SubmissionHomeworkContextQuery homeworkContextQuery,
         ProgramQuery programQuery,
-        SubmissionRepository submissionRepository
+        SubmissionRepository submissionRepository,
+        ApplicationEventPublisher eventPublisher
     ) {
         this.studentOwnershipQuery = studentOwnershipQuery;
         this.taskQuery = taskQuery;
-        this.homeworkQuery = homeworkQuery;
+        this.homeworkContextQuery = homeworkContextQuery;
         this.programQuery = programQuery;
         this.submissionRepository = submissionRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -61,10 +63,10 @@ public class SubmissionService {
         }
         UUID studentId = currentStudentId(principal);
         requireTextTask(taskId);
-        HomeworkQuery.HomeworkSubmissionContext homework = requireHomeworkContext(
+        SubmissionHomeworkContextQuery.HomeworkSubmissionContext homework = requireHomeworkContext(
             studentId, taskId, homeworkItemId
         );
-        if (homework.homeworkStatus() == HomeworkStatus.CANCELLED) {
+        if (homework.cancelled()) {
             throw new HomeworkNotSubmittableException();
         }
 
@@ -105,7 +107,7 @@ public class SubmissionService {
                 studentId, taskId, page, size
             );
         } else {
-            HomeworkQuery.HomeworkSubmissionContext homework = requireHomeworkContext(
+            SubmissionHomeworkContextQuery.HomeworkSubmissionContext homework = requireHomeworkContext(
                 studentId, taskId, homeworkItemId
             );
             submissions = submissionRepository.findAttempts(new SubmissionAttemptContext(
@@ -164,7 +166,12 @@ public class SubmissionService {
             throw new SubmissionNotReviewableException();
         }
         submission.review(reviewStatus);
-        return SubmissionResult.from(submissionRepository.saveAndFlush(submission));
+        SubmissionEntity saved = submissionRepository.saveAndFlush(submission);
+        eventPublisher.publishEvent(new SubmissionReviewedEvent(
+            saved.getId(), saved.getStudentId(), saved.getStudentProgramId(), saved.getTaskId(),
+            saved.getHomeworkItemId(), saved.getStatus()
+        ));
+        return SubmissionResult.from(saved);
     }
 
     private UUID currentStudentId(AuthenticatedUser principal) {
@@ -190,7 +197,7 @@ public class SubmissionService {
         if (submission.getHomeworkItemId() == null) {
             return;
         }
-        HomeworkQuery.HomeworkSubmissionContext homework = homeworkQuery
+        SubmissionHomeworkContextQuery.HomeworkSubmissionContext homework = homeworkContextQuery
             .findSubmissionContext(submission.getHomeworkItemId())
             .orElseThrow(SubmissionNotFoundException::new);
         ProgramQuery.StudentProgramContext program = programQuery
@@ -215,12 +222,12 @@ public class SubmissionService {
         }
     }
 
-    private HomeworkQuery.HomeworkSubmissionContext requireHomeworkContext(
+    private SubmissionHomeworkContextQuery.HomeworkSubmissionContext requireHomeworkContext(
         UUID studentId,
         UUID taskId,
         UUID homeworkItemId
     ) {
-        HomeworkQuery.HomeworkSubmissionContext homework = homeworkQuery
+        SubmissionHomeworkContextQuery.HomeworkSubmissionContext homework = homeworkContextQuery
             .findSubmissionContext(homeworkItemId)
             .orElseThrow(HomeworkItemNotFoundException::new);
         ProgramQuery.StudentProgramContext studentProgram = programQuery

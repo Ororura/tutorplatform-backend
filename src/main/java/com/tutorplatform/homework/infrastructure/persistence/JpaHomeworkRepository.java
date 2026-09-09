@@ -40,6 +40,12 @@ public class JpaHomeworkRepository implements HomeworkRepository {
     }
 
     @Override
+    public Optional<HomeworkEntity> findByHomeworkItemIdWithItems(UUID homeworkItemId) {
+        return databaseRepository.findWithItemsByHomeworkItemId(homeworkItemId)
+            .map(HomeworkDatabaseModel::toEntity);
+    }
+
+    @Override
     public List<HomeworkEntity> findAllByStudentProgramId(UUID studentProgramId, int page, int size) {
         if (page < 0) {
             throw new IllegalArgumentException("page must be greater than or equal to 0");

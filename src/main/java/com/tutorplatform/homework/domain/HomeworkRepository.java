@@ -11,6 +11,8 @@ public interface HomeworkRepository {
 
     Optional<HomeworkEntity> findByIdWithItems(UUID homeworkId);
 
+    Optional<HomeworkEntity> findByHomeworkItemIdWithItems(UUID homeworkItemId);
+
     List<HomeworkEntity> findAllByStudentProgramId(UUID studentProgramId, int page, int size);
 
     boolean existsByIdAndStudentProgramId(UUID homeworkId, UUID studentProgramId);

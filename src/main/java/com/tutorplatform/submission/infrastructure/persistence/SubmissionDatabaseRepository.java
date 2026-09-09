@@ -7,10 +7,26 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 interface SubmissionDatabaseRepository extends JpaRepository<SubmissionDatabaseModel, UUID> {
+
+    @Query("""
+        select distinct submission.homeworkItemId, submission.taskId
+        from SubmissionDatabaseModel submission
+        where submission.studentId = :studentId
+          and submission.studentProgramId = :studentProgramId
+          and submission.homeworkItemId in :homeworkItemIds
+          and submission.status = com.tutorplatform.submission.domain.SubmissionStatus.PASSED
+        """)
+    List<Object[]> findPassedHomeworkItems(
+        @Param("studentId") UUID studentId,
+        @Param("studentProgramId") UUID studentProgramId,
+        @Param("homeworkItemIds") Set<UUID> homeworkItemIds
+    );
 
     Optional<SubmissionDatabaseModel> findByIdAndStudentId(UUID submissionId, UUID studentId);
 

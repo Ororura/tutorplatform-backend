@@ -2,7 +2,6 @@ package com.tutorplatform.config;
 
 import com.tutorplatform.shared.api.RestAccessDeniedHandler;
 import com.tutorplatform.shared.api.RestAuthenticationEntryPoint;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,6 +10,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -65,7 +65,7 @@ public class SecurityConfig {
                 .accessDeniedHandler(accessDeniedHandler)
             )
             .sessionManagement(session -> session
-                .sessionFixation(fixation -> fixation.migrateSession())
+                .sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::migrateSession)
             )
             .logout(logout -> logout
                 .logoutUrl("/api/v1/auth/logout")
@@ -116,13 +116,12 @@ public class SecurityConfig {
 
     @Bean
     CookieSerializer cookieSerializer(
-        @Value("${app.security.session-cookie-secure:false}") boolean secure
-    ) {
+        ) {
         var serializer = new DefaultCookieSerializer();
         serializer.setCookieName("TUTOR_SESSION");
         serializer.setCookiePath("/");
         serializer.setUseHttpOnlyCookie(true);
-        serializer.setUseSecureCookie(secure);
+        serializer.setUseSecureCookie(true);
         serializer.setSameSite("Lax");
         return serializer;
     }

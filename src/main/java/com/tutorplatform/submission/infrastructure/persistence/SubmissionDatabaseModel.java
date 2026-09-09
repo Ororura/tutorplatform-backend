@@ -1,6 +1,5 @@
 package com.tutorplatform.submission.infrastructure.persistence;
 
-import com.tutorplatform.homework.infrastructure.persistence.HomeworkItemDatabaseModel;
 import com.tutorplatform.program.infrastructure.persistence.studentprogram.StudentProgramDatabaseModel;
 import com.tutorplatform.student.infrastructure.persistence.StudentDatabaseModel;
 import com.tutorplatform.submission.domain.SubmissionEntity;
@@ -40,10 +39,6 @@ public class SubmissionDatabaseModel {
 
     @Column(name = "task_id", nullable = false, updatable = false)
     private UUID taskId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "homework_item_id", insertable = false, updatable = false)
-    private HomeworkItemDatabaseModel homeworkItem;
 
     @Column(name = "homework_item_id", updatable = false)
     private UUID homeworkItemId;

@@ -22,6 +22,7 @@ import com.tutorplatform.subject.domain.SubjectRepository;
 import com.tutorplatform.subject.domain.SubjectStatus;
 import com.tutorplatform.subject.infrastructure.persistence.JpaSubjectRepository;
 import com.tutorplatform.submission.domain.SubmissionAttemptContext;
+import com.tutorplatform.submission.application.SubmissionQuery;
 import com.tutorplatform.submission.domain.SubmissionEntity;
 import com.tutorplatform.submission.domain.SubmissionRepository;
 import com.tutorplatform.submission.domain.SubmissionStatus;
@@ -63,7 +64,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
     JpaStudentProgramRepository.class,
     JpaTaskRepository.class,
     JpaHomeworkRepository.class,
-    JpaSubmissionRepository.class
+    JpaSubmissionRepository.class,
+    JpaSubmissionQuery.class
 })
 class SubmissionPersistenceIntegrationTest {
 
@@ -87,6 +89,8 @@ class SubmissionPersistenceIntegrationTest {
     private HomeworkRepository homeworkRepository;
     @Autowired
     private SubmissionRepository submissionRepository;
+    @Autowired
+    private SubmissionQuery submissionQuery;
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -217,6 +221,34 @@ class SubmissionPersistenceIntegrationTest {
     }
 
     @Test
+    void passedHomeworkItemsQueryBatchesAttemptsAndKeepsExactContext() {
+        Fixture fixture = createFixture(true);
+        Fixture foreign = createFixture(true);
+        submissionRepository.saveAndFlush(submission(
+            fixture, fixture.homeworkItemId(), 1, SubmissionStatus.FAILED
+        ));
+        submissionRepository.saveAndFlush(submission(
+            fixture, fixture.homeworkItemId(), 2, SubmissionStatus.PASSED
+        ));
+        submissionRepository.saveAndFlush(submission(
+            fixture, fixture.homeworkItemId(), 3, SubmissionStatus.PASSED
+        ));
+        submissionRepository.saveAndFlush(submission(
+            fixture, null, 1, SubmissionStatus.PASSED
+        ));
+        submissionRepository.saveAndFlush(submission(
+            foreign, foreign.homeworkItemId(), 1, SubmissionStatus.PASSED
+        ));
+
+        assertThat(submissionQuery.findPassedHomeworkItems(
+            fixture.studentId(), fixture.studentProgramId(),
+            java.util.Set.of(fixture.homeworkItemId(), foreign.homeworkItemId())
+        )).containsExactly(new SubmissionQuery.PassedHomeworkItem(
+            fixture.homeworkItemId(), fixture.taskId()
+        ));
+    }
+
+    @Test
     void studentLookupIsOwnershipSafe() {
         Fixture owner = createFixture(false);
         Fixture other = createFixture(false);
@@ -313,9 +345,18 @@ class SubmissionPersistenceIntegrationTest {
     }
 
     private SubmissionEntity submission(Fixture fixture, UUID homeworkItemId, int attemptNo) {
+        return submission(fixture, homeworkItemId, attemptNo, SubmissionStatus.SUBMITTED);
+    }
+
+    private SubmissionEntity submission(
+        Fixture fixture,
+        UUID homeworkItemId,
+        int attemptNo,
+        SubmissionStatus status
+    ) {
         return new SubmissionEntity(
             UUID.randomUUID(), fixture.studentId(), fixture.studentProgramId(), fixture.taskId(),
-            homeworkItemId, attemptNo, SubmissionStatus.SUBMITTED, "Ответ", Instant.now()
+            homeworkItemId, attemptNo, status, "Ответ", Instant.now()
         );
     }
 

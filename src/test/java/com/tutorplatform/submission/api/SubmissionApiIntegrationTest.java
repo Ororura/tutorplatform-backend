@@ -437,18 +437,20 @@ class SubmissionApiIntegrationTest {
     }
 
     @Test
-    void teacherReviewsTextAsPassedOrFailedAndChangesOnlyStatus() throws Exception {
+    void failedReviewDoesNotCompleteHomeworkAndChangesOnlySubmissionStatus() throws Exception {
         Fixture fixture = createFixture("teacher-review");
         HomeworkEntity homework = createHomework(
-            fixture, fixture.studentProgram(), HomeworkStatus.ASSIGNED, List.of(fixture.textTask())
+            fixture, fixture.studentProgram(), HomeworkStatus.ASSIGNED,
+            List.of(fixture.textTask(), fixture.secondTextTask())
         );
-        UUID itemId = homework.getItems().getFirst().id();
+        UUID firstItemId = homework.getItems().getFirst().id();
+        UUID secondItemId = homework.getItems().get(1).id();
         SubmissionEntity passCandidate = saveSubmission(
-            fixture, fixture.textTask(), itemId, 1, SubmissionStatus.NEEDS_REVIEW,
+            fixture, fixture.textTask(), firstItemId, 1, SubmissionStatus.NEEDS_REVIEW,
             "Keep this answer", Instant.parse("2026-02-01T00:00:00Z")
         );
         SubmissionEntity failCandidate = saveSubmission(
-            fixture, fixture.textTask(), itemId, 2, SubmissionStatus.NEEDS_REVIEW,
+            fixture, fixture.secondTextTask(), secondItemId, 1, SubmissionStatus.NEEDS_REVIEW,
             "Keep this too", Instant.parse("2026-02-01T00:01:00Z")
         );
         Integer progressBefore = jdbcTemplate.queryForObject(
@@ -478,6 +480,34 @@ class SubmissionApiIntegrationTest {
         assertThat(jdbcTemplate.queryForObject(
             "select count(*) from student_topic_progress", Integer.class
         )).isEqualTo(progressBefore);
+    }
+
+    @Test
+    void passingLastRequiredItemAfterReviewCompletesHomework() throws Exception {
+        Fixture fixture = createFixture("teacher-review-completion");
+        HomeworkEntity homework = createHomework(
+            fixture, fixture.studentProgram(), HomeworkStatus.ASSIGNED,
+            List.of(fixture.textTask(), fixture.secondTextTask())
+        );
+        HomeworkItemEntity firstItem = homework.getItems().getFirst();
+        HomeworkItemEntity lastItem = homework.getItems().get(1);
+        saveSubmission(
+            fixture, fixture.textTask(), firstItem.id(), 1, SubmissionStatus.PASSED,
+            "Already passed", Instant.parse("2026-02-01T00:00:00Z")
+        );
+        SubmissionEntity lastSubmission = saveSubmission(
+            fixture, fixture.secondTextTask(), lastItem.id(), 1, SubmissionStatus.NEEDS_REVIEW,
+            "Last answer", Instant.parse("2026-02-01T00:01:00Z")
+        );
+
+        review(
+            fixture.teacherPrincipal(), fixture.student().getId(), lastSubmission.getId(),
+            "PASSED", true
+        ).andExpect(status().isOk());
+
+        HomeworkEntity completed = homeworkRepository.findById(homework.getId()).orElseThrow();
+        assertThat(completed.getStatus()).isEqualTo(HomeworkStatus.COMPLETED);
+        assertThat(completed.getCompletedAt()).isNotNull();
     }
 
     @Test

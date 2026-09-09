@@ -115,7 +115,7 @@ class SecurityInfrastructureTest {
     @Test
     void productionCookieHasRequiredSecurityAttributes() {
         var response = new MockHttpServletResponse();
-        var cookieSerializer = new SecurityConfig().cookieSerializer(true);
+        var cookieSerializer = new SecurityConfig().cookieSerializer();
 
         cookieSerializer.writeCookieValue(new CookieValue(
             new MockHttpServletRequest(),

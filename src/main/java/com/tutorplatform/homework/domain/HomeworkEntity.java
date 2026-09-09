@@ -81,6 +81,13 @@ public class HomeworkEntity {
         this.items = copy;
     }
 
+    public void complete(Instant completionTime) {
+        if (status == HomeworkStatus.ASSIGNED) {
+            status = HomeworkStatus.COMPLETED;
+            completedAt = Objects.requireNonNull(completionTime);
+        }
+    }
+
     private void applyChanges(
         String title,
         String description,
