@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Repository
@@ -20,6 +21,14 @@ public class JpaTaskQuery implements TaskQuery {
 
     JpaTaskQuery(TaskDatabaseRepository databaseRepository) {
         this.databaseRepository = databaseRepository;
+    }
+
+    @Override
+    public Optional<TaskContext> findTask(UUID taskId) {
+        return databaseRepository.findById(taskId).map(task -> new TaskContext(
+                task.getId(), task.getTeacherId(), task.getSubjectId(), task.getTitle(),
+                task.getTaskType(), task.getStatus()
+        ));
     }
 
     @Override

@@ -12,7 +12,7 @@ public class SubmissionEntity {
     private final UUID taskId;
     private final UUID homeworkItemId;
     private final int attemptNo;
-    private final SubmissionStatus status;
+    private SubmissionStatus status;
     private final String textAnswer;
     private final Instant submittedAt;
     private final Instant createdAt;
@@ -69,4 +69,14 @@ public class SubmissionEntity {
     public String getTextAnswer() { return textAnswer; }
     public Instant getSubmittedAt() { return submittedAt; }
     public Instant getCreatedAt() { return createdAt; }
+
+    public void review(SubmissionStatus reviewStatus) {
+        if (status != SubmissionStatus.NEEDS_REVIEW) {
+            throw new IllegalStateException("Submission is not awaiting review");
+        }
+        if (reviewStatus != SubmissionStatus.PASSED && reviewStatus != SubmissionStatus.FAILED) {
+            throw new IllegalArgumentException("Review status must be PASSED or FAILED");
+        }
+        status = reviewStatus;
+    }
 }

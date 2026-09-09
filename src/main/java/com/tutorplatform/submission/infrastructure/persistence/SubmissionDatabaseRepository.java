@@ -16,6 +16,18 @@ interface SubmissionDatabaseRepository extends JpaRepository<SubmissionDatabaseM
 
     Page<SubmissionDatabaseModel> findAllByStudentId(UUID studentId, Pageable pageable);
 
+    Page<SubmissionDatabaseModel> findAllByStudentIdAndTaskId(
+            UUID studentId,
+            UUID taskId,
+            Pageable pageable
+    );
+
+    Page<SubmissionDatabaseModel> findAllByStudentIdAndStatus(
+            UUID studentId,
+            SubmissionStatus status,
+            Pageable pageable
+    );
+
     @Query("""
         select submission
         from SubmissionDatabaseModel submission

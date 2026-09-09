@@ -56,6 +56,35 @@ public class JpaSubmissionRepository implements SubmissionRepository {
     }
 
     @Override
+    public SubmissionPage findPageByStudentIdAndTaskId(
+            UUID studentId,
+            UUID taskId,
+            int page,
+            int size
+    ) {
+        return toPage(databaseRepository.findAllByStudentIdAndTaskId(
+                studentId, taskId, PageRequest.of(page, size, NEWEST_FIRST)
+        ));
+    }
+
+    @Override
+    public SubmissionPage findPageForTeacher(
+            UUID studentId,
+            SubmissionStatus status,
+            int page,
+            int size,
+            String sortField,
+            boolean ascending
+    ) {
+        Sort.Direction direction = ascending ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, sortField).and(Sort.by(direction, "id"));
+        PageRequest pageable = PageRequest.of(page, size, sort);
+        return toPage(status == null
+                ? databaseRepository.findAllByStudentId(studentId, pageable)
+                : databaseRepository.findAllByStudentIdAndStatus(studentId, status, pageable));
+    }
+
+    @Override
     public SubmissionPage findAttempts(SubmissionAttemptContext context, int page, int size) {
         return toPage(databaseRepository.findAttempts(
                 context.studentId(), context.studentProgramId(), context.taskId(), context.homeworkItemId(),

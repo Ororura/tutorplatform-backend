@@ -13,6 +13,17 @@ public interface SubmissionRepository {
 
     SubmissionPage findPageByStudentId(UUID studentId, int page, int size);
 
+    SubmissionPage findPageByStudentIdAndTaskId(UUID studentId, UUID taskId, int page, int size);
+
+    SubmissionPage findPageForTeacher(
+            UUID studentId,
+            SubmissionStatus status,
+            int page,
+            int size,
+            String sortField,
+            boolean ascending
+    );
+
     SubmissionPage findAttempts(SubmissionAttemptContext context, int page, int size);
 
     Optional<SubmissionEntity> findLatestAttempt(SubmissionAttemptContext context);

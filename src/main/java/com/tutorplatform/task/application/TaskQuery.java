@@ -5,10 +5,13 @@ import com.tutorplatform.task.domain.task.TaskStatus;
 import com.tutorplatform.task.domain.task.TaskType;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 public interface TaskQuery {
+
+    Optional<TaskContext> findTask(UUID taskId);
 
     TaskPage findTeacherTextTasks(
             UUID teacherId,
