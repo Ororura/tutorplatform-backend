@@ -36,7 +36,7 @@ interface TaskDatabaseRepository extends JpaRepository<TaskDatabaseModel, UUID> 
         select task
         from TaskDatabaseModel task
         where task.teacherId = :teacherId
-          and task.taskType = :taskType
+          and (:taskType is null or task.taskType = :taskType)
           and (:subjectId is null or task.subjectId = :subjectId)
           and (:status is null or task.status = :status)
           and (:difficulty is null or task.difficulty = :difficulty)

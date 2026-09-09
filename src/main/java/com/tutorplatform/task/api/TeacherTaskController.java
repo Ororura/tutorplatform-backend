@@ -4,13 +4,20 @@ import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.task.api.request.AttachTaskToTopicRequest;
 import com.tutorplatform.task.api.request.CreateTaskRequest;
 import com.tutorplatform.task.api.request.UpdateTaskRequest;
+import com.tutorplatform.task.api.request.UpdateProgrammingTaskConfigRequest;
+import com.tutorplatform.task.api.request.ReplaceTaskTestCasesRequest;
 import com.tutorplatform.task.api.response.TaskPageResponse;
 import com.tutorplatform.task.api.response.TaskResponse;
 import com.tutorplatform.task.api.response.TopicTaskResponse;
+import com.tutorplatform.task.api.response.ProgrammingTaskConfigResponse;
+import com.tutorplatform.task.api.response.TaskTestCasesResponse;
 import com.tutorplatform.task.application.AttachTaskToTopicCommand;
 import com.tutorplatform.task.application.CreateTaskCommand;
 import com.tutorplatform.task.application.TaskService;
 import com.tutorplatform.task.application.UpdateTaskCommand;
+import com.tutorplatform.task.application.ProgrammingTaskConfigInput;
+import com.tutorplatform.task.application.TaskTestCaseInput;
+import com.tutorplatform.task.application.UpdateProgrammingTaskConfigCommand;
 import com.tutorplatform.task.domain.task.TaskDifficulty;
 import com.tutorplatform.task.domain.task.TaskStatus;
 import jakarta.validation.Valid;
@@ -38,10 +45,49 @@ public class TeacherTaskController implements TeacherTaskApi {
         @Valid @RequestBody CreateTaskRequest request
     ) {
         var created = taskService.createTask(principal, new CreateTaskCommand(
-            request.subjectId(), request.title(), request.descriptionMarkdown(), request.difficulty()
+            request.subjectId(), request.title(), request.descriptionMarkdown(), request.difficulty(),
+            request.taskType(),
+            request.programmingConfig() == null ? null : new ProgrammingTaskConfigInput(
+                request.programmingConfig().language(), request.programmingConfig().starterCode(),
+                request.programmingConfig().executionEnabled(), request.programmingConfig().timeLimitMs(),
+                request.programmingConfig().memoryLimitMb()
+            ),
+            request.testCases() == null ? null : request.testCases().stream().map(item -> new TaskTestCaseInput(
+                item.id(), item.inputText(), item.expectedOutput(), item.hidden(),
+                item.comparisonMode(), item.position()
+            )).toList()
         ));
         return ResponseEntity.created(URI.create("/api/v1/teacher/tasks/" + created.id()))
             .body(TaskResponse.from(created));
+    }
+
+    @Override
+    @PutMapping("/tasks/{taskId}/programming-config")
+    public ProgrammingTaskConfigResponse updateProgrammingTaskConfig(
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID taskId,
+        @Valid @RequestBody UpdateProgrammingTaskConfigRequest request
+    ) {
+        return ProgrammingTaskConfigResponse.from(taskService.updateProgrammingTaskConfig(
+            principal, taskId, new UpdateProgrammingTaskConfigCommand(
+                request.starterCode(), request.executionEnabled(), request.timeLimitMs(), request.memoryLimitMb()
+            )
+        ));
+    }
+
+    @Override
+    @PutMapping("/tasks/{taskId}/test-cases")
+    public TaskTestCasesResponse replaceTaskTestCases(
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID taskId,
+        @Valid @RequestBody ReplaceTaskTestCasesRequest request
+    ) {
+        return TaskTestCasesResponse.from(taskService.replaceTaskTestCases(
+            principal, taskId, request.items().stream().map(item -> new TaskTestCaseInput(
+                item.id(), item.inputText(), item.expectedOutput(), item.hidden(),
+                item.comparisonMode(), item.position()
+            )).toList()
+        ));
     }
 
     @Override

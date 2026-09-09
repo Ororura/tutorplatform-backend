@@ -31,6 +31,36 @@ public class TaskExceptionHandler {
         ));
     }
 
+    @ExceptionHandler(InvalidProgrammingTaskConfigException.class)
+    ResponseEntity<ApiError> handleInvalidProgrammingConfig(InvalidProgrammingTaskConfigException exception) {
+        return ResponseEntity.badRequest().body(new ApiError(
+            "PROGRAMMING_CONFIG_INVALID", "Programming task configuration is invalid",
+            Instant.now(), MDC.get("traceId"), List.of(new ApiErrorDetail(exception.getField(), exception.getMessage()))
+        ));
+    }
+
+    @ExceptionHandler(InvalidTaskTestCaseException.class)
+    ResponseEntity<ApiError> handleInvalidTestCase(InvalidTaskTestCaseException exception) {
+        return ResponseEntity.badRequest().body(new ApiError(
+            "TASK_TEST_CASE_INVALID", "Task test case is invalid",
+            Instant.now(), MDC.get("traceId"), List.of(new ApiErrorDetail(exception.getField(), exception.getMessage()))
+        ));
+    }
+
+    @ExceptionHandler(TaskTypeMismatchException.class)
+    ResponseEntity<ApiError> handleTaskTypeMismatch(TaskTypeMismatchException exception) {
+        return ResponseEntity.badRequest().body(
+            ApiError.of("TASK_TYPE_MISMATCH", exception.getMessage(), MDC.get("traceId"))
+        );
+    }
+
+    @ExceptionHandler(TaskNotReadyForActivationException.class)
+    ResponseEntity<ApiError> handleTaskNotReady(TaskNotReadyForActivationException exception) {
+        return ResponseEntity.badRequest().body(
+            ApiError.of("TASK_NOT_READY_FOR_ACTIVATION", exception.getMessage(), MDC.get("traceId"))
+        );
+    }
+
     @ExceptionHandler(TaskNotFoundException.class)
     ResponseEntity<ApiError> handleTaskNotFound(TaskNotFoundException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(

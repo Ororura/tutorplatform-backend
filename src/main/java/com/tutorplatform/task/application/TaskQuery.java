@@ -13,7 +13,7 @@ public interface TaskQuery {
 
     Optional<TaskContext> findTask(UUID taskId);
 
-    TaskPage findTeacherTextTasks(
+    TaskPage findTeacherTasks(
         UUID teacherId,
         UUID subjectId,
         TaskStatus status,

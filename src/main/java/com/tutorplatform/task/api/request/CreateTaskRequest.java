@@ -1,11 +1,14 @@
 package com.tutorplatform.task.api.request;
 
 import com.tutorplatform.task.domain.task.TaskDifficulty;
+import com.tutorplatform.task.domain.task.TaskType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
+import java.util.List;
 
 public record CreateTaskRequest(
     @NotNull
@@ -22,6 +25,14 @@ public record CreateTaskRequest(
 
     @NotNull
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-    TaskDifficulty difficulty
+    TaskDifficulty difficulty,
+
+    @Schema(description = "Defaults to TEXT when omitted", allowableValues = {"TEXT", "CODE"})
+    TaskType taskType,
+
+    @Valid
+    ProgrammingTaskConfigRequest programmingConfig,
+
+    List<@Valid TaskTestCaseRequest> testCases
 ) {
 }

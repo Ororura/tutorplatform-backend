@@ -32,7 +32,7 @@ public class JpaTaskQuery implements TaskQuery {
     }
 
     @Override
-    public TaskPage findTeacherTextTasks(
+    public TaskPage findTeacherTasks(
         UUID teacherId,
         UUID subjectId,
         TaskStatus status,
@@ -45,7 +45,7 @@ public class JpaTaskQuery implements TaskQuery {
         Sort.Direction direction = ascending ? Sort.Direction.ASC : Sort.Direction.DESC;
         var result = databaseRepository.findPageByTeacher(
             teacherId,
-            TaskType.TEXT,
+            null,
             subjectId,
             status,
             difficulty,
