@@ -1,10 +1,6 @@
 package com.tutorplatform.task.infrastructure.persistence;
 
-import com.tutorplatform.program.domain.ModuleEntity;
-import com.tutorplatform.program.domain.ModuleRepository;
-import com.tutorplatform.program.domain.TopicEntity;
-import com.tutorplatform.program.domain.TopicRepository;
-import com.tutorplatform.program.domain.TopicStatus;
+import com.tutorplatform.program.domain.*;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramEntity;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramRepository;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
@@ -17,25 +13,16 @@ import com.tutorplatform.subject.domain.SubjectStatus;
 import com.tutorplatform.subject.infrastructure.persistence.JpaSubjectRepository;
 import com.tutorplatform.task.domain.skill.SkillEntity;
 import com.tutorplatform.task.domain.skill.SkillRepository;
-import com.tutorplatform.task.domain.task.TaskDifficulty;
-import com.tutorplatform.task.domain.task.TaskEntity;
-import com.tutorplatform.task.domain.task.TaskRepository;
+import com.tutorplatform.task.domain.task.*;
 import com.tutorplatform.task.domain.taskskill.TaskSkillEntity;
 import com.tutorplatform.task.domain.taskskill.TaskSkillRepository;
-import com.tutorplatform.task.domain.task.TaskStatus;
-import com.tutorplatform.task.domain.task.TaskType;
 import com.tutorplatform.task.domain.topic.TopicTaskEntity;
 import com.tutorplatform.task.domain.topic.TopicTaskRepository;
 import com.tutorplatform.task.infrastructure.persistence.skill.JpaSkillRepository;
 import com.tutorplatform.task.infrastructure.persistence.task.JpaTaskRepository;
 import com.tutorplatform.task.infrastructure.persistence.taskskill.JpaTaskSkillRepository;
 import com.tutorplatform.task.infrastructure.persistence.topic.JpaTopicTaskRepository;
-import com.tutorplatform.user.domain.TeacherEntity;
-import com.tutorplatform.user.domain.TeacherRepository;
-import com.tutorplatform.user.domain.UserEntity;
-import com.tutorplatform.user.domain.UserRepository;
-import com.tutorplatform.user.domain.UserRole;
-import com.tutorplatform.user.domain.UserStatus;
+import com.tutorplatform.user.domain.*;
 import com.tutorplatform.user.infrastructure.persistence.JpaTeacherRepository;
 import com.tutorplatform.user.infrastructure.persistence.JpaUserRepository;
 import jakarta.persistence.OptimisticLockException;
@@ -62,9 +49,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import java.util.Arrays;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.*;
 
 @DataJpaTest
 @Testcontainers

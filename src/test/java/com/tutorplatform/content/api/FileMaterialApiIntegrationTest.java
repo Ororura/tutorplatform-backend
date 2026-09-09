@@ -7,23 +7,14 @@ import com.tutorplatform.content.application.CreateLessonMaterialCommand;
 import com.tutorplatform.content.application.LessonMaterialService;
 import com.tutorplatform.content.domain.FileAssetRepository;
 import com.tutorplatform.content.domain.LessonMaterialType;
-import com.tutorplatform.program.domain.ModuleEntity;
-import com.tutorplatform.program.domain.ModuleRepository;
-import com.tutorplatform.program.domain.TopicEntity;
-import com.tutorplatform.program.domain.TopicRepository;
-import com.tutorplatform.program.domain.TopicStatus;
+import com.tutorplatform.program.domain.*;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramEntity;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramRepository;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
 import com.tutorplatform.subject.domain.SubjectEntity;
 import com.tutorplatform.subject.domain.SubjectRepository;
 import com.tutorplatform.subject.domain.SubjectStatus;
-import com.tutorplatform.user.domain.TeacherEntity;
-import com.tutorplatform.user.domain.TeacherRepository;
-import com.tutorplatform.user.domain.UserEntity;
-import com.tutorplatform.user.domain.UserRepository;
-import com.tutorplatform.user.domain.UserRole;
-import com.tutorplatform.user.domain.UserStatus;
+import com.tutorplatform.user.domain.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -51,10 +42,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc

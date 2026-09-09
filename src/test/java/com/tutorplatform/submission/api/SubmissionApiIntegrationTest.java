@@ -23,17 +23,8 @@ import com.tutorplatform.submission.domain.SubmissionAttemptContext;
 import com.tutorplatform.submission.domain.SubmissionEntity;
 import com.tutorplatform.submission.domain.SubmissionRepository;
 import com.tutorplatform.submission.domain.SubmissionStatus;
-import com.tutorplatform.task.domain.task.TaskDifficulty;
-import com.tutorplatform.task.domain.task.TaskEntity;
-import com.tutorplatform.task.domain.task.TaskRepository;
-import com.tutorplatform.task.domain.task.TaskStatus;
-import com.tutorplatform.task.domain.task.TaskType;
-import com.tutorplatform.user.domain.TeacherEntity;
-import com.tutorplatform.user.domain.TeacherRepository;
-import com.tutorplatform.user.domain.UserEntity;
-import com.tutorplatform.user.domain.UserRepository;
-import com.tutorplatform.user.domain.UserRole;
-import com.tutorplatform.user.domain.UserStatus;
+import com.tutorplatform.task.domain.task.*;
+import com.tutorplatform.user.domain.*;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.Test;
@@ -60,12 +51,8 @@ import java.util.concurrent.Executors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc

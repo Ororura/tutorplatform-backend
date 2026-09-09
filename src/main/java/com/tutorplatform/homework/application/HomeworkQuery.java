@@ -2,8 +2,8 @@ package com.tutorplatform.homework.application;
 
 import com.tutorplatform.homework.domain.HomeworkStatus;
 
-import java.util.UUID;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface HomeworkQuery {
 

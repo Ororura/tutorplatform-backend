@@ -1,12 +1,6 @@
 package com.tutorplatform.homework.api;
 
-import com.tutorplatform.homework.application.exception.HomeworkItemPositionConflictException;
-import com.tutorplatform.homework.application.exception.HomeworkNotFoundException;
-import com.tutorplatform.homework.application.exception.HomeworkStudentProgramNotFoundException;
-import com.tutorplatform.homework.application.exception.HomeworkTaskNotAssignableException;
-import com.tutorplatform.homework.application.exception.HomeworkTaskSubjectMismatchException;
-import com.tutorplatform.homework.application.exception.HomeworkVersionConflictException;
-import com.tutorplatform.homework.application.exception.InvalidHomeworkException;
+import com.tutorplatform.homework.application.exception.*;
 import com.tutorplatform.shared.api.ApiError;
 import com.tutorplatform.shared.api.ApiErrorDetail;
 import org.slf4j.MDC;

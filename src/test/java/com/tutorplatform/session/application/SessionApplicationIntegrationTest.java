@@ -1,11 +1,7 @@
 package com.tutorplatform.session.application;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
-import com.tutorplatform.program.domain.ModuleEntity;
-import com.tutorplatform.program.domain.ModuleRepository;
-import com.tutorplatform.program.domain.TopicEntity;
-import com.tutorplatform.program.domain.TopicRepository;
-import com.tutorplatform.program.domain.TopicStatus;
+import com.tutorplatform.program.domain.*;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramEntity;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramRepository;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
@@ -27,12 +23,7 @@ import com.tutorplatform.student.infrastructure.persistence.TeacherStudentLinkRe
 import com.tutorplatform.subject.domain.SubjectEntity;
 import com.tutorplatform.subject.domain.SubjectRepository;
 import com.tutorplatform.subject.domain.SubjectStatus;
-import com.tutorplatform.user.domain.TeacherEntity;
-import com.tutorplatform.user.domain.TeacherRepository;
-import com.tutorplatform.user.domain.UserEntity;
-import com.tutorplatform.user.domain.UserRepository;
-import com.tutorplatform.user.domain.UserRole;
-import com.tutorplatform.user.domain.UserStatus;
+import com.tutorplatform.user.domain.*;
 import jakarta.persistence.OptimisticLockException;
 import org.hibernate.StaleObjectStateException;
 import org.junit.jupiter.api.Test;
@@ -50,9 +41,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Testcontainers

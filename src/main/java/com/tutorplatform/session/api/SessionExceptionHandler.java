@@ -1,11 +1,6 @@
 package com.tutorplatform.session.api;
 
-import com.tutorplatform.session.application.exception.InvalidLessonSessionTopicsException;
-import com.tutorplatform.session.application.exception.InvalidSessionListParameterException;
-import com.tutorplatform.session.application.exception.LessonSessionNotFoundException;
-import com.tutorplatform.session.application.exception.LessonSessionVersionConflictException;
-import com.tutorplatform.session.application.exception.StudentProgramNotFoundException;
-import com.tutorplatform.session.application.exception.TopicOutsideStudentProgramException;
+import com.tutorplatform.session.application.exception.*;
 import com.tutorplatform.shared.api.ApiError;
 import com.tutorplatform.shared.api.ApiErrorDetail;
 import org.slf4j.MDC;

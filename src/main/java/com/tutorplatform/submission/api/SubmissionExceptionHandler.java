@@ -2,14 +2,7 @@ package com.tutorplatform.submission.api;
 
 import com.tutorplatform.shared.api.ApiError;
 import com.tutorplatform.shared.api.ApiErrorDetail;
-import com.tutorplatform.submission.application.exception.HomeworkItemNotFoundException;
-import com.tutorplatform.submission.application.exception.HomeworkNotSubmittableException;
-import com.tutorplatform.submission.application.exception.InvalidSubmissionException;
-import com.tutorplatform.submission.application.exception.InvalidSubmissionReviewStatusException;
-import com.tutorplatform.submission.application.exception.SubmissionContextInvalidException;
-import com.tutorplatform.submission.application.exception.SubmissionNotFoundException;
-import com.tutorplatform.submission.application.exception.SubmissionNotReviewableException;
-import com.tutorplatform.submission.application.exception.TextSubmissionRequiredException;
+import com.tutorplatform.submission.application.exception.*;
 import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;

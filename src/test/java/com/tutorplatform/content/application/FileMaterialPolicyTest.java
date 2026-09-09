@@ -3,9 +3,12 @@ package com.tutorplatform.content.application;
 import com.tutorplatform.content.application.exception.InvalidLessonMaterialException;
 import com.tutorplatform.content.domain.LessonMaterialType;
 import org.junit.jupiter.api.Test;
+
 import java.io.ByteArrayInputStream;
 import java.util.Set;
-import static org.assertj.core.api.Assertions.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class FileMaterialPolicyTest {
     @Test void enforcesActualSizeEvenIfDeclaredSizeIsFalse() {

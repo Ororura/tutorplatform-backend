@@ -20,18 +20,9 @@ import com.tutorplatform.subject.domain.SubjectEntity;
 import com.tutorplatform.subject.domain.SubjectRepository;
 import com.tutorplatform.subject.domain.SubjectStatus;
 import com.tutorplatform.subject.infrastructure.persistence.JpaSubjectRepository;
-import com.tutorplatform.task.domain.task.TaskDifficulty;
-import com.tutorplatform.task.domain.task.TaskEntity;
-import com.tutorplatform.task.domain.task.TaskRepository;
-import com.tutorplatform.task.domain.task.TaskStatus;
-import com.tutorplatform.task.domain.task.TaskType;
+import com.tutorplatform.task.domain.task.*;
 import com.tutorplatform.task.infrastructure.persistence.task.JpaTaskRepository;
-import com.tutorplatform.user.domain.TeacherEntity;
-import com.tutorplatform.user.domain.TeacherRepository;
-import com.tutorplatform.user.domain.UserEntity;
-import com.tutorplatform.user.domain.UserRepository;
-import com.tutorplatform.user.domain.UserRole;
-import com.tutorplatform.user.domain.UserStatus;
+import com.tutorplatform.user.domain.*;
 import com.tutorplatform.user.infrastructure.persistence.JpaTeacherRepository;
 import com.tutorplatform.user.infrastructure.persistence.JpaUserRepository;
 import jakarta.persistence.OptimisticLockException;
@@ -60,9 +51,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.*;
 
 @DataJpaTest
 @Testcontainers

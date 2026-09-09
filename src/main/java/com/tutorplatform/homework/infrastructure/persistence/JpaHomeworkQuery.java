@@ -1,11 +1,6 @@
 package com.tutorplatform.homework.infrastructure.persistence;
 
-import com.tutorplatform.homework.application.HomeworkListItem;
-import com.tutorplatform.homework.application.HomeworkPage;
-import com.tutorplatform.homework.application.HomeworkQuery;
-import com.tutorplatform.homework.application.StudentHomeworkDetails;
-import com.tutorplatform.homework.application.StudentHomeworkListItem;
-import com.tutorplatform.homework.application.StudentHomeworkPage;
+import com.tutorplatform.homework.application.*;
 import com.tutorplatform.homework.domain.HomeworkStatus;
 import com.tutorplatform.task.domain.task.TaskDifficulty;
 import com.tutorplatform.task.domain.task.TaskType;
@@ -14,11 +9,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
-import java.util.UUID;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public class JpaHomeworkQuery implements HomeworkQuery {

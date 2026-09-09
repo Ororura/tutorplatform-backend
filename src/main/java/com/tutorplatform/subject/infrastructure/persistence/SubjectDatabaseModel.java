@@ -3,15 +3,7 @@ package com.tutorplatform.subject.infrastructure.persistence;
 import com.tutorplatform.subject.domain.SubjectEntity;
 import com.tutorplatform.subject.domain.SubjectStatus;
 import com.tutorplatform.user.infrastructure.persistence.TeacherDatabaseModel;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 

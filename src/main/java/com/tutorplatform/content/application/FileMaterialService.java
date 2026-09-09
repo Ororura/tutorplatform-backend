@@ -5,12 +5,7 @@ import com.tutorplatform.content.application.exception.InvalidLessonMaterialExce
 import com.tutorplatform.content.application.exception.LessonMaterialNotFoundException;
 import com.tutorplatform.content.application.exception.LessonMaterialPositionConflictException;
 import com.tutorplatform.content.application.exception.TopicNotFoundException;
-import com.tutorplatform.content.domain.FileAssetEntity;
-import com.tutorplatform.content.domain.FileAssetRepository;
-import com.tutorplatform.content.domain.LessonMaterialEntity;
-import com.tutorplatform.content.domain.LessonMaterialRepository;
-import com.tutorplatform.content.domain.LessonMaterialType;
-import com.tutorplatform.content.domain.StorageProvider;
+import com.tutorplatform.content.domain.*;
 import com.tutorplatform.file.application.FileStorage;
 import com.tutorplatform.program.application.ProgramQuery;
 import com.tutorplatform.user.domain.TeacherRepository;

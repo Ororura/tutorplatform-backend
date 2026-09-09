@@ -19,17 +19,8 @@ import com.tutorplatform.student.infrastructure.persistence.TeacherStudentLinkRe
 import com.tutorplatform.subject.domain.SubjectEntity;
 import com.tutorplatform.subject.domain.SubjectRepository;
 import com.tutorplatform.subject.domain.SubjectStatus;
-import com.tutorplatform.task.domain.task.TaskDifficulty;
-import com.tutorplatform.task.domain.task.TaskEntity;
-import com.tutorplatform.task.domain.task.TaskRepository;
-import com.tutorplatform.task.domain.task.TaskStatus;
-import com.tutorplatform.task.domain.task.TaskType;
-import com.tutorplatform.user.domain.TeacherEntity;
-import com.tutorplatform.user.domain.TeacherRepository;
-import com.tutorplatform.user.domain.UserEntity;
-import com.tutorplatform.user.domain.UserRepository;
-import com.tutorplatform.user.domain.UserRole;
-import com.tutorplatform.user.domain.UserStatus;
+import com.tutorplatform.task.domain.task.*;
+import com.tutorplatform.user.domain.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -49,12 +40,8 @@ import java.util.UUID;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc

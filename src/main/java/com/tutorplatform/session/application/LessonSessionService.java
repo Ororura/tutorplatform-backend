@@ -2,28 +2,18 @@ package com.tutorplatform.session.application;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.program.application.ProgramQuery;
-import com.tutorplatform.session.application.exception.InvalidLessonSessionTopicsException;
-import com.tutorplatform.session.application.exception.InvalidSessionListParameterException;
-import com.tutorplatform.session.application.exception.LessonSessionNotFoundException;
-import com.tutorplatform.session.application.exception.LessonSessionVersionConflictException;
-import com.tutorplatform.session.application.exception.StudentProgramNotFoundException;
-import com.tutorplatform.session.application.exception.TopicOutsideStudentProgramException;
+import com.tutorplatform.session.application.exception.*;
 import com.tutorplatform.session.domain.LessonSessionEntity;
 import com.tutorplatform.session.domain.LessonSessionRepository;
 import com.tutorplatform.session.domain.LessonSessionTopicEntity;
 import com.tutorplatform.session.domain.LessonSessionTopicRepository;
 import com.tutorplatform.student.application.StudentOwnershipQuery;
 import com.tutorplatform.student.application.exception.StudentNotFoundException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class LessonSessionService {

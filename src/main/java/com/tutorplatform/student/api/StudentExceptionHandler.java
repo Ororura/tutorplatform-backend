@@ -2,15 +2,7 @@ package com.tutorplatform.student.api;
 
 import com.tutorplatform.shared.api.ApiError;
 import com.tutorplatform.shared.api.ApiErrorDetail;
-import com.tutorplatform.student.application.exception.InvalidStudentListParameterException;
-import com.tutorplatform.student.application.exception.PublicStudentInviteAlreadyAcceptedException;
-import com.tutorplatform.student.application.exception.StudentAlreadyRegisteredException;
-import com.tutorplatform.student.application.exception.StudentInviteAlreadyAcceptedException;
-import com.tutorplatform.student.application.exception.StudentInviteEmailConflictException;
-import com.tutorplatform.student.application.exception.StudentInviteExpiredException;
-import com.tutorplatform.student.application.exception.StudentInviteNotFoundException;
-import com.tutorplatform.student.application.exception.StudentInviteRevokedException;
-import com.tutorplatform.student.application.exception.StudentNotFoundException;
+import com.tutorplatform.student.application.exception.*;
 import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;

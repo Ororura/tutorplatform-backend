@@ -2,15 +2,7 @@ package com.tutorplatform.task.api;
 
 import com.tutorplatform.shared.api.ApiError;
 import com.tutorplatform.shared.api.ApiErrorDetail;
-import com.tutorplatform.task.application.exception.InvalidTaskException;
-import com.tutorplatform.task.application.exception.InvalidTaskListParameterException;
-import com.tutorplatform.task.application.exception.TaskAlreadyAttachedException;
-import com.tutorplatform.task.application.exception.TaskNotFoundException;
-import com.tutorplatform.task.application.exception.TaskSubjectMismatchException;
-import com.tutorplatform.task.application.exception.TaskSubjectNotFoundException;
-import com.tutorplatform.task.application.exception.TaskTopicNotFoundException;
-import com.tutorplatform.task.application.exception.TaskTopicPositionConflictException;
-import com.tutorplatform.task.application.exception.TaskVersionConflictException;
+import com.tutorplatform.task.application.exception.*;
 import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;

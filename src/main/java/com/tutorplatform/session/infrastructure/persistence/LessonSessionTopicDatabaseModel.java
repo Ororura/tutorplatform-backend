@@ -2,13 +2,7 @@ package com.tutorplatform.session.infrastructure.persistence;
 
 import com.tutorplatform.program.infrastructure.persistence.TopicDatabaseModel;
 import com.tutorplatform.session.domain.LessonSessionTopicEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;

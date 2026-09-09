@@ -3,13 +3,7 @@ package com.tutorplatform.task.infrastructure.persistence.topic;
 import com.tutorplatform.program.infrastructure.persistence.TopicDatabaseModel;
 import com.tutorplatform.task.domain.topic.TopicTaskEntity;
 import com.tutorplatform.task.infrastructure.persistence.task.TaskDatabaseModel;
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;

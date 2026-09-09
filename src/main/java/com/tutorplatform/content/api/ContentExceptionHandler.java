@@ -1,11 +1,7 @@
 package com.tutorplatform.content.api;
 
 import com.tutorplatform.content.application.FileTooLargeException;
-import com.tutorplatform.content.application.exception.InvalidLessonMaterialException;
-import com.tutorplatform.content.application.exception.LessonMaterialNotFoundException;
-import com.tutorplatform.content.application.exception.LessonMaterialPositionConflictException;
-import com.tutorplatform.content.application.exception.LessonMaterialVersionConflictException;
-import com.tutorplatform.content.application.exception.TopicNotFoundException;
+import com.tutorplatform.content.application.exception.*;
 import com.tutorplatform.shared.api.ApiError;
 import com.tutorplatform.shared.api.ApiErrorDetail;
 import org.slf4j.MDC;

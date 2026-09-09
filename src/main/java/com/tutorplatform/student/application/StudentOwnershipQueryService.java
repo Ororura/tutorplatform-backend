@@ -1,7 +1,7 @@
 package com.tutorplatform.student.application;
 
-import com.tutorplatform.student.domain.TeacherStudentRelationType;
 import com.tutorplatform.student.domain.StudentRepository;
+import com.tutorplatform.student.domain.TeacherStudentRelationType;
 import com.tutorplatform.student.infrastructure.persistence.TeacherStudentLinkRepository;
 import com.tutorplatform.user.domain.TeacherRepository;
 import org.springframework.stereotype.Service;

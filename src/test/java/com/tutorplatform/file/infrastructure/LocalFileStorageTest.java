@@ -3,9 +3,12 @@ package com.tutorplatform.file.infrastructure;
 import com.tutorplatform.file.application.FileStorageException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import java.nio.file.Path;
+
 import java.nio.file.Files;
-import static org.assertj.core.api.Assertions.*;
+import java.nio.file.Path;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class LocalFileStorageTest {
     @TempDir Path directory;

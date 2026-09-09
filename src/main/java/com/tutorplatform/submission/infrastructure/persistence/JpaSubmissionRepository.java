@@ -1,10 +1,6 @@
 package com.tutorplatform.submission.infrastructure.persistence;
 
-import com.tutorplatform.submission.domain.SubmissionAttemptContext;
-import com.tutorplatform.submission.domain.SubmissionEntity;
-import com.tutorplatform.submission.domain.SubmissionPage;
-import com.tutorplatform.submission.domain.SubmissionRepository;
-import com.tutorplatform.submission.domain.SubmissionStatus;
+import com.tutorplatform.submission.domain.*;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;

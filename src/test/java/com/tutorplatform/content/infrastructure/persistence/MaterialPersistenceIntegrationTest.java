@@ -1,16 +1,7 @@
 package com.tutorplatform.content.infrastructure.persistence;
 
-import com.tutorplatform.content.domain.FileAssetEntity;
-import com.tutorplatform.content.domain.FileAssetRepository;
-import com.tutorplatform.content.domain.LessonMaterialEntity;
-import com.tutorplatform.content.domain.LessonMaterialRepository;
-import com.tutorplatform.content.domain.LessonMaterialType;
-import com.tutorplatform.content.domain.StorageProvider;
-import com.tutorplatform.program.domain.ModuleEntity;
-import com.tutorplatform.program.domain.ModuleRepository;
-import com.tutorplatform.program.domain.TopicEntity;
-import com.tutorplatform.program.domain.TopicRepository;
-import com.tutorplatform.program.domain.TopicStatus;
+import com.tutorplatform.content.domain.*;
+import com.tutorplatform.program.domain.*;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramEntity;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramRepository;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
@@ -21,12 +12,7 @@ import com.tutorplatform.subject.domain.SubjectEntity;
 import com.tutorplatform.subject.domain.SubjectRepository;
 import com.tutorplatform.subject.domain.SubjectStatus;
 import com.tutorplatform.subject.infrastructure.persistence.JpaSubjectRepository;
-import com.tutorplatform.user.domain.TeacherEntity;
-import com.tutorplatform.user.domain.TeacherRepository;
-import com.tutorplatform.user.domain.UserEntity;
-import com.tutorplatform.user.domain.UserRepository;
-import com.tutorplatform.user.domain.UserRole;
-import com.tutorplatform.user.domain.UserStatus;
+import com.tutorplatform.user.domain.*;
 import com.tutorplatform.user.infrastructure.persistence.JpaTeacherRepository;
 import com.tutorplatform.user.infrastructure.persistence.JpaUserRepository;
 import jakarta.persistence.OptimisticLockException;
@@ -53,9 +39,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import java.util.Arrays;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.*;
 
 @DataJpaTest
 @Testcontainers

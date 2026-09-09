@@ -1,11 +1,7 @@
 package com.tutorplatform.content.application;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
-import com.tutorplatform.content.application.exception.InvalidLessonMaterialException;
-import com.tutorplatform.content.application.exception.LessonMaterialNotFoundException;
-import com.tutorplatform.content.application.exception.LessonMaterialPositionConflictException;
-import com.tutorplatform.content.application.exception.LessonMaterialVersionConflictException;
-import com.tutorplatform.content.application.exception.TopicNotFoundException;
+import com.tutorplatform.content.application.exception.*;
 import com.tutorplatform.content.domain.LessonMaterialEntity;
 import com.tutorplatform.content.domain.LessonMaterialRepository;
 import com.tutorplatform.content.domain.LessonMaterialType;

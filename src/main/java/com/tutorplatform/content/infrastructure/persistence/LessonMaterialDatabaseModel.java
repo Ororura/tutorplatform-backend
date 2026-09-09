@@ -4,16 +4,7 @@ import com.tutorplatform.content.domain.LessonMaterialEntity;
 import com.tutorplatform.content.domain.LessonMaterialType;
 import com.tutorplatform.program.infrastructure.persistence.TopicDatabaseModel;
 import com.tutorplatform.user.infrastructure.persistence.TeacherDatabaseModel;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.Version;
+import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 

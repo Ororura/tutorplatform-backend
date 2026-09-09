@@ -1,7 +1,7 @@
 package com.tutorplatform.auth.infrastructure.security;
 
-import com.tutorplatform.user.domain.UserStatus;
 import com.tutorplatform.user.domain.UserRepository;
+import com.tutorplatform.user.domain.UserStatus;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

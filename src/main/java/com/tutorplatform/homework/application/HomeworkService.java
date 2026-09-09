@@ -1,13 +1,7 @@
 package com.tutorplatform.homework.application;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
-import com.tutorplatform.homework.application.exception.HomeworkItemPositionConflictException;
-import com.tutorplatform.homework.application.exception.HomeworkNotFoundException;
-import com.tutorplatform.homework.application.exception.HomeworkStudentProgramNotFoundException;
-import com.tutorplatform.homework.application.exception.HomeworkTaskNotAssignableException;
-import com.tutorplatform.homework.application.exception.HomeworkTaskSubjectMismatchException;
-import com.tutorplatform.homework.application.exception.HomeworkVersionConflictException;
-import com.tutorplatform.homework.application.exception.InvalidHomeworkException;
+import com.tutorplatform.homework.application.exception.*;
 import com.tutorplatform.homework.domain.HomeworkEntity;
 import com.tutorplatform.homework.domain.HomeworkItemEntity;
 import com.tutorplatform.homework.domain.HomeworkRepository;
@@ -25,14 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class HomeworkService {
