@@ -26,6 +26,7 @@ import org.springframework.session.web.http.CookieSerializer;
 import org.springframework.session.web.http.DefaultCookieSerializer;
 
 import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.HttpMethod.GET;
 
 @Configuration
 @EnableWebSecurity
@@ -46,6 +47,7 @@ public class SecurityConfig {
                 .requireExplicitSave(true)
             )
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(GET, "/api/v1/public/progress/*").permitAll()
                 .requestMatchers(
                     "/actuator/health/**",
                     "/v3/api-docs/**",

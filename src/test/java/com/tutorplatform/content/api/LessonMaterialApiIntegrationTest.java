@@ -71,7 +71,7 @@ class LessonMaterialApiIntegrationTest {
         registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
         registry.add("spring.datasource.username", POSTGRES::getUsername);
         registry.add("spring.datasource.password", POSTGRES::getPassword);
-        registry.add("spring.flyway.target", () -> "007");
+        registry.add("spring.flyway.target", () -> "008");
     }
 
     @Test
