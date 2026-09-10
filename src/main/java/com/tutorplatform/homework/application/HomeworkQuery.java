@@ -29,4 +29,16 @@ public interface HomeworkQuery {
     );
 
     Optional<StudentHomeworkDetails> findDetailsByStudent(UUID studentId, UUID homeworkId);
+
+    Optional<StudentTaskContext> findStudentTaskContext(UUID homeworkItemId);
+
+    record StudentTaskContext(
+        UUID homeworkId,
+        UUID studentProgramId,
+        UUID assignedByTeacherId,
+        HomeworkStatus homeworkStatus,
+        UUID homeworkItemId,
+        UUID taskId
+    ) {
+    }
 }

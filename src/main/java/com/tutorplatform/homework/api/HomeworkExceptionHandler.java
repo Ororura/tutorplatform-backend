@@ -55,7 +55,7 @@ public class HomeworkExceptionHandler {
     ResponseEntity<ApiError> handleHomeworkTaskNotAssignable(HomeworkTaskNotAssignableException exception) {
         return ResponseEntity.badRequest().body(ApiError.of(
             "HOMEWORK_TASK_NOT_ASSIGNABLE",
-            "Only active text tasks can be assigned to homework",
+            "Only active tasks can be assigned to homework",
             MDC.get("traceId")
         ));
     }

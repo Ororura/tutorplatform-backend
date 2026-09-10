@@ -15,8 +15,20 @@ public interface SubmissionHomeworkContextQuery {
         UUID studentProgramId,
         UUID assignedByTeacherId,
         boolean cancelled,
+        boolean completed,
         UUID homeworkItemId,
         UUID taskId
     ) {
+        public HomeworkSubmissionContext(
+            UUID homeworkId,
+            UUID studentProgramId,
+            UUID assignedByTeacherId,
+            boolean cancelled,
+            UUID homeworkItemId,
+            UUID taskId
+        ) {
+            this(homeworkId, studentProgramId, assignedByTeacherId, cancelled, false,
+                homeworkItemId, taskId);
+        }
     }
 }

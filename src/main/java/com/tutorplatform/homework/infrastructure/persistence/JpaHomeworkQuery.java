@@ -179,6 +179,24 @@ public class JpaHomeworkQuery implements HomeworkQuery {
         ));
     }
 
+    @Override
+    public Optional<StudentTaskContext> findStudentTaskContext(UUID homeworkItemId) {
+        return entityManager.createQuery("""
+                select homework.id, homework.studentProgramId, homework.assignedByTeacherId,
+                       homework.status, item.id, item.taskId
+                from HomeworkDatabaseModel homework
+                join homework.items item
+                where item.id = :homeworkItemId
+                """, Object[].class)
+            .setParameter("homeworkItemId", homeworkItemId)
+            .getResultStream()
+            .findFirst()
+            .map(row -> new StudentTaskContext(
+                (UUID) row[0], (UUID) row[1], (UUID) row[2], (HomeworkStatus) row[3],
+                (UUID) row[4], (UUID) row[5]
+            ));
+    }
+
     private void bindStudentFilters(
         jakarta.persistence.Query query,
         UUID studentId,

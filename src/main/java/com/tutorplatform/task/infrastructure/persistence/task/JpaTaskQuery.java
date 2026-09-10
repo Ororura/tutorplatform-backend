@@ -5,6 +5,8 @@ import com.tutorplatform.task.application.TaskQuery;
 import com.tutorplatform.task.domain.task.TaskDifficulty;
 import com.tutorplatform.task.domain.task.TaskStatus;
 import com.tutorplatform.task.domain.task.TaskType;
+import com.tutorplatform.task.domain.programming.ProgrammingTaskConfigRepository;
+import com.tutorplatform.task.domain.programming.TaskTestCaseRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
@@ -18,9 +20,17 @@ import java.util.UUID;
 public class JpaTaskQuery implements TaskQuery {
 
     private final TaskDatabaseRepository databaseRepository;
+    private final ProgrammingTaskConfigRepository programmingConfigRepository;
+    private final TaskTestCaseRepository testCaseRepository;
 
-    JpaTaskQuery(TaskDatabaseRepository databaseRepository) {
+    JpaTaskQuery(
+        TaskDatabaseRepository databaseRepository,
+        ProgrammingTaskConfigRepository programmingConfigRepository,
+        TaskTestCaseRepository testCaseRepository
+    ) {
         this.databaseRepository = databaseRepository;
+        this.programmingConfigRepository = programmingConfigRepository;
+        this.testCaseRepository = testCaseRepository;
     }
 
     @Override
@@ -28,6 +38,15 @@ public class JpaTaskQuery implements TaskQuery {
         return databaseRepository.findById(taskId).map(task -> new TaskContext(
             task.getId(), task.getTeacherId(), task.getSubjectId(), task.getTitle(),
             task.getTaskType(), task.getStatus()
+        ));
+    }
+
+    @Override
+    public Optional<CodeTaskConfiguration> findCodeTaskConfiguration(UUID taskId) {
+        return databaseRepository.findById(taskId).map(task -> new CodeTaskConfiguration(
+            task.getId(), task.getTaskType(), task.getStatus(),
+            programmingConfigRepository.findByTaskId(taskId).orElse(null),
+            testCaseRepository.findAllByTaskId(taskId)
         ));
     }
 

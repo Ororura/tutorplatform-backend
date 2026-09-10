@@ -3,13 +3,26 @@ package com.tutorplatform.session.infrastructure.persistence;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import jakarta.persistence.LockModeType;
 
 import java.util.Optional;
 import java.util.UUID;
 
 interface LessonSessionDatabaseRepository extends JpaRepository<LessonSessionDatabaseModel, UUID> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<LessonSessionDatabaseModel> findWithLockById(UUID id);
+
+    @Query("""
+        select lessonSession.studentProgram.studentId
+        from LessonSessionDatabaseModel lessonSession
+        where lessonSession.id = :lessonSessionId
+        """)
+    Optional<UUID> findStudentIdById(@Param("lessonSessionId") UUID lessonSessionId);
 
     @Query("""
         select lessonSession

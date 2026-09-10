@@ -279,7 +279,8 @@ public class HomeworkService {
             if (task == null || !task.isOwnedBy(teacherId)) {
                 throw new TaskNotFoundException();
             }
-            if (task.type() != TaskType.TEXT || task.status() != TaskStatus.ACTIVE) {
+            if ((task.type() != TaskType.TEXT && task.type() != TaskType.CODE)
+                || task.status() != TaskStatus.ACTIVE) {
                 throw new HomeworkTaskNotAssignableException();
             }
             if (!task.subjectId().equals(subjectId)) {

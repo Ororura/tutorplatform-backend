@@ -30,6 +30,7 @@ public class SubmissionService {
     private final SubmissionHomeworkContextQuery homeworkContextQuery;
     private final ProgramQuery programQuery;
     private final SubmissionRepository submissionRepository;
+    private final CodeSubmissionRepository codeSubmissionRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     public SubmissionService(
@@ -38,6 +39,7 @@ public class SubmissionService {
         SubmissionHomeworkContextQuery homeworkContextQuery,
         ProgramQuery programQuery,
         SubmissionRepository submissionRepository,
+        CodeSubmissionRepository codeSubmissionRepository,
         ApplicationEventPublisher eventPublisher
     ) {
         this.studentOwnershipQuery = studentOwnershipQuery;
@@ -45,6 +47,7 @@ public class SubmissionService {
         this.homeworkContextQuery = homeworkContextQuery;
         this.programQuery = programQuery;
         this.submissionRepository = submissionRepository;
+        this.codeSubmissionRepository = codeSubmissionRepository;
         this.eventPublisher = eventPublisher;
     }
 
@@ -66,7 +69,7 @@ public class SubmissionService {
         SubmissionHomeworkContextQuery.HomeworkSubmissionContext homework = requireHomeworkContext(
             studentId, taskId, homeworkItemId
         );
-        if (homework.cancelled()) {
+        if (homework.cancelled() || homework.completed()) {
             throw new HomeworkNotSubmittableException();
         }
 
@@ -87,7 +90,7 @@ public class SubmissionService {
     ) {
         UUID studentId = currentStudentId(principal);
         return submissionRepository.findByIdAndStudentId(submissionId, studentId)
-            .map(SubmissionResult::from)
+            .map(submission -> enrich(SubmissionResult.from(submission), true))
             .orElseThrow(SubmissionNotFoundException::new);
     }
 
@@ -114,8 +117,15 @@ public class SubmissionService {
                 studentId, homework.studentProgramId(), taskId, homeworkItemId
             ), page, size);
         }
+        var codeSubmissions = codeSubmissionRepository.findSummaries(
+            submissions.items().stream().map(SubmissionEntity::getId).toList()
+        );
         return new SubmissionPageResult(
-            submissions.items().stream().map(SubmissionResult::from).toList(),
+            submissions.items().stream().map(submission -> {
+                SubmissionResult result = SubmissionResult.from(submission);
+                CodeSubmissionRepository.Summary code = codeSubmissions.get(submission.getId());
+                return code == null ? result : result.withCodeSubmission(code);
+            }).toList(),
             page, size, submissions.totalElements(), submissions.totalPages()
         );
     }
@@ -177,6 +187,12 @@ public class SubmissionService {
     private UUID currentStudentId(AuthenticatedUser principal) {
         return studentOwnershipQuery.findStudentIdByUserId(principal.id())
             .orElseThrow(StudentNotFoundException::new);
+    }
+
+    private SubmissionResult enrich(SubmissionResult result, boolean includeSourceCode) {
+        return codeSubmissionRepository.findBySubmissionId(result.id())
+            .map(code -> result.withCodeSubmission(code, includeSourceCode))
+            .orElse(result);
     }
 
     private UUID currentTeacherId(AuthenticatedUser principal) {

@@ -26,6 +26,9 @@ import com.tutorplatform.submission.application.SubmissionQuery;
 import com.tutorplatform.submission.domain.SubmissionEntity;
 import com.tutorplatform.submission.domain.SubmissionRepository;
 import com.tutorplatform.submission.domain.SubmissionStatus;
+import com.tutorplatform.submission.domain.CodeSubmissionRepository;
+import com.tutorplatform.submission.domain.CodeSubmissionEntity;
+import com.tutorplatform.submission.domain.CodeExecutionStatus;
 import com.tutorplatform.task.domain.task.*;
 import com.tutorplatform.task.infrastructure.persistence.task.JpaTaskRepository;
 import com.tutorplatform.user.domain.*;
@@ -65,7 +68,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
     JpaTaskRepository.class,
     JpaHomeworkRepository.class,
     JpaSubmissionRepository.class,
-    JpaSubmissionQuery.class
+    JpaSubmissionQuery.class,
+    JpaCodeSubmissionRepository.class
 })
 class SubmissionPersistenceIntegrationTest {
 
@@ -91,6 +95,8 @@ class SubmissionPersistenceIntegrationTest {
     private SubmissionRepository submissionRepository;
     @Autowired
     private SubmissionQuery submissionQuery;
+    @Autowired
+    private CodeSubmissionRepository codeSubmissionRepository;
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -300,11 +306,30 @@ class SubmissionPersistenceIntegrationTest {
     }
 
     @Test
-    void codeSubmissionJavaBehaviorIsNotIntroduced() {
-        assertThatThrownBy(() -> Class.forName("com.tutorplatform.submission.domain.CodeSubmissionEntity"))
-            .isInstanceOf(ClassNotFoundException.class);
-        assertThatThrownBy(() -> Class.forName("com.tutorplatform.submission.application.CodeExecutionService"))
-            .isInstanceOf(ClassNotFoundException.class);
+    void codeSubmissionPersistsPendingAndFinalExecutionProjection() {
+        Fixture fixture = createFixture(true);
+        SubmissionEntity submission = submissionRepository.saveAndFlush(new SubmissionEntity(
+            UUID.randomUUID(), fixture.studentId(), fixture.studentProgramId(), fixture.taskId(),
+            fixture.homeworkItemId(), 1, SubmissionStatus.SUBMITTED, null, Instant.now()
+        ));
+        codeSubmissionRepository.saveAndFlush(new CodeSubmissionEntity(
+            submission.getId(), "print(42)", 2
+        ));
+
+        CodeSubmissionEntity pending = codeSubmissionRepository
+            .findBySubmissionId(submission.getId()).orElseThrow();
+        assertThat(pending.getExecutionStatus()).isEqualTo(CodeExecutionStatus.PENDING);
+        assertThat(pending.getPassedTests()).isZero();
+        assertThat(pending.getTotalTests()).isEqualTo(2);
+        assertThat(pending.getSourceCode()).isEqualTo("print(42)");
+
+        pending.complete(CodeExecutionStatus.FAILED, 1, 2, 34, "out", null);
+        codeSubmissionRepository.saveAndFlush(pending);
+        CodeSubmissionEntity finished = codeSubmissionRepository
+            .findBySubmissionId(submission.getId()).orElseThrow();
+        assertThat(finished.getExecutionStatus()).isEqualTo(CodeExecutionStatus.FAILED);
+        assertThat(finished.getPassedTests()).isEqualTo(1);
+        assertThat(finished.getExecutionTimeMs()).isEqualTo(34);
     }
 
     private void assertInvalidForeignKey(ForeignKey foreignKey) {

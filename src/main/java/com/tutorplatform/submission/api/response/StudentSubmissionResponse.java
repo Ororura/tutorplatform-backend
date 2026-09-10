@@ -14,12 +14,16 @@ public record StudentSubmissionResponse(
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, minimum = "1") int attemptNo,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) SubmissionStatus status,
     @Schema(nullable = true) String textAnswer,
-    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "date-time") Instant submittedAt
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "date-time") Instant submittedAt,
+    @Schema(nullable = true, description = "Returned for an owned CODE submission detail") String sourceCode,
+    @Schema(nullable = true) CodeSubmissionExecutionResponse execution
 ) {
     public static StudentSubmissionResponse from(SubmissionResult result) {
         return new StudentSubmissionResponse(
             result.id(), result.taskId(), result.homeworkItemId(), result.attemptNo(),
-            result.status(), result.textAnswer(), result.submittedAt()
+            result.status(), result.textAnswer(), result.submittedAt(),
+            result.execution() == null ? null : result.execution().sourceCode(),
+            result.execution() == null ? null : CodeSubmissionExecutionResponse.from(result.execution())
         );
     }
 }

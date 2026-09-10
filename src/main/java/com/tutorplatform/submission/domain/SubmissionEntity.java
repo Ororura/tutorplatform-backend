@@ -108,4 +108,16 @@ public class SubmissionEntity {
         }
         status = reviewStatus;
     }
+
+    public void finishCodeExecution(SubmissionStatus finalStatus) {
+        if (status != SubmissionStatus.SUBMITTED) {
+            throw new IllegalStateException("Submission is not awaiting code execution");
+        }
+        if (finalStatus != SubmissionStatus.PASSED
+            && finalStatus != SubmissionStatus.FAILED
+            && finalStatus != SubmissionStatus.SYSTEM_ERROR) {
+            throw new IllegalArgumentException("Invalid final code submission status");
+        }
+        status = finalStatus;
+    }
 }

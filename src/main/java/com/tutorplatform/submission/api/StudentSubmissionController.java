@@ -1,10 +1,12 @@
 package com.tutorplatform.submission.api;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
-import com.tutorplatform.submission.api.request.SubmitTextAnswerRequest;
+import com.tutorplatform.submission.api.request.SubmitStudentSubmissionRequest;
 import com.tutorplatform.submission.api.response.StudentSubmissionPageResponse;
 import com.tutorplatform.submission.api.response.StudentSubmissionResponse;
 import com.tutorplatform.submission.application.SubmissionService;
+import com.tutorplatform.submission.application.CodeSubmissionService;
+import com.tutorplatform.submission.application.exception.InvalidSubmissionException;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,9 +20,14 @@ import java.util.UUID;
 public class StudentSubmissionController implements StudentSubmissionApi {
 
     private final SubmissionService submissionService;
+    private final CodeSubmissionService codeSubmissionService;
 
-    public StudentSubmissionController(SubmissionService submissionService) {
+    public StudentSubmissionController(
+        SubmissionService submissionService,
+        CodeSubmissionService codeSubmissionService
+    ) {
         this.submissionService = submissionService;
+        this.codeSubmissionService = codeSubmissionService;
     }
 
     @Override
@@ -28,12 +35,22 @@ public class StudentSubmissionController implements StudentSubmissionApi {
     public ResponseEntity<StudentSubmissionResponse> submitTextAnswer(
         @AuthenticationPrincipal AuthenticatedUser principal,
         @PathVariable UUID taskId,
-        @Valid @RequestBody SubmitTextAnswerRequest request
+        @Valid @RequestBody SubmitStudentSubmissionRequest request
     ) {
+        if (request.textAnswer() != null && request.sourceCode() != null) {
+            throw new InvalidSubmissionException("answer", "exactly one answer field is allowed");
+        }
+        if (request.sourceCode() != null && !request.unknownProperties().isEmpty()) {
+            throw new InvalidSubmissionException("request", "contains unsupported fields");
+        }
         StudentSubmissionResponse response = StudentSubmissionResponse.from(
-            submissionService.submitTextAnswer(
-                principal, taskId, request.homeworkItemId(), request.textAnswer()
-            )
+            request.sourceCode() != null
+                ? codeSubmissionService.submit(
+                    principal, taskId, request.homeworkItemId(), request.sourceCode()
+                )
+                : submissionService.submitTextAnswer(
+                    principal, taskId, request.homeworkItemId(), request.textAnswer()
+                )
         );
         return ResponseEntity.created(URI.create(
             "/api/v1/student/submissions/" + response.id()

@@ -27,11 +27,12 @@ public class JpaSubmissionHomeworkContextQuery implements SubmissionHomeworkCont
                 where item.id = :homeworkItemId
                 """, Object[].class)
             .setParameter("homeworkItemId", homeworkItemId)
-            .getResultStream()
+            .getResultList().stream()
             .findFirst()
             .map(row -> new HomeworkSubmissionContext(
                 (UUID) row[0], (UUID) row[1], (UUID) row[2],
                 row[3] == HomeworkStatus.CANCELLED,
+                row[3] == HomeworkStatus.COMPLETED,
                 (UUID) row[4], (UUID) row[5]
             ));
     }

@@ -139,14 +139,17 @@ class HomeworkApplicationIntegrationTest {
     }
 
     @Test
-    void codeTaskIsRejectedInTextSlice() {
+    void activeCodeTaskCanBeAssigned() {
         Fixture fixture = createFixture("code-task@example.com");
         TaskEntity codeTask = createTask(
             fixture.teacher(), fixture.subject(), "CODE", TaskType.CODE, TaskStatus.ACTIVE
         );
 
-        assertThatThrownBy(() -> createHomework(fixture, "ДЗ", null, List.of(codeTask)))
-            .isInstanceOf(HomeworkTaskNotAssignableException.class);
+        HomeworkResult homework = createHomework(fixture, "ДЗ", null, List.of(codeTask));
+
+        assertThat(homework.items()).singleElement()
+            .extracting(HomeworkItemResult::taskId)
+            .isEqualTo(codeTask.getId());
     }
 
     @Test
