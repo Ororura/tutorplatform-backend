@@ -16,4 +16,14 @@ public interface ProgressReadRepository {
     PracticeMetrics getPracticeMetrics(UUID studentProgramId);
 
     AssessmentAverages getAssessmentAverages(UUID studentProgramId);
+
+    SessionMetrics getSessionMetrics(UUID studentProgramId, ProgressInterval interval);
+
+    List<TopicProgress> findTopicProgress(UUID studentProgramId, ProgressInterval interval);
+
+    HomeworkMetrics getHomeworkMetrics(UUID studentProgramId, ProgressInterval interval);
+
+    PracticeMetrics getPracticeMetrics(UUID studentProgramId, ProgressInterval interval);
+
+    AssessmentAverages getAssessmentAverages(UUID studentProgramId, ProgressInterval interval);
 }

@@ -7,6 +7,8 @@ public interface ProgramQuery {
 
     Optional<StudentProgramContext> findStudentProgram(UUID studentProgramId);
 
+    Optional<StudentProgramContext> findStudentProgramForUpdate(UUID studentProgramId);
+
     Optional<TopicContext> findTopic(UUID topicId);
 
     boolean topicBelongsToLearningProgram(UUID topicId, UUID learningProgramId);
@@ -27,7 +29,8 @@ public interface ProgramQuery {
         UUID studentId,
         UUID learningProgramId,
         UUID assignedByTeacherId,
-        UUID subjectId
+        UUID subjectId,
+        int reportIntervalMinutes
     ) {
         public boolean belongsToStudent(UUID expectedStudentId) {
             return studentId.equals(expectedStudentId);

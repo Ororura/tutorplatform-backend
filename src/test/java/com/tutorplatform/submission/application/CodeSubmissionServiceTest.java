@@ -65,7 +65,7 @@ class CodeSubmissionServiceTest {
         ));
         when(programs.findStudentProgram(studentProgramId)).thenReturn(Optional.of(
             new ProgramQuery.StudentProgramContext(
-                studentProgramId, studentId, UUID.randomUUID(), teacherId, subjectId
+                studentProgramId, studentId, UUID.randomUUID(), teacherId, subjectId, 480
             )
         ));
         when(tasks.findCodeTaskConfiguration(taskId)).thenReturn(Optional.of(configuration(true)));

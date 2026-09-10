@@ -8,6 +8,8 @@ import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
 import com.tutorplatform.program.domain.studentprogram.StudentProgramEntity;
 import com.tutorplatform.program.domain.studentprogram.StudentProgramRepository;
 import com.tutorplatform.program.domain.studentprogram.StudentProgramStatus;
+import com.tutorplatform.report.application.LearningPeriodService;
+import com.tutorplatform.report.domain.LearningPeriodStatus;
 import com.tutorplatform.session.application.exception.InvalidLessonSessionTopicsException;
 import com.tutorplatform.session.application.exception.StudentProgramNotFoundException;
 import com.tutorplatform.session.application.exception.TopicOutsideStudentProgramException;
@@ -73,6 +75,8 @@ class SessionApplicationIntegrationTest {
     private ModuleRepository moduleRepository;
     @Autowired
     private TopicRepository topicRepository;
+    @Autowired
+    private LearningPeriodService learningPeriodService;
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
@@ -100,6 +104,12 @@ class SessionApplicationIntegrationTest {
             assertThat(topic.topicId()).isEqualTo(fixture.firstTopic().id());
             assertThat(topic.primary()).isTrue();
         });
+        assertThat(learningPeriodService.listLearningPeriods(fixture.studentProgram().id()))
+            .singleElement()
+            .satisfies(period -> {
+                assertThat(period.status()).isEqualTo(LearningPeriodStatus.ACTIVE);
+                assertThat(period.startedAt()).isEqualTo(created.startedAt());
+            });
     }
 
     @Test
@@ -268,6 +278,9 @@ class SessionApplicationIntegrationTest {
         assertThat(updated.teacherId()).isEqualTo(created.teacherId());
         assertThat(updated.studentProgramId()).isEqualTo(created.studentProgramId());
         assertThat(updated.version()).isEqualTo(created.version() + 1);
+        assertThat(learningPeriodService.listLearningPeriods(fixture.studentProgram().id()))
+            .singleElement()
+            .satisfies(period -> assertThat(period.startedAt()).isNull());
     }
 
     @Test

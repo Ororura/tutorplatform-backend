@@ -10,9 +10,21 @@ import org.springframework.data.repository.query.Param;
 import jakarta.persistence.LockModeType;
 
 import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 interface LessonSessionDatabaseRepository extends JpaRepository<LessonSessionDatabaseModel, UUID> {
+
+    @Query("""
+        select lessonSession
+        from LessonSessionDatabaseModel lessonSession
+        where lessonSession.studentProgramId = :studentProgramId
+          and lessonSession.attendanceStatus = com.tutorplatform.session.domain.AttendanceStatus.ATTENDED
+        order by lessonSession.startedAt, lessonSession.id
+        """)
+    List<LessonSessionDatabaseModel> findAttendedByStudentProgram(
+        @Param("studentProgramId") UUID studentProgramId
+    );
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<LessonSessionDatabaseModel> findWithLockById(UUID id);

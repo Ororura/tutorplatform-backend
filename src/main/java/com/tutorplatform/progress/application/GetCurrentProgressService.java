@@ -40,4 +40,21 @@ public class GetCurrentProgressService {
             progressReadRepository.getAssessmentAverages(studentProgramId)
         );
     }
+
+    public CurrentProgress getProgressSnapshot(
+        UUID studentProgramId,
+        ProgressInterval interval
+    ) {
+        programQuery.findStudentProgram(studentProgramId)
+            .orElseThrow(ProgressStudentProgramNotFoundException::new);
+
+        return progressCalculator.calculate(
+            studentProgramId,
+            progressReadRepository.getSessionMetrics(studentProgramId, interval),
+            progressReadRepository.findTopicProgress(studentProgramId, interval),
+            progressReadRepository.getHomeworkMetrics(studentProgramId, interval),
+            progressReadRepository.getPracticeMetrics(studentProgramId, interval),
+            progressReadRepository.getAssessmentAverages(studentProgramId, interval)
+        );
+    }
 }

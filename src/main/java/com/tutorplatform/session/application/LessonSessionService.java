@@ -10,6 +10,7 @@ import com.tutorplatform.session.domain.LessonSessionTopicRepository;
 import com.tutorplatform.student.application.StudentOwnershipQuery;
 import com.tutorplatform.student.application.exception.StudentNotFoundException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,19 +28,22 @@ public class LessonSessionService {
     private final LessonSessionRepository lessonSessionRepository;
     private final LessonSessionQuery lessonSessionQuery;
     private final LessonSessionTopicRepository lessonSessionTopicRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public LessonSessionService(
         StudentOwnershipQuery studentOwnershipQuery,
         ProgramQuery programQuery,
         LessonSessionRepository lessonSessionRepository,
         LessonSessionQuery lessonSessionQuery,
-        LessonSessionTopicRepository lessonSessionTopicRepository
+        LessonSessionTopicRepository lessonSessionTopicRepository,
+        ApplicationEventPublisher eventPublisher
     ) {
         this.studentOwnershipQuery = studentOwnershipQuery;
         this.programQuery = programQuery;
         this.lessonSessionRepository = lessonSessionRepository;
         this.lessonSessionQuery = lessonSessionQuery;
         this.lessonSessionTopicRepository = lessonSessionTopicRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -65,6 +69,7 @@ public class LessonSessionService {
             command.privateNotes()
         ));
         List<LessonSessionTopicEntity> topics = saveTopics(lessonSession.id(), command.topics());
+        publishChanged(lessonSession, null);
         return toResult(lessonSession, topics);
     }
 
@@ -171,7 +176,18 @@ public class LessonSessionService {
         }
         lessonSessionTopicRepository.deleteAllByLessonSessionId(lessonSessionId);
         List<LessonSessionTopicEntity> topics = saveTopics(lessonSessionId, command.topics());
+        publishChanged(updated, current);
         return toResult(updated, topics);
+    }
+
+    private void publishChanged(LessonSessionEntity session, LessonSessionEntity previous) {
+        eventPublisher.publishEvent(new LessonSessionChangedEvent(
+            session.id(), session.studentProgramId(), session.attendanceStatus(),
+            session.startedAt(), session.durationMinutes(),
+            previous == null ? null : previous.attendanceStatus(),
+            previous == null ? null : previous.startedAt(),
+            previous == null ? null : previous.durationMinutes()
+        ));
     }
 
     private UUID currentTeacherId(AuthenticatedUser principal) {

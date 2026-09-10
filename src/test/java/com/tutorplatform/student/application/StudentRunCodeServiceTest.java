@@ -142,7 +142,7 @@ class StudentRunCodeServiceTest {
     void foreignStudentProgramIsRejectedBeforeExecution() {
         when(programQuery.findStudentProgram(studentProgramId)).thenReturn(Optional.of(
             new ProgramQuery.StudentProgramContext(
-                studentProgramId, UUID.randomUUID(), UUID.randomUUID(), teacherId, subjectId
+                studentProgramId, UUID.randomUUID(), UUID.randomUUID(), teacherId, subjectId, 480
             )
         ));
 
@@ -217,7 +217,7 @@ class StudentRunCodeServiceTest {
         ));
         when(programQuery.findStudentProgram(studentProgramId)).thenReturn(Optional.of(
             new ProgramQuery.StudentProgramContext(
-                studentProgramId, studentId, UUID.randomUUID(), teacherId, subjectId
+                studentProgramId, studentId, UUID.randomUUID(), teacherId, subjectId, 480
             )
         ));
     }

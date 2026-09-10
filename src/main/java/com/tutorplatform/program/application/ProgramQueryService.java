@@ -46,7 +46,19 @@ public class ProgramQueryService implements ProgramQuery {
 
     @Override
     public Optional<StudentProgramContext> findStudentProgram(UUID studentProgramId) {
-        return studentProgramRepository.findById(studentProgramId)
+        return toContext(studentProgramRepository.findById(studentProgramId));
+    }
+
+    @Override
+    @Transactional
+    public Optional<StudentProgramContext> findStudentProgramForUpdate(UUID studentProgramId) {
+        return toContext(studentProgramRepository.findByIdForUpdate(studentProgramId));
+    }
+
+    private Optional<StudentProgramContext> toContext(
+        Optional<com.tutorplatform.program.domain.studentprogram.StudentProgramEntity> result
+    ) {
+        return result
             .flatMap(studentProgram -> learningProgramRepository
                 .findById(studentProgram.learningProgramId())
                 .map(learningProgram -> new StudentProgramContext(
@@ -54,7 +66,8 @@ public class ProgramQueryService implements ProgramQuery {
                     studentProgram.studentId(),
                     studentProgram.learningProgramId(),
                     studentProgram.assignedByTeacherId(),
-                    learningProgram.getSubjectId()
+                    learningProgram.getSubjectId(),
+                    studentProgram.reportIntervalMinutes()
                 )));
     }
 

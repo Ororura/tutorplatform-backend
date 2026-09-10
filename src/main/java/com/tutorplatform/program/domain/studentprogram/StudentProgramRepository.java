@@ -7,4 +7,6 @@ public interface StudentProgramRepository {
     StudentProgramEntity saveAndFlush(StudentProgramEntity studentProgram);
 
     Optional<StudentProgramEntity> findById(UUID studentProgramId);
+
+    Optional<StudentProgramEntity> findByIdForUpdate(UUID studentProgramId);
 }

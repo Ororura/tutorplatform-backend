@@ -5,6 +5,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.csrf.InvalidCsrfTokenException;
 import org.springframework.security.web.csrf.MissingCsrfTokenException;
@@ -29,6 +32,20 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
     ) throws IOException {
         boolean csrfFailure = accessDeniedException instanceof MissingCsrfTokenException
             || accessDeniedException instanceof InvalidCsrfTokenException;
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean unauthenticated = authentication == null
+            || !authentication.isAuthenticated()
+            || authentication instanceof AnonymousAuthenticationToken;
+        if (csrfFailure && unauthenticated
+            && request.getRequestURI().startsWith("/api/v1/teacher/reports")) {
+            writer.write(
+                response,
+                HttpStatus.UNAUTHORIZED.value(),
+                ApiError.of("AUTH_REQUIRED", "Authentication is required", MDC.get("traceId"))
+            );
+            return;
+        }
 
         String code = csrfFailure ? "CSRF_INVALID" : "ACCESS_DENIED";
         String message = csrfFailure ? "Missing or invalid CSRF token" : "Access denied";
