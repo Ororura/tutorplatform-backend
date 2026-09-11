@@ -1,6 +1,7 @@
 package com.tutorplatform.report.api;
 
 import com.tutorplatform.report.application.exception.*;
+import com.tutorplatform.report.domain.UnsupportedProgressReportSnapshotException;
 import com.tutorplatform.shared.api.ApiError;
 import com.tutorplatform.shared.api.ApiErrorDetail;
 import org.slf4j.MDC;
@@ -66,6 +67,29 @@ public class ProgressReportExceptionHandler {
     ResponseEntity<ApiError> handleNotPublishable(ProgressReportNotPublishableException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiError.of(
             "PROGRESS_REPORT_NOT_PUBLISHABLE", exception.getMessage(), MDC.get("traceId")
+        ));
+    }
+
+    @ExceptionHandler(ProgressReportPdfNotAvailableException.class)
+    ResponseEntity<ApiError> handlePdfNotAvailable(ProgressReportPdfNotAvailableException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiError.of(
+            "PROGRESS_REPORT_PDF_NOT_AVAILABLE", exception.getMessage(), MDC.get("traceId")
+        ));
+    }
+
+    @ExceptionHandler(ProgressReportPdfRenderException.class)
+    ResponseEntity<ApiError> handlePdfRenderFailure(ProgressReportPdfRenderException exception) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiError.of(
+            "PROGRESS_REPORT_PDF_FAILED", "Progress report PDF generation failed", MDC.get("traceId")
+        ));
+    }
+
+    @ExceptionHandler(UnsupportedProgressReportSnapshotException.class)
+    ResponseEntity<ApiError> handleUnsupportedSnapshot(UnsupportedProgressReportSnapshotException exception) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiError.of(
+            "PROGRESS_REPORT_SNAPSHOT_UNSUPPORTED",
+            "Progress report snapshot version is not supported",
+            MDC.get("traceId")
         ));
     }
 

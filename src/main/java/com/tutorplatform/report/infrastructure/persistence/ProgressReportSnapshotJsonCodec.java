@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tutorplatform.report.domain.ProgressReportSnapshotSchemas;
 import com.tutorplatform.report.domain.ProgressReportSnapshotV1;
+import com.tutorplatform.report.domain.UnsupportedProgressReportSnapshotException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,9 +23,7 @@ public class ProgressReportSnapshotJsonCodec {
 
     ProgressReportSnapshotV1 read(int schemaVersion, JsonNode json) {
         if (schemaVersion != ProgressReportSnapshotSchemas.V1) {
-            throw new IllegalStateException(
-                "Unsupported ProgressReport snapshot schema version " + schemaVersion
-            );
+            throw new UnsupportedProgressReportSnapshotException(schemaVersion);
         }
         try {
             return objectMapper.treeToValue(json, ProgressReportSnapshotV1.class);

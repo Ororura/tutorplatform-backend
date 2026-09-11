@@ -3,6 +3,8 @@ package com.tutorplatform.report.api;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -171,6 +173,49 @@ class ProgressReportApiIntegrationTest {
     }
 
     @Test
+    void teacherDownloadsOnlyOwnedPublishedHistoricalPdfWithoutCsrf() throws Exception {
+        Fixture owner = fixture("pdf-owner");
+        Fixture foreign = fixture("pdf-foreign");
+        UUID published = report(owner, "PUBLISHED", START, "Русский комментарий\nSecond line", "План");
+        UUID draft = report(owner, "DRAFT", END, "Draft must stay private", "Plan");
+        UUID archived = report(owner, "ARCHIVED", END.plusSeconds(10), "Archived", "Plan");
+        String url = REPORTS_URL + "/" + published + "/pdf";
+
+        MvcResult first = mockMvc.perform(get(url).with(user(owner.teacherPrincipal())))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_PDF))
+            .andExpect(header().string("Content-Disposition",
+                "attachment; filename=\"progress-report-" + published + ".pdf\""))
+            .andExpect(header().string("Cache-Control", "no-store"))
+            .andReturn();
+        String firstText = pdfText(first);
+        assertThat(firstText).contains(
+            "Отчёт о прогрессе", "Русский комментарий", "Second line", "План", "Нет оценки"
+        );
+
+        jdbc.update("insert into lesson_sessions(id, student_program_id, teacher_id, started_at, duration_minutes, attendance_status, private_notes) values (?, ?, ?, ?, 500, 'ATTENDED', 'DO_NOT_LEAK_PRIVATE_NOTES')",
+            UUID.randomUUID(), owner.studentProgramId(), owner.teacherId(), Timestamp.from(END));
+        MvcResult second = mockMvc.perform(get(url).with(user(owner.teacherPrincipal())))
+            .andExpect(status().isOk()).andReturn();
+        assertThat(pdfText(second)).isEqualTo(firstText).doesNotContain("DO_NOT_LEAK_PRIVATE_NOTES");
+
+        mockMvc.perform(get(REPORTS_URL + "/" + draft + "/pdf")
+                .with(user(owner.teacherPrincipal())))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("PROGRESS_REPORT_PDF_NOT_AVAILABLE"));
+        mockMvc.perform(get(REPORTS_URL + "/" + archived + "/pdf")
+                .with(user(owner.teacherPrincipal())))
+            .andExpect(status().isConflict());
+        mockMvc.perform(get(url).with(user(foreign.teacherPrincipal())))
+            .andExpect(status().isNotFound());
+        mockMvc.perform(get(url)).andExpect(status().isUnauthorized());
+        mockMvc.perform(get(url).with(user(new AuthenticatedUser(
+            UUID.randomUUID(), "student@example.com", "", true,
+            List.of(new SimpleGrantedAuthority("ROLE_STUDENT"))
+        )))).andExpect(status().isForbidden());
+    }
+
+    @Test
     void patchHasTruePatchSemanticsPreservesSnapshotAndRejectsStaleOrPublishedChanges() throws Exception {
         Fixture fixture = fixture("patch");
         UUID reportId = report(fixture, "DRAFT", START, "Old", "Keep");
@@ -269,6 +314,8 @@ class ProgressReportApiIntegrationTest {
             .andExpect(jsonPath("$.paths['/api/v1/teacher/reports'].get.operationId").value("listProgressReports"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/reports/{reportId}'].get.operationId").value("getProgressReport"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/reports/{reportId}'].patch.operationId").value("updateProgressReport"))
+            .andExpect(jsonPath("$.paths['/api/v1/teacher/reports/{reportId}/pdf'].get.operationId").value("downloadProgressReportPdf"))
+            .andExpect(jsonPath("$.paths['/api/v1/teacher/reports/{reportId}/pdf'].get.responses['200'].content['application/pdf'].schema.format").value("binary"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/reports/{reportId}/publish'].post.operationId").value("publishProgressReport"))
             .andExpect(jsonPath("$.components.schemas.ProgressReportDetailsResponse.properties.snapshotSchemaVersion").exists())
             .andExpect(jsonPath("$.components.schemas.ProgressReportSnapshotV1").exists())
@@ -335,6 +382,12 @@ class ProgressReportApiIntegrationTest {
 
     private JsonNode json(MvcResult result) throws Exception {
         return objectMapper.readTree(result.getResponse().getContentAsByteArray());
+    }
+
+    private String pdfText(MvcResult result) throws Exception {
+        try (var document = Loader.loadPDF(result.getResponse().getContentAsByteArray())) {
+            return new PDFTextStripper().getText(document);
+        }
     }
 
     private record Fixture(UUID userId, UUID teacherId, UUID studentId, UUID studentProgramId) {

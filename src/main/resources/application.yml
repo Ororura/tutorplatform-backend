@@ -63,6 +63,11 @@ app:
   student-invites:
     ttl: ${STUDENT_INVITE_TTL:P7D}
     public-frontend-base-url: ${PUBLIC_FRONTEND_BASE_URL:http://localhost:3000}
+  reports:
+    pdf:
+      presentation-zone: ${REPORT_PDF_PRESENTATION_ZONE:Europe/Moscow}
+      max-input-characters: ${REPORT_PDF_MAX_INPUT_CHARACTERS:200000}
+      max-output-bytes: ${REPORT_PDF_MAX_OUTPUT_BYTES:5242880}
 
 execution:
   worker:

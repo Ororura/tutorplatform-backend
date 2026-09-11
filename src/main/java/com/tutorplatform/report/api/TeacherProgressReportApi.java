@@ -62,6 +62,21 @@ public interface TeacherProgressReportApi {
         UUID reportId
     );
 
+    @Operation(operationId = "downloadProgressReportPdf", summary = "Download a published progress report as PDF")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Progress report PDF", content = @Content(
+            mediaType = "application/pdf", schema = @Schema(type = "string", format = "binary"))),
+        @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "403", description = "Teacher role required", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "404", description = "Progress report not found", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "409", description = "Only published reports can be exported", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "500", description = "PDF generation failed", content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    ResponseEntity<byte[]> downloadProgressReportPdf(
+        @Parameter(hidden = true) AuthenticatedUser principal,
+        UUID reportId
+    );
+
     @Operation(operationId = "updateProgressReport", summary = "Edit draft report text")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Draft updated"),

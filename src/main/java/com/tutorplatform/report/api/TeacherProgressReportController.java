@@ -25,17 +25,20 @@ public class TeacherProgressReportController implements TeacherProgressReportApi
     private final ProgressReportQueryService queryService;
     private final EditProgressReportDraft editDraft;
     private final PublishProgressReport publishReport;
+    private final ProgressReportPdfService pdfService;
 
     public TeacherProgressReportController(
         CreateProgressReportDraft createDraft,
         ProgressReportQueryService queryService,
         EditProgressReportDraft editDraft,
-        PublishProgressReport publishReport
+        PublishProgressReport publishReport,
+        ProgressReportPdfService pdfService
     ) {
         this.createDraft = createDraft;
         this.queryService = queryService;
         this.editDraft = editDraft;
         this.publishReport = publishReport;
+        this.pdfService = pdfService;
     }
 
     @Override
@@ -77,6 +80,16 @@ public class TeacherProgressReportController implements TeacherProgressReportApi
     }
 
     @Override
+    @GetMapping("/{reportId}/pdf")
+    public ResponseEntity<byte[]> downloadProgressReportPdf(
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID reportId
+    ) {
+        ProgressReportPdfDownload download = pdfService.downloadForTeacher(principal, reportId);
+        return ProgressReportPdfResponse.attachment(download);
+    }
+
+    @Override
     @PatchMapping("/{reportId}")
     public ProgressReportDetailsResponse updateProgressReport(
         @AuthenticationPrincipal AuthenticatedUser principal,
@@ -107,4 +120,5 @@ public class TeacherProgressReportController implements TeacherProgressReportApi
             publishReport.publish(principal, reportId, request.version())
         );
     }
+
 }

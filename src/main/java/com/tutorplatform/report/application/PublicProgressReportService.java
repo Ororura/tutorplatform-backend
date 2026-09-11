@@ -34,13 +34,17 @@ public class PublicProgressReportService {
 
     @Transactional(readOnly = true)
     public PublicProgressReportResponse get(String rawToken) {
+        return PublicProgressReportResponse.from(resolvePublished(rawToken));
+    }
+
+    @Transactional(readOnly = true)
+    public ProgressReport resolvePublished(String rawToken) {
         ReportShare share = reportShareRepository.findByTokenHash(tokenService.hash(rawToken))
             .orElseThrow(ReportShareNotFoundException::new);
         validateShare(share, Instant.now());
-        ProgressReport report = progressReportRepository.findById(share.reportId())
+        return progressReportRepository.findById(share.reportId())
             .filter(candidate -> candidate.status() == ProgressReportStatus.PUBLISHED)
             .orElseThrow(ReportShareNotFoundException::new);
-        return PublicProgressReportResponse.from(report);
     }
 
     private void validateShare(ReportShare share, Instant now) {

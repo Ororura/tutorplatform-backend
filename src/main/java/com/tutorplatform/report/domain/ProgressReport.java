@@ -39,7 +39,7 @@ public record ProgressReport(
             throw new IllegalArgumentException("learningMinutes must not be negative");
         }
         if (snapshotSchemaVersion != ProgressReportSnapshotSchemas.V1) {
-            throw new IllegalArgumentException("unsupported snapshot schema version");
+            throw new UnsupportedProgressReportSnapshotException(snapshotSchemaVersion);
         }
         if (version < 0) {
             throw new IllegalArgumentException("version must not be negative");

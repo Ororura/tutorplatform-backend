@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.student.application.StudentInviteTokenService;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -223,6 +225,67 @@ class ReportShareApiIntegrationTest {
     }
 
     @Test
+    void publicPdfUsesTheSameShareValidationAndLeaksNoPrivateSourceData() throws Exception {
+        Fixture fixture = fixture("public-pdf");
+        UUID published = report(fixture, "PUBLISHED");
+        UUID draft = report(fixture, "DRAFT");
+        UUID archived = report(fixture, "ARCHIVED");
+        share(fixture, published, "pdf-active-token", null, null);
+        share(fixture, published, "pdf-expired-token", Instant.now().minusSeconds(1), null);
+        share(fixture, published, "pdf-revoked-token", null, Instant.now());
+        share(fixture, draft, "pdf-draft-token", null, null);
+        share(fixture, archived, "pdf-archived-token", null, null);
+
+        jdbc.update("update users set email = 'do-not-leak@example.com' where id = ?", fixture.userId());
+        jdbc.update("insert into lesson_sessions(id, student_program_id, teacher_id, started_at, duration_minutes, attendance_status, private_notes) values (?, ?, ?, now(), 120, 'ATTENDED', ?)",
+            UUID.randomUUID(), fixture.studentProgramId(), fixture.teacherId(),
+            "DO_NOT_LEAK_PRIVATE_NOTES");
+        UUID taskId = UUID.randomUUID();
+        UUID submissionId = UUID.randomUUID();
+        jdbc.update("insert into tasks(id, teacher_id, subject_id, title, description_markdown, task_type, status) values (?, ?, ?, 'Private task', '', 'CODE', 'ACTIVE')",
+            taskId, fixture.teacherId(), fixture.subjectId());
+        jdbc.update("insert into task_test_cases(id, task_id, expected_output, hidden, position) values (?, ?, 'DO_NOT_LEAK_HIDDEN_TEST', true, 0)",
+            UUID.randomUUID(), taskId);
+        jdbc.update("insert into submissions(id, student_id, student_program_id, task_id, attempt_no, status, text_answer) values (?, ?, ?, ?, 1, 'PASSED', 'DO_NOT_LEAK_TEXT_ANSWER')",
+            submissionId, fixture.studentId(), fixture.studentProgramId(), taskId);
+        jdbc.update("insert into code_submissions(submission_id, source_code, execution_status) values (?, 'DO_NOT_LEAK_SOURCE', 'PASSED')",
+            submissionId);
+
+        String url = "/api/v1/public/reports/pdf-active-token/pdf";
+        MvcResult first = mockMvc.perform(get(url))
+            .andExpect(status().isOk())
+            .andExpect(header().string("Content-Type", "application/pdf"))
+            .andExpect(header().string("Content-Disposition",
+                "attachment; filename=\"progress-report-" + published + ".pdf\""))
+            .andReturn();
+        String firstText = pdfText(first);
+        assertThat(firstText)
+            .contains("Отчёт о прогрессе", "Historical title", "Historical summary", "Historical plan")
+            .doesNotContain(
+                "DO_NOT_LEAK_PRIVATE_NOTES", "DO_NOT_LEAK_TEXT_ANSWER", "DO_NOT_LEAK_SOURCE",
+                "DO_NOT_LEAK_HIDDEN_TEST", "do-not-leak@example.com", fixture.topicId().toString(),
+                fixture.teacherId().toString(), "pdf-active-token"
+            );
+
+        jdbc.update("update topics set title = 'Changed after publication' where id = ?", fixture.topicId());
+        MvcResult second = mockMvc.perform(get(url)).andExpect(status().isOk()).andReturn();
+        assertThat(pdfText(second)).isEqualTo(firstText).doesNotContain("Changed after publication");
+
+        mockMvc.perform(get("/api/v1/public/reports/missing-token/pdf"))
+            .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/v1/public/reports/pdf-expired-token/pdf"))
+            .andExpect(status().isGone())
+            .andExpect(jsonPath("$.code").value("REPORT_SHARE_EXPIRED"));
+        mockMvc.perform(get("/api/v1/public/reports/pdf-revoked-token/pdf"))
+            .andExpect(status().isGone())
+            .andExpect(jsonPath("$.code").value("REPORT_SHARE_REVOKED"));
+        mockMvc.perform(get("/api/v1/public/reports/pdf-draft-token/pdf"))
+            .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/v1/public/reports/pdf-archived-token/pdf"))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
     void teacherSecurityCsrfAndOpenApiContractAreExact() throws Exception {
         Fixture fixture = fixture("security");
         UUID reportId = report(fixture, "PUBLISHED");
@@ -248,6 +311,11 @@ class ReportShareApiIntegrationTest {
                 .value("revokeReportShare"))
             .andExpect(jsonPath("$.paths['/api/v1/public/reports/{token}'].get.operationId")
                 .value("getPublicProgressReport"))
+            .andExpect(jsonPath("$.paths['/api/v1/public/reports/{token}/pdf'].get.operationId")
+                .value("downloadPublicProgressReportPdf"))
+            .andExpect(jsonPath("$.paths['/api/v1/public/reports/{token}/pdf'].get.responses['200'].content['application/pdf'].schema.format")
+                .value("binary"))
+            .andExpect(jsonPath("$.paths['/api/v1/public/reports/{token}/pdf'].get.security").doesNotExist())
             .andExpect(jsonPath("$.paths['/api/v1/public/reports/{token}'].get.security").doesNotExist())
             .andExpect(jsonPath("$.components.schemas.ReportShareCreatedResponse").exists())
             .andExpect(jsonPath("$.components.schemas.ReportShareSummaryResponse").exists())
@@ -301,7 +369,7 @@ class ReportShareApiIntegrationTest {
             moduleId, programId);
         jdbc.update("insert into topics(id, module_id, title, position, status) values (?, ?, 'Historical title', 0, 'ACTIVE')",
             topicId, moduleId);
-        return new Fixture(userId, teacherId, studentId, studentProgramId, topicId);
+        return new Fixture(userId, teacherId, studentId, subjectId, studentProgramId, topicId);
     }
 
     private UUID report(Fixture fixture, String status) {
@@ -353,6 +421,12 @@ class ReportShareApiIntegrationTest {
         return objectMapper.readTree(result.getResponse().getContentAsByteArray());
     }
 
+    private String pdfText(MvcResult result) throws Exception {
+        try (var document = Loader.loadPDF(result.getResponse().getContentAsByteArray())) {
+            return new PDFTextStripper().getText(document);
+        }
+    }
+
     private String tokenFrom(JsonNode response) {
         String url = response.required("shareUrl").asText();
         return url.substring(url.lastIndexOf('/') + 1);
@@ -371,6 +445,7 @@ class ReportShareApiIntegrationTest {
         UUID userId,
         UUID teacherId,
         UUID studentId,
+        UUID subjectId,
         UUID studentProgramId,
         UUID topicId
     ) {
