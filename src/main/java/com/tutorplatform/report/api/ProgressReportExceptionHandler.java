@@ -77,4 +77,39 @@ public class ProgressReportExceptionHandler {
             MDC.get("traceId")
         ));
     }
+
+    @ExceptionHandler(InvalidReportShareExpirationException.class)
+    ResponseEntity<ApiError> handleInvalidShareExpiration(InvalidReportShareExpirationException exception) {
+        return ResponseEntity.badRequest().body(ApiError.of(
+            "REPORT_SHARE_EXPIRATION_INVALID", "Expiration must be in the future", MDC.get("traceId")
+        ));
+    }
+
+    @ExceptionHandler(ReportShareNotAllowedException.class)
+    ResponseEntity<ApiError> handleShareNotAllowed(ReportShareNotAllowedException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiError.of(
+            "REPORT_SHARE_NOT_ALLOWED", "Only published progress reports can be shared", MDC.get("traceId")
+        ));
+    }
+
+    @ExceptionHandler(ReportShareNotFoundException.class)
+    ResponseEntity<ApiError> handleShareNotFound(ReportShareNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiError.of(
+            "REPORT_SHARE_NOT_FOUND", "Report share not found", MDC.get("traceId")
+        ));
+    }
+
+    @ExceptionHandler(ReportShareExpiredException.class)
+    ResponseEntity<ApiError> handleShareExpired(ReportShareExpiredException exception) {
+        return gone("REPORT_SHARE_EXPIRED", "Report share has expired");
+    }
+
+    @ExceptionHandler(ReportShareRevokedException.class)
+    ResponseEntity<ApiError> handleShareRevoked(ReportShareRevokedException exception) {
+        return gone("REPORT_SHARE_REVOKED", "Report share has been revoked");
+    }
+
+    private ResponseEntity<ApiError> gone(String code, String message) {
+        return ResponseEntity.status(HttpStatus.GONE).body(ApiError.of(code, message, MDC.get("traceId")));
+    }
 }
