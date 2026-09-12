@@ -1,9 +1,23 @@
 app:
+  file-storage:
+    provider: ${FILE_STORAGE_PROVIDER}
+    directory: ${FILE_STORAGE_DIRECTORY:}
   security:
     session-cookie-secure: true
+  student-invites:
+    public-frontend-base-url: ${PUBLIC_FRONTEND_BASE_URL}
 
 spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
+
+execution:
+  worker:
+    base-url: ${EXECUTION_WORKER_BASE_URL}
+
+logging:
+  structured:
+    format:
+      console: logstash

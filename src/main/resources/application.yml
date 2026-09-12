@@ -1,5 +1,6 @@
 server:
   port: 8080
+  shutdown: graceful
   servlet:
     session:
       timeout: 12h
@@ -7,6 +8,9 @@ server:
 spring:
   application:
     name: tutor-learning-platform-backend
+
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
 
   servlet:
     multipart:
@@ -42,11 +46,16 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health
   endpoint:
     health:
+      show-details: never
+      show-components: never
       probes:
         enabled: true
+      group:
+        readiness:
+          include: readinessState,db
 
 springdoc:
   swagger-ui:
@@ -54,6 +63,7 @@ springdoc:
 
 app:
   file-storage:
+    provider: ${FILE_STORAGE_PROVIDER:LOCAL}
     directory: ${FILE_STORAGE_DIRECTORY:./var/files}
   material-files:
     max-size-bytes: ${MATERIAL_FILES_MAX_SIZE_BYTES:10485760}

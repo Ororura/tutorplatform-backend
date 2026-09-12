@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.web.client.RestClient;
 
 import java.io.IOException;
@@ -53,17 +54,25 @@ class HttpExecutionAdapterTest {
     @Test
     void sendsInternalWorkerContractWithLanguageModesLimitsAndBoundedOutput() throws Exception {
         var captured = new AtomicReference<JsonNode>();
+        var capturedTraceId = new AtomicReference<String>();
         var request = request(List.of(
             testCase(ExecutionComparisonMode.EXACT, "hidden-exact"),
             testCase(ExecutionComparisonMode.NORMALIZED, "hidden-normalized")
         ));
         server.createContext("/internal/v1/executions", exchange -> {
             captured.set(OBJECT_MAPPER.readTree(exchange.getRequestBody()));
+            capturedTraceId.set(exchange.getRequestHeaders().getFirst("X-Trace-Id"));
             respond(exchange, 200, response(request, "PASSED", "abcdef", "uvwxyz"));
         });
         server.start();
 
-        var result = adapter(baseUrl, Duration.ofMillis(200), Duration.ofSeconds(1), 4).execute(request);
+        MDC.put("traceId", "trace-from-backend");
+        com.tutorplatform.execution.application.ExecutionResult result;
+        try {
+            result = adapter(baseUrl, Duration.ofMillis(200), Duration.ofSeconds(1), 4).execute(request);
+        } finally {
+            MDC.remove("traceId");
+        }
 
         var json = captured.get();
         assertThat(json.path("executionId").asText()).isEqualTo(request.executionId().toString());
@@ -78,6 +87,7 @@ class HttpExecutionAdapterTest {
         assertThat(json.has("databaseUsername")).isFalse();
         assertThat(json.has("databasePassword")).isFalse();
         assertThat(json.has("authSession")).isFalse();
+        assertThat(capturedTraceId.get()).isEqualTo("trace-from-backend");
         assertThat(result.stdoutExcerpt()).isEqualTo("abcd");
         assertThat(result.stderrExcerpt()).isEqualTo("uvwx");
     }

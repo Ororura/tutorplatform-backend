@@ -1,11 +1,18 @@
-FROM gradle:8.14.3-jdk21-alpine AS build
+FROM eclipse-temurin:21-jdk-alpine AS build
 WORKDIR /workspace
-COPY settings.gradle.kts build.gradle.kts gradle.properties ./
+COPY gradlew gradlew.bat settings.gradle.kts build.gradle.kts gradle.properties ./
+COPY gradle ./gradle
+RUN chmod +x gradlew && ./gradlew dependencies --no-daemon
 COPY src ./src
-RUN gradle bootJar --no-daemon
+RUN ./gradlew clean build -x test --no-daemon
 
 FROM eclipse-temurin:21-jre-alpine
+RUN addgroup -S app \
+    && adduser -S app -G app \
+    && mkdir -p /var/lib/tutor/files \
+    && chown -R app:app /var/lib/tutor
 WORKDIR /app
-COPY --from=build /workspace/build/libs/*.jar app.jar
+COPY --from=build --chown=app:app /workspace/build/libs/*.jar app.jar
+USER app
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

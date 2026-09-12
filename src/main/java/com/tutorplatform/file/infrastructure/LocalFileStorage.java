@@ -5,6 +5,7 @@ import com.tutorplatform.file.application.FileStorageException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -15,11 +16,15 @@ import java.nio.file.StandardOpenOption;
 import java.util.UUID;
 
 @Component
+@ConditionalOnProperty(prefix = "app.file-storage", name = "provider", havingValue = "LOCAL", matchIfMissing = true)
 public class LocalFileStorage implements FileStorage {
     private static final Logger log = LoggerFactory.getLogger(LocalFileStorage.class);
     private final Path directory;
 
     public LocalFileStorage(@Value("${app.file-storage.directory:./var/files}") String directory) {
+        if (directory == null || directory.isBlank()) {
+            throw new IllegalArgumentException("app.file-storage.directory must not be blank for LOCAL storage");
+        }
         this.directory = Path.of(directory).toAbsolutePath().normalize();
     }
 

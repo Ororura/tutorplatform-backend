@@ -5,8 +5,10 @@ import com.tutorplatform.execution.application.ExecutionRequest;
 import com.tutorplatform.execution.application.ExecutionResult;
 import com.tutorplatform.execution.application.ExecutionStatus;
 import com.tutorplatform.execution.application.ExecutionTestResult;
+import com.tutorplatform.shared.web.TraceIdFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
@@ -47,9 +49,14 @@ public class HttpExecutionAdapter implements ExecutionPort {
         var startedAt = System.nanoTime();
         log.info("Worker execution request started: executionId={}", request.executionId());
         try {
-            var response = restClient(request).post()
+            var requestSpec = restClient(request).post()
                 .uri(EXECUTIONS_PATH)
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON);
+            var traceId = MDC.get("traceId");
+            if (traceId != null && !traceId.isBlank()) {
+                requestSpec.header(TraceIdFilter.HEADER, traceId);
+            }
+            var response = requestSpec
                 .body(WorkerExecutionRequest.from(request, properties.output().maxBytes()))
                 .retrieve()
                 .body(WorkerExecutionResponse.class);
