@@ -1,7 +1,6 @@
 package com.tutorplatform.student.api.management;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
-import com.tutorplatform.student.api.codeexecution.StudentDetailsResponse;
 import com.tutorplatform.student.application.StudentService;
 import com.tutorplatform.student.domain.StudentAccountStatus;
 import jakarta.validation.Valid;

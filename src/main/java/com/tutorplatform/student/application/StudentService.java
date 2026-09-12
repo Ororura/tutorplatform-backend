@@ -1,8 +1,8 @@
 package com.tutorplatform.student.application;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
-import com.tutorplatform.student.api.codeexecution.StudentAccountResponse;
-import com.tutorplatform.student.api.codeexecution.StudentDetailsResponse;
+import com.tutorplatform.student.api.management.StudentAccountResponse;
+import com.tutorplatform.student.api.management.StudentDetailsResponse;
 import com.tutorplatform.student.api.management.*;
 import com.tutorplatform.student.application.exception.InvalidStudentListParameterException;
 import com.tutorplatform.student.application.exception.StudentNotFoundException;
