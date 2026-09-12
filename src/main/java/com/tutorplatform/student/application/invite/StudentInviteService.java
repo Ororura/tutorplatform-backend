@@ -2,10 +2,10 @@ package com.tutorplatform.student.application.invite;
 
 import com.tutorplatform.auth.application.EmailAlreadyRegisteredException;
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
-import com.tutorplatform.student.api.requrest.CreateStudentInviteRequest;
-import com.tutorplatform.student.api.response.StudentInviteCreatedResponse;
-import com.tutorplatform.student.api.response.StudentInviteListResponse;
-import com.tutorplatform.student.api.response.StudentInviteSummaryResponse;
+import com.tutorplatform.student.api.invite.CreateStudentInviteRequest;
+import com.tutorplatform.student.api.invite.StudentInviteCreatedResponse;
+import com.tutorplatform.student.api.invite.StudentInviteListResponse;
+import com.tutorplatform.student.api.invite.StudentInviteSummaryResponse;
 import com.tutorplatform.student.application.exception.StudentAlreadyRegisteredException;
 import com.tutorplatform.student.application.exception.invite.StudentInviteAlreadyAcceptedException;
 import com.tutorplatform.student.application.exception.invite.StudentInviteNotFoundException;

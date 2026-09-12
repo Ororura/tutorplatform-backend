@@ -1,4 +1,4 @@
-package com.tutorplatform.student.api.requrest;
+package com.tutorplatform.student.api.management;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;

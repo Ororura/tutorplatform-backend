@@ -1,12 +1,7 @@
-package com.tutorplatform.student.api;
+package com.tutorplatform.student.api.management;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
-import com.tutorplatform.student.api.requrest.CreateStudentRequest;
-import com.tutorplatform.student.api.requrest.UpdateStudentRequest;
-import com.tutorplatform.student.api.response.StudentDetailsResponse;
-import com.tutorplatform.student.api.response.StudentPageResponse;
-import com.tutorplatform.student.api.response.StudentSummaryResponse;
-import com.tutorplatform.student.api.response.UpdateStudentResponse;
+import com.tutorplatform.student.api.codeexecution.StudentDetailsResponse;
 import com.tutorplatform.student.application.StudentService;
 import com.tutorplatform.student.domain.StudentAccountStatus;
 import jakarta.validation.Valid;

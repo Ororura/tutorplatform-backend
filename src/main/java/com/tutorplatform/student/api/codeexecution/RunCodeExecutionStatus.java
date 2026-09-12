@@ -1,4 +1,4 @@
-package com.tutorplatform.student.api.response;
+package com.tutorplatform.student.api.codeexecution;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

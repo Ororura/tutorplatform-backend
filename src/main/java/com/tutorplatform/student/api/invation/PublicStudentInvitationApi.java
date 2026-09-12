@@ -2,8 +2,8 @@ package com.tutorplatform.student.api.invation;
 
 import com.tutorplatform.auth.api.CurrentUserResponse;
 import com.tutorplatform.shared.api.ApiError;
-import com.tutorplatform.student.api.requrest.AcceptStudentInviteRequest;
-import com.tutorplatform.student.api.response.PublicStudentInviteResponse;
+import com.tutorplatform.student.api.invite.AcceptStudentInviteRequest;
+import com.tutorplatform.student.api.invite.PublicStudentInviteResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

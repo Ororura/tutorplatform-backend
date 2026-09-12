@@ -2,7 +2,7 @@ package com.tutorplatform.student.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tutorplatform.student.api.requrest.AcceptStudentInviteRequest;
+import com.tutorplatform.student.api.invite.AcceptStudentInviteRequest;
 import com.tutorplatform.student.application.invite.StudentInviteTokenService;
 import com.tutorplatform.student.domain.StudentEntity;
 import com.tutorplatform.student.domain.StudentRepository;

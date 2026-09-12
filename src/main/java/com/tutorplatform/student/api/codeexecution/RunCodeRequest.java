@@ -1,4 +1,4 @@
-package com.tutorplatform.student.api.requrest;
+package com.tutorplatform.student.api.codeexecution;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import io.swagger.v3.oas.annotations.media.Schema;

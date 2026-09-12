@@ -1,13 +1,8 @@
-package com.tutorplatform.student.api;
+package com.tutorplatform.student.api.management;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.shared.api.ApiError;
-import com.tutorplatform.student.api.requrest.CreateStudentRequest;
-import com.tutorplatform.student.api.requrest.UpdateStudentRequest;
-import com.tutorplatform.student.api.response.StudentDetailsResponse;
-import com.tutorplatform.student.api.response.StudentPageResponse;
-import com.tutorplatform.student.api.response.StudentSummaryResponse;
-import com.tutorplatform.student.api.response.UpdateStudentResponse;
+import com.tutorplatform.student.api.codeexecution.StudentDetailsResponse;
 import com.tutorplatform.student.domain.StudentAccountStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

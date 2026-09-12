@@ -1,5 +1,6 @@
-package com.tutorplatform.student.api.response;
+package com.tutorplatform.student.api.codeexecution;
 
+import com.tutorplatform.student.api.management.StudentRelationResponse;
 import com.tutorplatform.student.domain.StudentStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 

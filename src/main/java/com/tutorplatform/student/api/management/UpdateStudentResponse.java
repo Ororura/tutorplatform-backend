@@ -1,4 +1,4 @@
-package com.tutorplatform.student.api.response;
+package com.tutorplatform.student.api.management;
 
 import com.tutorplatform.student.domain.StudentAccountStatus;
 import com.tutorplatform.student.domain.StudentStatus;

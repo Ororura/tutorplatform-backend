@@ -1,9 +1,6 @@
 package com.tutorplatform.student.api.invite;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
-import com.tutorplatform.student.api.requrest.CreateStudentInviteRequest;
-import com.tutorplatform.student.api.response.StudentInviteCreatedResponse;
-import com.tutorplatform.student.api.response.StudentInviteListResponse;
 import com.tutorplatform.student.application.invite.StudentInviteService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

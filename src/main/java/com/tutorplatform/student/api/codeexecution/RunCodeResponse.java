@@ -1,4 +1,4 @@
-package com.tutorplatform.student.api.response;
+package com.tutorplatform.student.api.codeexecution;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.tutorplatform.student.application.coderunner.RunCodeResult;

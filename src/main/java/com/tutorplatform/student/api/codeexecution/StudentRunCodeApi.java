@@ -2,8 +2,6 @@ package com.tutorplatform.student.api.codeexecution;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.shared.api.ApiError;
-import com.tutorplatform.student.api.requrest.RunCodeRequest;
-import com.tutorplatform.student.api.response.RunCodeResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
