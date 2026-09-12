@@ -1,4 +1,4 @@
-package com.tutorplatform.student.application.exception;
+package com.tutorplatform.student.application.coderunner;
 
 public class RunCodeException extends RuntimeException {
 

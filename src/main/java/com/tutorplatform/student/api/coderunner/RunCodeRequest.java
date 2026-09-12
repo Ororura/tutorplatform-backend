@@ -1,4 +1,4 @@
-package com.tutorplatform.student.api.codeexecution;
+package com.tutorplatform.student.api.coderunner;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import io.swagger.v3.oas.annotations.media.Schema;

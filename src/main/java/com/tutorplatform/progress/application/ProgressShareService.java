@@ -14,7 +14,7 @@ import com.tutorplatform.progress.domain.ProgressShareRepository;
 import com.tutorplatform.progress.domain.ProgressShareStatus;
 import com.tutorplatform.student.application.invite.StudentInviteTokenService;
 import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
-import com.tutorplatform.student.application.exception.StudentNotFoundException;
+import com.tutorplatform.student.application.management.StudentNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

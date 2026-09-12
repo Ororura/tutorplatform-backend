@@ -16,7 +16,7 @@ import com.tutorplatform.session.application.exception.TopicOutsideStudentProgra
 import com.tutorplatform.session.domain.AttendanceStatus;
 import com.tutorplatform.session.domain.LessonSessionRepository;
 import com.tutorplatform.session.domain.LessonSessionTopicRepository;
-import com.tutorplatform.student.application.exception.StudentNotFoundException;
+import com.tutorplatform.student.application.management.StudentNotFoundException;
 import com.tutorplatform.student.domain.StudentEntity;
 import com.tutorplatform.student.domain.StudentRepository;
 import com.tutorplatform.student.domain.StudentStatus;

@@ -1,4 +1,4 @@
-package com.tutorplatform.student.api.codeexecution;
+package com.tutorplatform.student.api.coderunner;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

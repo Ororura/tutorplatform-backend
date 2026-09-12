@@ -10,7 +10,7 @@ import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
 import com.tutorplatform.program.domain.studentprogram.StudentProgramEntity;
 import com.tutorplatform.program.domain.studentprogram.StudentProgramRepository;
 import com.tutorplatform.program.domain.studentprogram.StudentProgramStatus;
-import com.tutorplatform.student.application.exception.StudentNotFoundException;
+import com.tutorplatform.student.application.management.StudentNotFoundException;
 import com.tutorplatform.student.domain.StudentEntity;
 import com.tutorplatform.student.domain.StudentRepository;
 import com.tutorplatform.student.domain.StudentStatus;

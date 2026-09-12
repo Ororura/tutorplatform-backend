@@ -1,7 +1,7 @@
 package com.tutorplatform.student.api.management;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
-import com.tutorplatform.student.application.StudentService;
+import com.tutorplatform.student.application.management.StudentService;
 import com.tutorplatform.student.domain.StudentAccountStatus;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

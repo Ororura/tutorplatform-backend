@@ -3,7 +3,7 @@ package com.tutorplatform.student.api.invation;
 import com.tutorplatform.auth.api.CurrentUserResponse;
 import com.tutorplatform.student.api.invite.AcceptStudentInviteRequest;
 import com.tutorplatform.student.api.invite.PublicStudentInviteResponse;
-import com.tutorplatform.student.application.PublicStudentInvitationService;
+import com.tutorplatform.student.application.management.PublicStudentInvitationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;

@@ -5,7 +5,7 @@ import com.tutorplatform.program.application.ProgramQuery;
 import com.tutorplatform.progress.application.exception.ProgressStudentProgramNotFoundException;
 import com.tutorplatform.progress.domain.CurrentProgress;
 import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
-import com.tutorplatform.student.application.exception.StudentNotFoundException;
+import com.tutorplatform.student.application.management.StudentNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

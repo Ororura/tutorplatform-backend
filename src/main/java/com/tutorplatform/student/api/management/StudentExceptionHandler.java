@@ -2,7 +2,9 @@ package com.tutorplatform.student.api.management;
 
 import com.tutorplatform.shared.api.ApiError;
 import com.tutorplatform.shared.api.ApiErrorDetail;
-import com.tutorplatform.student.application.exception.*;
+import com.tutorplatform.student.application.management.InvalidStudentListParameterException;
+import com.tutorplatform.student.application.management.StudentAlreadyRegisteredException;
+import com.tutorplatform.student.application.management.StudentNotFoundException;
 import com.tutorplatform.student.application.exception.invite.*;
 import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;

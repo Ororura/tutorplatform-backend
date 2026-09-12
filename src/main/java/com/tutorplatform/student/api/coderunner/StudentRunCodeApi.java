@@ -1,4 +1,4 @@
-package com.tutorplatform.student.api.codeexecution;
+package com.tutorplatform.student.api.coderunner;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.shared.api.ApiError;

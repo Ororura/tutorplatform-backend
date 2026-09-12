@@ -8,7 +8,7 @@ import com.tutorplatform.homework.domain.HomeworkRepository;
 import com.tutorplatform.homework.domain.HomeworkStatus;
 import com.tutorplatform.program.application.ProgramQuery;
 import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
-import com.tutorplatform.student.application.exception.StudentNotFoundException;
+import com.tutorplatform.student.application.management.StudentNotFoundException;
 import com.tutorplatform.task.application.TaskQuery;
 import com.tutorplatform.task.application.exception.TaskNotFoundException;
 import com.tutorplatform.task.domain.task.TaskStatus;

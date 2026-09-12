@@ -1,10 +1,9 @@
-package com.tutorplatform.student.application;
+package com.tutorplatform.student.application.management;
 
 import com.tutorplatform.auth.api.CurrentUserResponse;
 import com.tutorplatform.auth.application.AuthenticationSessionService;
 import com.tutorplatform.student.api.invite.AcceptStudentInviteRequest;
 import com.tutorplatform.student.api.invite.PublicStudentInviteResponse;
-import com.tutorplatform.student.application.exception.*;
 import com.tutorplatform.student.application.exception.invite.*;
 import com.tutorplatform.student.application.invite.StudentInviteTokenService;
 import com.tutorplatform.student.domain.StudentEntity;

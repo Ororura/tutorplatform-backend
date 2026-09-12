@@ -8,7 +8,7 @@ import com.tutorplatform.session.domain.LessonSessionRepository;
 import com.tutorplatform.session.domain.LessonSessionTopicEntity;
 import com.tutorplatform.session.domain.LessonSessionTopicRepository;
 import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
-import com.tutorplatform.student.application.exception.StudentNotFoundException;
+import com.tutorplatform.student.application.management.StudentNotFoundException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
