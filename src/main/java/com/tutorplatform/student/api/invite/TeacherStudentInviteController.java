@@ -4,7 +4,7 @@ import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.student.api.requrest.CreateStudentInviteRequest;
 import com.tutorplatform.student.api.response.StudentInviteCreatedResponse;
 import com.tutorplatform.student.api.response.StudentInviteListResponse;
-import com.tutorplatform.student.application.StudentInviteService;
+import com.tutorplatform.student.application.invite.StudentInviteService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

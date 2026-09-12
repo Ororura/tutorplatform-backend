@@ -1,4 +1,4 @@
-package com.tutorplatform.student.application;
+package com.tutorplatform.student.application.invite;
 
 import org.springframework.stereotype.Component;
 

@@ -1,4 +1,4 @@
-package com.tutorplatform.student.application;
+package com.tutorplatform.student.application.ownership;
 
 import java.util.Optional;
 import java.util.UUID;

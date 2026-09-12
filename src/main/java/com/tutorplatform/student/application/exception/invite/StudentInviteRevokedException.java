@@ -1,4 +1,4 @@
-package com.tutorplatform.student.application.exception;
+package com.tutorplatform.student.application.exception.invite;
 
 public class StudentInviteRevokedException extends RuntimeException {
 }

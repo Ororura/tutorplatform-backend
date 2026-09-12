@@ -1,4 +1,4 @@
-package com.tutorplatform.student.application;
+package com.tutorplatform.student.application.coderunner;
 
 import com.tutorplatform.execution.application.ExecutionStatus;
 

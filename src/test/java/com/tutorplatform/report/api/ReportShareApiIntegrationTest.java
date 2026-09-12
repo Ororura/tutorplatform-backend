@@ -3,7 +3,7 @@ package com.tutorplatform.report.api;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
-import com.tutorplatform.student.application.StudentInviteTokenService;
+import com.tutorplatform.student.application.invite.StudentInviteTokenService;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.Test;

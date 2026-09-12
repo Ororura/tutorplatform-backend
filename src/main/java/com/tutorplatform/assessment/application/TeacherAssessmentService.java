@@ -9,7 +9,7 @@ import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.session.application.LessonSessionContext;
 import com.tutorplatform.session.application.LessonSessionQuery;
 import com.tutorplatform.session.application.exception.LessonSessionNotFoundException;
-import com.tutorplatform.student.application.StudentOwnershipQuery;
+import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

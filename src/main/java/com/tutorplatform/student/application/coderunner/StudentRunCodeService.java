@@ -1,10 +1,11 @@
-package com.tutorplatform.student.application;
+package com.tutorplatform.student.application.coderunner;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.execution.application.*;
 import com.tutorplatform.homework.application.HomeworkQuery;
 import com.tutorplatform.homework.domain.HomeworkStatus;
 import com.tutorplatform.program.application.ProgramQuery;
+import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.student.application.exception.RunCodeException;
 import com.tutorplatform.student.application.exception.RunCodeException.Reason;
 import com.tutorplatform.student.application.exception.StudentNotFoundException;

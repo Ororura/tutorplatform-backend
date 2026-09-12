@@ -12,7 +12,7 @@ import com.tutorplatform.report.domain.ProgressReport;
 import com.tutorplatform.report.domain.ProgressReportStatus;
 import com.tutorplatform.report.domain.ReportShare;
 import com.tutorplatform.report.domain.ReportShareRepository;
-import com.tutorplatform.student.application.StudentInviteTokenService;
+import com.tutorplatform.student.application.invite.StudentInviteTokenService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

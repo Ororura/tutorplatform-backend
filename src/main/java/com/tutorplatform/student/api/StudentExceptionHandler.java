@@ -3,6 +3,7 @@ package com.tutorplatform.student.api;
 import com.tutorplatform.shared.api.ApiError;
 import com.tutorplatform.shared.api.ApiErrorDetail;
 import com.tutorplatform.student.application.exception.*;
+import com.tutorplatform.student.application.exception.invite.*;
 import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;

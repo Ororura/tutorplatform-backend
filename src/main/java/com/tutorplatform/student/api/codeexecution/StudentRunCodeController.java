@@ -3,7 +3,7 @@ package com.tutorplatform.student.api.codeexecution;
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.student.api.requrest.RunCodeRequest;
 import com.tutorplatform.student.api.response.RunCodeResponse;
-import com.tutorplatform.student.application.StudentRunCodeService;
+import com.tutorplatform.student.application.coderunner.StudentRunCodeService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;

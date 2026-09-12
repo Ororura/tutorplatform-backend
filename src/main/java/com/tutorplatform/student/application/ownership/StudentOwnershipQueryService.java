@@ -1,4 +1,4 @@
-package com.tutorplatform.student.application;
+package com.tutorplatform.student.application.ownership;
 
 import com.tutorplatform.student.domain.StudentRepository;
 import com.tutorplatform.student.domain.TeacherStudentRelationType;

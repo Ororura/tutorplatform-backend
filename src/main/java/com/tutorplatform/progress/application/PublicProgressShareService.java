@@ -6,7 +6,7 @@ import com.tutorplatform.progress.application.exception.ProgressShareNotFoundExc
 import com.tutorplatform.progress.application.exception.ProgressShareRevokedException;
 import com.tutorplatform.progress.domain.ProgressShare;
 import com.tutorplatform.progress.domain.ProgressShareRepository;
-import com.tutorplatform.student.application.StudentInviteTokenService;
+import com.tutorplatform.student.application.invite.StudentInviteTokenService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

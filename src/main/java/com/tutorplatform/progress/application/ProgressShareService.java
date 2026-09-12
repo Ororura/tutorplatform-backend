@@ -12,8 +12,8 @@ import com.tutorplatform.progress.application.exception.ProgressStudentProgramNo
 import com.tutorplatform.progress.domain.ProgressShare;
 import com.tutorplatform.progress.domain.ProgressShareRepository;
 import com.tutorplatform.progress.domain.ProgressShareStatus;
-import com.tutorplatform.student.application.StudentInviteTokenService;
-import com.tutorplatform.student.application.StudentOwnershipQuery;
+import com.tutorplatform.student.application.invite.StudentInviteTokenService;
+import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.student.application.exception.StudentNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

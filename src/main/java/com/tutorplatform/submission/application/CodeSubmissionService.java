@@ -3,7 +3,7 @@ package com.tutorplatform.submission.application;
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.execution.application.*;
 import com.tutorplatform.program.application.ProgramQuery;
-import com.tutorplatform.student.application.StudentOwnershipQuery;
+import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.student.application.exception.StudentNotFoundException;
 import com.tutorplatform.submission.application.exception.*;
 import com.tutorplatform.submission.domain.CodeExecutionStatus;

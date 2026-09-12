@@ -3,7 +3,7 @@ package com.tutorplatform.report.application;
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.program.application.ProgramQuery;
 import com.tutorplatform.report.application.exception.ProgressReportNotFoundException;
-import com.tutorplatform.student.application.StudentOwnershipQuery;
+import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;

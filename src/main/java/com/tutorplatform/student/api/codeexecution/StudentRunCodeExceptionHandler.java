@@ -1,7 +1,7 @@
 package com.tutorplatform.student.api.codeexecution;
 
 import com.tutorplatform.shared.api.ApiError;
-import com.tutorplatform.student.application.RunCodeException;
+import com.tutorplatform.student.application.exception.RunCodeException;
 import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;

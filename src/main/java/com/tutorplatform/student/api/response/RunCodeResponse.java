@@ -1,7 +1,7 @@
 package com.tutorplatform.student.api.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.tutorplatform.student.application.RunCodeResult;
+import com.tutorplatform.student.application.coderunner.RunCodeResult;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
