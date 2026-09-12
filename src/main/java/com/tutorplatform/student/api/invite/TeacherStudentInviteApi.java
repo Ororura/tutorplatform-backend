@@ -1,4 +1,4 @@
-package com.tutorplatform.student.api;
+package com.tutorplatform.student.api.invite;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.shared.api.ApiError;

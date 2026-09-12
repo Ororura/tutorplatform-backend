@@ -1,4 +1,4 @@
-package com.tutorplatform.student.api;
+package com.tutorplatform.student.api.invation;
 
 import com.tutorplatform.auth.api.CurrentUserResponse;
 import com.tutorplatform.student.api.requrest.AcceptStudentInviteRequest;

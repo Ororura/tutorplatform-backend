@@ -1,4 +1,4 @@
-package com.tutorplatform.student.api;
+package com.tutorplatform.student.api.codeexecution;
 
 import com.tutorplatform.shared.api.ApiError;
 import com.tutorplatform.student.application.RunCodeException;
