@@ -2,6 +2,7 @@ package com.tutorplatform.config;
 
 import com.tutorplatform.shared.api.RestAccessDeniedHandler;
 import com.tutorplatform.shared.api.RestAuthenticationEntryPoint;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,6 +28,7 @@ import org.springframework.session.web.http.DefaultCookieSerializer;
 
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
 
 @Configuration
 @EnableWebSecurity
@@ -50,15 +52,18 @@ public class SecurityConfig {
                 .requestMatchers(GET, "/api/v1/public/progress/*").permitAll()
                 .requestMatchers(GET, "/api/v1/public/reports/*").permitAll()
                 .requestMatchers(GET, "/api/v1/public/reports/*/pdf").permitAll()
-                .requestMatchers(
+                .requestMatchers(GET,
                     "/actuator/health/**",
                     "/v3/api-docs/**",
                     "/swagger-ui.html",
                     "/swagger-ui/**",
                     "/api/v1/auth/csrf",
+                    "/api/v1/public/student-invitations/*"
+                ).permitAll()
+                .requestMatchers(POST,
                     "/api/v1/auth/login",
                     "/api/v1/auth/register/teacher",
-                    "/api/v1/public/student-invitations/**"
+                    "/api/v1/public/student-invitations/*/accept"
                 ).permitAll()
                 .requestMatchers("/api/v1/teacher/**").hasRole("TEACHER")
                 .requestMatchers("/api/v1/student/**").hasRole("STUDENT")
@@ -120,12 +125,13 @@ public class SecurityConfig {
 
     @Bean
     CookieSerializer cookieSerializer(
-        ) {
+        @Value("${app.security.session-cookie-secure:true}") boolean secure
+    ) {
         var serializer = new DefaultCookieSerializer();
         serializer.setCookieName("TUTOR_SESSION");
         serializer.setCookiePath("/");
         serializer.setUseHttpOnlyCookie(true);
-        serializer.setUseSecureCookie(true);
+        serializer.setUseSecureCookie(secure);
         serializer.setSameSite("Lax");
         return serializer;
     }

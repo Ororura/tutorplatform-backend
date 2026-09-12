@@ -249,7 +249,7 @@ class ProgressShareApiIntegrationTest {
                 .value("revokeProgressShare"))
             .andExpect(jsonPath("$.paths['/api/v1/public/progress/{token}'].get.operationId")
                 .value("getPublicCurrentProgress"))
-            .andExpect(jsonPath("$.paths['/api/v1/public/progress/{token}'].get.security").doesNotExist())
+            .andExpect(jsonPath("$.paths['/api/v1/public/progress/{token}'].get.security").isEmpty())
             .andExpect(jsonPath("$.components.schemas.ProgressShareCreatedResponse").exists())
             .andExpect(jsonPath("$.components.schemas.ProgressShareSummaryResponse").exists())
             .andExpect(jsonPath("$.components.schemas.ProgressShareStatus.enum.length()").value(3))

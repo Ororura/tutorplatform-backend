@@ -9,6 +9,9 @@ import com.tutorplatform.shared.api.RestAuthenticationEntryPoint;
 import com.tutorplatform.shared.web.TraceIdFilter;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -23,10 +26,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.stream.Stream;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -90,6 +96,20 @@ class SecurityInfrastructureTest {
             .andExpect(status().isNoContent());
     }
 
+    @ParameterizedTest(name = "public auth flow requires CSRF: {0}")
+    @MethodSource("unsafePublicEndpoints")
+    void publicUnsafeEndpointMatrixRequiresCsrf(String path) throws Exception {
+        mockMvc.perform(post(path))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.code").value("CSRF_INVALID"));
+
+        CsrfExchange csrf = obtainCsrf();
+        mockMvc.perform(post(path)
+                .session(csrf.session())
+                .header(csrf.headerName(), csrf.token()))
+            .andExpect(status().isNoContent());
+    }
+
     @Test
     void logoutInvalidatesCurrentSession() throws Exception {
         CsrfExchange csrf = obtainCsrf();
@@ -115,7 +135,7 @@ class SecurityInfrastructureTest {
     @Test
     void productionCookieHasRequiredSecurityAttributes() {
         var response = new MockHttpServletResponse();
-        var cookieSerializer = new SecurityConfig().cookieSerializer();
+        var cookieSerializer = new SecurityConfig().cookieSerializer(true);
 
         cookieSerializer.writeCookieValue(new CookieValue(
             new MockHttpServletRequest(),
@@ -129,6 +149,91 @@ class SecurityInfrastructureTest {
             .contains("Secure")
             .contains("HttpOnly")
             .contains("SameSite=Lax");
+    }
+
+    @Test
+    void developmentCookieCanDisableSecureThroughConfiguration() {
+        var response = new MockHttpServletResponse();
+        var cookieSerializer = new SecurityConfig().cookieSerializer(false);
+
+        cookieSerializer.writeCookieValue(new CookieValue(
+            new MockHttpServletRequest(), response, "session-id"
+        ));
+
+        assertThat(response.getHeader("Set-Cookie"))
+            .contains("HttpOnly")
+            .doesNotContain("Secure");
+    }
+
+    @ParameterizedTest(name = "{0} {1} requires CSRF")
+    @MethodSource("unsafeAuthenticatedEndpoints")
+    void authenticatedUnsafeEndpointMatrixRequiresCsrf(
+        org.springframework.http.HttpMethod method,
+        String path,
+        String role
+    ) throws Exception {
+        var authenticated = user(role.toLowerCase()).roles(role);
+
+        mockMvc.perform(request(method, path).with(authenticated))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.code").value("CSRF_INVALID"));
+
+        CsrfExchange csrf = obtainCsrf();
+        mockMvc.perform(request(method, path)
+                .session(csrf.session())
+                .header(csrf.headerName(), csrf.token())
+                .with(authenticated))
+            .andExpect(status().isNoContent());
+    }
+
+    @ParameterizedTest(name = "public matcher is method-specific: {0} {1}")
+    @MethodSource("nonPublicMethodsUnderPublicNamespaces")
+    void publicMatchersDoNotPermitUnintendedMethods(
+        org.springframework.http.HttpMethod method,
+        String path
+    ) throws Exception {
+        CsrfExchange csrf = obtainCsrf();
+        mockMvc.perform(request(method, path)
+                .session(csrf.session())
+                .header(csrf.headerName(), csrf.token()))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"));
+    }
+
+    private static Stream<Arguments> unsafeAuthenticatedEndpoints() {
+        String id = "00000000-0000-0000-0000-000000000001";
+        return Stream.of(
+            Arguments.of(org.springframework.http.HttpMethod.POST, "/api/v1/teacher/students", "TEACHER"),
+            Arguments.of(org.springframework.http.HttpMethod.PATCH, "/api/v1/teacher/students/" + id, "TEACHER"),
+            Arguments.of(org.springframework.http.HttpMethod.POST, "/api/v1/teacher/topics/" + id + "/materials", "TEACHER"),
+            Arguments.of(org.springframework.http.HttpMethod.POST, "/api/v1/teacher/students/" + id + "/sessions", "TEACHER"),
+            Arguments.of(org.springframework.http.HttpMethod.POST, "/api/v1/teacher/tasks", "TEACHER"),
+            Arguments.of(org.springframework.http.HttpMethod.POST, "/api/v1/teacher/students/" + id + "/homeworks", "TEACHER"),
+            Arguments.of(org.springframework.http.HttpMethod.PUT, "/api/v1/teacher/students/" + id + "/sessions/" + id + "/assessment", "TEACHER"),
+            Arguments.of(org.springframework.http.HttpMethod.POST, "/api/v1/teacher/reports", "TEACHER"),
+            Arguments.of(org.springframework.http.HttpMethod.POST, "/api/v1/teacher/students/" + id + "/progress/shares", "TEACHER"),
+            Arguments.of(org.springframework.http.HttpMethod.DELETE, "/api/v1/teacher/reports/" + id + "/shares/" + id, "TEACHER"),
+            Arguments.of(org.springframework.http.HttpMethod.PATCH, "/api/v1/teacher/students/" + id + "/submissions/" + id + "/review", "TEACHER"),
+            Arguments.of(org.springframework.http.HttpMethod.POST, "/api/v1/student/tasks/" + id + "/submissions", "STUDENT"),
+            Arguments.of(org.springframework.http.HttpMethod.POST, "/api/v1/student/tasks/" + id + "/run", "STUDENT")
+        );
+    }
+
+    private static Stream<Arguments> nonPublicMethodsUnderPublicNamespaces() {
+        return Stream.of(
+            Arguments.of(org.springframework.http.HttpMethod.POST, "/api/v1/public/progress/token"),
+            Arguments.of(org.springframework.http.HttpMethod.DELETE, "/api/v1/public/reports/token"),
+            Arguments.of(org.springframework.http.HttpMethod.DELETE, "/api/v1/public/student-invitations/token")
+        );
+    }
+
+    private static Stream<Arguments> unsafePublicEndpoints() {
+        return Stream.of(
+            Arguments.of("/api/v1/auth/login"),
+            Arguments.of("/api/v1/auth/register/teacher"),
+            Arguments.of("/api/v1/auth/logout"),
+            Arguments.of("/api/v1/public/student-invitations/token/accept")
+        );
     }
 
     private CsrfExchange obtainCsrf() throws Exception {
@@ -159,9 +264,41 @@ class SecurityInfrastructureTest {
         void protectedEndpoint() {
         }
 
-        @PostMapping("/auth/login")
+        @PostMapping({
+            "/auth/login",
+            "/auth/register/teacher",
+            "/auth/logout",
+            "/public/student-invitations/{token}/accept"
+        })
         @ResponseStatus(NO_CONTENT)
         void unsafePublicEndpoint() {
+        }
+
+        @RequestMapping(
+            path = {
+                "/teacher/students",
+                "/teacher/students/{studentId}",
+                "/teacher/topics/{topicId}/materials",
+                "/teacher/students/{studentId}/sessions",
+                "/teacher/tasks",
+                "/teacher/students/{studentId}/homeworks",
+                "/teacher/students/{studentId}/sessions/{sessionId}/assessment",
+                "/teacher/reports",
+                "/teacher/students/{studentId}/progress/shares",
+                "/teacher/reports/{reportId}/shares/{shareId}",
+                "/teacher/students/{studentId}/submissions/{submissionId}/review",
+                "/student/tasks/{taskId}/submissions",
+                "/student/tasks/{taskId}/run",
+                "/public/progress/{token}",
+                "/public/reports/{token}",
+                "/public/student-invitations/{token}"
+            },
+            method = {
+                RequestMethod.POST, RequestMethod.PATCH, RequestMethod.PUT, RequestMethod.DELETE
+            }
+        )
+        @ResponseStatus(NO_CONTENT)
+        void unsafeProbe() {
         }
     }
 }
