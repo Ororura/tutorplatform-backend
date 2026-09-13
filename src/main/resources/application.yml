@@ -62,6 +62,8 @@ springdoc:
     path: /swagger-ui.html
 
 app:
+  demo-data:
+    enabled: ${APP_DEMO_DATA_ENABLED:false}
   file-storage:
     provider: ${FILE_STORAGE_PROVIDER:LOCAL}
     directory: ${FILE_STORAGE_DIRECTORY:./var/files}
