@@ -31,4 +31,9 @@ public class JpaStudentProgramRepository implements StudentProgramRepository {
         return databaseRepository.findWithLockById(studentProgramId)
             .map(StudentProgramDatabaseModel::toEntity);
     }
+
+    @Override
+    public boolean existsActiveOrPaused(UUID studentId, UUID learningProgramId) {
+        return databaseRepository.existsActiveOrPaused(studentId, learningProgramId);
+    }
 }

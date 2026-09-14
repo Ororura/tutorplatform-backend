@@ -7,6 +7,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import java.net.URI;
 
 import java.util.List;
 import java.util.UUID;
@@ -38,5 +43,18 @@ public class TeacherStudentProgramController implements TeacherStudentProgramApi
         @PathVariable UUID studentProgramId
     ) {
         return programService.getProgram(principal, studentId, studentProgramId);
+    }
+
+    @Override
+    @PostMapping
+    public ResponseEntity<StudentProgramSummaryResponse> assignProgram(
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID studentId,
+        @Valid @RequestBody AssignStudentProgramRequest request
+    ) {
+        StudentProgramSummaryResponse response = programService.assign(principal, studentId, request);
+        return ResponseEntity.created(URI.create(
+            "/api/v1/teacher/students/" + studentId + "/programs/" + response.id()
+        )).body(response);
     }
 }

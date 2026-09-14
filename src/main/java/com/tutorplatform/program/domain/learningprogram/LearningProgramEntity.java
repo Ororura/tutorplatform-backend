@@ -55,6 +55,13 @@ public class LearningProgramEntity {
         this.status = Objects.requireNonNull(status);
     }
 
+    public void activate() {
+        if (status != LearningProgramStatus.DRAFT) {
+            throw new IllegalStateException("Only a draft learning program can be activated");
+        }
+        status = LearningProgramStatus.ACTIVE;
+    }
+
     public UUID getId() {
         return id;
     }

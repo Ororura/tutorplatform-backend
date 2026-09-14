@@ -99,7 +99,7 @@ class OpenApiHardeningIntegrationTest {
                 }
             }
         }
-        assertThat(operationIds).hasSize(65);
+        assertThat(operationIds).hasSize(70);
 
         JsonNode publicPdf = document.required("paths")
             .required("/api/v1/public/reports/{token}/pdf")

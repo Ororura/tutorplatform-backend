@@ -18,6 +18,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
@@ -148,6 +149,48 @@ class DemoDataSeederIntegrationTest {
     }
 
     @Test
+    @Transactional
+    void ilyaCanBeAssignedExistingTemplateThroughPublicTeacherApi() throws Exception {
+        Cookie teacherSession = login(DemoDataAccess.TEACHER_EMAIL, DemoDataAccess.TEACHER_PASSWORD);
+        mockMvc.perform(get("/api/v1/teacher/students/{id}/programs", ILYA).cookie(teacherSession))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(0));
+
+        MvcResult templates = mockMvc.perform(get("/api/v1/teacher/programs")
+                .cookie(teacherSession))
+            .andExpect(status().isOk())
+            .andReturn();
+        JsonNode templateList = objectMapper.readTree(templates.getResponse().getContentAsByteArray());
+        JsonNode selected = null;
+        for (JsonNode template : templateList) {
+            if ("ACTIVE".equals(template.path("status").textValue())) {
+                selected = template;
+                break;
+            }
+        }
+        assertThat(selected).isNotNull();
+
+        CsrfExchange csrf = obtainCsrf(teacherSession);
+        MvcResult assigned = mockMvc.perform(post("/api/v1/teacher/students/{id}/programs", ILYA)
+                .cookie(csrf.cookie()).header(csrf.headerName(), csrf.token())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"learningProgramId\":\"" + selected.required("id").textValue() + "\"}"))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.status").value("ACTIVE"))
+            .andReturn();
+        String studentProgramId = objectMapper.readTree(assigned.getResponse().getContentAsByteArray())
+            .required("id").textValue();
+
+        mockMvc.perform(get("/api/v1/teacher/students/{id}/programs", ILYA).cookie(teacherSession))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(studentProgramId));
+        mockMvc.perform(get("/api/v1/teacher/students/{studentId}/programs/{id}", ILYA, studentProgramId)
+                .cookie(teacherSession))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.modules.length()").value(org.hamcrest.Matchers.greaterThan(0)));
+    }
+
+    @Test
     void publicProgressReportAndPdfFlowsWork() throws Exception {
         mockMvc.perform(get("/api/v1/public/progress/{token}", DemoDataAccess.PROGRESS_TOKEN))
             .andExpect(status().isOk())
@@ -181,6 +224,17 @@ class DemoDataSeederIntegrationTest {
         return new CsrfExchange(
             json.required("headerName").textValue(), json.required("token").textValue(),
             result.getResponse().getCookie("TUTOR_SESSION")
+        );
+    }
+
+    private CsrfExchange obtainCsrf(Cookie session) throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/v1/auth/csrf").cookie(session))
+            .andExpect(status().isOk()).andReturn();
+        JsonNode json = objectMapper.readTree(result.getResponse().getContentAsByteArray());
+        Cookie responseSession = result.getResponse().getCookie("TUTOR_SESSION");
+        return new CsrfExchange(
+            json.required("headerName").textValue(), json.required("token").textValue(),
+            responseSession == null ? session : responseSession
         );
     }
 

@@ -8,6 +8,8 @@ public record StudentProgramEntity(UUID id, UUID studentId, UUID learningProgram
                                    StudentProgramStatus status, int reportIntervalMinutes, Instant startedAt,
                                    Instant completedAt, Long version, Instant createdAt, Instant updatedAt) {
 
+    public static final int DEFAULT_REPORT_INTERVAL_MINUTES = 480;
+
     public StudentProgramEntity(
         UUID id,
         UUID studentId,
