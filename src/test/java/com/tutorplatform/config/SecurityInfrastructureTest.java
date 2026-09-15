@@ -288,6 +288,7 @@ class SecurityInfrastructureTest {
                 "/teacher/reports/{reportId}/shares/{shareId}",
                 "/teacher/students/{studentId}/submissions/{submissionId}/review",
                 "/student/tasks/{taskId}/submissions",
+                "/student/tasks/{taskId}/code-submissions",
                 "/student/tasks/{taskId}/run",
                 "/public/progress/{token}",
                 "/public/reports/{token}",

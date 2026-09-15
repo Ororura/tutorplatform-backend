@@ -19,6 +19,10 @@ import com.tutorplatform.student.infrastructure.persistence.TeacherStudentLinkRe
 import com.tutorplatform.subject.domain.SubjectEntity;
 import com.tutorplatform.subject.domain.SubjectRepository;
 import com.tutorplatform.subject.domain.SubjectStatus;
+import com.tutorplatform.submission.domain.SubmissionEntity;
+import com.tutorplatform.submission.domain.SubmissionRepository;
+import com.tutorplatform.submission.domain.SubmissionStatus;
+import com.tutorplatform.task.domain.programming.*;
 import com.tutorplatform.task.domain.task.*;
 import com.tutorplatform.user.domain.*;
 import jakarta.persistence.EntityManagerFactory;
@@ -73,7 +77,13 @@ class StudentHomeworkApiIntegrationTest {
     @Autowired
     private TaskRepository taskRepository;
     @Autowired
+    private ProgrammingTaskConfigRepository programmingConfigRepository;
+    @Autowired
+    private TaskTestCaseRepository taskTestCaseRepository;
+    @Autowired
     private HomeworkRepository homeworkRepository;
+    @Autowired
+    private SubmissionRepository submissionRepository;
     @Autowired
     private EntityManagerFactory entityManagerFactory;
 
@@ -217,6 +227,24 @@ class StudentHomeworkApiIntegrationTest {
     }
 
     @Test
+    void listPublishesPersistedCompletedAt() throws Exception {
+        Fixture fixture = createFixture("completed-at");
+        Instant completedAt = Instant.parse("2026-02-03T04:05:06Z");
+        createHomework(fixture, "Completed", Instant.now(), null,
+            HomeworkStatus.COMPLETED, completedAt, fixture.tasks());
+        createHomework(fixture, "Assigned", Instant.now(), null,
+            HomeworkStatus.ASSIGNED, null, fixture.tasks());
+
+        mockMvc.perform(get("/api/v1/student/homeworks")
+                .with(user(fixture.studentPrincipal())).param("sort", "title,asc"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.items[0].title").value("Assigned"))
+            .andExpect(jsonPath("$.items[0].completedAt").value(org.hamcrest.Matchers.nullValue()))
+            .andExpect(jsonPath("$.items[1].title").value("Completed"))
+            .andExpect(jsonPath("$.items[1].completedAt").value("2026-02-03T04:05:06Z"));
+    }
+
+    @Test
     void detailReturnsOrderedItemsAndStudentTaskProjectionOnly() throws Exception {
         Fixture fixture = createFixture("detail");
         HomeworkEntity homework = createHomework(
@@ -247,6 +275,54 @@ class StudentHomeworkApiIntegrationTest {
             .andExpect(jsonPath("$.items[0].task.teacherId").doesNotExist())
             .andExpect(jsonPath("$.items[0].task.subjectId").doesNotExist())
             .andExpect(jsonPath("$.items[0].task.status").doesNotExist());
+    }
+
+    @Test
+    void detailPublishesSafeCodeMetadataAndBatchedItemSubmissionState() throws Exception {
+        Fixture fixture = createFixture("execution-state");
+        TaskEntity codeTask = taskRepository.saveAndFlush(new TaskEntity(
+            UUID.randomUUID(), fixture.teacher().id(), fixture.subject().id(),
+            "Code task", "Solve it", TaskType.CODE, TaskDifficulty.HARD, TaskStatus.ACTIVE
+        ));
+        programmingConfigRepository.saveAndFlush(new ProgrammingTaskConfig(
+            codeTask.getId(), ProgrammingLanguage.PYTHON, "print('starter')", true, 1200, 192
+        ));
+        taskTestCaseRepository.saveAllAndFlush(List.of(
+            new TaskTestCase(UUID.randomUUID(), codeTask.getId(), "visible", "answer", false,
+                ComparisonMode.EXACT, 0),
+            new TaskTestCase(UUID.randomUUID(), codeTask.getId(), "secret", "secret answer", true,
+                ComparisonMode.EXACT, 1)
+        ));
+        HomeworkEntity homework = createHomework(
+            fixture, "Stateful", Instant.now(), null, HomeworkStatus.ASSIGNED, null,
+            List.of(fixture.tasks().getFirst(), fixture.tasks().get(1), codeTask)
+        );
+        UUID untouchedItem = homework.getItems().get(0).id();
+        UUID reviewItem = homework.getItems().get(1).id();
+        UUID codeItem = homework.getItems().get(2).id();
+        saveSubmission(fixture, fixture.tasks().get(1), reviewItem, 1,
+            SubmissionStatus.NEEDS_REVIEW);
+        saveSubmission(fixture, codeTask, codeItem, 1, SubmissionStatus.PASSED);
+        saveSubmission(fixture, codeTask, codeItem, 2, SubmissionStatus.FAILED);
+
+        mockMvc.perform(get("/api/v1/student/homeworks/{homeworkId}", homework.getId())
+                .with(user(fixture.studentPrincipal())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.items[0].id").value(untouchedItem.toString()))
+            .andExpect(jsonPath("$.items[0].passed").value(false))
+            .andExpect(jsonPath("$.items[0].latestSubmissionStatus").doesNotExist())
+            .andExpect(jsonPath("$.items[0].task.codeExecution").doesNotExist())
+            .andExpect(jsonPath("$.items[1].passed").value(false))
+            .andExpect(jsonPath("$.items[1].latestSubmissionStatus").value("NEEDS_REVIEW"))
+            .andExpect(jsonPath("$.items[2].passed").value(true))
+            .andExpect(jsonPath("$.items[2].latestSubmissionStatus").value("FAILED"))
+            .andExpect(jsonPath("$.items[2].task.codeExecution.language").value("PYTHON"))
+            .andExpect(jsonPath("$.items[2].task.codeExecution.starterCode").value("print('starter')"))
+            .andExpect(jsonPath("$.items[2].task.codeExecution.executionEnabled").value(true))
+            .andExpect(jsonPath("$.items[2].task.codeExecution.timeLimitMs").value(1200))
+            .andExpect(jsonPath("$.items[2].task.codeExecution.memoryLimitMb").value(192))
+            .andExpect(jsonPath("$..inputText").doesNotExist())
+            .andExpect(jsonPath("$..expectedOutput").doesNotExist());
     }
 
     @Test
@@ -298,7 +374,7 @@ class StudentHomeworkApiIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.items.length()").value(10));
 
-        assertThat(statistics.getPrepareStatementCount()).isLessThanOrEqualTo(2);
+        assertThat(statistics.getPrepareStatementCount()).isLessThanOrEqualTo(3);
     }
 
     @Test
@@ -315,10 +391,15 @@ class StudentHomeworkApiIntegrationTest {
                 .value("date-time"))
             .andExpect(jsonPath("$.components.schemas.StudentHomeworkSummaryResponse.properties.status.enum.length()")
                 .value(3))
+            .andExpect(jsonPath("$.components.schemas.StudentHomeworkSummaryResponse.properties.completedAt.format")
+                .value("date-time"))
             .andExpect(jsonPath("$.components.schemas.StudentTaskResponse.properties.taskType.enum.length()")
                 .value(5))
             .andExpect(jsonPath("$.components.schemas.StudentTaskResponse.properties.difficulty.enum.length()")
                 .value(3))
+            .andExpect(jsonPath("$.components.schemas.StudentTaskResponse.properties.codeExecution").exists())
+            .andExpect(jsonPath("$.components.schemas.StudentHomeworkItemResponse.properties.passed").exists())
+            .andExpect(jsonPath("$.components.schemas.StudentHomeworkItemResponse.properties.latestSubmissionStatus").exists())
             .andExpect(jsonPath("$.components.schemas.ApiError").exists());
     }
 
@@ -384,6 +465,19 @@ class StudentHomeworkApiIntegrationTest {
             UUID.randomUUID(), fixture.teacher().id(), fixture.subject().id(),
             "Task " + index, "Description " + index,
             TaskType.TEXT, TaskDifficulty.MEDIUM, TaskStatus.ACTIVE
+        ));
+    }
+
+    private void saveSubmission(
+        Fixture fixture,
+        TaskEntity task,
+        UUID homeworkItemId,
+        int attemptNo,
+        SubmissionStatus status
+    ) {
+        submissionRepository.saveAndFlush(new SubmissionEntity(
+            UUID.randomUUID(), fixture.student().getId(), fixture.studentProgram().id(),
+            task.getId(), homeworkItemId, attemptNo, status, null, Instant.now()
         ));
     }
 

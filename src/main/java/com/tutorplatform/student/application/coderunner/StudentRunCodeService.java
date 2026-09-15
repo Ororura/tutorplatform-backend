@@ -147,17 +147,14 @@ public class StudentRunCodeService {
         List<RunCodeResult.TestResult> safeTests = configuredTests.stream().map(test -> {
             ExecutionTestResult testResult = resultsById.get(test.id());
             boolean passed = testResult != null && testResult.passed();
-            if (test.hidden()) {
-                return new RunCodeResult.TestResult(passed, true, null, null, null);
-            }
-            return new RunCodeResult.TestResult(
-                passed, false, test.inputText(), test.expectedOutput(),
-                testResult == null ? null : bounded(testResult.stdoutExcerpt())
-            );
+            return new RunCodeResult.TestResult(test.position(), test.hidden(), passed);
         }).toList();
+        boolean hasHiddenTests = configuredTests.stream().anyMatch(TaskTestCase::hidden);
         return new RunCodeResult(
             result.executionId(), result.status(), result.passedTests(), result.totalTests(),
-            result.executionTimeMs(), bounded(result.stdoutExcerpt()), bounded(result.stderrExcerpt()),
+            result.executionTimeMs(),
+            hasHiddenTests ? null : bounded(result.stdoutExcerpt()),
+            hasHiddenTests ? null : bounded(result.stderrExcerpt()),
             safeTests
         );
     }

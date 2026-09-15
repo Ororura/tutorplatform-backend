@@ -17,14 +17,14 @@ public record RunCodeResponse(
     long executionTimeMs,
     String stdoutExcerpt,
     String stderrExcerpt,
-    List<RunCodeTestResponse> tests
+    List<StudentRunCodeTestResultResponse> tests
 ) {
     public static RunCodeResponse from(RunCodeResult result) {
         return new RunCodeResponse(
             result.executionId(), RunCodeExecutionStatus.valueOf(result.status().name()),
             result.passedTests(), result.totalTests(),
             result.executionTimeMs(), result.stdoutExcerpt(), result.stderrExcerpt(),
-            result.tests().stream().map(RunCodeTestResponse::from).toList()
+            result.tests().stream().map(StudentRunCodeTestResultResponse::from).toList()
         );
     }
 }

@@ -16,11 +16,9 @@ public record RunCodeResult(
     List<TestResult> tests
 ) {
     public record TestResult(
-        boolean passed,
+        int position,
         boolean hidden,
-        String input,
-        String expectedOutput,
-        String actualOutput
+        boolean passed
     ) {
     }
 }

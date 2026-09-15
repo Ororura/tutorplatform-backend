@@ -131,6 +131,13 @@ class CodeSubmissionApiIntegrationTest {
                 .with(user(fixture.principal())))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.sourceCode").value("print(42)"));
+        mockMvc.perform(get("/api/v1/student/homeworks/{homeworkId}", fixture.homeworkId())
+                .with(user(fixture.principal())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("COMPLETED"))
+            .andExpect(jsonPath("$.completedAt").isNotEmpty())
+            .andExpect(jsonPath("$.items[0].passed").value(true))
+            .andExpect(jsonPath("$.items[0].latestSubmissionStatus").value("PASSED"));
     }
 
     @Test
@@ -229,7 +236,7 @@ class CodeSubmissionApiIntegrationTest {
         Fixture serverOwned = createFixture(
             "server-owned", TaskType.CODE, TaskStatus.ACTIVE, true, HomeworkStatus.ASSIGNED
         );
-        mockMvc.perform(post("/api/v1/student/tasks/{taskId}/submissions", serverOwned.taskId())
+        mockMvc.perform(post("/api/v1/student/tasks/{taskId}/code-submissions", serverOwned.taskId())
                 .with(user(serverOwned.principal())).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -243,7 +250,7 @@ class CodeSubmissionApiIntegrationTest {
 
     private org.springframework.test.web.servlet.ResultActions submit(Fixture fixture, String sourceCode)
         throws Exception {
-        return mockMvc.perform(post("/api/v1/student/tasks/{taskId}/submissions", fixture.taskId())
+        return mockMvc.perform(post("/api/v1/student/tasks/{taskId}/code-submissions", fixture.taskId())
             .with(user(fixture.principal())).with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(Map.of(

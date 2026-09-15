@@ -87,12 +87,13 @@ public class CodeSubmissionService {
         }
 
         boolean systemError = executionResult.status() == ExecutionStatus.SYSTEM_ERROR;
+        boolean hasHiddenTests = codeTask.testCases().stream().anyMatch(test -> test.hidden());
         return transactions.finish(
             pending.id(), CodeExecutionStatus.valueOf(executionResult.status().name()),
             systemError ? 0 : executionResult.passedTests(), configuredTestCount,
             systemError ? 0 : executionResult.executionTimeMs(),
-            systemError ? null : bounded(executionResult.stdoutExcerpt()),
-            systemError ? null : bounded(executionResult.stderrExcerpt())
+            systemError || hasHiddenTests ? null : bounded(executionResult.stdoutExcerpt()),
+            systemError || hasHiddenTests ? null : bounded(executionResult.stderrExcerpt())
         );
     }
 

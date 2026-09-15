@@ -102,15 +102,16 @@ class StudentRunCodeApiIntegrationTest {
             .andExpect(jsonPath("$.status").value("FAILED"))
             .andExpect(jsonPath("$.passedTests").value(1))
             .andExpect(jsonPath("$.totalTests").value(2))
+            .andExpect(jsonPath("$.stdoutExcerpt").doesNotExist())
+            .andExpect(jsonPath("$.stderrExcerpt").doesNotExist())
+            .andExpect(jsonPath("$.tests[0].position").value(0))
             .andExpect(jsonPath("$.tests[0].hidden").value(false))
-            .andExpect(jsonPath("$.tests[0].input").value("2 3"))
-            .andExpect(jsonPath("$.tests[0].expectedOutput").value("5"))
-            .andExpect(jsonPath("$.tests[0].actualOutput").value("5"))
+            .andExpect(jsonPath("$.tests[0].passed").value(true))
             .andExpect(jsonPath("$.tests[1].hidden").value(true))
             .andExpect(jsonPath("$.tests[1].passed").value(false))
-            .andExpect(jsonPath("$.tests[1].input").doesNotExist())
-            .andExpect(jsonPath("$.tests[1].expectedOutput").doesNotExist())
-            .andExpect(jsonPath("$.tests[1].actualOutput").doesNotExist());
+            .andExpect(jsonPath("$..input").doesNotExist())
+            .andExpect(jsonPath("$..expectedOutput").doesNotExist())
+            .andExpect(jsonPath("$..actualOutput").doesNotExist());
 
         var requestCaptor = org.mockito.ArgumentCaptor.forClass(ExecutionRequest.class);
         verify(executionPort).execute(requestCaptor.capture());
@@ -207,6 +208,12 @@ class StudentRunCodeApiIntegrationTest {
                 .value("uuid"))
             .andExpect(jsonPath("$.components.schemas.RunCodeRequest.properties.language").doesNotExist())
             .andExpect(jsonPath("$.components.schemas.RunCodeResponse").exists())
+            .andExpect(jsonPath("$.components.schemas.StudentRunCodeTestResultResponse").exists())
+            .andExpect(jsonPath("$.components.schemas.StudentRunCodeTestResultResponse.properties.input").doesNotExist())
+            .andExpect(jsonPath("$.components.schemas.StudentRunCodeTestResultResponse.properties.expectedOutput").doesNotExist())
+            .andExpect(jsonPath("$.components.schemas.StudentRunCodeTestResultResponse.properties.actualOutput").doesNotExist())
+            .andExpect(jsonPath("$.components.schemas.TaskTestCaseResponse.properties.inputText").exists())
+            .andExpect(jsonPath("$.components.schemas.TaskTestCaseResponse.properties.expectedOutput").exists())
             .andExpect(jsonPath("$.components.schemas.ExecutionStatus.enum.length()").value(5))
             .andExpect(jsonPath("$.components.schemas.ApiError").exists());
     }

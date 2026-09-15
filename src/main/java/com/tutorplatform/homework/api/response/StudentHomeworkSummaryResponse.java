@@ -15,14 +15,15 @@ public record StudentHomeworkSummaryResponse(
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "date-time") Instant assignedAt,
     @Schema(nullable = true, format = "date-time") Instant dueAt,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean overdue,
+    @Schema(nullable = true, format = "date-time") Instant completedAt,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, minimum = "0") long itemsCount,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "date-time") Instant createdAt
 ) {
     public static StudentHomeworkSummaryResponse from(StudentHomeworkSummaryResult homework) {
         return new StudentHomeworkSummaryResponse(
             homework.id(), homework.studentProgramId(), homework.title(), homework.status(),
-            homework.assignedAt(), homework.dueAt(), homework.overdue(), homework.itemsCount(),
-            homework.createdAt()
+            homework.assignedAt(), homework.dueAt(), homework.overdue(), homework.completedAt(),
+            homework.itemsCount(), homework.createdAt()
         );
     }
 }

@@ -2,7 +2,8 @@ package com.tutorplatform.submission.api;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.shared.api.ApiError;
-import com.tutorplatform.submission.api.request.SubmitStudentSubmissionRequest;
+import com.tutorplatform.submission.api.request.SubmitCodeAnswerRequest;
+import com.tutorplatform.submission.api.request.SubmitTextAnswerRequest;
 import com.tutorplatform.submission.api.response.StudentSubmissionPageResponse;
 import com.tutorplatform.submission.api.response.StudentSubmissionResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,9 +18,9 @@ import java.util.UUID;
 
 public interface StudentSubmissionApi {
 
-    @Operation(operationId = "submitTextAnswer", summary = "Submit a TEXT answer or CODE solution for a homework task")
+    @Operation(operationId = "submitTextAnswer", summary = "Submit a TEXT answer for a homework task")
     @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "Submission created and, for CODE, executed"),
+        @ApiResponse(responseCode = "201", description = "TEXT submission created for teacher review"),
         @ApiResponse(responseCode = "400", description = "Validation or submission context error", content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(responseCode = "403", description = "Student role or CSRF token required", content = @Content(schema = @Schema(implementation = ApiError.class))),
@@ -29,7 +30,22 @@ public interface StudentSubmissionApi {
     ResponseEntity<StudentSubmissionResponse> submitTextAnswer(
         @Parameter(hidden = true) AuthenticatedUser principal,
         @Parameter(schema = @Schema(format = "uuid")) UUID taskId,
-        SubmitStudentSubmissionRequest request
+        SubmitTextAnswerRequest request
+    );
+
+    @Operation(operationId = "submitCodeAnswer", summary = "Submit and execute a CODE solution for a homework task")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "CODE submission created and executed"),
+        @ApiResponse(responseCode = "400", description = "Validation or submission context error", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "403", description = "Student role or CSRF token required", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "404", description = "Task or homework item not found", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "409", description = "Homework does not accept submissions", content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    ResponseEntity<StudentSubmissionResponse> submitCodeAnswer(
+        @Parameter(hidden = true) AuthenticatedUser principal,
+        @Parameter(schema = @Schema(format = "uuid")) UUID taskId,
+        SubmitCodeAnswerRequest request
     );
 
     @Operation(operationId = "listStudentTaskSubmissions", summary = "List the current student's task submissions")

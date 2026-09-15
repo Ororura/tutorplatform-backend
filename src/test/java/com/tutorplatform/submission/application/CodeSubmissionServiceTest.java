@@ -105,8 +105,7 @@ class CodeSubmissionServiceTest {
         long expectedTime = status == ExecutionStatus.SYSTEM_ERROR ? 0 : 77;
         order.verify(transactions).finish(
             any(), eq(expectedExecutionStatus), eq(expectedPassed), eq(1), eq(expectedTime),
-            status == ExecutionStatus.SYSTEM_ERROR ? isNull() : eq("stdout"),
-            status == ExecutionStatus.SYSTEM_ERROR ? isNull() : eq("stderr")
+            isNull(), isNull()
         );
         assertThat(request.getValue().language()).isEqualTo(ExecutionLanguage.PYTHON);
         assertThat(request.getValue().timeLimitMs()).isEqualTo(900);

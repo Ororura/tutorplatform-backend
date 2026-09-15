@@ -107,16 +107,7 @@ class SubmissionApiIntegrationTest {
         Instant before = Instant.now();
 
         submit(fixture.studentPrincipal(), fixture.textTask().getId(), itemId,
-            """
-                {
-                  "homeworkItemId":"%s",
-                  "textAnswer":"Мой ответ",
-                  "attemptNo":99,
-                  "status":"PASSED",
-                  "studentId":"%s",
-                  "submittedAt":"2000-01-01T00:00:00Z"
-                }
-                """.formatted(itemId, UUID.randomUUID()))
+            request(itemId, "Мой ответ"))
             .andExpect(status().isCreated())
             .andExpect(header().string("Location", org.hamcrest.Matchers.startsWith(
                 "/api/v1/student/submissions/"
@@ -148,6 +139,25 @@ class SubmissionApiIntegrationTest {
             .containsOnly(SubmissionStatus.NEEDS_REVIEW);
         assertThat(homeworkRepository.findById(homework.getId()))
             .get().extracting(HomeworkEntity::getStatus).isEqualTo(HomeworkStatus.ASSIGNED);
+    }
+
+    @Test
+    void textContractRejectsCodeAndServerOwnedFields() throws Exception {
+        Fixture fixture = createFixture("text-contract");
+        HomeworkEntity homework = createHomework(
+            fixture, fixture.studentProgram(), HomeworkStatus.ASSIGNED, List.of(fixture.textTask())
+        );
+        UUID itemId = homework.getItems().getFirst().id();
+
+        submit(fixture.studentPrincipal(), fixture.textTask().getId(), itemId,
+            """
+                {"homeworkItemId":"%s","textAnswer":"Ответ","sourceCode":"pass"}
+                """.formatted(itemId))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.details[0].field").value("request"));
+
+        assertThat(submissionRepository.findPageByStudentId(fixture.student().getId(), 0, 10).items())
+            .isEmpty();
     }
 
     @Test
@@ -352,6 +362,8 @@ class SubmissionApiIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.paths['/api/v1/student/tasks/{taskId}/submissions'].post.operationId")
                 .value("submitTextAnswer"))
+            .andExpect(jsonPath("$.paths['/api/v1/student/tasks/{taskId}/code-submissions'].post.operationId")
+                .value("submitCodeAnswer"))
             .andExpect(jsonPath("$.paths['/api/v1/student/tasks/{taskId}/submissions'].get.operationId")
                 .value("listStudentTaskSubmissions"))
             .andExpect(jsonPath("$.paths['/api/v1/student/submissions/{submissionId}'].get.operationId")
@@ -362,6 +374,10 @@ class SubmissionApiIntegrationTest {
                 .value("date-time"))
             .andExpect(jsonPath("$.components.schemas.StudentSubmissionResponse.properties.status.enum.length()")
                 .value(5))
+            .andExpect(jsonPath("$.components.schemas.SubmitTextAnswerRequest.properties.textAnswer").exists())
+            .andExpect(jsonPath("$.components.schemas.SubmitTextAnswerRequest.properties.sourceCode").doesNotExist())
+            .andExpect(jsonPath("$.components.schemas.SubmitCodeAnswerRequest.properties.sourceCode").exists())
+            .andExpect(jsonPath("$.components.schemas.SubmitCodeAnswerRequest.properties.textAnswer").doesNotExist())
             .andExpect(jsonPath("$.components.schemas.ApiError").exists());
     }
 

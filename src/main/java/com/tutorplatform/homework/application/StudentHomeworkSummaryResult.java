@@ -13,6 +13,7 @@ public record StudentHomeworkSummaryResult(
     Instant assignedAt,
     Instant dueAt,
     boolean overdue,
+    Instant completedAt,
     long itemsCount,
     Instant createdAt
 ) {

@@ -109,9 +109,11 @@ class StudentRunCodeServiceTest {
             .containsExactly(ExecutionComparisonMode.NORMALIZED, ExecutionComparisonMode.EXACT);
         assertThat(result.status()).isEqualTo(ExecutionStatus.FAILED);
         assertThat(result.tests().getFirst())
-            .isEqualTo(new RunCodeResult.TestResult(true, false, "2 3", "5", "5"));
+            .isEqualTo(new RunCodeResult.TestResult(0, false, true));
         assertThat(result.tests().get(1))
-            .isEqualTo(new RunCodeResult.TestResult(false, true, null, null, null));
+            .isEqualTo(new RunCodeResult.TestResult(1, true, false));
+        assertThat(result.stdoutExcerpt()).isNull();
+        assertThat(result.stderrExcerpt()).isNull();
     }
 
     @ParameterizedTest

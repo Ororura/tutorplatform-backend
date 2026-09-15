@@ -3,6 +3,8 @@ package com.tutorplatform.homework.infrastructure.persistence;
 import com.tutorplatform.homework.application.*;
 import com.tutorplatform.homework.domain.HomeworkStatus;
 import com.tutorplatform.task.domain.task.TaskDifficulty;
+import com.tutorplatform.task.domain.programming.ProgrammingLanguage;
+import com.tutorplatform.task.domain.task.TaskStatus;
 import com.tutorplatform.task.domain.task.TaskType;
 import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.PageRequest;
@@ -135,12 +137,22 @@ public class JpaHomeworkQuery implements HomeworkQuery {
                 select homework.id, homework.studentProgramId, homework.title, homework.description,
                        homework.status, homework.assignedAt, homework.dueAt, homework.completedAt,
                        item.id, item.taskId, item.position, item.required,
-                       task.id, task.title, task.descriptionMarkdown, task.taskType, task.difficulty
+                       task.id, task.title, task.descriptionMarkdown, task.taskType, task.difficulty,
+                       task.status, config.language, config.starterCode, config.executionEnabled,
+                       config.timeLimitMs, config.memoryLimitMb, count(testCase.id)
                 from HomeworkDatabaseModel homework
                 join homework.items item
                 join item.task task
+                left join ProgrammingTaskConfigDatabaseModel config on config.taskId = task.id
+                left join TaskTestCaseDatabaseModel testCase on testCase.taskId = task.id
                 where homework.id = :homeworkId
                   and homework.studentProgram.studentId = :studentId
+                group by homework.id, homework.studentProgramId, homework.title, homework.description,
+                         homework.status, homework.assignedAt, homework.dueAt, homework.completedAt,
+                         item.id, item.taskId, item.position, item.required,
+                         task.id, task.title, task.descriptionMarkdown, task.taskType, task.difficulty,
+                         task.status, config.language, config.starterCode, config.executionEnabled,
+                         config.timeLimitMs, config.memoryLimitMb
                 order by item.position asc
                 """, Object[].class)
             .setParameter("homeworkId", homeworkId)
@@ -157,12 +169,15 @@ public class JpaHomeworkQuery implements HomeworkQuery {
                 (UUID) row[9],
                 (Integer) row[10],
                 (Boolean) row[11],
+                false,
+                null,
                 new StudentHomeworkDetails.Task(
                     (UUID) row[12],
                     (String) row[13],
                     (String) row[14],
                     (TaskType) row[15],
-                    (TaskDifficulty) row[16]
+                    (TaskDifficulty) row[16],
+                    codeExecution(row)
                 )
             ));
         }
@@ -177,6 +192,22 @@ public class JpaHomeworkQuery implements HomeworkQuery {
             (Instant) first[7],
             List.copyOf(items)
         ));
+    }
+
+    private StudentHomeworkDetails.CodeExecution codeExecution(Object[] row) {
+        if ((TaskType) row[15] != TaskType.CODE || row[18] == null) {
+            return null;
+        }
+        boolean executable = (TaskStatus) row[17] == TaskStatus.ACTIVE
+            && (Boolean) row[20]
+            && (Long) row[23] > 0;
+        return new StudentHomeworkDetails.CodeExecution(
+            (ProgrammingLanguage) row[18],
+            (String) row[19],
+            executable,
+            (Integer) row[21],
+            (Integer) row[22]
+        );
     }
 
     @Override

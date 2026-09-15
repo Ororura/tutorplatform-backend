@@ -8,6 +8,7 @@ import com.tutorplatform.homework.domain.HomeworkStatus;
 import com.tutorplatform.program.application.ProgramQuery;
 import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.student.application.management.StudentNotFoundException;
+import com.tutorplatform.submission.application.SubmissionQuery;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,15 +27,18 @@ public class StudentHomeworkService {
     private final StudentOwnershipQuery studentOwnershipQuery;
     private final ProgramQuery programQuery;
     private final HomeworkQuery homeworkQuery;
+    private final SubmissionQuery submissionQuery;
 
     public StudentHomeworkService(
         StudentOwnershipQuery studentOwnershipQuery,
         ProgramQuery programQuery,
-        HomeworkQuery homeworkQuery
+        HomeworkQuery homeworkQuery,
+        SubmissionQuery submissionQuery
     ) {
         this.studentOwnershipQuery = studentOwnershipQuery;
         this.programQuery = programQuery;
         this.homeworkQuery = homeworkQuery;
+        this.submissionQuery = submissionQuery;
     }
 
     public StudentHomeworkPageResult listHomeworks(
@@ -60,7 +64,7 @@ public class StudentHomeworkService {
                 item.id(), item.studentProgramId(), item.title(), item.status(),
                 item.assignedAt(), item.dueAt(), isOverdue(
                 item.dueAt(), item.status(), item.completedAt(), now
-            ), item.itemsCount(), item.createdAt()
+            ), item.completedAt(), item.itemsCount(), item.createdAt()
             )).toList(),
             page,
             size,
@@ -76,11 +80,23 @@ public class StudentHomeworkService {
         UUID studentId = currentStudentId(principal);
         StudentHomeworkDetails homework = homeworkQuery.findDetailsByStudent(studentId, homeworkId)
             .orElseThrow(HomeworkNotFoundException::new);
+        var itemIds = homework.items().stream()
+            .map(StudentHomeworkDetails.Item::id)
+            .collect(java.util.stream.Collectors.toUnmodifiableSet());
+        var states = submissionQuery.findHomeworkItemStates(
+            studentId, homework.studentProgramId(), itemIds
+        );
+        var items = homework.items().stream().map(item -> {
+            var state = states.get(item.id());
+            return state == null
+                ? item
+                : item.withSubmissionState(state.passed(), state.latestSubmissionStatus());
+        }).toList();
         return new StudentHomeworkDetailsResult(
             homework.id(), homework.studentProgramId(), homework.title(), homework.description(),
             homework.status(), homework.assignedAt(), homework.dueAt(), isOverdue(
             homework.dueAt(), homework.status(), homework.completedAt(), Instant.now()
-        ), homework.completedAt(), homework.items()
+        ), homework.completedAt(), items
         );
     }
 

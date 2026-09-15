@@ -28,6 +28,20 @@ interface SubmissionDatabaseRepository extends JpaRepository<SubmissionDatabaseM
         @Param("homeworkItemIds") Set<UUID> homeworkItemIds
     );
 
+    @Query("""
+        select submission.homeworkItemId, submission.status, submission.attemptNo
+        from SubmissionDatabaseModel submission
+        where submission.studentId = :studentId
+          and submission.studentProgramId = :studentProgramId
+          and submission.homeworkItemId in :homeworkItemIds
+        order by submission.homeworkItemId asc, submission.attemptNo desc, submission.id desc
+        """)
+    List<Object[]> findHomeworkItemSubmissionStates(
+        @Param("studentId") UUID studentId,
+        @Param("studentProgramId") UUID studentProgramId,
+        @Param("homeworkItemIds") Set<UUID> homeworkItemIds
+    );
+
     Optional<SubmissionDatabaseModel> findByIdAndStudentId(UUID submissionId, UUID studentId);
 
     Page<SubmissionDatabaseModel> findAllByStudentId(UUID studentId, Pageable pageable);
