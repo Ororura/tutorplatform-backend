@@ -1,4 +1,4 @@
-package com.tutorplatform.task.api.response;
+package com.tutorplatform.task.api.programming;
 
 import com.tutorplatform.task.domain.programming.ProgrammingLanguage;
 import com.tutorplatform.task.domain.programming.ProgrammingTaskConfig;

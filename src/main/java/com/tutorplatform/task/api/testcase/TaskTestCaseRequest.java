@@ -1,4 +1,4 @@
-package com.tutorplatform.task.api.request;
+package com.tutorplatform.task.api.testcase;
 
 import com.tutorplatform.task.domain.programming.ComparisonMode;
 import jakarta.validation.constraints.NotNull;

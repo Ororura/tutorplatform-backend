@@ -1,4 +1,4 @@
-package com.tutorplatform.task.api.request;
+package com.tutorplatform.task.api.programming;
 
 import com.tutorplatform.task.domain.programming.ProgrammingLanguage;
 import io.swagger.v3.oas.annotations.media.Schema;

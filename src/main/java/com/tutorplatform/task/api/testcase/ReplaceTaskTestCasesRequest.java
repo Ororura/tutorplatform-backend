@@ -1,4 +1,4 @@
-package com.tutorplatform.task.api.request;
+package com.tutorplatform.task.api.testcase;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;

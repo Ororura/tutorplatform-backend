@@ -1,4 +1,4 @@
-package com.tutorplatform.task.api.response;
+package com.tutorplatform.task.api.testcase;
 
 import com.tutorplatform.task.domain.programming.TaskTestCase;
 

@@ -1,4 +1,4 @@
-package com.tutorplatform.task.api.request;
+package com.tutorplatform.task.api.programming;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

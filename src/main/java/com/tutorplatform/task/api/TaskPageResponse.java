@@ -1,4 +1,4 @@
-package com.tutorplatform.task.api.response;
+package com.tutorplatform.task.api;
 
 import com.tutorplatform.task.application.TaskPageResult;
 import io.swagger.v3.oas.annotations.media.Schema;

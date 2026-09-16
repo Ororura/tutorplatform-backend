@@ -1,5 +1,7 @@
-package com.tutorplatform.task.api.request;
+package com.tutorplatform.task.api;
 
+import com.tutorplatform.task.api.programming.ProgrammingTaskConfigRequest;
+import com.tutorplatform.task.api.testcase.TaskTestCaseRequest;
 import com.tutorplatform.task.domain.task.TaskDifficulty;
 import com.tutorplatform.task.domain.task.TaskType;
 import io.swagger.v3.oas.annotations.media.Schema;

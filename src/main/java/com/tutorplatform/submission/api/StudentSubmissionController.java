@@ -7,7 +7,6 @@ import com.tutorplatform.submission.api.response.StudentSubmissionPageResponse;
 import com.tutorplatform.submission.api.response.StudentSubmissionResponse;
 import com.tutorplatform.submission.application.SubmissionService;
 import com.tutorplatform.submission.application.CodeSubmissionService;
-import com.tutorplatform.submission.application.exception.InvalidSubmissionException;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -38,9 +37,6 @@ public class StudentSubmissionController implements StudentSubmissionApi {
         @PathVariable UUID taskId,
         @Valid @RequestBody SubmitTextAnswerRequest request
     ) {
-        if (!request.unknownProperties().isEmpty()) {
-            throw new InvalidSubmissionException("request", "contains unsupported fields");
-        }
         StudentSubmissionResponse response = StudentSubmissionResponse.from(
             submissionService.submitTextAnswer(
                 principal, taskId, request.homeworkItemId(), request.textAnswer()
@@ -56,9 +52,6 @@ public class StudentSubmissionController implements StudentSubmissionApi {
         @PathVariable UUID taskId,
         @Valid @RequestBody SubmitCodeAnswerRequest request
     ) {
-        if (!request.unknownProperties().isEmpty()) {
-            throw new InvalidSubmissionException("request", "contains unsupported fields");
-        }
         StudentSubmissionResponse response = StudentSubmissionResponse.from(
             codeSubmissionService.submit(
                 principal, taskId, request.homeworkItemId(), request.sourceCode()

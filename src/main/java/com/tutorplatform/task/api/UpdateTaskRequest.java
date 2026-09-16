@@ -1,4 +1,4 @@
-package com.tutorplatform.task.api.request;
+package com.tutorplatform.task.api;
 
 import com.tutorplatform.task.domain.task.TaskDifficulty;
 import com.tutorplatform.task.domain.task.TaskStatus;

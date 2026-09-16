@@ -244,7 +244,7 @@ class CodeSubmissionApiIntegrationTest {
                      "status":"PASSED","language":"PYTHON","testCases":[]}
                     """.formatted(serverOwned.homeworkItemId())))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.details[0].field").value("request"));
+            .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
         verifyNoInteractions(executionPort);
     }
 

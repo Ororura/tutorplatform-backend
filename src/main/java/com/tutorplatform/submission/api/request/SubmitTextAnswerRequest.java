@@ -1,48 +1,24 @@
 package com.tutorplatform.submission.api.request;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Schema(description = "Student answer for a TEXT homework task")
-public class SubmitTextAnswerRequest {
-
+public record SubmitTextAnswerRequest(
     @NotNull
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "uuid")
-    private final UUID homeworkItemId;
-
+    UUID homeworkItemId,
     @NotBlank
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-    private final String textAnswer;
-
-    private final Map<String, Object> unknownProperties = new LinkedHashMap<>();
-
-    @JsonCreator
-    public SubmitTextAnswerRequest(
-        @JsonProperty("homeworkItemId") UUID homeworkItemId,
-        @JsonProperty("textAnswer") String textAnswer
-    ) {
-        this.homeworkItemId = homeworkItemId;
-        this.textAnswer = textAnswer;
-    }
+    String textAnswer
+) {
 
     @JsonAnySetter
-    public void collectUnknownProperty(String property, Object value) {
-        unknownProperties.put(property, value);
-    }
-
-    public UUID homeworkItemId() { return homeworkItemId; }
-    public String textAnswer() { return textAnswer; }
-
-    @Schema(hidden = true)
-    public Map<String, Object> unknownProperties() {
-        return Map.copyOf(unknownProperties);
+    public void rejectUnknownProperty(String property, Object value) {
+        throw new IllegalArgumentException("Unknown request property: " + property);
     }
 }

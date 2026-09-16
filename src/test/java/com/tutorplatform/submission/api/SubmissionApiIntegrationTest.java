@@ -152,9 +152,9 @@ class SubmissionApiIntegrationTest {
         submit(fixture.studentPrincipal(), fixture.textTask().getId(), itemId,
             """
                 {"homeworkItemId":"%s","textAnswer":"Ответ","sourceCode":"pass"}
-                """.formatted(itemId))
+            """.formatted(itemId))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.details[0].field").value("request"));
+            .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
 
         assertThat(submissionRepository.findPageByStudentId(fixture.student().getId(), 0, 10).items())
             .isEmpty();

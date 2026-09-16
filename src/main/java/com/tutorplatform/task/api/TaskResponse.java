@@ -1,6 +1,8 @@
-package com.tutorplatform.task.api.response;
+package com.tutorplatform.task.api;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.tutorplatform.task.api.programming.ProgrammingTaskConfigResponse;
+import com.tutorplatform.task.api.testcase.TaskTestCaseResponse;
 import com.tutorplatform.task.application.TaskResult;
 import com.tutorplatform.task.domain.task.TaskDifficulty;
 import com.tutorplatform.task.domain.task.TaskStatus;
