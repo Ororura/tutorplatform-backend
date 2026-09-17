@@ -1,4 +1,4 @@
-package com.tutorplatform.submission.api.request;
+package com.tutorplatform.submission.api;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import io.swagger.v3.oas.annotations.media.Schema;

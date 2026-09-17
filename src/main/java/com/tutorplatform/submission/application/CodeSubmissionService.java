@@ -9,6 +9,7 @@ import com.tutorplatform.submission.application.exception.*;
 import com.tutorplatform.submission.domain.CodeExecutionStatus;
 import com.tutorplatform.task.application.TaskQuery;
 import com.tutorplatform.task.application.exception.TaskNotFoundException;
+import com.tutorplatform.task.domain.programming.TaskTestCase;
 import com.tutorplatform.task.domain.task.TaskStatus;
 import com.tutorplatform.task.domain.task.TaskType;
 import org.slf4j.Logger;
@@ -87,7 +88,7 @@ public class CodeSubmissionService {
         }
 
         boolean systemError = executionResult.status() == ExecutionStatus.SYSTEM_ERROR;
-        boolean hasHiddenTests = codeTask.testCases().stream().anyMatch(test -> test.hidden());
+        boolean hasHiddenTests = codeTask.testCases().stream().anyMatch(TaskTestCase::hidden);
         return transactions.finish(
             pending.id(), CodeExecutionStatus.valueOf(executionResult.status().name()),
             systemError ? 0 : executionResult.passedTests(), configuredTestCount,

@@ -1,5 +1,6 @@
-package com.tutorplatform.submission.api.response;
+package com.tutorplatform.submission.api.student;
 
+import com.tutorplatform.submission.api.CodeSubmissionExecutionResponse;
 import com.tutorplatform.submission.application.SubmissionResult;
 import com.tutorplatform.submission.domain.SubmissionStatus;
 import io.swagger.v3.oas.annotations.media.Schema;

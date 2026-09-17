@@ -1,4 +1,4 @@
-package com.tutorplatform.submission.api.response;
+package com.tutorplatform.submission.api;
 
 import com.tutorplatform.submission.application.CodeSubmissionResult;
 import com.tutorplatform.submission.domain.CodeExecutionStatus;

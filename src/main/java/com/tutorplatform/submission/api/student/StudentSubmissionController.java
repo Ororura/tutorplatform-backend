@@ -1,10 +1,8 @@
-package com.tutorplatform.submission.api;
+package com.tutorplatform.submission.api.student;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
-import com.tutorplatform.submission.api.request.SubmitCodeAnswerRequest;
-import com.tutorplatform.submission.api.request.SubmitTextAnswerRequest;
-import com.tutorplatform.submission.api.response.StudentSubmissionPageResponse;
-import com.tutorplatform.submission.api.response.StudentSubmissionResponse;
+import com.tutorplatform.submission.api.SubmitCodeAnswerRequest;
+import com.tutorplatform.submission.api.SubmitTextAnswerRequest;
 import com.tutorplatform.submission.application.SubmissionService;
 import com.tutorplatform.submission.application.CodeSubmissionService;
 import jakarta.validation.Valid;

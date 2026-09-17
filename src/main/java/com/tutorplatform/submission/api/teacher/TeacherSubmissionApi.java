@@ -1,10 +1,8 @@
-package com.tutorplatform.submission.api;
+package com.tutorplatform.submission.api.teacher;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.shared.api.ApiError;
-import com.tutorplatform.submission.api.request.ReviewTextSubmissionRequest;
-import com.tutorplatform.submission.api.response.TeacherSubmissionPageResponse;
-import com.tutorplatform.submission.api.response.TeacherSubmissionResponse;
+import com.tutorplatform.submission.api.ReviewTextSubmissionRequest;
 import com.tutorplatform.submission.domain.SubmissionStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
