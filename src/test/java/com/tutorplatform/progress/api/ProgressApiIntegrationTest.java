@@ -1,5 +1,9 @@
 package com.tutorplatform.progress.api;
 
+import com.tutorplatform.test.PostgresIntegrationTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
@@ -9,14 +13,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,12 +28,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Testcontainers
 @Transactional
-class ProgressApiIntegrationTest {
+class ProgressApiIntegrationTest extends PostgresIntegrationTest {
 
-    @Container
-    private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
+    @DynamicPropertySource
+    static void configurePostgres(DynamicPropertyRegistry registry) {
+        PostgresIntegrationTest.configurePostgres(registry, "test_progress_api", "008");
+    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -42,14 +42,6 @@ class ProgressApiIntegrationTest {
     private ObjectMapper objectMapper;
     @Autowired
     private JdbcTemplate jdbc;
-
-    @DynamicPropertySource
-    static void configurePostgres(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRES::getUsername);
-        registry.add("spring.datasource.password", POSTGRES::getPassword);
-        registry.add("spring.flyway.target", () -> "008");
-    }
 
     @Test
     void teacherAndStudentEndpointsReturnTheSameCompleteProgressWithoutCsrf() throws Exception {

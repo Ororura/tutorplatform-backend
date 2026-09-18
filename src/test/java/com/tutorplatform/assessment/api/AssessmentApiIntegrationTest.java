@@ -1,5 +1,9 @@
 package com.tutorplatform.assessment.api;
 
+import com.tutorplatform.test.PostgresIntegrationTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tutorplatform.assessment.application.SaveTeacherAssessmentCommand;
@@ -39,13 +43,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.time.Instant;
 import java.util.List;
@@ -64,11 +63,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Testcontainers
-class AssessmentApiIntegrationTest {
+class AssessmentApiIntegrationTest extends PostgresIntegrationTest {
 
-    @Container
-    private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
+    @DynamicPropertySource
+    static void configurePostgres(DynamicPropertyRegistry registry) {
+        PostgresIntegrationTest.configurePostgres(registry, "test_assessment_api", "008");
+    }
 
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
@@ -82,14 +82,6 @@ class AssessmentApiIntegrationTest {
     @Autowired private StudentProgramRepository studentProgramRepository;
     @Autowired private LessonSessionRepository lessonSessionRepository;
     @Autowired private JdbcTemplate jdbcTemplate;
-
-    @DynamicPropertySource
-    static void configurePostgres(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRES::getUsername);
-        registry.add("spring.datasource.password", POSTGRES::getPassword);
-        registry.add("spring.flyway.target", () -> "008");
-    }
 
     @Test
     void putCreatesAssessmentAndGetReturnsIt() throws Exception {

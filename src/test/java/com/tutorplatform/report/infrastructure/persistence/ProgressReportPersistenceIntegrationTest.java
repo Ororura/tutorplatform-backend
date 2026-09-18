@@ -1,5 +1,9 @@
 package com.tutorplatform.report.infrastructure.persistence;
 
+import com.tutorplatform.test.PostgresIntegrationTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+
 import com.tutorplatform.report.domain.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -9,11 +13,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -25,27 +24,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@Testcontainers
-class ProgressReportPersistenceIntegrationTest {
+class ProgressReportPersistenceIntegrationTest extends PostgresIntegrationTest {
+
+    @DynamicPropertySource
+    static void configurePostgres(DynamicPropertyRegistry registry) {
+        PostgresIntegrationTest.configurePostgres(registry, "test_progress_report_persistence", "008");
+    }
 
     private static final Instant START = Instant.parse("2026-01-01T10:00:00Z");
     private static final Instant END = Instant.parse("2026-02-01T10:00:00Z");
-
-    @Container
-    private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
 
     @Autowired
     private ProgressReportRepository repository;
     @Autowired
     private JdbcTemplate jdbc;
-
-    @DynamicPropertySource
-    static void configurePostgres(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRES::getUsername);
-        registry.add("spring.datasource.password", POSTGRES::getPassword);
-        registry.add("spring.flyway.target", () -> "008");
-    }
 
     @Test
     void snapshotJsonbRoundTripsWithSchemaVersionOneAndNullablePeriod() {

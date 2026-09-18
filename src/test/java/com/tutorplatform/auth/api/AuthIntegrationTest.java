@@ -1,5 +1,9 @@
 package com.tutorplatform.auth.api;
 
+import com.tutorplatform.test.PostgresIntegrationTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tutorplatform.user.domain.TeacherRepository;
@@ -13,13 +17,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -28,14 +27,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Testcontainers
-class AuthIntegrationTest {
+class AuthIntegrationTest extends PostgresIntegrationTest {
+
+    @DynamicPropertySource
+    static void configurePostgres(DynamicPropertyRegistry registry) {
+        PostgresIntegrationTest.configurePostgres(registry, "test_auth", null);
+    }
 
     private static final String PASSWORD = "correct horse battery staple";
 
-    @Container
-    private static final PostgreSQLContainer POSTGRES =
-        new PostgreSQLContainer("postgres:16-alpine");
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -46,13 +46,6 @@ class AuthIntegrationTest {
     private TeacherRepository teacherRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
-
-    @DynamicPropertySource
-    static void configurePostgres(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRES::getUsername);
-        registry.add("spring.datasource.password", POSTGRES::getPassword);
-    }
 
     @BeforeEach
     void cleanIdentityData() {

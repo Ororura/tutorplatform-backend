@@ -1,5 +1,9 @@
 package com.tutorplatform.report.api;
 
+import com.tutorplatform.test.PostgresIntegrationTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
@@ -12,13 +16,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -33,8 +32,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Testcontainers
-class ProgressReportApiIntegrationTest {
+class ProgressReportApiIntegrationTest extends PostgresIntegrationTest {
+
+    @DynamicPropertySource
+    static void configurePostgres(DynamicPropertyRegistry registry) {
+        PostgresIntegrationTest.configurePostgres(registry, "test_progress_report_api", "008");
+    }
 
     private static final String REPORTS_URL = "/api/v1/teacher/reports";
     private static final Instant START = Instant.parse("2026-01-01T10:00:00Z");
@@ -47,20 +50,9 @@ class ProgressReportApiIntegrationTest {
         "topics":{"completed":[],"inProgress":[]},"skills":[]}
         """;
 
-    @Container
-    private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
-
     @Autowired private MockMvc mockMvc;
     @Autowired private JdbcTemplate jdbc;
     @Autowired private ObjectMapper objectMapper;
-
-    @DynamicPropertySource
-    static void configurePostgres(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRES::getUsername);
-        registry.add("spring.datasource.password", POSTGRES::getPassword);
-        registry.add("spring.flyway.target", () -> "008");
-    }
 
     @Test
     void createsDraftFromOwnedCompletedPeriodUsingOnlyServerDerivedFields() throws Exception {

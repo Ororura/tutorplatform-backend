@@ -1,11 +1,9 @@
 package com.tutorplatform.database;
 
+import com.tutorplatform.test.PostgresIntegrationTest;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -17,20 +15,19 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Testcontainers
-class DatabaseBaselineMigrationIntegrationTest {
+class DatabaseBaselineMigrationIntegrationTest extends PostgresIntegrationTest {
 
+    private static final String DATABASE = "test_database_baseline_migration";
     private static final String PYTHON_SUBJECT_ID = "6513554d-dceb-5902-b6df-557c7a94b5c7";
-
-    @Container
-    private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
 
     private static Flyway flyway;
 
     @BeforeAll
     static void migrateCleanDatabase() {
+        PostgresIntegrationTest.ensureDatabase(DATABASE);
         flyway = Flyway.configure()
-            .dataSource(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword())
+            .dataSource(PostgresIntegrationTest.jdbcUrlForDatabase(DATABASE),
+                POSTGRES.getUsername(), POSTGRES.getPassword())
             .locations("classpath:db/migration")
             .load();
         flyway.migrate();
@@ -198,7 +195,8 @@ class DatabaseBaselineMigrationIntegrationTest {
 
     private static Connection connection() throws SQLException {
         return DriverManager.getConnection(
-            POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword()
+            PostgresIntegrationTest.jdbcUrlForDatabase(DATABASE),
+            POSTGRES.getUsername(), POSTGRES.getPassword()
         );
     }
 

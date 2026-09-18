@@ -1,5 +1,9 @@
 package com.tutorplatform.student.api;
 
+import com.tutorplatform.test.PostgresIntegrationTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
@@ -22,13 +26,8 @@ import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -44,15 +43,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Testcontainers
 @ExtendWith(OutputCaptureExtension.class)
-class TeacherStudentInviteApiIntegrationTest {
+class TeacherStudentInviteApiIntegrationTest extends PostgresIntegrationTest {
 
     private static final String FRONTEND_BASE_URL = "https://frontend.example.test/app";
 
-    @Container
-    private static final PostgreSQLContainer POSTGRES =
-        new PostgreSQLContainer("postgres:16-alpine");
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -72,9 +67,7 @@ class TeacherStudentInviteApiIntegrationTest {
 
     @DynamicPropertySource
     static void configureApplication(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRES::getUsername);
-        registry.add("spring.datasource.password", POSTGRES::getPassword);
+        PostgresIntegrationTest.configurePostgres(registry, "test_teacher_student_invite_api", null);
         registry.add("app.student-invites.ttl", () -> "P2D");
         registry.add("app.student-invites.public-frontend-base-url", () -> FRONTEND_BASE_URL + "/");
     }

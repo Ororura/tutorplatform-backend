@@ -7,6 +7,7 @@ import com.tutorplatform.homework.domain.HomeworkItemEntity;
 import com.tutorplatform.homework.domain.HomeworkRepository;
 import com.tutorplatform.homework.domain.HomeworkStatus;
 import com.tutorplatform.program.application.ProgramQuery;
+import com.tutorplatform.shared.time.InstantPrecision;
 import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.student.application.management.StudentNotFoundException;
 import com.tutorplatform.task.application.TaskQuery;
@@ -66,7 +67,7 @@ public class HomeworkService {
             teacherId,
             title,
             command.description(),
-            Instant.now(),
+            InstantPrecision.database(Instant.now()),
             command.dueAt(),
             HomeworkStatus.ASSIGNED,
             null,
