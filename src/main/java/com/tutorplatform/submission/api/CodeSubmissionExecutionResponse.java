@@ -12,7 +12,7 @@ public record CodeSubmissionExecutionResponse(
     @Schema(nullable = true) String stdoutExcerpt,
     @Schema(nullable = true) String stderrExcerpt
 ) {
-    static CodeSubmissionExecutionResponse from(CodeSubmissionResult result) {
+    public static CodeSubmissionExecutionResponse from(CodeSubmissionResult result) {
         return new CodeSubmissionExecutionResponse(
             result.status(), result.passedTests(), result.totalTests(), result.executionTimeMs(),
             result.stdoutExcerpt(), result.stderrExcerpt()
