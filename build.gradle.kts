@@ -26,7 +26,7 @@ dependencies {
 
     implementation("org.springframework.session:spring-session-jdbc")
     implementation("org.bouncycastle:bcprov-jdk18on:1.85.2")
-    implementation("org.apache.pdfbox:pdfbox:3.0.5")
+    implementation("org.apache.pdfbox:pdfbox:3.0.8")
 
     implementation("org.flywaydb:flyway-core")
     runtimeOnly("org.flywaydb:flyway-database-postgresql")
