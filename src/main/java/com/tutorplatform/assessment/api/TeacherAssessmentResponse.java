@@ -1,4 +1,4 @@
-package com.tutorplatform.assessment.api.response;
+package com.tutorplatform.assessment.api;
 
 import com.tutorplatform.assessment.application.TeacherAssessmentResult;
 import io.swagger.v3.oas.annotations.media.Schema;

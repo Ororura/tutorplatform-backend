@@ -1,7 +1,5 @@
 package com.tutorplatform.assessment.api;
 
-import com.tutorplatform.assessment.api.request.SaveTeacherAssessmentRequest;
-import com.tutorplatform.assessment.api.response.TeacherAssessmentResponse;
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.shared.api.ApiError;
 import io.swagger.v3.oas.annotations.Operation;

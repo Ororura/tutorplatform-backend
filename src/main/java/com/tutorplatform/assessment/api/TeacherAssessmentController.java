@@ -1,7 +1,5 @@
 package com.tutorplatform.assessment.api;
 
-import com.tutorplatform.assessment.api.request.SaveTeacherAssessmentRequest;
-import com.tutorplatform.assessment.api.response.TeacherAssessmentResponse;
 import com.tutorplatform.assessment.application.SaveTeacherAssessmentCommand;
 import com.tutorplatform.assessment.application.TeacherAssessmentService;
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
