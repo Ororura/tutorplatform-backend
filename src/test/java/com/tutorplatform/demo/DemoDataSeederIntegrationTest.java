@@ -1,5 +1,9 @@
 package com.tutorplatform.demo;
 
+import com.tutorplatform.test.PostgresIntegrationTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tutorplatform.auth.api.LoginRequest;
@@ -14,14 +18,9 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.util.List;
 
@@ -34,11 +33,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(properties = "app.demo-data.enabled=true")
 @AutoConfigureMockMvc
 @ActiveProfiles("demo")
-@Testcontainers
-class DemoDataSeederIntegrationTest {
+class DemoDataSeederIntegrationTest extends PostgresIntegrationTest {
 
-    @Container
-    private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16-alpine");
+    @DynamicPropertySource
+    static void configurePostgres(DynamicPropertyRegistry registry) {
+        PostgresIntegrationTest.configurePostgres(registry, "test_demo_data_seeder", null);
+    }
 
     @Autowired private DemoDataSeedService seedService;
     @Autowired private JdbcTemplate jdbcTemplate;
@@ -47,13 +47,6 @@ class DemoDataSeederIntegrationTest {
     @Autowired private StudentInviteTokenService tokenService;
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
-
-    @DynamicPropertySource
-    static void configurePostgres(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRES::getUsername);
-        registry.add("spring.datasource.password", POSTGRES::getPassword);
-    }
 
     @Test
     void cleanDatabaseIsFullySeededAndSecondRunIsIdempotent() {
