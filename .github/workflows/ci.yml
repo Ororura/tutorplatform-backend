@@ -101,7 +101,7 @@ jobs:
           ssh "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" << 'EOF'
             set -e
 
-            cd /opt/tutorplatform/backend
+            cd /opt/tutorplatform
 
             docker compose pull
             docker compose up -d --remove-orphans
