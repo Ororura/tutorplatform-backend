@@ -100,6 +100,61 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
     }
 
     @Test
+    void archivesDraftActiveAndArchivedProgramsAndIsIdempotent() throws Exception {
+        TeacherContext teacher = teacher("program-archive-transitions@example.com");
+        LearningProgramEntity draft = program(teacher.teacher, "Draft", LearningProgramStatus.DRAFT);
+        LearningProgramEntity active = program(teacher.teacher, "Active", LearningProgramStatus.ACTIVE);
+        LearningProgramEntity archived = program(teacher.teacher, "Archived", LearningProgramStatus.ARCHIVED);
+
+        archive(teacher, draft);
+        archive(teacher, active);
+        archive(teacher, archived);
+        archive(teacher, archived);
+
+        assertThat(learningProgramRepository.findById(draft.getId()).orElseThrow().getStatus())
+            .isEqualTo(LearningProgramStatus.ARCHIVED);
+        assertThat(learningProgramRepository.findById(active.getId()).orElseThrow().getStatus())
+            .isEqualTo(LearningProgramStatus.ARCHIVED);
+        assertThat(learningProgramRepository.findById(archived.getId()).orElseThrow().getStatus())
+            .isEqualTo(LearningProgramStatus.ARCHIVED);
+    }
+
+    @Test
+    void archiveHidesForeignProgramAndPreservesExistingAssignment() throws Exception {
+        TeacherContext teacher = teacher("program-archive-owner@example.com");
+        TeacherContext foreign = teacher("program-archive-foreign@example.com");
+        LearningProgramEntity program = program(teacher.teacher, "Assigned", LearningProgramStatus.ACTIVE);
+        LearningProgramEntity foreignProgram = program(foreign.teacher, "Foreign", LearningProgramStatus.ACTIVE);
+        StudentEntity student = student(teacher.teacher, "Assigned student");
+        StudentProgramEntity assignment = studentProgramRepository.saveAndFlush(new StudentProgramEntity(
+            UUID.randomUUID(), student.getId(), program.getId(), teacher.teacher.id(),
+            StudentProgramStatus.ACTIVE, 480, Instant.parse("2026-09-01T00:00:00Z"), null
+        ));
+
+        mockMvc.perform(post("/api/v1/teacher/programs/{programId}/archive", foreignProgram.getId())
+                .with(user(teacher.principal)).with(csrf()))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_NOT_FOUND"));
+
+        archive(teacher, program);
+
+        StudentProgramEntity persisted = studentProgramRepository.findById(assignment.id()).orElseThrow();
+        assertThat(persisted.studentId()).isEqualTo(student.getId());
+        assertThat(persisted.learningProgramId()).isEqualTo(program.getId());
+        assertThat(persisted.status()).isEqualTo(StudentProgramStatus.ACTIVE);
+        expectAssign(teacher, student.getId(), program.getId(), null, 409, "LEARNING_PROGRAM_STATUS_CONFLICT");
+    }
+
+    private void archive(TeacherContext teacher, LearningProgramEntity program) throws Exception {
+        mockMvc.perform(post("/api/v1/teacher/programs/{programId}/archive", program.getId())
+                .with(user(teacher.principal)).with(csrf()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(program.getId().toString()))
+            .andExpect(jsonPath("$.status").value("ARCHIVED"))
+            .andExpect(jsonPath("$.subject.id").value(PYTHON.toString()));
+    }
+
+    @Test
     void subjectEndpointRequiresTeacher() throws Exception {
         mockMvc.perform(get("/api/v1/teacher/subjects")).andExpect(status().isUnauthorized());
         mockMvc.perform(get("/api/v1/teacher/subjects").with(user(studentPrincipal())))
@@ -383,6 +438,7 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}'].get.operationId").value("getTeacherLearningProgram"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}'].patch.operationId").value("updateTeacherLearningProgram"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}/activate'].post.operationId").value("activateTeacherLearningProgram"))
+            .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}/archive'].post.operationId").value("archiveTeacherLearningProgram"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/students/{studentId}/programs'].post.operationId").value("assignTeacherStudentProgram"));
     }
 

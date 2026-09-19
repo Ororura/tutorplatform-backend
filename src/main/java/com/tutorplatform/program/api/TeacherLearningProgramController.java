@@ -74,4 +74,13 @@ public class TeacherLearningProgramController implements TeacherLearningProgramA
     ) {
         return service.activate(principal, programId);
     }
+
+    @Override
+    @PostMapping("/{programId}/archive")
+    public LearningProgramSummaryResponse archiveProgram(
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID programId
+    ) {
+        return service.archive(principal, programId);
+    }
 }
