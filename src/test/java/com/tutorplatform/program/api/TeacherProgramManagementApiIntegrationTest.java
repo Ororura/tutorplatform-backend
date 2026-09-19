@@ -17,6 +17,7 @@ import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
 import com.tutorplatform.program.domain.studentprogram.StudentProgramRepository;
 import com.tutorplatform.program.domain.studentprogram.StudentProgramEntity;
 import com.tutorplatform.program.domain.studentprogram.StudentProgramStatus;
+import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressEntity;
 import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressRepository;
 import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressStatus;
 import com.tutorplatform.student.domain.StudentEntity;
@@ -530,6 +531,105 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
     }
 
     @Test
+    void updatesTopicInPlaceWithTrimmedFieldsStatusAndJpaVersion() throws Exception {
+        TeacherContext teacher = teacher("topic-update@example.com");
+        LearningProgramEntity program = program(teacher.teacher, "Topics", LearningProgramStatus.DRAFT);
+        ModuleEntity module = moduleRepository.saveAndFlush(new ModuleEntity(
+            UUID.randomUUID(), program.getId(), "Module", null, 4
+        ));
+        TopicEntity topic = topicRepository.saveAndFlush(new TopicEntity(
+            UUID.randomUUID(), module.id(), "Original", "Original description", 7, TopicStatus.DRAFT
+        ));
+
+        updateTopic(teacher, program.getId(), module.id(), topic.id(), "  Переменные и типы данных  ",
+            "  Описание  ", TopicStatus.ACTIVE, topic.version())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(topic.id().toString()))
+            .andExpect(jsonPath("$.title").value("Переменные и типы данных"))
+            .andExpect(jsonPath("$.description").value("Описание"))
+            .andExpect(jsonPath("$.position").value(7))
+            .andExpect(jsonPath("$.status").value("ACTIVE"))
+            .andExpect(jsonPath("$.version").value(topic.version() + 1));
+
+        TopicEntity updated = topicRepository.findById(topic.id()).orElseThrow();
+        assertThat(updated.moduleId()).isEqualTo(module.id());
+        assertThat(updated.position()).isEqualTo(7);
+        assertThat(updated.status()).isEqualTo(TopicStatus.ACTIVE);
+    }
+
+    @Test
+    void updateTopicHidesForeignAndMismatchedResourcesAndRejectsNonEditableProgram() throws Exception {
+        TeacherContext owner = teacher("topic-update-owner@example.com");
+        TeacherContext foreign = teacher("topic-update-foreign@example.com");
+        LearningProgramEntity owned = program(owner.teacher, "Owned", LearningProgramStatus.DRAFT);
+        LearningProgramEntity other = program(owner.teacher, "Other", LearningProgramStatus.DRAFT);
+        LearningProgramEntity archived = program(owner.teacher, "Archived", LearningProgramStatus.ARCHIVED);
+        LearningProgramEntity assigned = program(owner.teacher, "Assigned", LearningProgramStatus.ACTIVE);
+        ModuleEntity module = moduleRepository.saveAndFlush(new ModuleEntity(UUID.randomUUID(), owned.getId(), "Module", null, 0));
+        ModuleEntity otherModule = moduleRepository.saveAndFlush(new ModuleEntity(UUID.randomUUID(), other.getId(), "Other", null, 0));
+        ModuleEntity archivedModule = moduleRepository.saveAndFlush(new ModuleEntity(UUID.randomUUID(), archived.getId(), "Archived", null, 0));
+        ModuleEntity assignedModule = moduleRepository.saveAndFlush(new ModuleEntity(UUID.randomUUID(), assigned.getId(), "Assigned", null, 0));
+        TopicEntity topic = topicRepository.saveAndFlush(new TopicEntity(UUID.randomUUID(), module.id(), "Topic", null, 0, TopicStatus.DRAFT));
+        TopicEntity otherTopic = topicRepository.saveAndFlush(new TopicEntity(UUID.randomUUID(), otherModule.id(), "Other", null, 0, TopicStatus.DRAFT));
+        TopicEntity archivedTopic = topicRepository.saveAndFlush(new TopicEntity(UUID.randomUUID(), archivedModule.id(), "Archived", null, 0, TopicStatus.DRAFT));
+        TopicEntity assignedTopic = topicRepository.saveAndFlush(new TopicEntity(UUID.randomUUID(), assignedModule.id(), "Assigned", null, 0, TopicStatus.DRAFT));
+        StudentEntity student = student(owner.teacher, "Student");
+        StudentProgramEntity assignment = studentProgramRepository.saveAndFlush(new StudentProgramEntity(
+            UUID.randomUUID(), student.getId(), assigned.getId(), owner.teacher.id(),
+            StudentProgramStatus.ACTIVE, 480, Instant.parse("2026-09-01T00:00:00Z"), null
+        ));
+        progressRepository.saveAndFlush(new StudentTopicProgressEntity(
+            assignment.id(), assignedTopic.id(), StudentTopicProgressStatus.AVAILABLE,
+            Instant.parse("2026-09-01T00:00:00Z"), null
+        ));
+
+        updateTopic(foreign, owned.getId(), module.id(), topic.id(), "Denied", null, TopicStatus.ACTIVE, topic.version())
+            .andExpect(status().isNotFound()).andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_NOT_FOUND"));
+        updateTopic(owner, other.getId(), module.id(), topic.id(), "Denied", null, TopicStatus.ACTIVE, topic.version())
+            .andExpect(status().isNotFound()).andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_MODULE_NOT_FOUND"));
+        updateTopic(owner, owned.getId(), module.id(), otherTopic.id(), "Denied", null, TopicStatus.ACTIVE, topic.version())
+            .andExpect(status().isNotFound()).andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_TOPIC_NOT_FOUND"));
+        updateTopic(owner, archived.getId(), archivedModule.id(), archivedTopic.id(), "Denied", null, TopicStatus.ACTIVE, archivedTopic.version())
+            .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_STATUS_CONFLICT"));
+        updateTopic(owner, assigned.getId(), assignedModule.id(), assignedTopic.id(), "Denied", null, TopicStatus.ACTIVE, assignedTopic.version())
+            .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_STATUS_CONFLICT"));
+        assertThat(progressRepository.findById(assignment.id(), assignedTopic.id()).orElseThrow().status())
+            .isEqualTo(StudentTopicProgressStatus.AVAILABLE);
+    }
+
+    @Test
+    void updateTopicValidatesRequestAndRejectsStaleVersion() throws Exception {
+        TeacherContext teacher = teacher("topic-update-validation@example.com");
+        LearningProgramEntity program = program(teacher.teacher, "Topics", LearningProgramStatus.DRAFT);
+        ModuleEntity module = moduleRepository.saveAndFlush(new ModuleEntity(UUID.randomUUID(), program.getId(), "Module", null, 0));
+        TopicEntity topic = topicRepository.saveAndFlush(new TopicEntity(UUID.randomUUID(), module.id(), "Topic", null, 0, TopicStatus.DRAFT));
+
+        for (String body : List.of(
+            topicUpdateRequest("   ", null, TopicStatus.ACTIVE, topic.version()),
+            topicUpdateRequest("x".repeat(181), null, TopicStatus.ACTIVE, topic.version()),
+            "{\"title\":\"Topic\",\"description\":null,\"status\":\"ACTIVE\"}",
+            "{\"title\":\"Topic\",\"description\":null,\"status\":\"UNKNOWN\",\"version\":0}",
+            topicUpdateRequest("Topic", null, TopicStatus.ACTIVE, -1L)
+        )) {
+            mockMvc.perform(patch("/api/v1/teacher/programs/{programId}/modules/{moduleId}/topics/{topicId}",
+                    program.getId(), module.id(), topic.id())
+                    .with(user(teacher.principal)).with(csrf()).contentType("application/json").content(body))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+        }
+
+        String update = topicUpdateRequest("First", null, TopicStatus.ACTIVE, topic.version());
+        mockMvc.perform(patch("/api/v1/teacher/programs/{programId}/modules/{moduleId}/topics/{topicId}",
+                program.getId(), module.id(), topic.id())
+                .with(user(teacher.principal)).with(csrf()).contentType("application/json").content(update))
+            .andExpect(status().isOk());
+        mockMvc.perform(patch("/api/v1/teacher/programs/{programId}/modules/{moduleId}/topics/{topicId}",
+                program.getId(), module.id(), topic.id())
+                .with(user(teacher.principal)).with(csrf()).contentType("application/json").content(update))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_TOPIC_VERSION_CONFLICT"));
+    }
+
+    @Test
     void updatesModuleTrimsFieldsAndPreservesPosition() throws Exception {
         TeacherContext teacher = teacher("module-update@example.com");
         LearningProgramEntity program = program(teacher.teacher, "Modules", LearningProgramStatus.DRAFT);
@@ -611,6 +711,7 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs'].post.operationId").value("createTeacherLearningProgram"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}/modules'].post.operationId").value("createTeacherLearningProgramModule"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}/modules/{moduleId}/topics'].post.operationId").value("createTeacherLearningProgramTopic"))
+            .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}/modules/{moduleId}/topics/{topicId}'].patch.operationId").value("updateTeacherLearningProgramTopic"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}/modules/{moduleId}'].patch.operationId").value("updateTeacherLearningProgramModule"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}/modules/{moduleId}'].delete.operationId").value("deleteTeacherLearningProgramModule"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}'].get.operationId").value("getTeacherLearningProgram"))
@@ -657,6 +758,16 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
             .content(objectMapper.writeValueAsString(new UpdateLearningProgramModuleRequest(title, description))));
     }
 
+    private org.springframework.test.web.servlet.ResultActions updateTopic(
+        TeacherContext teacher, UUID programId, UUID moduleId, UUID topicId, String title, String description,
+        TopicStatus status, Long version
+    ) throws Exception {
+        return mockMvc.perform(patch("/api/v1/teacher/programs/{programId}/modules/{moduleId}/topics/{topicId}",
+                programId, moduleId, topicId)
+            .with(user(teacher.principal)).with(csrf()).contentType("application/json")
+            .content(topicUpdateRequest(title, description, status, version)));
+    }
+
     private org.springframework.test.web.servlet.ResultActions deleteModule(
         TeacherContext teacher, UUID programId, UUID moduleId
     ) throws Exception {
@@ -678,6 +789,10 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
 
     private String updateRequest(String title, String description, Long version) throws Exception {
         return objectMapper.writeValueAsString(new UpdateLearningProgramRequest(title, description, version));
+    }
+
+    private String topicUpdateRequest(String title, String description, TopicStatus status, Long version) throws Exception {
+        return objectMapper.writeValueAsString(new UpdateLearningProgramTopicRequest(title, description, status, version));
     }
 
     private TeacherContext teacher(String email) {

@@ -8,6 +8,8 @@ import com.tutorplatform.program.application.StudentProgramAlreadyAssignedExcept
 import com.tutorplatform.program.application.LearningProgramVersionConflictException;
 import com.tutorplatform.program.application.LearningProgramModuleNotEmptyException;
 import com.tutorplatform.program.application.LearningProgramModuleNotFoundException;
+import com.tutorplatform.program.application.LearningProgramTopicNotFoundException;
+import com.tutorplatform.program.application.LearningProgramTopicVersionConflictException;
 import com.tutorplatform.shared.api.ApiError;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
@@ -39,6 +41,13 @@ public class ProgramExceptionHandler {
         );
     }
 
+    @ExceptionHandler(LearningProgramTopicNotFoundException.class)
+    ResponseEntity<ApiError> handleLearningProgramTopicNotFound(LearningProgramTopicNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+            ApiError.of("LEARNING_PROGRAM_TOPIC_NOT_FOUND", "Learning program topic not found", MDC.get("traceId"))
+        );
+    }
+
     @ExceptionHandler(LearningProgramModuleNotEmptyException.class)
     ResponseEntity<ApiError> handleLearningProgramModuleNotEmpty(LearningProgramModuleNotEmptyException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(
@@ -66,6 +75,17 @@ public class ProgramExceptionHandler {
             ApiError.of(
                 "LEARNING_PROGRAM_VERSION_CONFLICT",
                 "Learning program was modified by another request",
+                MDC.get("traceId")
+            )
+        );
+    }
+
+    @ExceptionHandler(LearningProgramTopicVersionConflictException.class)
+    ResponseEntity<ApiError> handleTopicVersionConflict(LearningProgramTopicVersionConflictException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+            ApiError.of(
+                "LEARNING_PROGRAM_TOPIC_VERSION_CONFLICT",
+                "Learning program topic was modified by another request",
                 MDC.get("traceId")
             )
         );

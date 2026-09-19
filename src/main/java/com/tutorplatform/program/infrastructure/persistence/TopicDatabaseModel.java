@@ -66,6 +66,10 @@ public class TopicDatabaseModel {
         status = Objects.requireNonNull(topic.status());
     }
 
+    boolean hasVersion(Long version) {
+        return Objects.equals(this.version, version);
+    }
+
     TopicEntity toEntity() {
         return new TopicEntity(id, moduleId, title, description, position, status, version, createdAt, updatedAt);
     }
