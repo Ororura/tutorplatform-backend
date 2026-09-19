@@ -1,0 +1,4244 @@
+{
+  ".codex/hooks.json": {
+    "mtime": 1788791529.8758354,
+    "seen": 1789842643.282669,
+    "ast_hash": "d7bd67d84df3a330899b4cf62842bdab",
+    "semantic_hash": ""
+  },
+  "build.gradle.kts": {
+    "mtime": 1789803462.4644716,
+    "seen": 1789842643.2826738,
+    "ast_hash": "35589825f6b3c36e6a6abfa4c26d06f9",
+    "semantic_hash": ""
+  },
+  "gradlew": {
+    "mtime": 1788710289.9109805,
+    "seen": 1789842643.282676,
+    "ast_hash": "a43be8432bac3ffd05b3769aa42fe996",
+    "semantic_hash": ""
+  },
+  "settings.gradle.kts": {
+    "mtime": 1788696546.0,
+    "seen": 1789842643.282677,
+    "ast_hash": "915c697d205821f9475c01351e565539",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/TutorLearningPlatformApplication.java": {
+    "mtime": 1788696546.0,
+    "seen": 1789842643.2826781,
+    "ast_hash": "d7b27c55931b10064de89607b92f2fd7",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/assessment/api/AssessmentExceptionHandler.java": {
+    "mtime": 1789027565.7067537,
+    "seen": 1789842643.282679,
+    "ast_hash": "8f89ea91cbb0768b1a59394ff4deeb34",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/assessment/api/SaveTeacherAssessmentRequest.java": {
+    "mtime": 1789759668.7845922,
+    "seen": 1789842643.28268,
+    "ast_hash": "e604de3f2c44bcb4b5a31885ba7c79e0",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/assessment/api/TeacherAssessmentApi.java": {
+    "mtime": 1789759668.7849047,
+    "seen": 1789842643.282681,
+    "ast_hash": "df3f4811f89c0de5481f30832d56df91",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/assessment/api/TeacherAssessmentController.java": {
+    "mtime": 1789759668.7852428,
+    "seen": 1789842643.2826822,
+    "ast_hash": "fc0af4674001485fe91905c343eeae49",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/assessment/api/TeacherAssessmentResponse.java": {
+    "mtime": 1789759668.7855983,
+    "seen": 1789842643.282683,
+    "ast_hash": "86f1f0136e2208458037604d6f552a1d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/assessment/application/SaveTeacherAssessmentCommand.java": {
+    "mtime": 1789027479.940251,
+    "seen": 1789842643.282683,
+    "ast_hash": "69eda555f4e70e777669b144704b4cf3",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/assessment/application/SaveTeacherAssessmentResult.java": {
+    "mtime": 1789027480.0957127,
+    "seen": 1789842643.2826838,
+    "ast_hash": "04fb66115e6c7b4b2293ecad685d648b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/assessment/application/TeacherAssessmentResult.java": {
+    "mtime": 1789027480.0181222,
+    "seen": 1789842643.282685,
+    "ast_hash": "201828e07d1db972a1d03e60c609e329",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/assessment/application/TeacherAssessmentService.java": {
+    "mtime": 1789221156.449,
+    "seen": 1789842643.282685,
+    "ast_hash": "7cec84c9b59e20177c23d3bc06ef8423",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/assessment/application/exception/InvalidTeacherAssessmentScoreException.java": {
+    "mtime": 1789027480.3169749,
+    "seen": 1789842643.282686,
+    "ast_hash": "c962f5d209d0ae0079f033250c2e018d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/assessment/application/exception/TeacherAssessmentConflictException.java": {
+    "mtime": 1789027480.3996928,
+    "seen": 1789842643.282687,
+    "ast_hash": "7dd2852570a9337cb3953818b145a073",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/assessment/application/exception/TeacherAssessmentNotFoundException.java": {
+    "mtime": 1789027480.2330754,
+    "seen": 1789842643.282687,
+    "ast_hash": "1ae9e92f34c4f694e0453f1e3759b4a8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/assessment/domain/TeacherAssessmentEntity.java": {
+    "mtime": 1789025006.215965,
+    "seen": 1789842643.282688,
+    "ast_hash": "f5fd85ba71c9041875468ec1b8b29d28",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/assessment/domain/TeacherAssessmentRepository.java": {
+    "mtime": 1789025006.2919695,
+    "seen": 1789842643.282689,
+    "ast_hash": "a751d974df870e317e03eadaa95976f1",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/assessment/infrastructure/persistence/JpaTeacherAssessmentRepository.java": {
+    "mtime": 1789025149.3580325,
+    "seen": 1789842643.282689,
+    "ast_hash": "c0392804d4e50d3eb0ea83f5ce9d01e2",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/assessment/infrastructure/persistence/TeacherAssessmentDatabaseModel.java": {
+    "mtime": 1789025103.24447,
+    "seen": 1789842643.28269,
+    "ast_hash": "949144cedecdcb22b9910d6674aae691",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/assessment/infrastructure/persistence/TeacherAssessmentDatabaseRepository.java": {
+    "mtime": 1789025006.4941053,
+    "seen": 1789842643.282691,
+    "ast_hash": "a7e965ba9bef126b7675eb7ab9fe8fc0",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/auth/api/AcceptTeacherInvitationRequest.java": {
+    "mtime": 1789830595.8373098,
+    "seen": 1789842643.2826922,
+    "ast_hash": "c46517fdf89475050c194b60c12d7d8d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/auth/api/AuthApi.java": {
+    "mtime": 1788861028.428,
+    "seen": 1789842643.2826922,
+    "ast_hash": "304816d37800d86f6d00aeab27466a8f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/auth/api/AuthController.java": {
+    "mtime": 1788947355.835,
+    "seen": 1789842643.2826931,
+    "ast_hash": "6de200be86f1c437063cc64c7f36e5cf",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/auth/api/AuthExceptionHandler.java": {
+    "mtime": 1789830595.8377237,
+    "seen": 1789842643.2826931,
+    "ast_hash": "2c378aeeb62bec5a33c93baee70d1321",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/auth/api/CsrfController.java": {
+    "mtime": 1788947896.094,
+    "seen": 1789842643.2826939,
+    "ast_hash": "35b8771eb4debe62634fdf5ecbb9e664",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/auth/api/CsrfTokenApi.java": {
+    "mtime": 1788947865.625,
+    "seen": 1789842643.2826948,
+    "ast_hash": "352f8f5c6cd3d5f134e6c5b73e706798",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/auth/api/CsrfTokenResponse.java": {
+    "mtime": 1788947463.842,
+    "seen": 1789842643.2826948,
+    "ast_hash": "3c7663ec1136ac768a2a71067ed00ab3",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/auth/api/CurrentUserResponse.java": {
+    "mtime": 1788947463.229,
+    "seen": 1789842643.282696,
+    "ast_hash": "ea3884897aed796fae64dba8848b33ec",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/auth/api/LoginRequest.java": {
+    "mtime": 1788947463.438,
+    "seen": 1789842643.282696,
+    "ast_hash": "d3ced6494c4d23c2dc9ee0c6b487b9ab",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/auth/api/PublicTeacherInvitationAcceptanceController.java": {
+    "mtime": 1789830595.837921,
+    "seen": 1789842643.282697,
+    "ast_hash": "66c09b0e203253b7079947f8dfd4c4b0",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/auth/api/TeacherRegistrationRequest.java": {
+    "mtime": 1788947463.179,
+    "seen": 1789842643.282698,
+    "ast_hash": "373301431458e510aa25ab12087b8bed",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/auth/api/UserRole.java": {
+    "mtime": 1789830595.8382537,
+    "seen": 1789842643.282698,
+    "ast_hash": "c5215d772f2ae186cdf23af2e9d4c1d7",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/auth/application/AuthenticationSessionService.java": {
+    "mtime": 1788947464.162,
+    "seen": 1789842643.282699,
+    "ast_hash": "cff632664273ddec57ad4f44cfbc195b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/auth/application/CurrentUserService.java": {
+    "mtime": 1788947464.16,
+    "seen": 1789842643.282699,
+    "ast_hash": "d72956950f4c3ed19a5badf972fa12e8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/auth/application/EmailAlreadyRegisteredException.java": {
+    "mtime": 1788713337.7339425,
+    "seen": 1789842643.2827,
+    "ast_hash": "89f730a53b00949cdeeb99358126edac",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/auth/application/InvalidCredentialsException.java": {
+    "mtime": 1788713337.8019097,
+    "seen": 1789842643.282701,
+    "ast_hash": "179839a45bd0dba2e284157003c1c785",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/auth/application/TeacherRegistrationService.java": {
+    "mtime": 1789830595.8385184,
+    "seen": 1789842643.282701,
+    "ast_hash": "dd77bdbc550a392b51a1bc5f04bf9ab0",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/auth/infrastructure/persistence/CurrentUserQueryRepository.java": {
+    "mtime": 1788947463.406,
+    "seen": 1789842643.282702,
+    "ast_hash": "88a6f4b78a7b01dab20ed5bad65780fc",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/auth/infrastructure/security/AuthenticatedUser.java": {
+    "mtime": 1788947463.205,
+    "seen": 1789842643.282702,
+    "ast_hash": "1f90c3cde1196f0ebb673b5dcba9f248",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/auth/infrastructure/security/DatabaseUserDetailsService.java": {
+    "mtime": 1788947464.308,
+    "seen": 1789842643.2827032,
+    "ast_hash": "a9ceef70de7fa22f50de431a22d421eb",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/config/OpenApiConfig.java": {
+    "mtime": 1789830595.8387802,
+    "seen": 1789842643.2827039,
+    "ast_hash": "0aeea0be0e756fa879fe49310a248d87",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/config/ProductionInfrastructureConfiguration.java": {
+    "mtime": 1789226945.2597127,
+    "seen": 1789842643.282706,
+    "ast_hash": "c7afef5cd7702e11efd5f01650969abd",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/config/SecurityConfig.java": {
+    "mtime": 1789830595.839034,
+    "seen": 1789842643.282706,
+    "ast_hash": "58e22f7f43ed7f321cdb22a8bb187aff",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/api/ContentExceptionHandler.java": {
+    "mtime": 1788947463.932,
+    "seen": 1789842643.282707,
+    "ast_hash": "0a128256fd0e8bbb9d22c22c0f4bb154",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/api/TeacherLessonMaterialApi.java": {
+    "mtime": 1788818708.3956878,
+    "seen": 1789842643.282708,
+    "ast_hash": "ca5766bdbad6b65e6d6b528b6b600927",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/api/TeacherLessonMaterialController.java": {
+    "mtime": 1788947464.01,
+    "seen": 1789842643.282708,
+    "ast_hash": "e0582dfd617249bec637001b3963f732",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/api/request/CreateLessonMaterialRequest.java": {
+    "mtime": 1788814487.4493399,
+    "seen": 1789842643.282709,
+    "ast_hash": "f4c897872e56c55ec8bf11ffd4f3f920",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/api/request/UpdateLessonMaterialRequest.java": {
+    "mtime": 1788814487.5315669,
+    "seen": 1789842643.282709,
+    "ast_hash": "d613707323a8ab7c8763d8a3dd27812f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/api/response/LessonMaterialResponse.java": {
+    "mtime": 1788814297.544476,
+    "seen": 1789842643.28271,
+    "ast_hash": "7ff8db963ddcb4bac2ad6dd7ada31c4c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/application/CreateLessonMaterialCommand.java": {
+    "mtime": 1788813020.627463,
+    "seen": 1789842643.28271,
+    "ast_hash": "89e2d006204cc7fc4238fb2c77763756",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/application/FileMaterialPolicy.java": {
+    "mtime": 1788947463.633,
+    "seen": 1789842643.282711,
+    "ast_hash": "37117b18e0fcc7a59ac82b4dcfa89fdd",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/application/FileMaterialService.java": {
+    "mtime": 1788947463.868,
+    "seen": 1789842643.282712,
+    "ast_hash": "8116a1c5bab1801581286a5f5636c355",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/application/FileTooLargeException.java": {
+    "mtime": 1788947463.877,
+    "seen": 1789842643.282712,
+    "ast_hash": "b83310e6a4bc68cdb4ebfdef5deaf672",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/application/LessonMaterialResult.java": {
+    "mtime": 1788813020.7770147,
+    "seen": 1789842643.2827132,
+    "ast_hash": "dfa8d32786fc1db371a882fc0e31c6a5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/application/LessonMaterialService.java": {
+    "mtime": 1788947356.147,
+    "seen": 1789842643.2827141,
+    "ast_hash": "ea6d3cc0e6f4af136ece38fa891b61b5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/application/UpdateLessonMaterialCommand.java": {
+    "mtime": 1788813020.7027633,
+    "seen": 1789842643.2827141,
+    "ast_hash": "7fd0b966312c75c55b75f40976780649",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/application/exception/InvalidLessonMaterialException.java": {
+    "mtime": 1788813020.8967257,
+    "seen": 1789842643.2827148,
+    "ast_hash": "bc2c03499cfc153d8dea2017843d49c6",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/application/exception/LessonMaterialNotFoundException.java": {
+    "mtime": 1788813020.9680197,
+    "seen": 1789842643.2827148,
+    "ast_hash": "0d6e3ef3ccf307d41805ef1259d65b37",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/application/exception/LessonMaterialPositionConflictException.java": {
+    "mtime": 1788813021.0411558,
+    "seen": 1789842643.2827158,
+    "ast_hash": "6088c7b5b977befe0fbe1103d0b0422e",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/application/exception/LessonMaterialVersionConflictException.java": {
+    "mtime": 1788814297.1414697,
+    "seen": 1789842643.2827158,
+    "ast_hash": "ca33dacefdb5a2343dfd27b68fcf1a94",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/application/exception/TopicNotFoundException.java": {
+    "mtime": 1788813021.1149907,
+    "seen": 1789842643.282717,
+    "ast_hash": "6f725d253af739dfeaaf050a445b5a25",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/domain/FileAssetEntity.java": {
+    "mtime": 1788946974.423,
+    "seen": 1789842643.282717,
+    "ast_hash": "a5ada74bfaab5c525b2b5e82af53b469",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/domain/FileAssetRepository.java": {
+    "mtime": 1788947463.222,
+    "seen": 1789842643.282718,
+    "ast_hash": "2f5ccaabe95239f350f644c0bfb7eeae",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/domain/LessonMaterialEntity.java": {
+    "mtime": 1788947464.149,
+    "seen": 1789842643.282718,
+    "ast_hash": "7e3f6ef148c5272ec856f206fb418073",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/domain/LessonMaterialRepository.java": {
+    "mtime": 1788947463.158,
+    "seen": 1789842643.282719,
+    "ast_hash": "380cf1abc79a16ed60d35ef40b60eed4",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/domain/LessonMaterialType.java": {
+    "mtime": 1788811289.938609,
+    "seen": 1789842643.282719,
+    "ast_hash": "20f9d7ccb6a8b01236f24510b85f11fc",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/domain/StorageProvider.java": {
+    "mtime": 1788811290.015031,
+    "seen": 1789842643.28272,
+    "ast_hash": "9d911b4a475bc488cc2f341fab952580",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/infrastructure/persistence/FileAssetDatabaseModel.java": {
+    "mtime": 1788947463.095,
+    "seen": 1789842643.282721,
+    "ast_hash": "728d7aa8af85fa5f5a115ccdffc48d2b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/infrastructure/persistence/FileAssetDatabaseRepository.java": {
+    "mtime": 1788811290.5236504,
+    "seen": 1789842643.282721,
+    "ast_hash": "b97c8cde1125b74ba3d7c960f25c0267",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/infrastructure/persistence/JpaFileAssetRepository.java": {
+    "mtime": 1788811290.5971649,
+    "seen": 1789842643.282722,
+    "ast_hash": "80b41a110bad3f97409c03ea09aaa43b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/infrastructure/persistence/JpaLessonMaterialRepository.java": {
+    "mtime": 1788947463.1,
+    "seen": 1789842643.282722,
+    "ast_hash": "123d253e3c4188e6064aed90e2957ef3",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/infrastructure/persistence/LessonMaterialDatabaseModel.java": {
+    "mtime": 1788947463.174,
+    "seen": 1789842643.2827232,
+    "ast_hash": "d6b18c4897fc8e1a297db3cfb6c7b3a0",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/content/infrastructure/persistence/LessonMaterialDatabaseRepository.java": {
+    "mtime": 1788947464.099,
+    "seen": 1789842643.2827232,
+    "ast_hash": "58fbe1f4a49beac4b2debac120e686da",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/demo/DemoDataAccess.java": {
+    "mtime": 1789228479.704597,
+    "seen": 1789842643.2827241,
+    "ast_hash": "bfd0b84efdbeb02955b3f53962f896f0",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/demo/DemoDataIds.java": {
+    "mtime": 1789401240.4002855,
+    "seen": 1789842643.2827241,
+    "ast_hash": "d040ce132183c472c604a8bb10aa5d02",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/demo/DemoDataProductionGuard.java": {
+    "mtime": 1789803462.4725883,
+    "seen": 1789842643.282725,
+    "ast_hash": "86f20660e4726d10f0cc02a4a61084d0",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/demo/DemoDataSeedService.java": {
+    "mtime": 1789401240.4923413,
+    "seen": 1789842643.2827258,
+    "ast_hash": "77b892f9eaeaae26ffc00cf74397848f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/demo/DemoDataSeeder.java": {
+    "mtime": 1789228479.864995,
+    "seen": 1789842643.2827258,
+    "ast_hash": "ccc11489426ee17b746c98eb51fcb78a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/execution/application/ExecutionComparisonMode.java": {
+    "mtime": 1788968119.2334254,
+    "seen": 1789842643.282727,
+    "ast_hash": "014d3bd6e4726baab64c18a36e1b0846",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/execution/application/ExecutionLanguage.java": {
+    "mtime": 1788968119.159449,
+    "seen": 1789842643.282727,
+    "ast_hash": "c663b7fcd8d2eff01f80df55303f80d5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/execution/application/ExecutionPort.java": {
+    "mtime": 1788968119.087529,
+    "seen": 1789842643.282728,
+    "ast_hash": "961bf7c2464fc5293405dd42a22d5b69",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/execution/application/ExecutionRequest.java": {
+    "mtime": 1788969024.3004525,
+    "seen": 1789842643.282728,
+    "ast_hash": "6679e4dd77e722532653f94472a538d9",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/execution/application/ExecutionResult.java": {
+    "mtime": 1788969104.5927129,
+    "seen": 1789842643.282729,
+    "ast_hash": "a8eb77d803217cedf655816b920e848f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/execution/application/ExecutionStatus.java": {
+    "mtime": 1788992757.2940078,
+    "seen": 1789842643.28273,
+    "ast_hash": "7927e84f39da30ea50c87498200c5eeb",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/execution/application/ExecutionTestCase.java": {
+    "mtime": 1788969024.5081592,
+    "seen": 1789842643.282731,
+    "ast_hash": "9e94625485288168fb3acf6cb2666f2c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/execution/application/ExecutionTestResult.java": {
+    "mtime": 1788968119.5241811,
+    "seen": 1789842643.282732,
+    "ast_hash": "4766b27fdb5529c8a0cc823c7c05371c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/execution/infrastructure/http/BoundedOutput.java": {
+    "mtime": 1788968119.996125,
+    "seen": 1789842643.282732,
+    "ast_hash": "41244b33b72c754420ab7bfcb311f822",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/execution/infrastructure/http/ExecutionHttpConfiguration.java": {
+    "mtime": 1788968119.780533,
+    "seen": 1789842643.282733,
+    "ast_hash": "14c38aad88b9ea03b9c222dfbe65d5c8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/execution/infrastructure/http/ExecutionProperties.java": {
+    "mtime": 1788968382.6230168,
+    "seen": 1789842643.282733,
+    "ast_hash": "7c4602ced0a44e15c426ea5b9b3109eb",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/execution/infrastructure/http/HttpExecutionAdapter.java": {
+    "mtime": 1789226724.4530795,
+    "seen": 1789842643.2827342,
+    "ast_hash": "5aecf374d3517e706ae56f4453dbbd21",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/execution/infrastructure/http/WorkerExecutionRequest.java": {
+    "mtime": 1788968119.8519883,
+    "seen": 1789842643.2827342,
+    "ast_hash": "6465acf573097e74d793aad3dfad7c91",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/execution/infrastructure/http/WorkerExecutionResponse.java": {
+    "mtime": 1788968119.9247415,
+    "seen": 1789842643.282735,
+    "ast_hash": "218327d204c91f2cdb4d150da3fb3aa7",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/execution/package-info.java": {
+    "mtime": 1788968120.1420982,
+    "seen": 1789842643.282735,
+    "ast_hash": "6484bb6dd649a74f1addff3c722864a9",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/file/api/FileExceptionHandler.java": {
+    "mtime": 1788947464.024,
+    "seen": 1789842643.282736,
+    "ast_hash": "1a6ca997f5ff01312b4cea3a5ee14b93",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/file/application/FileStorage.java": {
+    "mtime": 1788947464.114,
+    "seen": 1789842643.282736,
+    "ast_hash": "829c660d622821dfea661903c0bb8b69",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/file/application/FileStorageException.java": {
+    "mtime": 1788854596.810541,
+    "seen": 1789842643.2827368,
+    "ast_hash": "4134e30bd58689713ba29f525e98aa3d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/file/infrastructure/LocalFileStorage.java": {
+    "mtime": 1789226724.35119,
+    "seen": 1789842643.2827368,
+    "ast_hash": "5004116a3f4dc57d694e24e1ac78e5d7",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/api/HomeworkExceptionHandler.java": {
+    "mtime": 1788985271.8589003,
+    "seen": 1789842643.282738,
+    "ast_hash": "2790e89bb7029ba3c71f7fb1abfdc3b9",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/api/StudentHomeworkApi.java": {
+    "mtime": 1788947464.174,
+    "seen": 1789842643.282738,
+    "ast_hash": "758e82902db507aa809d78d6917ed2a3",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/api/StudentHomeworkController.java": {
+    "mtime": 1788947463.647,
+    "seen": 1789842643.282739,
+    "ast_hash": "ed035bbe54e7be3b0cd82939f1059caa",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/api/TeacherHomeworkApi.java": {
+    "mtime": 1788947463.719,
+    "seen": 1789842643.2827399,
+    "ast_hash": "03bf6dcaff35a95f9dfab717f029b675",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/api/TeacherHomeworkController.java": {
+    "mtime": 1788947463.182,
+    "seen": 1789842643.2827399,
+    "ast_hash": "72cb601e96d4ca612a482482bafc5e49",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/api/request/CreateHomeworkRequest.java": {
+    "mtime": 1788947463.09,
+    "seen": 1789842643.282741,
+    "ast_hash": "06cb01a994ec3995cdc32c8833d208c9",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/api/request/HomeworkItemRequest.java": {
+    "mtime": 1788947464.353,
+    "seen": 1789842643.282742,
+    "ast_hash": "0923e70f5b6410e5fff716578213fe7a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/api/request/UpdateHomeworkRequest.java": {
+    "mtime": 1788947464.28,
+    "seen": 1789842643.282742,
+    "ast_hash": "0d27412c4a5cad43983f3a539cd89fff",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/api/response/HomeworkDetailsResponse.java": {
+    "mtime": 1788947464.096,
+    "seen": 1789842643.282743,
+    "ast_hash": "6c4d230e7e52ece7cb255d14bb5cf90c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/api/response/HomeworkItemResponse.java": {
+    "mtime": 1788947463.742,
+    "seen": 1789842643.282743,
+    "ast_hash": "0e11ecd2d95e65afb826c9e6b88866ca",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/api/response/HomeworkPageResponse.java": {
+    "mtime": 1788947463.914,
+    "seen": 1789842643.2827442,
+    "ast_hash": "4fcc4eebd087a0d4c823bfa6e44c692a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/api/response/HomeworkSummaryResponse.java": {
+    "mtime": 1788947463.433,
+    "seen": 1789842643.2827442,
+    "ast_hash": "6ff5458fda96fa1450b8d27d77a7cbe8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/api/response/StudentHomeworkDetailsResponse.java": {
+    "mtime": 1788947463.298,
+    "seen": 1789842643.2827451,
+    "ast_hash": "6588e1d62375b5ba64483a6806607324",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/api/response/StudentHomeworkItemResponse.java": {
+    "mtime": 1789463678.7102902,
+    "seen": 1789842643.2827451,
+    "ast_hash": "6fbdf120166e401ec0319aee7e8a6350",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/api/response/StudentHomeworkPageResponse.java": {
+    "mtime": 1788947464.315,
+    "seen": 1789842643.282746,
+    "ast_hash": "c39235bfc12c5b767a333832454bf15f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/api/response/StudentHomeworkSummaryResponse.java": {
+    "mtime": 1789463678.5457487,
+    "seen": 1789842643.282746,
+    "ast_hash": "90ffafe367a05670820bd095d76fb0ad",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/api/response/StudentTaskResponse.java": {
+    "mtime": 1789463678.7940066,
+    "seen": 1789842643.2827468,
+    "ast_hash": "ceffe6a9e0208d5294b64749036584cd",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/CreateHomeworkCommand.java": {
+    "mtime": 1788947464.326,
+    "seen": 1789842643.282748,
+    "ast_hash": "cb5e3e65bb4f0ae199c0b1a9588f4af3",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/HomeworkCompletionService.java": {
+    "mtime": 1788948389.9409137,
+    "seen": 1789842643.282748,
+    "ast_hash": "8a3d24f0886bb0175c509894599737ff",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/HomeworkItemInput.java": {
+    "mtime": 1788947463.171,
+    "seen": 1789842643.282749,
+    "ast_hash": "7a90d32812c3acd7618828f7408a3d44",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/HomeworkItemResult.java": {
+    "mtime": 1788947464.284,
+    "seen": 1789842643.28275,
+    "ast_hash": "f9e136b4ef4b9d4f78eb9b2491a3226d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/HomeworkListItem.java": {
+    "mtime": 1788947463.643,
+    "seen": 1789842643.28275,
+    "ast_hash": "dc2330b0e57ae078ea0a3d7a1e0a9764",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/HomeworkPage.java": {
+    "mtime": 1788947463.193,
+    "seen": 1789842643.282751,
+    "ast_hash": "db79d95b1a9df4f4c2fba5f19c22da13",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/HomeworkPageResult.java": {
+    "mtime": 1788947463.777,
+    "seen": 1789842643.282751,
+    "ast_hash": "e6a23487dfb850feb969fd3a569fe972",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/HomeworkQuery.java": {
+    "mtime": 1788985027.6567366,
+    "seen": 1789842643.282752,
+    "ast_hash": "9dd500fa8ea26f8ce3e53de70034fd9e",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/HomeworkResult.java": {
+    "mtime": 1788947463.886,
+    "seen": 1789842643.282752,
+    "ast_hash": "864a44b536cab423ed6184a3f1bcf22d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/HomeworkService.java": {
+    "mtime": 1789742018.930149,
+    "seen": 1789842643.282753,
+    "ast_hash": "b62b6e048a216efac490e06222482273",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/HomeworkSummaryResult.java": {
+    "mtime": 1788947464.243,
+    "seen": 1789842643.282753,
+    "ast_hash": "294844f7a3693f86c99ac78029f8f58d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/StudentHomeworkDetails.java": {
+    "mtime": 1789463678.6337671,
+    "seen": 1789842643.282754,
+    "ast_hash": "4da2bba4c3285335f59bd939c5f1d1ae",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/StudentHomeworkDetailsResult.java": {
+    "mtime": 1788947463.109,
+    "seen": 1789842643.282754,
+    "ast_hash": "26d39e7ebdf32836d857135b8525fda2",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/StudentHomeworkListItem.java": {
+    "mtime": 1788947463.94,
+    "seen": 1789842643.2827551,
+    "ast_hash": "e5a7d37f631656e8a3815ef200b9d1b3",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/StudentHomeworkPage.java": {
+    "mtime": 1788947463.489,
+    "seen": 1789842643.282756,
+    "ast_hash": "0993936cad1b87031be0e4f1d3d1894f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/StudentHomeworkPageResult.java": {
+    "mtime": 1788947464.05,
+    "seen": 1789842643.282756,
+    "ast_hash": "c8c4be214b822a053392b997aa53a9aa",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/StudentHomeworkService.java": {
+    "mtime": 1789463678.8699758,
+    "seen": 1789842643.282757,
+    "ast_hash": "4b8780513b7997aeb36a79c82f6e9be6",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/StudentHomeworkSummaryResult.java": {
+    "mtime": 1789463678.47105,
+    "seen": 1789842643.282757,
+    "ast_hash": "eacd57cc76e5fa42804f0dc2932e1e91",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/SubmissionReviewedHomeworkListener.java": {
+    "mtime": 1788948390.0149462,
+    "seen": 1789842643.282758,
+    "ast_hash": "00220239f9f6fb72c0bd8622626f583b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/UpdateHomeworkCommand.java": {
+    "mtime": 1788947463.91,
+    "seen": 1789842643.282759,
+    "ast_hash": "f1e9a8f68019537c4a15ebad5dda9907",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/exception/HomeworkItemPositionConflictException.java": {
+    "mtime": 1788873297.6133797,
+    "seen": 1789842643.282759,
+    "ast_hash": "6a5105487e53e0d7308968cc64d94f7a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/exception/HomeworkNotFoundException.java": {
+    "mtime": 1788873297.3114877,
+    "seen": 1789842643.28276,
+    "ast_hash": "ed0eb832ef36bea90e58ac64f20d1937",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/exception/HomeworkStudentProgramNotFoundException.java": {
+    "mtime": 1788873297.3884249,
+    "seen": 1789842643.28276,
+    "ast_hash": "f88f77b1547a0e026e5a25f0af50b34c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/exception/HomeworkTaskNotAssignableException.java": {
+    "mtime": 1788873297.537842,
+    "seen": 1789842643.2827609,
+    "ast_hash": "362922222a0cc6144d30606ad80429c3",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/exception/HomeworkTaskSubjectMismatchException.java": {
+    "mtime": 1788873297.464204,
+    "seen": 1789842643.282762,
+    "ast_hash": "c93c39dd059c242f2bad98163e143b8b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/exception/HomeworkVersionConflictException.java": {
+    "mtime": 1788873297.6924386,
+    "seen": 1789842643.282762,
+    "ast_hash": "b3e416a1f286320b6d25462d56287f5c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/application/exception/InvalidHomeworkException.java": {
+    "mtime": 1788873297.2308831,
+    "seen": 1789842643.282763,
+    "ast_hash": "3fb500048b93f28b70c5680cffcaa5f5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/domain/HomeworkEntity.java": {
+    "mtime": 1788948390.3736844,
+    "seen": 1789842643.282764,
+    "ast_hash": "79efa2e7fc5f296ed597dc84cfa5ff8a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/domain/HomeworkItemEntity.java": {
+    "mtime": 1788946974.578,
+    "seen": 1789842643.282764,
+    "ast_hash": "eee45e3046c85a8b238e150609c469c5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/domain/HomeworkRepository.java": {
+    "mtime": 1788948390.1623216,
+    "seen": 1789842643.2827652,
+    "ast_hash": "e82631341d225946e3580e2bb40b0076",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/domain/HomeworkStatus.java": {
+    "mtime": 1788860418.6877418,
+    "seen": 1789842643.282766,
+    "ast_hash": "7c7b1af2231fec6f49cbab8354695fc7",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/infrastructure/persistence/HomeworkDatabaseModel.java": {
+    "mtime": 1788947464.037,
+    "seen": 1789842643.282767,
+    "ast_hash": "9ed8453088e1c8effee4b36ab5f6443c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/infrastructure/persistence/HomeworkDatabaseRepository.java": {
+    "mtime": 1788948390.2343435,
+    "seen": 1789842643.282767,
+    "ast_hash": "61ad9aac517f1c065cbeea1c162b535c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/infrastructure/persistence/HomeworkItemDatabaseModel.java": {
+    "mtime": 1788947356.097,
+    "seen": 1789842643.2827678,
+    "ast_hash": "ca5d70bbd97d7337038ccdef878a4a57",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/infrastructure/persistence/HomeworkItemDatabaseRepository.java": {
+    "mtime": 1788947463.074,
+    "seen": 1789842643.282769,
+    "ast_hash": "08bf3fc0f9886d689540948e42300c40",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/infrastructure/persistence/JpaHomeworkQuery.java": {
+    "mtime": 1789463695.511392,
+    "seen": 1789842643.282769,
+    "ast_hash": "d06bbc71d186094d69f0b952770ee9ee",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/infrastructure/persistence/JpaHomeworkRepository.java": {
+    "mtime": 1788948390.3030217,
+    "seen": 1789842643.28277,
+    "ast_hash": "10582da1371fd72831bf456fe603759d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/homework/infrastructure/persistence/JpaSubmissionHomeworkContextQuery.java": {
+    "mtime": 1789022211.236622,
+    "seen": 1789842643.28277,
+    "ast_hash": "c8ba3c0adc326641b519fb0d2d8c942d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/api/AdminPlatformSettingsController.java": {
+    "mtime": 1789830595.8395228,
+    "seen": 1789842643.2827709,
+    "ast_hash": "965ef7ebad83ba759be602cefd8b9acf",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/api/AdminTeacherInvitationController.java": {
+    "mtime": 1789830595.8398411,
+    "seen": 1789842643.2827709,
+    "ast_hash": "f961379828d101b30c5c5b4fcc0bd6d6",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/api/ChangeRegistrationModeRequest.java": {
+    "mtime": 1789830595.8403347,
+    "seen": 1789842643.282772,
+    "ast_hash": "ac9c5a2cff94ad4c7d379561f0d37db1",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/api/CreateTeacherInvitationRequest.java": {
+    "mtime": 1789830595.8407178,
+    "seen": 1789842643.282773,
+    "ast_hash": "2b4abbf16f34c82fb4f9001db9379df9",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/api/PlatformSettingsResponse.java": {
+    "mtime": 1789830595.8410373,
+    "seen": 1789842643.282773,
+    "ast_hash": "4552a9c2ea6a8cbdb7f0b3bd842ab724",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/api/PublicRegistrationController.java": {
+    "mtime": 1789830595.8413646,
+    "seen": 1789842643.282774,
+    "ast_hash": "18d7c4e3ad5c77a352407c9b30a28729",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/api/PublicTeacherInvitationController.java": {
+    "mtime": 1789830595.8416173,
+    "seen": 1789842643.282774,
+    "ast_hash": "ae6a3aab500da1071421125d2d84a2d6",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/api/PublicTeacherInvitationResponse.java": {
+    "mtime": 1789830595.8418465,
+    "seen": 1789842643.282775,
+    "ast_hash": "23385bba5259965b3508e9c48216088d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/api/RegistrationSettingsResponse.java": {
+    "mtime": 1789830595.8420892,
+    "seen": 1789842643.282775,
+    "ast_hash": "1795f8c30e021ec45862c13de807a5c4",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/api/TeacherInvitationCreatedResponse.java": {
+    "mtime": 1789830595.842344,
+    "seen": 1789842643.282776,
+    "ast_hash": "385b49fe8056dd54d60873e49f037e5a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/api/TeacherInvitationExceptionHandler.java": {
+    "mtime": 1789830595.8425965,
+    "seen": 1789842643.282777,
+    "ast_hash": "60262d56b845a64df5a5493199e6c1b2",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/api/TeacherInvitationListResponse.java": {
+    "mtime": 1789830595.8428528,
+    "seen": 1789842643.282777,
+    "ast_hash": "9955ccb4d6719b9b006c15d19878253d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/api/TeacherInvitationSummaryResponse.java": {
+    "mtime": 1789830595.8433323,
+    "seen": 1789842643.282778,
+    "ast_hash": "205c196ebb2f9bb04db3675354f4cbb8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/application/PlatformSettingsService.java": {
+    "mtime": 1789830595.8436148,
+    "seen": 1789842643.282778,
+    "ast_hash": "8bd006c1509318902e15e27614b65e88",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/application/RegistrationInviteRequiredException.java": {
+    "mtime": 1789830595.8438473,
+    "seen": 1789842643.282779,
+    "ast_hash": "5727723e73a29c5e718dab135ec9e51c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/application/RegistrationPolicyService.java": {
+    "mtime": 1789830595.8440926,
+    "seen": 1789842643.28278,
+    "ast_hash": "03efeae957fc00fb31b723eca94ca1d4",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/application/invite/TeacherInvitationEmailAlreadyRegisteredException.java": {
+    "mtime": 1789830595.844461,
+    "seen": 1789842643.28278,
+    "ast_hash": "f1ee1acf22e5741e58206ffa8c0f6c60",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/application/invite/TeacherInvitationNotActiveException.java": {
+    "mtime": 1789830595.8448017,
+    "seen": 1789842643.2827818,
+    "ast_hash": "c5ba5bd9bc05c3783ac4e85a38f41d75",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/application/invite/TeacherInvitationNotFoundException.java": {
+    "mtime": 1789830595.844972,
+    "seen": 1789842643.282783,
+    "ast_hash": "de505483c0f2e463bf4776de26730f4c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/application/invite/TeacherRegistrationInviteService.java": {
+    "mtime": 1789830595.84525,
+    "seen": 1789842643.282783,
+    "ast_hash": "7f6bfd8cefdb16f0649ba259dbc5b8e0",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/application/invite/TeacherRegistrationInviteTokenService.java": {
+    "mtime": 1789830595.8455818,
+    "seen": 1789842643.282784,
+    "ast_hash": "c1686c1d7d635c94e68feb1c6e320fd8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/domain/PlatformSettings.java": {
+    "mtime": 1789830595.845828,
+    "seen": 1789842643.282784,
+    "ast_hash": "67ae431b620b09e37f35c7c5922862fa",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/domain/RegistrationMode.java": {
+    "mtime": 1789830595.8460364,
+    "seen": 1789842643.282785,
+    "ast_hash": "f26b3dc8b50a5e5e8895c3d7727b6569",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/domain/TeacherRegistrationInvite.java": {
+    "mtime": 1789830595.8463407,
+    "seen": 1789842643.282785,
+    "ast_hash": "dda0897df0bbc31745da5a77181b297b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/domain/TeacherRegistrationInviteStatus.java": {
+    "mtime": 1789830595.8465743,
+    "seen": 1789842643.2827861,
+    "ast_hash": "33cd4097ebb6da2162ed1d9c4fc2e0d8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/infrastructure/persistence/PlatformSettingsRepository.java": {
+    "mtime": 1789830595.846886,
+    "seen": 1789842643.282787,
+    "ast_hash": "27d4e0a823df9df09fb1f09d6144d29d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/platform/infrastructure/persistence/TeacherRegistrationInviteRepository.java": {
+    "mtime": 1789830595.8471503,
+    "seen": 1789842643.282787,
+    "ast_hash": "ff65575d493134fd15545c9c72f916a6",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/AssignStudentProgramRequest.java": {
+    "mtime": 1789377177.550562,
+    "seen": 1789842643.282788,
+    "ast_hash": "fa0065dce8a0e2b7d0b2ee21a3c5856b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/CreateLearningProgramModuleRequest.java": {
+    "mtime": 1789839419.2182114,
+    "seen": 1789842643.282788,
+    "ast_hash": "b0e04c2377db0243b198d538d4f6c947",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/CreateLearningProgramRequest.java": {
+    "mtime": 1789377177.4083269,
+    "seen": 1789842643.2827892,
+    "ast_hash": "9af9b9d18276645699cb53bb2e9e60af",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/CreateLearningProgramTopicRequest.java": {
+    "mtime": 1789841639.9763594,
+    "seen": 1789842643.28279,
+    "ast_hash": "ebc8095354637b884c9a43d81c60b2cf",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/LearningProgramDetailsResponse.java": {
+    "mtime": 1789830595.8475075,
+    "seen": 1789842643.28279,
+    "ast_hash": "cdc5929000e2acc5f2031c90ee354a78",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/LearningProgramModuleDetailsResponse.java": {
+    "mtime": 1789830595.8477776,
+    "seen": 1789842643.282791,
+    "ast_hash": "86bed2b2ed7c51ee5466f088592e1cdb",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/LearningProgramModuleResponse.java": {
+    "mtime": 1789839419.303809,
+    "seen": 1789842643.282791,
+    "ast_hash": "01bad25d8b9678960934d59d08de59e2",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/LearningProgramSummaryResponse.java": {
+    "mtime": 1789377177.4799364,
+    "seen": 1789842643.2827919,
+    "ast_hash": "0514ec7dbe5bf3f78275b74c13c46f13",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/LearningProgramTopicDetailsResponse.java": {
+    "mtime": 1789830595.8480053,
+    "seen": 1789842643.282793,
+    "ast_hash": "3666fecff1da21e3e5885995ecef9d79",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/ProgramExceptionHandler.java": {
+    "mtime": 1789842537.3638506,
+    "seen": 1789842643.282793,
+    "ast_hash": "21ddd5e8e363aa5aea1518ce4ddc94e1",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/ProgramModuleResponse.java": {
+    "mtime": 1789369128.6327193,
+    "seen": 1789842643.282794,
+    "ast_hash": "605f01a266cb73f275faa55d015fa3fc",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/ProgramSubjectResponse.java": {
+    "mtime": 1789369128.4919233,
+    "seen": 1789842643.282794,
+    "ast_hash": "4014aa1f87e31d8511c52001452c90c4",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/ProgramTopicResponse.java": {
+    "mtime": 1789369128.5630982,
+    "seen": 1789842643.282795,
+    "ast_hash": "f7eb0bbc6ae4732ff97eaacff8be96fd",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/StudentProgramDetailsResponse.java": {
+    "mtime": 1789369128.7724867,
+    "seen": 1789842643.282795,
+    "ast_hash": "35700fbae702c0713bcbf7c2738556bd",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/StudentProgramSummaryResponse.java": {
+    "mtime": 1789369128.7026024,
+    "seen": 1789842643.2827961,
+    "ast_hash": "b0098d6489826cfb1057b8c031ba17b0",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/TeacherLearningProgramApi.java": {
+    "mtime": 1789842537.2826912,
+    "seen": 1789842643.282797,
+    "ast_hash": "55a657bb185d8380c70df4b635883722",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/TeacherLearningProgramController.java": {
+    "mtime": 1789842537.1983716,
+    "seen": 1789842643.282797,
+    "ast_hash": "00204854f71edb391bad0e7c72ba9b79",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/TeacherStudentProgramApi.java": {
+    "mtime": 1789377267.890558,
+    "seen": 1789842643.282798,
+    "ast_hash": "fa4ef8a2025223dc199a0f002ae77fa6",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/TeacherStudentProgramController.java": {
+    "mtime": 1789377267.9795556,
+    "seen": 1789842643.282798,
+    "ast_hash": "4ebe279345efc8ce55283571ab73e683",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/UpdateLearningProgramModuleRequest.java": {
+    "mtime": 1789840406.973415,
+    "seen": 1789842643.282799,
+    "ast_hash": "abffcf07ad9122b8c443c639a97bf0cb",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/UpdateLearningProgramRequest.java": {
+    "mtime": 1789837032.5078979,
+    "seen": 1789842643.2828002,
+    "ast_hash": "f6b4ef56277e299facb947a2b0676fce",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/api/UpdateLearningProgramTopicRequest.java": {
+    "mtime": 1789842536.6823626,
+    "seen": 1789842643.282801,
+    "ast_hash": "dd28b024198b95d3fceccf38317bf113",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/application/InvalidLearningProgramStatusException.java": {
+    "mtime": 1789377222.067709,
+    "seen": 1789842643.282801,
+    "ast_hash": "71ae7dbf0fcece76e25cbee14d2c7039",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/application/LearningProgramModuleNotEmptyException.java": {
+    "mtime": 1789840407.1328225,
+    "seen": 1789842643.2828019,
+    "ast_hash": "c767eae085c1d0bf4b05fa8e2218f865",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/application/LearningProgramModuleNotFoundException.java": {
+    "mtime": 1789840407.0538042,
+    "seen": 1789842643.282803,
+    "ast_hash": "88938ce2244b44e6db3f9251f283fc1e",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/application/LearningProgramNotFoundException.java": {
+    "mtime": 1789377221.9153485,
+    "seen": 1789842643.282803,
+    "ast_hash": "414b9549dd560396d95172afa9aafc9f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/application/LearningProgramTopicNotFoundException.java": {
+    "mtime": 1789842536.7778902,
+    "seen": 1789842643.282804,
+    "ast_hash": "95ce25ad1773329428397f5a27fe371a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/application/LearningProgramTopicVersionConflictException.java": {
+    "mtime": 1789842536.8629155,
+    "seen": 1789842643.282805,
+    "ast_hash": "dd69fa12648281fecc690d42fdce7755",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/application/LearningProgramVersionConflictException.java": {
+    "mtime": 1789837032.6256711,
+    "seen": 1789842643.282805,
+    "ast_hash": "c797e7ce04e10ad82c269d4d0b6d3b04",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/application/ProgramQuery.java": {
+    "mtime": 1789047766.285877,
+    "seen": 1789842643.282806,
+    "ast_hash": "731fd9a737a87fd5fadd28addeee34b5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/application/ProgramQueryService.java": {
+    "mtime": 1789047766.3695538,
+    "seen": 1789842643.282806,
+    "ast_hash": "1e1e960367ef849a45dcf14ae6a0751a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/application/StudentProgramAlreadyAssignedException.java": {
+    "mtime": 1789377222.1384768,
+    "seen": 1789842643.282807,
+    "ast_hash": "e6ada8059dbed03e3012c3153f888b5a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/application/StudentProgramNotFoundException.java": {
+    "mtime": 1789369081.652285,
+    "seen": 1789842643.282808,
+    "ast_hash": "8e6cd1dd17ae38a3aaa1f5f5e4b651b4",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/application/SubjectNotFoundException.java": {
+    "mtime": 1789377221.9930208,
+    "seen": 1789842643.282808,
+    "ast_hash": "470a857cc4d4e0dc7085319e99fb9c40",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/application/TeacherLearningProgramQuery.java": {
+    "mtime": 1789830595.849295,
+    "seen": 1789842643.282809,
+    "ast_hash": "e464d22db61736dae97f2c6422e2c03f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/application/TeacherLearningProgramService.java": {
+    "mtime": 1789842537.1089256,
+    "seen": 1789842643.282809,
+    "ast_hash": "c5ffb9398ff26511af68dc3d439aa6d7",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/application/TeacherStudentProgramQuery.java": {
+    "mtime": 1789369081.5853634,
+    "seen": 1789842643.2828102,
+    "ast_hash": "598204f0148bf1652d7e287a6f242b08",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/application/TeacherStudentProgramService.java": {
+    "mtime": 1789837033.3874767,
+    "seen": 1789842643.282811,
+    "ast_hash": "82273cf4d85fd6bd1d45896e327d533f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/domain/ModuleEntity.java": {
+    "mtime": 1788946974.516,
+    "seen": 1789842643.282811,
+    "ast_hash": "592c5db614683ccb8db7e80904e5d3bd",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/domain/ModuleRepository.java": {
+    "mtime": 1789840406.5568416,
+    "seen": 1789842643.2828119,
+    "ast_hash": "eda1e624928984941737b66c4100fa04",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/domain/TopicEntity.java": {
+    "mtime": 1788946974.612,
+    "seen": 1789842643.2828119,
+    "ast_hash": "75f623878661cc05d8ccd1358018949c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/domain/TopicRepository.java": {
+    "mtime": 1789841639.731735,
+    "seen": 1789842643.2828128,
+    "ast_hash": "ed7d06e07241cee91f04fec943a65832",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/domain/TopicStatus.java": {
+    "mtime": 1788792853.8622968,
+    "seen": 1789842643.2828128,
+    "ast_hash": "84628dd0c9b9006985a570f1b509d5fc",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/domain/learningprogram/LearningProgramEntity.java": {
+    "mtime": 1789838397.5781434,
+    "seen": 1789842643.282814,
+    "ast_hash": "362ca65b19beae1a24d078218922cfa4",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/domain/learningprogram/LearningProgramRepository.java": {
+    "mtime": 1789837032.8940237,
+    "seen": 1789842643.282815,
+    "ast_hash": "b407b6f9a7233afe5ac18d3004436e33",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/domain/learningprogram/LearningProgramStatus.java": {
+    "mtime": 1788794847.059,
+    "seen": 1789842643.282815,
+    "ast_hash": "088278b8da1b4b8b84a75360ade4b0cc",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/domain/studentprogram/StudentProgramEntity.java": {
+    "mtime": 1789377141.2178707,
+    "seen": 1789842643.282816,
+    "ast_hash": "e39d867ed045ae86933a472e7910bcfa",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/domain/studentprogram/StudentProgramRepository.java": {
+    "mtime": 1789837033.148711,
+    "seen": 1789842643.2828171,
+    "ast_hash": "fa6b323e65610622dbbe7ab778594708",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/domain/studentprogram/StudentProgramStatus.java": {
+    "mtime": 1788794847.101,
+    "seen": 1789842643.2828171,
+    "ast_hash": "d515ea6d5d295f63f0fe2a45d1a3bc50",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/domain/studentprogram/StudentTopicProgressEntity.java": {
+    "mtime": 1788946974.519,
+    "seen": 1789842643.282818,
+    "ast_hash": "745eb3b8d9f00570762ae87b3c2cbd56",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/domain/studentprogram/StudentTopicProgressRepository.java": {
+    "mtime": 1788947463.08,
+    "seen": 1789842643.282818,
+    "ast_hash": "6f74bd4c469922a2829a4672584ce828",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/domain/studentprogram/StudentTopicProgressStatus.java": {
+    "mtime": 1788794847.094,
+    "seen": 1789842643.282819,
+    "ast_hash": "f1607b2322f9268b55cad10a5db51b5b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/infrastructure/persistence/JpaModuleRepository.java": {
+    "mtime": 1789840406.894868,
+    "seen": 1789842643.28282,
+    "ast_hash": "1de209a591574e44f58234da68b8a022",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/infrastructure/persistence/JpaTopicRepository.java": {
+    "mtime": 1789842591.2616484,
+    "seen": 1789842643.2828212,
+    "ast_hash": "cb0e3b89a06130e7a466d03eb2cda413",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/infrastructure/persistence/ModuleDatabaseModel.java": {
+    "mtime": 1788947463.112,
+    "seen": 1789842643.2828212,
+    "ast_hash": "0eae041ac8860d66f71da02b0dece1e3",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/infrastructure/persistence/ModuleDatabaseRepository.java": {
+    "mtime": 1789839419.0446384,
+    "seen": 1789842643.282822,
+    "ast_hash": "a36cede2d10b07793353514e423da84d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/infrastructure/persistence/TopicDatabaseModel.java": {
+    "mtime": 1789842536.9428227,
+    "seen": 1789842643.282822,
+    "ast_hash": "6d6440df7cf8150e4f76dea96e4bea1c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/infrastructure/persistence/TopicDatabaseRepository.java": {
+    "mtime": 1789841639.814887,
+    "seen": 1789842643.2828228,
+    "ast_hash": "3e806becf01553f83b3df87c0f6d70dd",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/infrastructure/persistence/learningprogram/JpaLearningProgramRepository.java": {
+    "mtime": 1789837033.0677648,
+    "seen": 1789842643.2828228,
+    "ast_hash": "3f758f26e0badc785067fc7151de4ca9",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/infrastructure/persistence/learningprogram/LearningProgramDatabaseModel.java": {
+    "mtime": 1788947464.072,
+    "seen": 1789842643.282824,
+    "ast_hash": "c8f2cace6b2e1f2310fde3f1cb394b20",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/infrastructure/persistence/learningprogram/LearningProgramDatabaseRepository.java": {
+    "mtime": 1789837032.9842987,
+    "seen": 1789842643.282824,
+    "ast_hash": "a12e6fabfa004d557c3a4a4391fc3b45",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/infrastructure/persistence/studentprogram/JpaStudentProgramRepository.java": {
+    "mtime": 1789837033.3079267,
+    "seen": 1789842643.282825,
+    "ast_hash": "a926b5f64cbbf8d9d2ebcd4294dc39a2",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/infrastructure/persistence/studentprogram/JpaStudentTopicProgressRepository.java": {
+    "mtime": 1788947464.13,
+    "seen": 1789842643.282825,
+    "ast_hash": "cbcf686870a53e037e7dc888fbcbd653",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/infrastructure/persistence/studentprogram/StudentProgramDatabaseModel.java": {
+    "mtime": 1788947464.169,
+    "seen": 1789842643.282826,
+    "ast_hash": "dfd7cd8e63eff4eb12d3433fe5e3405d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/infrastructure/persistence/studentprogram/StudentProgramDatabaseRepository.java": {
+    "mtime": 1789837033.2274375,
+    "seen": 1789842643.282827,
+    "ast_hash": "90c3340b4bb4f378b4dcc23fa278f502",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/infrastructure/persistence/studentprogram/StudentTopicProgressDatabaseModel.java": {
+    "mtime": 1788947464.09,
+    "seen": 1789842643.282827,
+    "ast_hash": "a9beeb7fb30950101092d3dc02eff1d0",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/infrastructure/persistence/studentprogram/StudentTopicProgressDatabaseRepository.java": {
+    "mtime": 1788947463.801,
+    "seen": 1789842643.282828,
+    "ast_hash": "bc0ad0db7a336ed35ab593c18d5f74a3",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/infrastructure/persistence/studentprogram/StudentTopicProgressId.java": {
+    "mtime": 1788947463.773,
+    "seen": 1789842643.282828,
+    "ast_hash": "ae61f8c36efdef888c879d1b0368d1f2",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/infrastructure/read/JdbcTeacherLearningProgramQuery.java": {
+    "mtime": 1789830595.8498573,
+    "seen": 1789842643.282829,
+    "ast_hash": "5adf6d1b90d30aa59d46bb85cc1e9ff4",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/program/infrastructure/read/JdbcTeacherStudentProgramQuery.java": {
+    "mtime": 1789369081.8397255,
+    "seen": 1789842643.28283,
+    "ast_hash": "833cc59ceaa96f42dd9f096f205d61c8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/api/ProgressExceptionHandler.java": {
+    "mtime": 1789046252.4424775,
+    "seen": 1789842643.28285,
+    "ast_hash": "0f5099f78e4f3566dfa9b8639a412886",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/api/PublicProgressApi.java": {
+    "mtime": 1789046252.170794,
+    "seen": 1789842643.282893,
+    "ast_hash": "1e9586e28ac487716f6c62a72ed3174f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/api/PublicProgressController.java": {
+    "mtime": 1789046252.360282,
+    "seen": 1789842643.282898,
+    "ast_hash": "d04553638b798ee6016b548e0db8de43",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/api/StudentProgressApi.java": {
+    "mtime": 1789044957.6591363,
+    "seen": 1789842643.282899,
+    "ast_hash": "1f400fca18fdb64e27f58f0761635cc1",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/api/StudentProgressController.java": {
+    "mtime": 1789044957.7988603,
+    "seen": 1789842643.2828999,
+    "ast_hash": "55ef04fc06f6fc78a463fce766bdba40",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/api/TeacherProgressApi.java": {
+    "mtime": 1789044957.5791645,
+    "seen": 1789842643.2828999,
+    "ast_hash": "efc226a0ddf5dd7a6b332c0f344ca36e",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/api/TeacherProgressController.java": {
+    "mtime": 1789044957.7287767,
+    "seen": 1789842643.282901,
+    "ast_hash": "e84494081b84b6fccb7e934cd941dfe8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/api/TeacherProgressShareApi.java": {
+    "mtime": 1789046252.0151834,
+    "seen": 1789842643.282902,
+    "ast_hash": "e11f4a159d96729af5a909f0305ded73",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/api/TeacherProgressShareController.java": {
+    "mtime": 1789046252.0946698,
+    "seen": 1789842643.282902,
+    "ast_hash": "3fab8d611339e575446019fc77586bc0",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/api/request/CreateProgressShareRequest.java": {
+    "mtime": 1789046095.3209531,
+    "seen": 1789842643.282903,
+    "ast_hash": "5a4f7be4042a2381c1b116b24933b75a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/api/response/CurrentProgressResponse.java": {
+    "mtime": 1789045523.5870988,
+    "seen": 1789842643.2829041,
+    "ast_hash": "6c8c3cd7832fb18bcac5902084a5c2c4",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/api/response/ProgressShareCreatedResponse.java": {
+    "mtime": 1789046095.3936105,
+    "seen": 1789842643.2829041,
+    "ast_hash": "ac845ec22642d2e7305c0eec2a411b21",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/api/response/ProgressShareListResponse.java": {
+    "mtime": 1789046095.5350366,
+    "seen": 1789842643.282905,
+    "ast_hash": "c8979d39d6284c43feb1c860074d2766",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/api/response/ProgressShareSummaryResponse.java": {
+    "mtime": 1789046095.4648736,
+    "seen": 1789842643.282906,
+    "ast_hash": "f6ba3f2d5cb19e4b6e695353282fd5a4",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/api/response/PublicCurrentProgressResponse.java": {
+    "mtime": 1789046965.3826835,
+    "seen": 1789842643.282906,
+    "ast_hash": "531dd5b321737b666291bfff8505f5b2",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/application/GetCurrentProgressService.java": {
+    "mtime": 1789051360.931495,
+    "seen": 1789842643.2829068,
+    "ast_hash": "afbdb15254b1ff8c1eacbba7076b65d6",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/application/ProgressAccessService.java": {
+    "mtime": 1789223050.873,
+    "seen": 1789842643.282908,
+    "ast_hash": "9818521cdfdc02a3b540e55b2159b84b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/application/ProgressInterval.java": {
+    "mtime": 1789051360.7452502,
+    "seen": 1789842643.282909,
+    "ast_hash": "87d82ae3abe251e595d874d9021fe479",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/application/ProgressReadRepository.java": {
+    "mtime": 1789051360.8354235,
+    "seen": 1789842643.2829099,
+    "ast_hash": "dc19c517668c42cc5bd5d31abbff0713",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/application/ProgressShareService.java": {
+    "mtime": 1789223050.843,
+    "seen": 1789842643.2829099,
+    "ast_hash": "f8794aadb95d52de6e8d7052203be88d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/application/PublicProgressShareService.java": {
+    "mtime": 1789220961.694,
+    "seen": 1789842643.282911,
+    "ast_hash": "7fabe7f9d6f1c036c15cd6f0ed568375",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/application/exception/InvalidProgressShareExpirationException.java": {
+    "mtime": 1789046094.8761976,
+    "seen": 1789842643.282912,
+    "ast_hash": "6bd2ade9e40b760bcf9e1a2614a487c4",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/application/exception/ProgressShareExpiredException.java": {
+    "mtime": 1789046095.0954869,
+    "seen": 1789842643.282913,
+    "ast_hash": "460cb2540ec722b473a2f865472feb63",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/application/exception/ProgressShareNotFoundException.java": {
+    "mtime": 1789046094.9492953,
+    "seen": 1789842643.282913,
+    "ast_hash": "b049ce5539a256706bb92597306f6d15",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/application/exception/ProgressShareRevokedException.java": {
+    "mtime": 1789046095.193704,
+    "seen": 1789842643.2829142,
+    "ast_hash": "b4086e3388a1751ab05e9f15f3f4e38b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/application/exception/ProgressStudentProgramNotFoundException.java": {
+    "mtime": 1789032316.9555347,
+    "seen": 1789842643.282915,
+    "ast_hash": "6377f4b5f30607958a1c3308a141e999",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/domain/AssessmentAverages.java": {
+    "mtime": 1789032316.2518048,
+    "seen": 1789842643.282915,
+    "ast_hash": "5881256d75d933ffa145e85a2f306904",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/domain/CurrentProgress.java": {
+    "mtime": 1789032316.6275458,
+    "seen": 1789842643.282916,
+    "ast_hash": "901273a883583ff1a9a0c4b0a5aa1dd6",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/domain/HomeworkMetrics.java": {
+    "mtime": 1789032316.4034536,
+    "seen": 1789842643.282916,
+    "ast_hash": "fb97932cca88fd696f67fa3ce4df7d03",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/domain/PracticeMetrics.java": {
+    "mtime": 1789032316.48015,
+    "seen": 1789842643.282917,
+    "ast_hash": "af053d06059f5a46c0190582d574ac7f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/domain/ProgressCalculator.java": {
+    "mtime": 1789032316.70189,
+    "seen": 1789842643.282918,
+    "ast_hash": "7235ac26a7772d19a188b4868da584fd",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/domain/ProgressShare.java": {
+    "mtime": 1789046094.4017656,
+    "seen": 1789842643.282918,
+    "ast_hash": "0b5f38f269d0552f718ff55ff9a077b4",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/domain/ProgressShareRepository.java": {
+    "mtime": 1789046094.5446625,
+    "seen": 1789842643.282919,
+    "ast_hash": "b215ecd8bb0c7c91cc43a320d55323a5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/domain/ProgressShareStatus.java": {
+    "mtime": 1789046094.4736702,
+    "seen": 1789842643.28292,
+    "ast_hash": "cd37ab234e7a2b3ecf613a59c13c4dd9",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/domain/SessionMetrics.java": {
+    "mtime": 1789032316.328435,
+    "seen": 1789842643.282921,
+    "ast_hash": "71baa62b98df2b48968bb65cd4194f11",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/domain/TopicProgress.java": {
+    "mtime": 1789032316.554801,
+    "seen": 1789842643.282921,
+    "ast_hash": "16bd0bca16a39cd3aefbac54c2a9a3e8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/infrastructure/JdbcProgressReadRepository.java": {
+    "mtime": 1789052109.547416,
+    "seen": 1789842643.282922,
+    "ast_hash": "369e681225fe390bb9dca62617c7ac87",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/infrastructure/persistence/JpaProgressShareRepository.java": {
+    "mtime": 1789046825.071,
+    "seen": 1789842643.282922,
+    "ast_hash": "b498d679dc93cd5012cefccd31388c83",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/infrastructure/persistence/ProgressShareDatabaseModel.java": {
+    "mtime": 1789046094.663677,
+    "seen": 1789842643.282923,
+    "ast_hash": "5db7c95386a10d167f0acbc8ace67344",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/progress/infrastructure/persistence/ProgressShareDatabaseRepository.java": {
+    "mtime": 1789046094.734324,
+    "seen": 1789842643.282924,
+    "ast_hash": "25ccd9d78b1d2635246a85a5caa85e7d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/api/ProgressReportExceptionHandler.java": {
+    "mtime": 1789145156.6339567,
+    "seen": 1789842643.282924,
+    "ast_hash": "e71c21e1008381370dd8d670cef1fd8a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/api/ProgressReportPdfResponse.java": {
+    "mtime": 1789145542.8378866,
+    "seen": 1789842643.2829251,
+    "ast_hash": "4ac4e2501d6d86534fca740499a57298",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/api/PublicProgressReportApi.java": {
+    "mtime": 1789144601.3295271,
+    "seen": 1789842643.282926,
+    "ast_hash": "beaabbab1294477ed1740c6c5f89f512",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/api/PublicProgressReportController.java": {
+    "mtime": 1789145543.0030081,
+    "seen": 1789842643.282926,
+    "ast_hash": "74c9268143b6f7048161e1b0cccdb496",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/api/TeacherProgressReportApi.java": {
+    "mtime": 1789144601.2550678,
+    "seen": 1789842643.282927,
+    "ast_hash": "328bc7a09ad4a68c237f729ced33223e",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/api/TeacherProgressReportController.java": {
+    "mtime": 1789145542.9200182,
+    "seen": 1789842643.282927,
+    "ast_hash": "a6e2a7ed39e104401f280ec5b73089b1",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/api/TeacherReportShareApi.java": {
+    "mtime": 1789065736.9234953,
+    "seen": 1789842643.2829282,
+    "ast_hash": "ebc92dc9fe9976c0d8582c7a386fb3e5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/api/TeacherReportShareController.java": {
+    "mtime": 1789065736.9966743,
+    "seen": 1789842643.282929,
+    "ast_hash": "e6bac54b497ea3a95177fe2dc63ba9f3",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/api/request/CreateProgressReportRequest.java": {
+    "mtime": 1789064511.8370292,
+    "seen": 1789842643.282929,
+    "ast_hash": "17c071b7623c58cd53e0531da646fb84",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/api/request/CreateReportShareRequest.java": {
+    "mtime": 1789065645.3311765,
+    "seen": 1789842643.28293,
+    "ast_hash": "2bb4381c3fe8db8a133f6c19a272f177",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/api/request/PublishProgressReportRequest.java": {
+    "mtime": 1789064511.9107552,
+    "seen": 1789842643.28293,
+    "ast_hash": "6bcc4c8d4f0746463d40400cf0584035",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/api/request/UpdateProgressReportRequest.java": {
+    "mtime": 1789064511.9866142,
+    "seen": 1789842643.2829309,
+    "ast_hash": "32fb100b8765607f5474aab6924376af",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/api/response/ProgressReportDetailsResponse.java": {
+    "mtime": 1789064512.1332808,
+    "seen": 1789842643.2829309,
+    "ast_hash": "c4eddac6eb5b0b2806354c61f88a7ef2",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/api/response/ProgressReportPageResponse.java": {
+    "mtime": 1789064512.2070525,
+    "seen": 1789842643.282932,
+    "ast_hash": "373e3825b23a177aae04a536cf68b19b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/api/response/ProgressReportSummaryResponse.java": {
+    "mtime": 1789064512.0597837,
+    "seen": 1789842643.282932,
+    "ast_hash": "e6c5b4e5b07d261af93bcf9cd2c8d7ff",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/api/response/PublicProgressReportResponse.java": {
+    "mtime": 1789065645.7108474,
+    "seen": 1789842643.282933,
+    "ast_hash": "e5050aad76b5d2ea2fff9864c4b9de2c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/api/response/ReportShareCreatedResponse.java": {
+    "mtime": 1789065645.4135296,
+    "seen": 1789842643.282933,
+    "ast_hash": "58e52e0a52e037ad017a819260b5a243",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/api/response/ReportShareListResponse.java": {
+    "mtime": 1789065645.5696442,
+    "seen": 1789842643.282934,
+    "ast_hash": "3fc306ed844935c0074d0da15c3f3c58",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/api/response/ReportShareSummaryResponse.java": {
+    "mtime": 1789065645.4942973,
+    "seen": 1789842643.2829351,
+    "ast_hash": "1d9aae51961046f4a48344e61f06be3f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/CreateProgressReportDraft.java": {
+    "mtime": 1789065233.698,
+    "seen": 1789842643.2829351,
+    "ast_hash": "7dfe1091c05f40eff8e974da883faa26",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/EditProgressReportDraft.java": {
+    "mtime": 1789065233.744,
+    "seen": 1789842643.282936,
+    "ast_hash": "cbe2e72a3a9bb41d11eda0b51ef2661d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/EditProgressReportDraftCommand.java": {
+    "mtime": 1789064362.2185605,
+    "seen": 1789842643.282936,
+    "ast_hash": "3a2f6b638e60f19ba20f0f9902dd1ea6",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/LearningPeriodService.java": {
+    "mtime": 1789048440.4072156,
+    "seen": 1789842643.282937,
+    "ast_hash": "9c71587ef339db5298142905e1d8b4c9",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/LessonSessionLearningPeriodListener.java": {
+    "mtime": 1789047987.8608892,
+    "seen": 1789842643.282937,
+    "ast_hash": "08cd565834a54a3f98af175a9113c252",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/ProgressReportAuthorization.java": {
+    "mtime": 1789221156.71,
+    "seen": 1789842643.282938,
+    "ast_hash": "f20f746bc0a35dc8e14f8673db7ba77c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/ProgressReportDraftWriter.java": {
+    "mtime": 1789051624.9583316,
+    "seen": 1789842643.282939,
+    "ast_hash": "125a810d79649634a803c26c15e917bd",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/ProgressReportPageResult.java": {
+    "mtime": 1789051692.06811,
+    "seen": 1789842643.282939,
+    "ast_hash": "84872f2c4314f74c063a96885dac367d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/ProgressReportPdfDownload.java": {
+    "mtime": 1789144479.1802158,
+    "seen": 1789842643.28294,
+    "ast_hash": "633ae1979d291f76975e802c135df99a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/ProgressReportPdfModel.java": {
+    "mtime": 1789144478.9484165,
+    "seen": 1789842643.28294,
+    "ast_hash": "e066d505cd4d554ae14240b3d210e9ee",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/ProgressReportPdfModelFactory.java": {
+    "mtime": 1789145156.3927588,
+    "seen": 1789842643.2829409,
+    "ast_hash": "88b88bad80d25ff8ffc3941fc6ea9f75",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/ProgressReportPdfRenderer.java": {
+    "mtime": 1789144479.024546,
+    "seen": 1789842643.282942,
+    "ast_hash": "b482d00457f68787371a3c4763adc3de",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/ProgressReportPdfService.java": {
+    "mtime": 1789145160.6739829,
+    "seen": 1789842643.282942,
+    "ast_hash": "614bea62bf62187f7c3d7211123c55ac",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/ProgressReportQueryService.java": {
+    "mtime": 1789065233.675,
+    "seen": 1789842643.282943,
+    "ast_hash": "327f2ddb52b48f922008317c141d2d28",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/ProgressReportReadQuery.java": {
+    "mtime": 1789064419.1613312,
+    "seen": 1789842643.282943,
+    "ast_hash": "7a0c9ed0467d678c2d3020544549a0ef",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/ProgressReportSnapshotV1Factory.java": {
+    "mtime": 1789051624.8791788,
+    "seen": 1789842643.282944,
+    "ast_hash": "04ac61b5fc8f3b205b3fc5354bbc474b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/ProgressReportSummary.java": {
+    "mtime": 1789064418.9373617,
+    "seen": 1789842643.282945,
+    "ast_hash": "2494990b9f5f8175b19c207800035777",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/ProgressReportSummaryPage.java": {
+    "mtime": 1789064419.013415,
+    "seen": 1789842643.282945,
+    "ast_hash": "9285f3bbe3f67a4b13c3c51da088fd87",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/ProgressReportSummaryPageResult.java": {
+    "mtime": 1789064419.08816,
+    "seen": 1789842643.282946,
+    "ast_hash": "77c3456ebbe4d1002b5ac74fd2a7059d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/PublicProgressReportService.java": {
+    "mtime": 1789220961.747,
+    "seen": 1789842643.282947,
+    "ast_hash": "dce68ee9958b3f2c974230a0013eacf8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/PublishProgressReport.java": {
+    "mtime": 1789065233.762,
+    "seen": 1789842643.282947,
+    "ast_hash": "e4c114070a922a6cf1463c390f25704e",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/ReportShareService.java": {
+    "mtime": 1789220961.772,
+    "seen": 1789842643.282948,
+    "ast_hash": "3fa0a92f3b3b451a83609b043459c808",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/exception/HistoricalLearningPeriodChangeException.java": {
+    "mtime": 1789047987.7074225,
+    "seen": 1789842643.282948,
+    "ast_hash": "410d3c796bc51c578f1fb93d74da047e",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/exception/InvalidProgressReportListParameterException.java": {
+    "mtime": 1789064419.234155,
+    "seen": 1789842643.2829492,
+    "ast_hash": "695dd70c2009a2a6bda32bf3634c71f2",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/exception/InvalidProgressReportPeriodException.java": {
+    "mtime": 1789051624.6447875,
+    "seen": 1789842643.2829492,
+    "ast_hash": "7156d542e028b5457d0db3da19cc7517",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/exception/InvalidProgressReportStateException.java": {
+    "mtime": 1789051624.7244039,
+    "seen": 1789842643.28295,
+    "ast_hash": "4646b08bbbf2ad31e7044cedd1f07166",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/exception/InvalidReportShareExpirationException.java": {
+    "mtime": 1789065684.6249628,
+    "seen": 1789842643.2829509,
+    "ast_hash": "8180701fb45da919a0ac66efe6974041",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/exception/LearningPeriodNotFoundException.java": {
+    "mtime": 1789064771.2640052,
+    "seen": 1789842643.2829509,
+    "ast_hash": "ab1776b7829b4b9150c2dd891bb8ee34",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/exception/LearningPeriodStudentProgramNotFoundException.java": {
+    "mtime": 1789047987.6281955,
+    "seen": 1789842643.2829518,
+    "ast_hash": "b131cda8cba0955470404874266dac6f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/exception/ProgressReportConflictException.java": {
+    "mtime": 1789051624.4870806,
+    "seen": 1789842643.282953,
+    "ast_hash": "b02778b2123acda3c3e664826847cdb3",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/exception/ProgressReportNotEditableException.java": {
+    "mtime": 1789064771.340987,
+    "seen": 1789842643.282953,
+    "ast_hash": "3335ea4de27d7c3e2b4b9bdd9cddb8a2",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/exception/ProgressReportNotFoundException.java": {
+    "mtime": 1789051624.4066854,
+    "seen": 1789842643.282954,
+    "ast_hash": "8e1bbaf7d8ea2fa904b0e18d4649a3fc",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/exception/ProgressReportNotPublishableException.java": {
+    "mtime": 1789064771.4132054,
+    "seen": 1789842643.282958,
+    "ast_hash": "29c3b92cadf3cb61faa9d615fb223fce",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/exception/ProgressReportPdfNotAvailableException.java": {
+    "mtime": 1789144479.2566354,
+    "seen": 1789842643.2829592,
+    "ast_hash": "84766c1f253bd777e30ca59275283e08",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/exception/ProgressReportPdfRenderException.java": {
+    "mtime": 1789144479.333305,
+    "seen": 1789842643.28296,
+    "ast_hash": "ed14a02bc8bfdd647d43ce678e08d12e",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/exception/ProgressReportVersionConflictException.java": {
+    "mtime": 1789051624.5676293,
+    "seen": 1789842643.282961,
+    "ast_hash": "f1cae62496086ecafd27cafcc83f33da",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/exception/ReportShareExpiredException.java": {
+    "mtime": 1789065684.847372,
+    "seen": 1789842643.282961,
+    "ast_hash": "05004cd1fe731ad4e3d898bc7353aa6c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/exception/ReportShareNotAllowedException.java": {
+    "mtime": 1789065684.6999786,
+    "seen": 1789842643.2829618,
+    "ast_hash": "e0103803849cf5f4c3f86d518a3b0c77",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/exception/ReportShareNotFoundException.java": {
+    "mtime": 1789065684.7735975,
+    "seen": 1789842643.2829618,
+    "ast_hash": "bafa23eaa0b5121b395a09a37bb1f3ba",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/application/exception/ReportShareRevokedException.java": {
+    "mtime": 1789065684.9829175,
+    "seen": 1789842643.282963,
+    "ast_hash": "87066c663f8f44944183db0b4d0b1462",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/domain/LearningPeriod.java": {
+    "mtime": 1789047892.645983,
+    "seen": 1789842643.282963,
+    "ast_hash": "8ea5f95e7be2f36c6533beb4cb29c01a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/domain/LearningPeriodRepository.java": {
+    "mtime": 1789047892.7180836,
+    "seen": 1789842643.282964,
+    "ast_hash": "70c4147b1afba65e7cbc50e23dd00722",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/domain/LearningPeriodStatus.java": {
+    "mtime": 1789047892.5748594,
+    "seen": 1789842643.282965,
+    "ast_hash": "af0dd8efa06465aa7d17f287bb8a6267",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/domain/ProgressReport.java": {
+    "mtime": 1789145156.4742815,
+    "seen": 1789842643.282965,
+    "ast_hash": "afe27a1051f22ab8958806bc1f39f5eb",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/domain/ProgressReportPage.java": {
+    "mtime": 1789051441.6629467,
+    "seen": 1789842643.282966,
+    "ast_hash": "c52f2ded87460591397967ad40927b02",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/domain/ProgressReportRepository.java": {
+    "mtime": 1789064362.463724,
+    "seen": 1789842643.282966,
+    "ast_hash": "b6b576e961a8d4b49bad5c98f4334f70",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/domain/ProgressReportSnapshotSchemas.java": {
+    "mtime": 1789051441.4179206,
+    "seen": 1789842643.282967,
+    "ast_hash": "d2e7ed5ae790b8dbc927ddf937ac276c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/domain/ProgressReportSnapshotV1.java": {
+    "mtime": 1789064806.2230546,
+    "seen": 1789842643.282987,
+    "ast_hash": "48f6eb5d28a64a0abd37dc79762fb740",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/domain/ProgressReportStatus.java": {
+    "mtime": 1789064806.149153,
+    "seen": 1789842643.2829912,
+    "ast_hash": "2ea4c42e59d1afad733e37785805b395",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/domain/ReportShare.java": {
+    "mtime": 1789065611.7134163,
+    "seen": 1789842643.2829921,
+    "ast_hash": "c613cda5babce61e18915c48dd809902",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/domain/ReportShareRepository.java": {
+    "mtime": 1789065611.7926347,
+    "seen": 1789842643.2829928,
+    "ast_hash": "f077b7e362a306ad9ab6656154cf204f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/domain/ReportShareStatus.java": {
+    "mtime": 1789065611.631331,
+    "seen": 1789842643.282994,
+    "ast_hash": "2a99fe4a0b0f7e68a71d517f62875c3b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/domain/UnsupportedProgressReportSnapshotException.java": {
+    "mtime": 1789145156.3103707,
+    "seen": 1789842643.282995,
+    "ast_hash": "f65a9fb85e72634a7868c8b912ad3626",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/infrastructure/pdf/PdfBoxProgressReportPdfRenderer.java": {
+    "mtime": 1789144563.6083617,
+    "seen": 1789842643.282995,
+    "ast_hash": "8ee6fba46ef450deaa5267011983c56d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/infrastructure/persistence/JdbcProgressReportReadQuery.java": {
+    "mtime": 1789065228.826018,
+    "seen": 1789842643.282996,
+    "ast_hash": "610c370527f77bc26c87967370904995",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/infrastructure/persistence/JpaLearningPeriodRepository.java": {
+    "mtime": 1789047893.0193005,
+    "seen": 1789842643.282997,
+    "ast_hash": "a291e9373f20846c209e5c6520874dba",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/infrastructure/persistence/JpaProgressReportRepository.java": {
+    "mtime": 1789064362.644006,
+    "seen": 1789842643.282998,
+    "ast_hash": "fbb15c94d891f48862ae4045bda6df0e",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/infrastructure/persistence/JpaReportShareRepository.java": {
+    "mtime": 1789065612.028622,
+    "seen": 1789842643.282998,
+    "ast_hash": "6075415b8b0588e8264aeee6a90670a4",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/infrastructure/persistence/LearningPeriodDatabaseModel.java": {
+    "mtime": 1789047892.8786302,
+    "seen": 1789842643.282999,
+    "ast_hash": "08caee4c4682d4a2809fe25d9b6f7eb6",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/infrastructure/persistence/LearningPeriodDatabaseRepository.java": {
+    "mtime": 1789047892.948992,
+    "seen": 1789842643.283,
+    "ast_hash": "72300668a279fb311475b24583025f50",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/infrastructure/persistence/ProgressReportDatabaseModel.java": {
+    "mtime": 1789052109.651562,
+    "seen": 1789842643.283,
+    "ast_hash": "53b0d54498e527c9a9796693099d1a15",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/infrastructure/persistence/ProgressReportDatabaseRepository.java": {
+    "mtime": 1789064362.5586889,
+    "seen": 1789842643.2830012,
+    "ast_hash": "1973554f002382c5b9858bd3070a8c5e",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/infrastructure/persistence/ProgressReportSnapshotJsonCodec.java": {
+    "mtime": 1789145156.554221,
+    "seen": 1789842643.2830012,
+    "ast_hash": "d71c03ada1776963c2b0cf1e20a7ad54",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/infrastructure/persistence/ReportShareDatabaseModel.java": {
+    "mtime": 1789065611.87242,
+    "seen": 1789842643.2830021,
+    "ast_hash": "2d7881afa42e2cb9aa04db7b266393c1",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/report/infrastructure/persistence/ReportShareDatabaseRepository.java": {
+    "mtime": 1789065611.9507563,
+    "seen": 1789842643.2830029,
+    "ast_hash": "ed9ff3732548ec1816add17d71e2ae14",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/api/SessionExceptionHandler.java": {
+    "mtime": 1788947464.351,
+    "seen": 1789842643.2830029,
+    "ast_hash": "31a56b9b3d7115fe23f973de86f1942c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/api/TeacherLessonSessionApi.java": {
+    "mtime": 1788808932.0387056,
+    "seen": 1789842643.2830038,
+    "ast_hash": "7329af29749ec724cae80fb17d2ce312",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/api/TeacherLessonSessionController.java": {
+    "mtime": 1788947355.882,
+    "seen": 1789842643.283005,
+    "ast_hash": "7c28442db5f33054f540e865522a363c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/api/request/CreateLessonSessionRequest.java": {
+    "mtime": 1788809996.7818394,
+    "seen": 1789842643.283005,
+    "ast_hash": "c4ef5d51a44f889aab636d3e21fb9152",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/api/request/LessonSessionTopicRequest.java": {
+    "mtime": 1788808931.2520943,
+    "seen": 1789842643.283006,
+    "ast_hash": "762f1a8fdd7b8f77a757a6e0483a6851",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/api/request/UpdateLessonSessionRequest.java": {
+    "mtime": 1788809996.8479838,
+    "seen": 1789842643.283007,
+    "ast_hash": "f503b17ef00922c552c5aeeb4af0013d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/api/response/LessonSessionDetailsResponse.java": {
+    "mtime": 1788808931.8162599,
+    "seen": 1789842643.283007,
+    "ast_hash": "25fde81b5a9844e72f98b7f8a9c2e2f2",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/api/response/LessonSessionPageResponse.java": {
+    "mtime": 1788808931.9273872,
+    "seen": 1789842643.283008,
+    "ast_hash": "101e940d5ba01efbf3eea3b38f0148d5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/api/response/LessonSessionSummaryResponse.java": {
+    "mtime": 1788808931.7384443,
+    "seen": 1789842643.283009,
+    "ast_hash": "376727ed3d01e71ad08ab397fa9c4a4e",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/api/response/LessonSessionTopicResponse.java": {
+    "mtime": 1788808931.636594,
+    "seen": 1789842643.283009,
+    "ast_hash": "dd769f6474de59e3c7d98f8978d5fcaf",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/application/AttendedLessonSession.java": {
+    "mtime": 1789047766.773982,
+    "seen": 1789842643.28301,
+    "ast_hash": "9014dbd005bcf928ee4bf2d0989510d3",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/application/CreateLessonSessionCommand.java": {
+    "mtime": 1788797339.2447448,
+    "seen": 1789842643.28301,
+    "ast_hash": "1ee81652a0c90facadf76e9c439140da",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/application/LearningSessionQuery.java": {
+    "mtime": 1789047766.861996,
+    "seen": 1789842643.283011,
+    "ast_hash": "64efaec34fc7006fd36769443c554827",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/application/LessonSessionChangedEvent.java": {
+    "mtime": 1789047892.3775861,
+    "seen": 1789842643.2830122,
+    "ast_hash": "70e1d2ce5c171cc7132c7647d009505b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/application/LessonSessionContext.java": {
+    "mtime": 1789027419.989617,
+    "seen": 1789842643.2830122,
+    "ast_hash": "1519a8ca8a6c2854f8fccfcec8e7574a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/application/LessonSessionPage.java": {
+    "mtime": 1788797846.8766205,
+    "seen": 1789842643.283013,
+    "ast_hash": "363cc21a4c49e2e12cd4dbe731cbb271",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/application/LessonSessionPageResult.java": {
+    "mtime": 1788797339.6234324,
+    "seen": 1789842643.2830138,
+    "ast_hash": "2c567f9b3517daf1f4cef1015b2d6d16",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/application/LessonSessionQuery.java": {
+    "mtime": 1789028339.4096665,
+    "seen": 1789842643.2830138,
+    "ast_hash": "38e523e1b3821fe49b41342810a9d5f4",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/application/LessonSessionResult.java": {
+    "mtime": 1788797339.5508902,
+    "seen": 1789842643.283015,
+    "ast_hash": "771c11b8e13f48723587eee2414cd34d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/application/LessonSessionService.java": {
+    "mtime": 1789742018.930575,
+    "seen": 1789842643.283016,
+    "ast_hash": "82f880dd88ff7415bbb8fc14b6edfa77",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/application/LessonSessionTopicInput.java": {
+    "mtime": 1788797339.401339,
+    "seen": 1789842643.283016,
+    "ast_hash": "0408f29b260a5e7dc3f8950e3c2c74d6",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/application/LessonSessionTopicResult.java": {
+    "mtime": 1788797339.4774764,
+    "seen": 1789842643.283017,
+    "ast_hash": "fd6990a91e46a59d87a21da435804c24",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/application/UpdateLessonSessionCommand.java": {
+    "mtime": 1788797339.321292,
+    "seen": 1789842643.283017,
+    "ast_hash": "4e13138e9146838c35ff5a9d3f572b98",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/application/exception/InvalidLessonSessionTopicsException.java": {
+    "mtime": 1788797339.759305,
+    "seen": 1789842643.2830179,
+    "ast_hash": "ee9a66dc3fa78090dd35b220d422f236",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/application/exception/InvalidSessionListParameterException.java": {
+    "mtime": 1788808767.0384424,
+    "seen": 1789842643.283019,
+    "ast_hash": "b71a710eb1a9d13fd78af693cf9e7735",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/application/exception/LessonSessionNotFoundException.java": {
+    "mtime": 1788797339.9155345,
+    "seen": 1789842643.283019,
+    "ast_hash": "9191d0c2d1dc2793aa8185a39b7a912d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/application/exception/LessonSessionVersionConflictException.java": {
+    "mtime": 1788946230.0684667,
+    "seen": 1789842643.28302,
+    "ast_hash": "277250de8c3aa5c4df7a784c815ba8b3",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/application/exception/StudentProgramNotFoundException.java": {
+    "mtime": 1788797339.9880836,
+    "seen": 1789842643.28302,
+    "ast_hash": "7294f9f405fd841939b3c196956db670",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/application/exception/TopicOutsideStudentProgramException.java": {
+    "mtime": 1788797340.061922,
+    "seen": 1789842643.283021,
+    "ast_hash": "d4524b4c969e7b9f9f86942bafa9b7d0",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/domain/AttendanceStatus.java": {
+    "mtime": 1788796240.273073,
+    "seen": 1789842643.283021,
+    "ast_hash": "525debbc84b0e0b113187ed180e08e5f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/domain/LessonSessionEntity.java": {
+    "mtime": 1788946974.501,
+    "seen": 1789842643.2830222,
+    "ast_hash": "c17e79d1b393a80aac6f531f23bf9488",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/domain/LessonSessionRepository.java": {
+    "mtime": 1788947463.638,
+    "seen": 1789842643.283023,
+    "ast_hash": "7cc789ed86d67410f83c1745f7bd6e63",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/domain/LessonSessionTopicEntity.java": {
+    "mtime": 1788946974.472,
+    "seen": 1789842643.283023,
+    "ast_hash": "ad3b9778179664d87d41d9ef2088bda7",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/domain/LessonSessionTopicRepository.java": {
+    "mtime": 1788947463.055,
+    "seen": 1789842643.2830238,
+    "ast_hash": "7af5ceeab391967f1b95ba349bedddb1",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/infrastructure/persistence/JpaLearningSessionQuery.java": {
+    "mtime": 1789047767.1156394,
+    "seen": 1789842643.2830248,
+    "ast_hash": "1a294395fa30a5e67819ef152464f832",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/infrastructure/persistence/JpaLessonSessionQuery.java": {
+    "mtime": 1789028339.4792454,
+    "seen": 1789842643.2830248,
+    "ast_hash": "f39774c4b8c362775bbb6238960525aa",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/infrastructure/persistence/JpaLessonSessionRepository.java": {
+    "mtime": 1788797847.0301237,
+    "seen": 1789842643.283026,
+    "ast_hash": "bcb7930a060b5fd0347bb6437fdcf0c7",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/infrastructure/persistence/JpaLessonSessionTopicRepository.java": {
+    "mtime": 1788797191.835955,
+    "seen": 1789842643.283027,
+    "ast_hash": "3bd460c37bf2447b4e82fee497f16f2a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/infrastructure/persistence/LessonSessionDatabaseModel.java": {
+    "mtime": 1788947463.208,
+    "seen": 1789842643.283027,
+    "ast_hash": "e862c1a738c74acdb9a30849eecaf5b8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/infrastructure/persistence/LessonSessionDatabaseRepository.java": {
+    "mtime": 1789047767.0347397,
+    "seen": 1789842643.283028,
+    "ast_hash": "69013e8969cb1358f1d87e74c5ccd569",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/infrastructure/persistence/LessonSessionTopicDatabaseModel.java": {
+    "mtime": 1788947463.813,
+    "seen": 1789842643.283029,
+    "ast_hash": "534285c470bc2a591a313fd6701675c9",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/infrastructure/persistence/LessonSessionTopicDatabaseRepository.java": {
+    "mtime": 1788947463.235,
+    "seen": 1789842643.2830532,
+    "ast_hash": "ad5e44822cc7faf7e40465fefe37b14d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/session/infrastructure/persistence/LessonSessionTopicId.java": {
+    "mtime": 1788947463.994,
+    "seen": 1789842643.283054,
+    "ast_hash": "8ed3a555f570dbccd20c6412b1fc4430",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/shared/api/ApiError.java": {
+    "mtime": 1788947463.237,
+    "seen": 1789842643.283055,
+    "ast_hash": "36cff7e79f42fe85ea1b175afb921312",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/shared/api/ApiErrorDetail.java": {
+    "mtime": 1788947464.177,
+    "seen": 1789842643.283056,
+    "ast_hash": "a7c17b4f609637abf16076a6b32f596c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/shared/api/ApiErrorWriter.java": {
+    "mtime": 1788696546.0,
+    "seen": 1789842643.283056,
+    "ast_hash": "594cca7da84cb7dadaa3c2519796e3af",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/shared/api/ApiExceptionHandler.java": {
+    "mtime": 1789209727.3163874,
+    "seen": 1789842643.283057,
+    "ast_hash": "3ee50022df5821262cd640dfafb03ae2",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/shared/api/RestAccessDeniedHandler.java": {
+    "mtime": 1789064990.5315607,
+    "seen": 1789842643.283058,
+    "ast_hash": "d519a5711bb97ab591f124e7a5640777",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/shared/api/RestAuthenticationEntryPoint.java": {
+    "mtime": 1788947464.182,
+    "seen": 1789842643.283058,
+    "ast_hash": "eb6db03598ea3a2827cd415ec76187a8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/shared/time/InstantPrecision.java": {
+    "mtime": 1789742018.9308796,
+    "seen": 1789842643.283059,
+    "ast_hash": "af4794dc5dbea2c13025c30c01905ad8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/shared/web/TraceIdFilter.java": {
+    "mtime": 1788944872.812,
+    "seen": 1789842643.28306,
+    "ast_hash": "8031d80df4069311fd0860e1058e0e41",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/coderunner/RunCodeExecutionStatus.java": {
+    "mtime": 1789222954.433,
+    "seen": 1789842643.28306,
+    "ast_hash": "e402a3626856ef1f51ce76769fcf658a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/coderunner/RunCodeRequest.java": {
+    "mtime": 1789222954.262,
+    "seen": 1789842643.283061,
+    "ast_hash": "5a565fa99dbf25b824b4e5d4964c3dca",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/coderunner/RunCodeResponse.java": {
+    "mtime": 1789463629.3155828,
+    "seen": 1789842643.283062,
+    "ast_hash": "5da34209db075e1d122cd46168047d94",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/coderunner/StudentRunCodeApi.java": {
+    "mtime": 1789222954.406,
+    "seen": 1789842643.283062,
+    "ast_hash": "9a02781ef9b0cd62b76efaf8fc527f08",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/coderunner/StudentRunCodeController.java": {
+    "mtime": 1789222954.279,
+    "seen": 1789842643.283063,
+    "ast_hash": "560a109b3276afb58151a6addb94e737",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/coderunner/StudentRunCodeExceptionHandler.java": {
+    "mtime": 1789222954.166,
+    "seen": 1789842643.283063,
+    "ast_hash": "e9e93ce4737848a18bd9febcf7b80001",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/coderunner/StudentRunCodeTestResultResponse.java": {
+    "mtime": 1789463629.2384903,
+    "seen": 1789842643.2830641,
+    "ast_hash": "f51ee819c573db74bf2726606f83aaf9",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/invation/PublicStudentInvitationApi.java": {
+    "mtime": 1789222541.609,
+    "seen": 1789842643.283065,
+    "ast_hash": "87cc0adb35793ad7aa9f57930eda6daa",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/invation/PublicStudentInvitationController.java": {
+    "mtime": 1789223050.809,
+    "seen": 1789842643.283065,
+    "ast_hash": "031b4288ef278a535d5cb2df329f8048",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/invite/AcceptStudentInviteRequest.java": {
+    "mtime": 1789222541.885,
+    "seen": 1789842643.283066,
+    "ast_hash": "6171ce275cb54a4cdfd7080ed29f4145",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/invite/CreateStudentInviteRequest.java": {
+    "mtime": 1789222541.828,
+    "seen": 1789842643.283066,
+    "ast_hash": "1d8b02e18f1a92fcfb037d187d1d6e16",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/invite/PublicStudentInviteResponse.java": {
+    "mtime": 1789222541.812,
+    "seen": 1789842643.283067,
+    "ast_hash": "a7b91ba2dcd3a2ab97c94f24054e82a8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/invite/StudentInviteCreatedResponse.java": {
+    "mtime": 1789222541.534,
+    "seen": 1789842643.283067,
+    "ast_hash": "8b1103e027fb437bb872d4e57b6130bd",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/invite/StudentInviteListResponse.java": {
+    "mtime": 1789222541.915,
+    "seen": 1789842643.283068,
+    "ast_hash": "2e02242ff4db88ecc866abd1c82a7f9d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/invite/StudentInviteSummaryResponse.java": {
+    "mtime": 1789222541.969,
+    "seen": 1789842643.283069,
+    "ast_hash": "9bbf928a102880a696d5accfe548445b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/invite/TeacherStudentInviteApi.java": {
+    "mtime": 1789222541.899,
+    "seen": 1789842643.283069,
+    "ast_hash": "9736cc22b1ef5415cd70ec1e0eb9691a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/invite/TeacherStudentInviteController.java": {
+    "mtime": 1789222541.628,
+    "seen": 1789842643.2830698,
+    "ast_hash": "59363d414ecd1a0e0de37f631979bf9e",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/management/CreateStudentRequest.java": {
+    "mtime": 1789222712.71,
+    "seen": 1789842643.2830698,
+    "ast_hash": "ea9067ad81de70c024e59854434b0543",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/management/StudentAccountResponse.java": {
+    "mtime": 1789222837.544,
+    "seen": 1789842643.283071,
+    "ast_hash": "55d63aa253a934a2a21de2476e6049ed",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/management/StudentDetailsResponse.java": {
+    "mtime": 1789222837.602,
+    "seen": 1789842643.283071,
+    "ast_hash": "bfa299b990dadaaca6a6999b19bd948b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/management/StudentExceptionHandler.java": {
+    "mtime": 1789223050.86,
+    "seen": 1789842643.283072,
+    "ast_hash": "1b5f0af0691c199e002048cf6644edf8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/management/StudentPageResponse.java": {
+    "mtime": 1789222712.81,
+    "seen": 1789842643.283073,
+    "ast_hash": "2631c317a0c9cd664f66036ff1b8822f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/management/StudentRelationResponse.java": {
+    "mtime": 1789222712.754,
+    "seen": 1789842643.283073,
+    "ast_hash": "04c36ac3f2bb7431df8da5bf8d520b76",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/management/StudentSummaryResponse.java": {
+    "mtime": 1789222712.831,
+    "seen": 1789842643.2830741,
+    "ast_hash": "4722c92e4b8286b47556f654fd510d4d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/management/TeacherStudentApi.java": {
+    "mtime": 1789222837.528,
+    "seen": 1789842643.2830741,
+    "ast_hash": "08716d5bfece62d536a63e9c76f5d891",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/management/TeacherStudentController.java": {
+    "mtime": 1789223050.686,
+    "seen": 1789842643.283075,
+    "ast_hash": "976e971f273c19af7a40146a30e1083c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/management/UpdateStudentRequest.java": {
+    "mtime": 1789222712.734,
+    "seen": 1789842643.283076,
+    "ast_hash": "87b0db1679b61dc70507c75e414b0d5d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/api/management/UpdateStudentResponse.java": {
+    "mtime": 1789222712.748,
+    "seen": 1789842643.283076,
+    "ast_hash": "97b81c15c4a2c780fa133cff5a84191e",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/application/coderunner/RunCodeException.java": {
+    "mtime": 1789222954.175,
+    "seen": 1789842643.283077,
+    "ast_hash": "153c4820fe31f14ab94d87f983f2ccae",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/application/coderunner/RunCodeResult.java": {
+    "mtime": 1789463629.3907225,
+    "seen": 1789842643.283077,
+    "ast_hash": "57c2dea17f3190c1837ab53fa76c113c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/application/coderunner/StudentRunCodeService.java": {
+    "mtime": 1789463629.471877,
+    "seen": 1789842643.283078,
+    "ast_hash": "97c8f70d52add743856a556f7ed18725",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/application/exception/invite/PublicStudentInviteAlreadyAcceptedException.java": {
+    "mtime": 1789220961.808,
+    "seen": 1789842643.283078,
+    "ast_hash": "896632b808f337fd4b031d228e1bdee2",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/application/exception/invite/StudentInviteAlreadyAcceptedException.java": {
+    "mtime": 1789220961.735,
+    "seen": 1789842643.283079,
+    "ast_hash": "94b040a9a46170e8e7502fb57aaa41e5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/application/exception/invite/StudentInviteEmailConflictException.java": {
+    "mtime": 1789220961.726,
+    "seen": 1789842643.2830799,
+    "ast_hash": "a417dbf23ac53401c9d3cd41f7efffca",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/application/exception/invite/StudentInviteExpiredException.java": {
+    "mtime": 1789220961.709,
+    "seen": 1789842643.2830799,
+    "ast_hash": "5c8eb10f0c9e1209ecf9af0a88594f89",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/application/exception/invite/StudentInviteNotFoundException.java": {
+    "mtime": 1789220961.661,
+    "seen": 1789842643.283081,
+    "ast_hash": "66006ca8c3e6de1a457525af89fbde4d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/application/exception/invite/StudentInviteRevokedException.java": {
+    "mtime": 1789220961.615,
+    "seen": 1789842643.283082,
+    "ast_hash": "20d320a90e1a61f21770cfe9aef1e9ce",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/application/invite/StudentInviteService.java": {
+    "mtime": 1789223050.724,
+    "seen": 1789842643.283082,
+    "ast_hash": "3871e2b66ed9f50a00f31aabaff42c1d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/application/invite/StudentInviteTokenService.java": {
+    "mtime": 1789220961.643,
+    "seen": 1789842643.283083,
+    "ast_hash": "c0a51e190f3e480a7c7cc62d69314a60",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/application/management/InvalidStudentListParameterException.java": {
+    "mtime": 1789223050.881,
+    "seen": 1789842643.283083,
+    "ast_hash": "c3d84f56d35c18a4f1ad9f2dd929e158",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/application/management/PublicStudentInvitationService.java": {
+    "mtime": 1789223050.821,
+    "seen": 1789842643.283084,
+    "ast_hash": "56e6e4a2c8bc9d222be672e2f6097ee4",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/application/management/StudentAlreadyRegisteredException.java": {
+    "mtime": 1789223050.867,
+    "seen": 1789842643.283084,
+    "ast_hash": "2b11de0c2e49c72ab9f419f3032e0058",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/application/management/StudentNotFoundException.java": {
+    "mtime": 1789223050.864,
+    "seen": 1789842643.283085,
+    "ast_hash": "a385afcf75cc9a406e819790f540d9ce",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/application/management/StudentService.java": {
+    "mtime": 1789223050.829,
+    "seen": 1789842643.283086,
+    "ast_hash": "d083b4d2937385dab56e827ce32f26fb",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/application/ownership/StudentOwnershipQuery.java": {
+    "mtime": 1789221156.574,
+    "seen": 1789842643.283086,
+    "ast_hash": "7cde2ced2609cfe3746f95099eb30c78",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/application/ownership/StudentOwnershipQueryService.java": {
+    "mtime": 1789221156.675,
+    "seen": 1789842643.283087,
+    "ast_hash": "d7470e7ce4fdf86dd671d373bc6540d2",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/domain/StudentAccountStatus.java": {
+    "mtime": 1788761957.9525287,
+    "seen": 1789842643.283087,
+    "ast_hash": "d14b7bb4b60b0abf4138b52c56730b29",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/domain/StudentEntity.java": {
+    "mtime": 1788947463.746,
+    "seen": 1789842643.283088,
+    "ast_hash": "c042aae5b2add52db4881ad432499a54",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/domain/StudentInviteStatus.java": {
+    "mtime": 1788762666.3091295,
+    "seen": 1789842643.283089,
+    "ast_hash": "b88cf6a5ac7392905dbf474246ef1597",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/domain/StudentRepository.java": {
+    "mtime": 1788879576.6916316,
+    "seen": 1789842643.283089,
+    "ast_hash": "7c446c333bfac45fbc6867399d33f240",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/domain/StudentStatus.java": {
+    "mtime": 1788761521.6342456,
+    "seen": 1789842643.2830899,
+    "ast_hash": "9309c5946a112cf91d208e216f0f1692",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/domain/TeacherStudentRelationType.java": {
+    "mtime": 1788761521.7080317,
+    "seen": 1789842643.2830899,
+    "ast_hash": "f76ca9c8f2d573324d673bffc8c9152b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/infrastructure/persistence/JpaStudentRepository.java": {
+    "mtime": 1788947463.645,
+    "seen": 1789842643.2830908,
+    "ast_hash": "a35a49dc60c896f9407a545455c78338",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/infrastructure/persistence/StudentDatabaseModel.java": {
+    "mtime": 1788947463.195,
+    "seen": 1789842643.283092,
+    "ast_hash": "c5069b17cd9d407bdac474fae5c56d54",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/infrastructure/persistence/StudentDatabaseRepository.java": {
+    "mtime": 1788879576.7711804,
+    "seen": 1789842643.283093,
+    "ast_hash": "a520468d20e04ae1544a05e1eb4f9a1c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/infrastructure/persistence/StudentInviteEntity.java": {
+    "mtime": 1788947463.042,
+    "seen": 1789842643.283093,
+    "ast_hash": "5e9f6812f39874b69724712bbbe8774c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/infrastructure/persistence/StudentInviteRepository.java": {
+    "mtime": 1788947463.796,
+    "seen": 1789842643.283094,
+    "ast_hash": "338186c1ce736e055344ae2067bf8b59",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/infrastructure/persistence/StudentQueryRepository.java": {
+    "mtime": 1788947463.902,
+    "seen": 1789842643.2830951,
+    "ast_hash": "adfc04a354f60af8401b795e1e0bdded",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/infrastructure/persistence/TeacherStudentLinkEntity.java": {
+    "mtime": 1788947356.199,
+    "seen": 1789842643.2830951,
+    "ast_hash": "177c56de929095ebeb9037eb9c184148",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/infrastructure/persistence/TeacherStudentLinkId.java": {
+    "mtime": 1788781844.013,
+    "seen": 1789842643.283096,
+    "ast_hash": "c5bb754dde8c4142d4528c9c744bd730",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/student/infrastructure/persistence/TeacherStudentLinkRepository.java": {
+    "mtime": 1788947356.225,
+    "seen": 1789842643.283096,
+    "ast_hash": "5506dd5e594053689e8ea125339864ba",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/subject/api/SubjectSummaryResponse.java": {
+    "mtime": 1789377177.0634015,
+    "seen": 1789842643.283097,
+    "ast_hash": "22219b358ca5b865ab78f0cebd7d29b3",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/subject/api/TeacherSubjectApi.java": {
+    "mtime": 1789377177.2663531,
+    "seen": 1789842643.2830982,
+    "ast_hash": "31baef83dd854c7706c61aa6e05246dd",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/subject/api/TeacherSubjectController.java": {
+    "mtime": 1789377177.3383749,
+    "seen": 1789842643.2830982,
+    "ast_hash": "ca91eaba2d94985dbe09630084fc12f4",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/subject/application/TeacherSubjectService.java": {
+    "mtime": 1789377177.1928976,
+    "seen": 1789842643.283099,
+    "ast_hash": "97a7988b324bcb155164888d49d803d9",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/subject/domain/SubjectEntity.java": {
+    "mtime": 1788946974.581,
+    "seen": 1789842643.283099,
+    "ast_hash": "51d8c73cff1f197f67e4920df9068a92",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/subject/domain/SubjectRepository.java": {
+    "mtime": 1789377140.9630554,
+    "seen": 1789842643.2831,
+    "ast_hash": "16449f01d7c94ff81ca0579ad44587ca",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/subject/domain/SubjectStatus.java": {
+    "mtime": 1788792724.925969,
+    "seen": 1789842643.2831008,
+    "ast_hash": "9f7e4e45975491bc99fbb3f8eb48c10f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/subject/infrastructure/persistence/JpaSubjectRepository.java": {
+    "mtime": 1789377141.1399152,
+    "seen": 1789842643.2831008,
+    "ast_hash": "68266e5b77d9b0cf532cabab1a1f063d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/subject/infrastructure/persistence/SubjectDatabaseModel.java": {
+    "mtime": 1788947355.878,
+    "seen": 1789842643.283102,
+    "ast_hash": "eb5a01abc8a46e9d7b4e2c24f088b0fc",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/subject/infrastructure/persistence/SubjectDatabaseRepository.java": {
+    "mtime": 1789377141.0563579,
+    "seen": 1789842643.283102,
+    "ast_hash": "e5a86bca1ecff7aa104e7ceb7eefe1f4",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/api/CodeSubmissionExecutionResponse.java": {
+    "mtime": 1789737654.961,
+    "seen": 1789842643.283103,
+    "ast_hash": "50574a90d72f323407df1d65aaf2f48d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/api/ReviewTextSubmissionRequest.java": {
+    "mtime": 1789641266.062,
+    "seen": 1789842643.283104,
+    "ast_hash": "fdc9e67a54ddd791b6c89bfcec23b352",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/api/SubmissionExceptionHandler.java": {
+    "mtime": 1788947463.672,
+    "seen": 1789842643.283104,
+    "ast_hash": "744d35f559d63934fd4957d879a0f2d5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/api/SubmitCodeAnswerRequest.java": {
+    "mtime": 1789641266.022,
+    "seen": 1789842643.2831051,
+    "ast_hash": "f6b5207389134bce16f4251f410b5183",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/api/SubmitTextAnswerRequest.java": {
+    "mtime": 1789641266.091,
+    "seen": 1789842643.2831051,
+    "ast_hash": "a1aa0dc0690a205fee0dcca238b9f343",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/api/student/StudentSubmissionApi.java": {
+    "mtime": 1789641266.08,
+    "seen": 1789842643.283106,
+    "ast_hash": "006c89d195424a0c2e0429523598835a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/api/student/StudentSubmissionController.java": {
+    "mtime": 1789641266.053,
+    "seen": 1789842643.283107,
+    "ast_hash": "ad7d05bc9a40723f4236825a8682565a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/api/student/StudentSubmissionPageResponse.java": {
+    "mtime": 1789641265.772,
+    "seen": 1789842643.283107,
+    "ast_hash": "e12ada8cff7de9514c1f6e15853cd7de",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/api/student/StudentSubmissionResponse.java": {
+    "mtime": 1789641265.943,
+    "seen": 1789842643.283108,
+    "ast_hash": "b75da12aadd4b97f294937d496e616cb",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/api/teacher/TeacherSubmissionApi.java": {
+    "mtime": 1789641266.007,
+    "seen": 1789842643.283108,
+    "ast_hash": "d717070d243e72478ac211c5102bc8c0",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/api/teacher/TeacherSubmissionController.java": {
+    "mtime": 1789641266.034,
+    "seen": 1789842643.2831092,
+    "ast_hash": "c1f7f6bc92a18532a30b656a7aa2dca9",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/api/teacher/TeacherSubmissionPageResponse.java": {
+    "mtime": 1789641265.991,
+    "seen": 1789842643.28311,
+    "ast_hash": "27d0e38039266c0dd2ab69576d30eec9",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/api/teacher/TeacherSubmissionResponse.java": {
+    "mtime": 1789641265.975,
+    "seen": 1789842643.28311,
+    "ast_hash": "c622c363af6e7bc5bc70e93978456c68",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/application/CodeSubmissionResult.java": {
+    "mtime": 1789022162.0787482,
+    "seen": 1789842643.2831109,
+    "ast_hash": "e1193b50a2e39d4083f89adb1fb2c9bc",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/application/CodeSubmissionService.java": {
+    "mtime": 1789637579.699,
+    "seen": 1789842643.2831109,
+    "ast_hash": "5249e6452eed968262bebe004fe71879",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/application/CodeSubmissionTransactions.java": {
+    "mtime": 1789021684.7433999,
+    "seen": 1789842643.283112,
+    "ast_hash": "af899c6c6d4871ae7192de2fc50cb317",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/application/SubmissionHomeworkContextQuery.java": {
+    "mtime": 1789021684.810355,
+    "seen": 1789842643.283112,
+    "ast_hash": "134f6be98a7103d2d806a7a93355627c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/application/SubmissionPageResult.java": {
+    "mtime": 1788947463.873,
+    "seen": 1789842643.283113,
+    "ast_hash": "2459c8be6588e301dfca6949e4c02c3a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/application/SubmissionQuery.java": {
+    "mtime": 1789463678.9458804,
+    "seen": 1789842643.283114,
+    "ast_hash": "093e5cf09e54a181424c826961ea842b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/application/SubmissionResult.java": {
+    "mtime": 1789021760.7715478,
+    "seen": 1789842643.283114,
+    "ast_hash": "51af1b15acbd1a012fe1da2038f8bde0",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/application/SubmissionReviewedEvent.java": {
+    "mtime": 1788948389.7113698,
+    "seen": 1789842643.283115,
+    "ast_hash": "41cfd0e537733a98aa3e4b33fe525df9",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/application/SubmissionService.java": {
+    "mtime": 1789223050.877,
+    "seen": 1789842643.283115,
+    "ast_hash": "22e49b8d680f0a22ae0258317e8f7cb1",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/application/exception/HomeworkItemNotFoundException.java": {
+    "mtime": 1788943199.8227801,
+    "seen": 1789842643.283116,
+    "ast_hash": "2196a6c5f11257824e7b7da0c76a6c81",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/application/exception/HomeworkNotSubmittableException.java": {
+    "mtime": 1788943199.892722,
+    "seen": 1789842643.283117,
+    "ast_hash": "55d6aa10322a1a88ab0071719260d2ae",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/application/exception/InvalidSubmissionException.java": {
+    "mtime": 1788943199.9585342,
+    "seen": 1789842643.283117,
+    "ast_hash": "1b557782be275656de40e8305524cc19",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/application/exception/InvalidSubmissionReviewStatusException.java": {
+    "mtime": 1788944828.339357,
+    "seen": 1789842643.283118,
+    "ast_hash": "e50d1a731667bc47b46258769ed5b944",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/application/exception/SubmissionContextInvalidException.java": {
+    "mtime": 1788943200.0256314,
+    "seen": 1789842643.283118,
+    "ast_hash": "7f5f350da37921c1b220051793924d36",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/application/exception/SubmissionNotFoundException.java": {
+    "mtime": 1788943200.094303,
+    "seen": 1789842643.2831192,
+    "ast_hash": "e9afada3d6fb098b4eebc459670c6d3a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/application/exception/SubmissionNotReviewableException.java": {
+    "mtime": 1788944828.2761135,
+    "seen": 1789842643.2831192,
+    "ast_hash": "acf2a0790631cf9694bcde16d29e551a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/application/exception/TextSubmissionRequiredException.java": {
+    "mtime": 1788943200.162713,
+    "seen": 1789842643.2831202,
+    "ast_hash": "a36d3db177d61163fdb42c0f17d47d03",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/domain/CodeExecutionStatus.java": {
+    "mtime": 1789021503.8971066,
+    "seen": 1789842643.2831202,
+    "ast_hash": "45c776d11a8d430f2747762c88b440fd",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/domain/CodeSubmissionEntity.java": {
+    "mtime": 1789022161.7790709,
+    "seen": 1789842643.2831209,
+    "ast_hash": "59828b739f5e0d517b64222f5d09334a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/domain/CodeSubmissionRepository.java": {
+    "mtime": 1789022161.843716,
+    "seen": 1789842643.2831209,
+    "ast_hash": "0dc1d329c9050b57ac51751eb5dbecaf",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/domain/SubmissionAttemptContext.java": {
+    "mtime": 1788947463.413,
+    "seen": 1789842643.2831218,
+    "ast_hash": "c5b62fcfb99a6184eb526f97e76d4cbd",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/domain/SubmissionEntity.java": {
+    "mtime": 1789021504.0973072,
+    "seen": 1789842643.2831218,
+    "ast_hash": "e26d172ed3916a98d974abe531a0dcb3",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/domain/SubmissionPage.java": {
+    "mtime": 1788947463.839,
+    "seen": 1789842643.283123,
+    "ast_hash": "c7c09fe3e9d985f612f53ec94a2a0fd6",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/domain/SubmissionRepository.java": {
+    "mtime": 1788947463.114,
+    "seen": 1789842643.283123,
+    "ast_hash": "1f8d40244d405e2694820bc59a4ff627",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/domain/SubmissionStatus.java": {
+    "mtime": 1788883118.4393468,
+    "seen": 1789842643.283124,
+    "ast_hash": "fd5aeaaa340c37b0cb9eb31c53737326",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/infrastructure/persistence/CodeSubmissionDatabaseModel.java": {
+    "mtime": 1789022161.9078903,
+    "seen": 1789842643.283125,
+    "ast_hash": "01c87a3589cd795d75640d7036b0a2e2",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/infrastructure/persistence/CodeSubmissionDatabaseRepository.java": {
+    "mtime": 1789021760.5777726,
+    "seen": 1789842643.283125,
+    "ast_hash": "4e926a5706513a0ad43d7f0ce5bf9bfe",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/infrastructure/persistence/JpaCodeSubmissionRepository.java": {
+    "mtime": 1789022162.0103436,
+    "seen": 1789842643.283126,
+    "ast_hash": "8e50a3e055de5c9cc6f638a1ecbb6c73",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/infrastructure/persistence/JpaSubmissionQuery.java": {
+    "mtime": 1789463679.0981152,
+    "seen": 1789842643.283126,
+    "ast_hash": "68bc795005ed9d508bf3700388909340",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/infrastructure/persistence/JpaSubmissionRepository.java": {
+    "mtime": 1788947464.126,
+    "seen": 1789842643.283127,
+    "ast_hash": "477763e1db0a645f047e9dace9b5d953",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/infrastructure/persistence/SubmissionDatabaseModel.java": {
+    "mtime": 1788948767.482585,
+    "seen": 1789842643.283135,
+    "ast_hash": "29e301fc2c6aeb32b28d2e1ab2e8b423",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/submission/infrastructure/persistence/SubmissionDatabaseRepository.java": {
+    "mtime": 1789463679.0233226,
+    "seen": 1789842643.283139,
+    "ast_hash": "712528ec25b8713081cf9e18d2f6f2e9",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/api/CreateTaskRequest.java": {
+    "mtime": 1789465889.05,
+    "seen": 1789842643.2831402,
+    "ast_hash": "7d51e358d3d240e9edd29a01b73e7d62",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/api/TaskExceptionHandler.java": {
+    "mtime": 1788966223.545456,
+    "seen": 1789842643.2831402,
+    "ast_hash": "b8c2a971dfed73cc52cc71ca34bce0b7",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/api/TaskPageResponse.java": {
+    "mtime": 1789465889.158,
+    "seen": 1789842643.2831411,
+    "ast_hash": "ab4bf31b56c8881181a7edd24e3cac99",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/api/TaskResponse.java": {
+    "mtime": 1789465888.832,
+    "seen": 1789842643.2831419,
+    "ast_hash": "ff49b66a59f51056f130862441055529",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/api/TeacherTaskApi.java": {
+    "mtime": 1789465888.743,
+    "seen": 1789842643.2831419,
+    "ast_hash": "e8ed1301a10deab8354ec0fd967ad1b1",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/api/TeacherTaskController.java": {
+    "mtime": 1789465888.698,
+    "seen": 1789842643.2831428,
+    "ast_hash": "55c28e5652aa42b9366c245d5ad0bb3f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/api/UpdateTaskRequest.java": {
+    "mtime": 1789465888.926,
+    "seen": 1789842643.283144,
+    "ast_hash": "b6d7f26f62af87e3d54c8c072935d154",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/api/programming/ProgrammingTaskConfigRequest.java": {
+    "mtime": 1789465888.671,
+    "seen": 1789842643.283144,
+    "ast_hash": "93a81b3121badfdf719742f6b74b6926",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/api/programming/ProgrammingTaskConfigResponse.java": {
+    "mtime": 1789465888.797,
+    "seen": 1789842643.283145,
+    "ast_hash": "9d97e1100867193a8596ad0a8e4f5be7",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/api/programming/UpdateProgrammingTaskConfigRequest.java": {
+    "mtime": 1789465888.882,
+    "seen": 1789842643.283145,
+    "ast_hash": "75cc271dbf07cd693659ecfad77bf9b7",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/api/testcase/ReplaceTaskTestCasesRequest.java": {
+    "mtime": 1789465889.013,
+    "seen": 1789842643.283146,
+    "ast_hash": "319e592f250859df799da397dfb931b0",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/api/testcase/TaskTestCaseRequest.java": {
+    "mtime": 1789465889.144,
+    "seen": 1789842643.283146,
+    "ast_hash": "d6708c1458676a0f06a5f9ef704ffe3b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/api/testcase/TaskTestCaseResponse.java": {
+    "mtime": 1789465888.71,
+    "seen": 1789842643.283147,
+    "ast_hash": "cf39f33563876079dcb2a4fca96a5f59",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/api/testcase/TaskTestCasesResponse.java": {
+    "mtime": 1789465888.964,
+    "seen": 1789842643.283148,
+    "ast_hash": "ebff41732fa40c911094aefea6e24c80",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/api/topic/AttachTaskToTopicRequest.java": {
+    "mtime": 1789465888.851,
+    "seen": 1789842643.283148,
+    "ast_hash": "307d2e9dc187eabd601c4bf47e30e5dc",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/api/topic/TopicTaskResponse.java": {
+    "mtime": 1789465888.642,
+    "seen": 1789842643.283149,
+    "ast_hash": "fffe5cc09c84892f26eab5b66c42b08f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/AttachTaskToTopicCommand.java": {
+    "mtime": 1788947464.018,
+    "seen": 1789842643.2831502,
+    "ast_hash": "697640e312fc4f1359c0c7f8a3ede589",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/CreateTaskCommand.java": {
+    "mtime": 1788966014.0509615,
+    "seen": 1789842643.2831502,
+    "ast_hash": "42160164c09672c0a1a167e98e84ded9",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/ProgrammingTaskConfigInput.java": {
+    "mtime": 1788966013.5223963,
+    "seen": 1789842643.2831511,
+    "ast_hash": "61a1495be0af3dccfcc05ef3bf235064",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/TaskPage.java": {
+    "mtime": 1788947463.755,
+    "seen": 1789842643.2831511,
+    "ast_hash": "a5b9ac20a7b55691b1b8d6e88e9caa0a",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/TaskPageResult.java": {
+    "mtime": 1788947463.37,
+    "seen": 1789842643.2831519,
+    "ast_hash": "0022d148cbd3baf4b797f0f67a062c70",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/TaskQuery.java": {
+    "mtime": 1788992785.597787,
+    "seen": 1789842643.2831519,
+    "ast_hash": "8494b3cf5beb8bf5d9577602a0cc4dca",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/TaskResult.java": {
+    "mtime": 1788966014.126209,
+    "seen": 1789842643.2831528,
+    "ast_hash": "0e8b6678af11c915f215bb858868a1c2",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/TaskService.java": {
+    "mtime": 1788966155.8557308,
+    "seen": 1789842643.283154,
+    "ast_hash": "28e00e0e70c4545941af343dd6d770cd",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/TaskTestCaseInput.java": {
+    "mtime": 1788966013.596431,
+    "seen": 1789842643.283154,
+    "ast_hash": "cc22a1e9711e44952d79aa09d8cd1ea9",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/TopicTaskResult.java": {
+    "mtime": 1788947463.068,
+    "seen": 1789842643.283155,
+    "ast_hash": "c36495e255de1a9a0b73f296ec40d90d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/UpdateProgrammingTaskConfigCommand.java": {
+    "mtime": 1788966013.6738532,
+    "seen": 1789842643.283155,
+    "ast_hash": "a541bc4757fc7cea9b95e4b0baade485",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/UpdateTaskCommand.java": {
+    "mtime": 1788947463.904,
+    "seen": 1789842643.283156,
+    "ast_hash": "dbc45770fe2bddc17c34e731a8a410cb",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/exception/InvalidProgrammingTaskConfigException.java": {
+    "mtime": 1788966013.825545,
+    "seen": 1789842643.283157,
+    "ast_hash": "f10c645133fd9bdd3554bfed4e7c0ea8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/exception/InvalidTaskException.java": {
+    "mtime": 1788858631.3480785,
+    "seen": 1789842643.283157,
+    "ast_hash": "fa80c4e9ee124f3e5e70f82727920e40",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/exception/InvalidTaskListParameterException.java": {
+    "mtime": 1788858631.4207056,
+    "seen": 1789842643.283158,
+    "ast_hash": "e499190a5bc526cf9f84570ea3430a69",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/exception/InvalidTaskTestCaseException.java": {
+    "mtime": 1788966013.9001343,
+    "seen": 1789842643.283158,
+    "ast_hash": "cd9203aa6a4e5d067af15055f76d50a5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/exception/TaskAlreadyAttachedException.java": {
+    "mtime": 1788858631.8706386,
+    "seen": 1789842643.283159,
+    "ast_hash": "a38ebfa8cff77cc1ab6af7c1d9051b40",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/exception/TaskNotFoundException.java": {
+    "mtime": 1788858631.493228,
+    "seen": 1789842643.283159,
+    "ast_hash": "9d86f645beea223566ce098fbdc9050f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/exception/TaskNotReadyForActivationException.java": {
+    "mtime": 1788966013.9746957,
+    "seen": 1789842643.28316,
+    "ast_hash": "2451ab2f6fc26d2c0586cbc6a45ebd5d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/exception/TaskSubjectMismatchException.java": {
+    "mtime": 1788858631.7162833,
+    "seen": 1789842643.2831612,
+    "ast_hash": "bcb71047e6f14efabe9fa9be9c261bc0",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/exception/TaskSubjectNotFoundException.java": {
+    "mtime": 1788858631.566703,
+    "seen": 1789842643.2831612,
+    "ast_hash": "49b2d562557326b6115760add2f2c509",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/exception/TaskTopicNotFoundException.java": {
+    "mtime": 1788858631.6398063,
+    "seen": 1789842643.283162,
+    "ast_hash": "4a515fda9cd5764f7c5c31fbcb5e3bad",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/exception/TaskTopicPositionConflictException.java": {
+    "mtime": 1788858631.7942758,
+    "seen": 1789842643.283162,
+    "ast_hash": "d8f21a7c87d40654d026882a86750bd0",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/exception/TaskTypeMismatchException.java": {
+    "mtime": 1788966013.750693,
+    "seen": 1789842643.2831628,
+    "ast_hash": "620a461a5925bd87d29c84b08cb069fb",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/application/exception/TaskVersionConflictException.java": {
+    "mtime": 1788858631.9441867,
+    "seen": 1789842643.2831638,
+    "ast_hash": "a3e23b7f43aa75449dc53341b6e2f48e",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/domain/programming/ComparisonMode.java": {
+    "mtime": 1788966528.8915958,
+    "seen": 1789842643.2831638,
+    "ast_hash": "73f604085c90e63e572871ea65de7f35",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/domain/programming/ProgrammingLanguage.java": {
+    "mtime": 1788966528.8136425,
+    "seen": 1789842643.283165,
+    "ast_hash": "102aa0e830fe0538b481099821378f81",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/domain/programming/ProgrammingTaskConfig.java": {
+    "mtime": 1788965923.0148406,
+    "seen": 1789842643.283165,
+    "ast_hash": "7d3918beff293d6931c6ddaaf10a4511",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/domain/programming/ProgrammingTaskConfigRepository.java": {
+    "mtime": 1788965923.168606,
+    "seen": 1789842643.283166,
+    "ast_hash": "372b70c360b0bb3d2af2ca99f77f352c",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/domain/programming/TaskTestCase.java": {
+    "mtime": 1788965923.088302,
+    "seen": 1789842643.283166,
+    "ast_hash": "615d965c089f5d1d4f02d80065581216",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/domain/programming/TaskTestCaseRepository.java": {
+    "mtime": 1788965923.2415926,
+    "seen": 1789842643.283167,
+    "ast_hash": "efa15921b38af07af5a9b2c8934f2b47",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/domain/skill/SkillEntity.java": {
+    "mtime": 1788946974.514,
+    "seen": 1789842643.283168,
+    "ast_hash": "1a4b45e174454e74cb9d7466b0c9628d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/domain/skill/SkillRepository.java": {
+    "mtime": 1788947463.629,
+    "seen": 1789842643.283168,
+    "ast_hash": "ce65bfc07b5d00c29be4ad9386b6dc66",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/domain/task/TaskDifficulty.java": {
+    "mtime": 1788857759.672,
+    "seen": 1789842643.283169,
+    "ast_hash": "c9115380fb9ba2c69cc655e7ea816889",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/domain/task/TaskEntity.java": {
+    "mtime": 1788947464.321,
+    "seen": 1789842643.283169,
+    "ast_hash": "42963ade536a317dd5e1b3c565a56647",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/domain/task/TaskRepository.java": {
+    "mtime": 1788947464.062,
+    "seen": 1789842643.28317,
+    "ast_hash": "9aff7f64f3bd308ba5b4485dc4b95230",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/domain/task/TaskStatus.java": {
+    "mtime": 1788857932.555,
+    "seen": 1789842643.2831712,
+    "ast_hash": "2e3c9c06b839d9796f6545d8fd3837f5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/domain/task/TaskType.java": {
+    "mtime": 1788857932.637,
+    "seen": 1789842643.2831712,
+    "ast_hash": "030ba3606543daab919066d0c884f9b2",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/domain/taskskill/TaskSkillEntity.java": {
+    "mtime": 1788946974.462,
+    "seen": 1789842643.2831721,
+    "ast_hash": "bcda7e29165e67efa6654988287e89e1",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/domain/taskskill/TaskSkillRepository.java": {
+    "mtime": 1788947463.5,
+    "seen": 1789842643.283173,
+    "ast_hash": "43166c0453a0a98b27108cce6edf2249",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/domain/topic/TopicTaskEntity.java": {
+    "mtime": 1788946974.608,
+    "seen": 1789842643.283173,
+    "ast_hash": "2ecdec9c8c45174062ef23b07c86cc79",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/domain/topic/TopicTaskRepository.java": {
+    "mtime": 1788947464.048,
+    "seen": 1789842643.2831738,
+    "ast_hash": "521e1ecf7a45245714ef168524b41c95",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/programming/JpaProgrammingTaskConfigRepository.java": {
+    "mtime": 1788965923.5067065,
+    "seen": 1789842643.2831738,
+    "ast_hash": "0d586e172102c95421b8c92d26333dad",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/programming/JpaTaskTestCaseRepository.java": {
+    "mtime": 1788965923.725309,
+    "seen": 1789842643.283175,
+    "ast_hash": "eb6f735238b9573cffde087a2f1f3e06",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/programming/ProgrammingTaskConfigDatabaseModel.java": {
+    "mtime": 1788965923.362323,
+    "seen": 1789842643.283176,
+    "ast_hash": "e713d94e9bacee4424ebe4883f845b88",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/programming/ProgrammingTaskConfigDatabaseRepository.java": {
+    "mtime": 1788965923.4340925,
+    "seen": 1789842643.283176,
+    "ast_hash": "d382a45759bb878c0c548d7d17f760f5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/programming/TaskTestCaseDatabaseModel.java": {
+    "mtime": 1788965923.5794547,
+    "seen": 1789842643.283177,
+    "ast_hash": "09268b7a495c30105b0a69759497f468",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/programming/TaskTestCaseDatabaseRepository.java": {
+    "mtime": 1788965923.6508324,
+    "seen": 1789842643.283177,
+    "ast_hash": "52ca999738daf303c7150ca40dee79dc",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/skill/JpaSkillRepository.java": {
+    "mtime": 1788857932.605,
+    "seen": 1789842643.283178,
+    "ast_hash": "6b7019b50431dff7f3f28b4b0f7ddd50",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/skill/SkillDatabaseModel.java": {
+    "mtime": 1788947355.757,
+    "seen": 1789842643.283178,
+    "ast_hash": "e21fe8ec0f66c84b3f61b91677600fe0",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/skill/SkillDatabaseRepository.java": {
+    "mtime": 1788857932.537,
+    "seen": 1789842643.283179,
+    "ast_hash": "4678ae65e40c47f8536eb51350320b66",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/task/JpaTaskQuery.java": {
+    "mtime": 1788992785.664,
+    "seen": 1789842643.283179,
+    "ast_hash": "e8cd8a0dcd97716f08c2f6a46606610e",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/task/JpaTaskRepository.java": {
+    "mtime": 1788947464.216,
+    "seen": 1789842643.28318,
+    "ast_hash": "847a9b65478abee1a14a3d2d3064e7f7",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/task/TaskDatabaseModel.java": {
+    "mtime": 1788947463.922,
+    "seen": 1789842643.283181,
+    "ast_hash": "a584d29e26e7d5b2e8f3020e5b1c9af3",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/task/TaskDatabaseRepository.java": {
+    "mtime": 1788966528.7383664,
+    "seen": 1789842643.283181,
+    "ast_hash": "921efe93419ade04e57264f1e5409db9",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/taskskill/JpaTaskSkillRepository.java": {
+    "mtime": 1788947463.06,
+    "seen": 1789842643.2831821,
+    "ast_hash": "d1c04b4bb6cafe8ee5b318a6f63ba06f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/taskskill/TaskSkillDatabaseModel.java": {
+    "mtime": 1788947355.895,
+    "seen": 1789842643.2831821,
+    "ast_hash": "a9c5b57088f4bb6cf4c92ce6a9801233",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/taskskill/TaskSkillDatabaseRepository.java": {
+    "mtime": 1788857932.621,
+    "seen": 1789842643.283183,
+    "ast_hash": "142cecab543fe9c8bd0a8debfdae40ed",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/taskskill/TaskSkillId.java": {
+    "mtime": 1788947463.047,
+    "seen": 1789842643.283183,
+    "ast_hash": "341e12f3e4b8055f579c7d541d03e3e4",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/topic/JpaTopicTaskRepository.java": {
+    "mtime": 1788947463.082,
+    "seen": 1789842643.283184,
+    "ast_hash": "55c4401d33375681f7fb77198d88d090",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/topic/TopicTaskDatabaseModel.java": {
+    "mtime": 1788947356.194,
+    "seen": 1789842643.283184,
+    "ast_hash": "a982c5510f483478713f530d548822d3",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/topic/TopicTaskDatabaseRepository.java": {
+    "mtime": 1788947463.05,
+    "seen": 1789842643.283185,
+    "ast_hash": "098f70eaa2d3777dd80b8990f5894239",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/task/infrastructure/persistence/topic/TopicTaskId.java": {
+    "mtime": 1788947464.015,
+    "seen": 1789842643.283185,
+    "ast_hash": "ae366d89ef7815881ed8edd9f1f77fd7",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/user/domain/TeacherEntity.java": {
+    "mtime": 1788946974.464,
+    "seen": 1789842643.283186,
+    "ast_hash": "875ca768b1a8f855f97ca745a4552555",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/user/domain/TeacherRepository.java": {
+    "mtime": 1788947464.3,
+    "seen": 1789842643.283186,
+    "ast_hash": "553af0562b74d015298830abc14073bc",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/user/domain/UserEntity.java": {
+    "mtime": 1788946974.443,
+    "seen": 1789842643.283187,
+    "ast_hash": "1ab6050c81a229b2ba3e0a79c717f070",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/user/domain/UserRepository.java": {
+    "mtime": 1788947463.088,
+    "seen": 1789842643.2831879,
+    "ast_hash": "2952d7f60cb7b60cbc324cabf1213fb1",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/user/domain/UserRole.java": {
+    "mtime": 1788710613.453507,
+    "seen": 1789842643.2831879,
+    "ast_hash": "9c0d2513f5cd817c8578c32f6106e1dc",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/user/domain/UserStatus.java": {
+    "mtime": 1788710613.5296726,
+    "seen": 1789842643.283189,
+    "ast_hash": "82ecf3082039fe24a0cf7505cee35678",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/user/infrastructure/persistence/JpaTeacherRepository.java": {
+    "mtime": 1788947464.227,
+    "seen": 1789842643.283189,
+    "ast_hash": "82d50d5e9c7340eb96622ce34411b0f8",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/user/infrastructure/persistence/JpaUserRepository.java": {
+    "mtime": 1788947463.164,
+    "seen": 1789842643.28319,
+    "ast_hash": "1a97591e72d1345193fd91b24f41c2ce",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/user/infrastructure/persistence/TeacherDatabaseModel.java": {
+    "mtime": 1788947463.627,
+    "seen": 1789842643.28319,
+    "ast_hash": "1395c5185cc9a6452d76272e29205d40",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/user/infrastructure/persistence/TeacherDatabaseRepository.java": {
+    "mtime": 1788780983.4743183,
+    "seen": 1789842643.283191,
+    "ast_hash": "dd4d1d1b8fbb1fd25726f0efe6e8458b",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/user/infrastructure/persistence/UserDatabaseModel.java": {
+    "mtime": 1788947464.043,
+    "seen": 1789842643.283191,
+    "ast_hash": "a1c575225126d195f15d3640f7018a93",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/tutorplatform/user/infrastructure/persistence/UserDatabaseRepository.java": {
+    "mtime": 1788780983.1028214,
+    "seen": 1789842643.2831922,
+    "ast_hash": "eba81a32b1af06ff256cd179e66b0753",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/FoundationConventionsTest.java": {
+    "mtime": 1788696546.0,
+    "seen": 1789842643.2831922,
+    "ast_hash": "54b5b402b64e6c9467753d7762ab617a",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/assessment/api/AssessmentApiIntegrationTest.java": {
+    "mtime": 1789803462.4750981,
+    "seen": 1789842643.283193,
+    "ast_hash": "c510b017ba07f8fd59985bd1dbbb4b6f",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/assessment/domain/TeacherAssessmentEntityTest.java": {
+    "mtime": 1789025033.7039185,
+    "seen": 1789842643.283194,
+    "ast_hash": "bfcbf1d3acbb1bf213f2e58454e67e12",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/assessment/infrastructure/persistence/AssessmentPersistenceIntegrationTest.java": {
+    "mtime": 1789803462.475545,
+    "seen": 1789842643.283194,
+    "ast_hash": "8dc7f9d6309b5e03b9735a459d0909c5",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/auth/api/AuthIntegrationTest.java": {
+    "mtime": 1789830595.8509643,
+    "seen": 1789842643.2831948,
+    "ast_hash": "6e8b06d5521f3dae87c5db4e0a0be63f",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/config/OpenApiHardeningIntegrationTest.java": {
+    "mtime": 1789841904.3140912,
+    "seen": 1789842643.2831948,
+    "ast_hash": "c5d68ec33cb4a27371b6fd3f4da83d8a",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/config/ProductionInfrastructureConfigurationTest.java": {
+    "mtime": 1789226945.3475654,
+    "seen": 1789842643.283196,
+    "ast_hash": "f320bc92d9cce59259c5d10d7cbbcf98",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/config/SecurityInfrastructureTest.java": {
+    "mtime": 1789803462.479127,
+    "seen": 1789842643.283196,
+    "ast_hash": "e9b07e3a07b42438e7cc08b0beb95767",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/content/api/FileMaterialApiIntegrationTest.java": {
+    "mtime": 1789803462.4797492,
+    "seen": 1789842643.283197,
+    "ast_hash": "7c8e14606b061a00d93062bbba8ff3d0",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/content/api/LessonMaterialApiIntegrationTest.java": {
+    "mtime": 1789803462.481264,
+    "seen": 1789842643.283197,
+    "ast_hash": "93c71282b955744a6c75d7cfb4b5fe77",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/content/application/FileMaterialPolicyTest.java": {
+    "mtime": 1788947464.231,
+    "seen": 1789842643.2831979,
+    "ast_hash": "cfadbc935cc41c89c0029cda05dbd61f",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/content/application/LessonMaterialApplicationIntegrationTest.java": {
+    "mtime": 1789742018.9343526,
+    "seen": 1789842643.283199,
+    "ast_hash": "bc76a9f8f34611232abea281b4b7b059",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/content/infrastructure/persistence/MaterialPersistenceIntegrationTest.java": {
+    "mtime": 1789803462.482414,
+    "seen": 1789842643.283199,
+    "ast_hash": "8a455d61574e76719f06d85068a9eb55",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/database/DatabaseBaselineMigrationIntegrationTest.java": {
+    "mtime": 1789830595.851684,
+    "seen": 1789842643.2832,
+    "ast_hash": "635bdf99a3f5ee68986588d15946e328",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/demo/DemoDataProductionGuardTest.java": {
+    "mtime": 1789247335.92617,
+    "seen": 1789842643.2832,
+    "ast_hash": "5def22fb99878e3f59f2ba727ae51a61",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/demo/DemoDataSeederIntegrationTest.java": {
+    "mtime": 1789803462.4847455,
+    "seen": 1789842643.283201,
+    "ast_hash": "2b5d678f9c81e3468d60e1a48ab7faad",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/execution/ExecutionSecurityBoundaryTest.java": {
+    "mtime": 1788968668.620475,
+    "seen": 1789842643.283201,
+    "ast_hash": "75762bc57a5d17e6a71675da3df916b1",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/execution/application/ExecutionPortTest.java": {
+    "mtime": 1788968668.3473687,
+    "seen": 1789842643.283202,
+    "ast_hash": "c41249919278aa4504e90a7c2d2e9d68",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/execution/infrastructure/http/ExecutionPropertiesTest.java": {
+    "mtime": 1788968668.5505831,
+    "seen": 1789842643.283202,
+    "ast_hash": "ed167dcbe521e695c3a54699e6ea3ac2",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/execution/infrastructure/http/HttpExecutionAdapterTest.java": {
+    "mtime": 1789226945.4351428,
+    "seen": 1789842643.2832031,
+    "ast_hash": "46c1a918b80b905684bb2082dd99c3ab",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/file/infrastructure/LocalFileStorageTest.java": {
+    "mtime": 1788947463.618,
+    "seen": 1789842643.2832031,
+    "ast_hash": "0a967f9e4e0522e904449ebbaf8abb38",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/homework/api/HomeworkApiIntegrationTest.java": {
+    "mtime": 1789803462.488209,
+    "seen": 1789842643.283204,
+    "ast_hash": "cca2a7083198657a505dccc441074f93",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/homework/api/StudentHomeworkApiIntegrationTest.java": {
+    "mtime": 1789803462.4897978,
+    "seen": 1789842643.283204,
+    "ast_hash": "746b7cf48e55e87ba5f2e9cdc43e53f1",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/homework/application/HomeworkApplicationIntegrationTest.java": {
+    "mtime": 1789742018.9372668,
+    "seen": 1789842643.283205,
+    "ast_hash": "abcc9cab59998091ff8b6bd2293c8bd5",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/homework/application/HomeworkCompletionServiceTest.java": {
+    "mtime": 1788948552.8371985,
+    "seen": 1789842643.283205,
+    "ast_hash": "8e49746d3b1d1981dcc72f7e85f3dea7",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/homework/application/SubmissionReviewedHomeworkListenerTest.java": {
+    "mtime": 1788948552.9182665,
+    "seen": 1789842643.283206,
+    "ast_hash": "c9f68df01df218876b6f0b227c663904",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/homework/infrastructure/persistence/HomeworkPersistenceIntegrationTest.java": {
+    "mtime": 1789803462.4902349,
+    "seen": 1789842643.283206,
+    "ast_hash": "5fb3bd48cf2582bdf4bc2b515c4ee997",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/platform/api/TeacherInvitationIntegrationTest.java": {
+    "mtime": 1789830595.8520923,
+    "seen": 1789842643.283207,
+    "ast_hash": "acd4356163d797c8e2ed61b76f3d1b36",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/platform/application/invite/TeacherRegistrationInviteTokenServiceTest.java": {
+    "mtime": 1789830595.8526225,
+    "seen": 1789842643.283208,
+    "ast_hash": "5cde757fd0e676a3271fc9b168b1cb0a",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/platform/infrastructure/persistence/TeacherRegistrationInviteRepositoryIntegrationTest.java": {
+    "mtime": 1789830595.852951,
+    "seen": 1789842643.283208,
+    "ast_hash": "ef7f5f8e9a59592a1e02e9b6e5589622",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/program/api/TeacherProgramManagementApiIntegrationTest.java": {
+    "mtime": 1789842591.3437593,
+    "seen": 1789842643.2832088,
+    "ast_hash": "289a3b588d883a15da02c456d1b43fd3",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/program/api/TeacherStudentProgramApiIntegrationTest.java": {
+    "mtime": 1789803462.4919436,
+    "seen": 1789842643.2832088,
+    "ast_hash": "bcf4034ba6ec3f67b7b60bafabafb248",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/program/infrastructure/persistence/ProgramPersistenceIntegrationTest.java": {
+    "mtime": 1789837448.101562,
+    "seen": 1789842643.28321,
+    "ast_hash": "bb296ef7df2e33c47d5cf60407a8dc86",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/progress/api/ProgressApiIntegrationTest.java": {
+    "mtime": 1789803462.4947743,
+    "seen": 1789842643.28321,
+    "ast_hash": "3e78b60fdc9f4988d38fec0fcfe6253b",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/progress/api/ProgressShareApiIntegrationTest.java": {
+    "mtime": 1789803462.496446,
+    "seen": 1789842643.283211,
+    "ast_hash": "016803f53c45eaa5dbe52265f2f23d51",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/progress/domain/ProgressCalculatorTest.java": {
+    "mtime": 1789032384.5469508,
+    "seen": 1789842643.283211,
+    "ast_hash": "100cf182250409c38ec418b07c68bc03",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/progress/infrastructure/ProgressReadRepositoryIntegrationTest.java": {
+    "mtime": 1789742018.938906,
+    "seen": 1789842643.283212,
+    "ast_hash": "7edda4698a0209931a1b12da6a3c925c",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/report/api/ProgressReportApiIntegrationTest.java": {
+    "mtime": 1789803462.4970195,
+    "seen": 1789842643.283212,
+    "ast_hash": "6a42140920ec64599bb6565bcec0c010",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/report/api/ReportShareApiIntegrationTest.java": {
+    "mtime": 1789803462.4996212,
+    "seen": 1789842643.2832131,
+    "ast_hash": "bb658a2b5e951b4748355f5a428e2a1d",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/report/application/LearningPeriodServiceIntegrationTest.java": {
+    "mtime": 1789742018.9398108,
+    "seen": 1789842643.2832131,
+    "ast_hash": "55598e331c8f5b06cc1c3ebe1641e2db",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/report/application/LessonSessionLearningPeriodListenerTest.java": {
+    "mtime": 1789048246.024644,
+    "seen": 1789842643.283214,
+    "ast_hash": "5b198be69b7bd2713576acf1403c3d04",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/report/application/ProgressReportApplicationIntegrationTest.java": {
+    "mtime": 1789742018.9400408,
+    "seen": 1789842643.283215,
+    "ast_hash": "39fea4b493fa8cbb435b6bf587a91b87",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/report/application/ProgressReportPdfModelFactoryTest.java": {
+    "mtime": 1789144666.785966,
+    "seen": 1789842643.283215,
+    "ast_hash": "55e87b70fc85900258a208db797ad97c",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/report/domain/LearningPeriodTest.java": {
+    "mtime": 1789048245.8884141,
+    "seen": 1789842643.2832158,
+    "ast_hash": "2338bf329252bce78834939997031189",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/report/infrastructure/pdf/PdfBoxProgressReportPdfRendererTest.java": {
+    "mtime": 1789144838.061382,
+    "seen": 1789842643.2832158,
+    "ast_hash": "e46ed427d51459ab1077982099f06c3f",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/report/infrastructure/persistence/ProgressReportPersistenceIntegrationTest.java": {
+    "mtime": 1789742018.9403443,
+    "seen": 1789842643.283217,
+    "ast_hash": "591f8c07ac53e09e7c421ca2dc2c7a52",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/report/infrastructure/persistence/ProgressReportSnapshotJsonCodecTest.java": {
+    "mtime": 1789145168.7573218,
+    "seen": 1789842643.283217,
+    "ast_hash": "2ea40e2082a68334aea04c0f3395b15b",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/session/api/SessionApiIntegrationTest.java": {
+    "mtime": 1789803462.5000856,
+    "seen": 1789842643.283218,
+    "ast_hash": "4c5e6bc6149a9e612a61f1691d67ff65",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/session/application/SessionApplicationIntegrationTest.java": {
+    "mtime": 1789742018.9409451,
+    "seen": 1789842643.283218,
+    "ast_hash": "e3ed16b3f600d94d8a50ca2a6f5184b0",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/session/infrastructure/persistence/SessionPersistenceIntegrationTest.java": {
+    "mtime": 1789803462.5018008,
+    "seen": 1789842643.2832189,
+    "ast_hash": "1ae4135057bf423de343376edef4dead",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/shared/api/ApiExceptionHandlerTest.java": {
+    "mtime": 1789209727.630454,
+    "seen": 1789842643.2832232,
+    "ast_hash": "c7a428b2ae8b65148001b311b7e36395",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/student/api/PublicStudentInvitationApiIntegrationTest.java": {
+    "mtime": 1789803462.5031078,
+    "seen": 1789842643.283224,
+    "ast_hash": "6fd52cb0277b88a2de7ff1b031976baa",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/student/api/StudentRunCodeApiIntegrationTest.java": {
+    "mtime": 1789803462.5075026,
+    "seen": 1789842643.283224,
+    "ast_hash": "ce348d2c2e7d8b657883aa88cab039fd",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/student/api/TeacherStudentApiIntegrationTest.java": {
+    "mtime": 1789803462.5087152,
+    "seen": 1789842643.283225,
+    "ast_hash": "708cd9f4a51b68f5c6bfa73434caa208",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/student/api/TeacherStudentInviteApiIntegrationTest.java": {
+    "mtime": 1789803462.5099323,
+    "seen": 1789842643.283225,
+    "ast_hash": "16de3caa2f797ccf5ceec029471dedf8",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/student/application/StudentRunCodeServiceTest.java": {
+    "mtime": 1789463755.53777,
+    "seen": 1789842643.283226,
+    "ast_hash": "ecc3976ba4c84b3c86f8c05810c46c92",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/student/infrastructure/persistence/StudentRepositoryIntegrationTest.java": {
+    "mtime": 1789803462.5145824,
+    "seen": 1789842643.283226,
+    "ast_hash": "ac81093870fdf8f54132a2b78803e9e2",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/submission/api/CodeSubmissionApiIntegrationTest.java": {
+    "mtime": 1789803462.5150952,
+    "seen": 1789842643.283227,
+    "ast_hash": "f2d382daf4484827ab48ca3a69f40703",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/submission/api/SubmissionApiIntegrationTest.java": {
+    "mtime": 1789803462.5159802,
+    "seen": 1789842643.283228,
+    "ast_hash": "71b0aa0ddd6cc853c7ad54e8a3c1082f",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/submission/application/CodeSubmissionServiceTest.java": {
+    "mtime": 1789464046.5378306,
+    "seen": 1789842643.283228,
+    "ast_hash": "879a5e38d3d4e71c15801dbc0c2a372a",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/submission/application/SubmissionReviewedEventTest.java": {
+    "mtime": 1788948553.0669925,
+    "seen": 1789842643.2832289,
+    "ast_hash": "ff31cf8536f8732a8cd77edf6b5d18b8",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/submission/infrastructure/persistence/SubmissionPersistenceIntegrationTest.java": {
+    "mtime": 1789803462.517003,
+    "seen": 1789842643.2832289,
+    "ast_hash": "b4ef945c8c40e90a097cfb9ce6f0194c",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/task/api/TaskApiIntegrationTest.java": {
+    "mtime": 1789803462.5179033,
+    "seen": 1789842643.28323,
+    "ast_hash": "41859b66675535a667aab95b672464c5",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/task/infrastructure/persistence/TaskPersistenceIntegrationTest.java": {
+    "mtime": 1789803462.5196006,
+    "seen": 1789842643.28323,
+    "ast_hash": "e95b6992beaa65419bf2fbbd4e8446d9",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/test/PostgresIntegrationTest.java": {
+    "mtime": 1789742018.9451194,
+    "seen": 1789842643.283231,
+    "ast_hash": "ce8c74d1552bd7024fbe81c2b6df7bdb",
+    "semantic_hash": ""
+  },
+  "src/test/java/com/tutorplatform/user/infrastructure/persistence/IdentityRepositoryIntegrationTest.java": {
+    "mtime": 1789803462.5209162,
+    "seen": 1789842643.283231,
+    "ast_hash": "5d571f287d59a5c86386e8db2487035a",
+    "semantic_hash": ""
+  },
+  ".github/dependabot.yml": {
+    "mtime": 1789769898.1,
+    "seen": 1789842643.283232,
+    "ast_hash": "aa96a1fb57578cde62ee6f7ea03623b8",
+    "semantic_hash": ""
+  },
+  ".github/workflows/ci.yml": {
+    "mtime": 1789832013.333,
+    "seen": 1789842643.283232,
+    "ast_hash": "5ec4c0213610d31d18fdb8ef60dd17df",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1788791529.8754594,
+    "seen": 1789842643.283233,
+    "ast_hash": "6a47d64fcc136324ca395065a707ef76",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1788943546.4784522,
+    "seen": 1789842643.283233,
+    "ast_hash": "ce0641af8046af998897203e88361495",
+    "semantic_hash": ""
+  },
+  "docs/file-materials.md": {
+    "mtime": 1788818756.1582334,
+    "seen": 1789842643.2832341,
+    "ast_hash": "d8fa812dcea9f8522b9a45d0a6fe164f",
+    "semantic_hash": ""
+  },
+  "src/main/resources/application-prod.yml": {
+    "mtime": 1789226690.052879,
+    "seen": 1789842643.2832341,
+    "ast_hash": "e10abf758e0c1ec709da1d80307011ad",
+    "semantic_hash": ""
+  },
+  "src/main/resources/application.yml": {
+    "mtime": 1789830595.8501391,
+    "seen": 1789842643.283235,
+    "ast_hash": "131a53ae7754313706089df915a66bd8",
+    "semantic_hash": ""
+  },
+  "src/main/resources/fonts/OFL.txt": {
+    "mtime": 1789144425.063418,
+    "seen": 1789842643.283235,
+    "ast_hash": "fce5baa9b16328f04e2afc29f6e4e882",
+    "semantic_hash": ""
+  }
+}
