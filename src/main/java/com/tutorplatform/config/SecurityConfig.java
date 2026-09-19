@@ -50,6 +50,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(GET, "/api/v1/public/registration-settings").permitAll()
+                .requestMatchers(GET, "/api/v1/public/teacher-invitations/*").permitAll()
                 .requestMatchers(GET, "/api/v1/public/progress/*").permitAll()
                 .requestMatchers(GET, "/api/v1/public/reports/*").permitAll()
                 .requestMatchers(GET, "/api/v1/public/reports/*/pdf").permitAll()

@@ -92,6 +92,26 @@ public class TeacherRegistrationInviteService {
         );
     }
 
+
+    @Transactional(readOnly = true)
+    public PublicInvitation getPublicInvitation(String rawToken) {
+        if (rawToken == null || !rawToken.matches("^[A-Za-z0-9_-]{43}$")) {
+            throw new TeacherInvitationNotFoundException();
+        }
+
+        String tokenHash = tokenService.hash(rawToken);
+
+        TeacherRegistrationInvite invitation =
+            repository.findByTokenHash(tokenHash)
+                .orElseThrow(TeacherInvitationNotFoundException::new);
+
+        return new PublicInvitation(
+            invitation.email(),
+            invitation.status(Instant.now()),
+            invitation.expiresAt()
+        );
+    }
+
     @Transactional(readOnly = true)
     public List<InvitationSummary> listInvitations(
         UUID adminId
@@ -144,6 +164,14 @@ public class TeacherRegistrationInviteService {
         if (revoked != 1) {
             throw new TeacherInvitationNotActiveException();
         }
+    }
+
+
+    public record PublicInvitation(
+        String email,
+        TeacherRegistrationInviteStatus status,
+        Instant expiresAt
+    ) {
     }
 
     public record CreatedInvitation(
