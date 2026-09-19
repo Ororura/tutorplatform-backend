@@ -24,6 +24,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -337,6 +344,145 @@ class TeacherInvitationIntegrationTest extends PostgresIntegrationTest {
                     )))
             )
             .andExpect(status().isUnauthorized());
+    }
+
+
+    @Test
+    void concurrentAcceptanceCreatesExactlyOneTeacher() throws Exception {
+        Cookie adminSession = createAdminSession();
+
+        String invitedEmail = "concurrent-teacher@example.com";
+
+        CreatedInvite invite = createInvite(
+            adminSession,
+            invitedEmail
+        );
+
+        // Two independent anonymous sessions.
+        CsrfExchange firstGuest = obtainCsrf(null);
+        CsrfExchange secondGuest = obtainCsrf(null);
+
+        assertThat(firstGuest.cookie().getValue())
+            .isNotEqualTo(secondGuest.cookie().getValue());
+
+        var guests = List.of(firstGuest, secondGuest);
+
+        CountDownLatch ready = new CountDownLatch(2);
+        CountDownLatch start = new CountDownLatch(1);
+
+        var executor = Executors.newFixedThreadPool(2);
+
+        List<Future<MvcResult>> requests = new ArrayList<>();
+
+        try {
+            for (CsrfExchange guest : guests) {
+                requests.add(executor.submit(() -> {
+                    ready.countDown();
+
+                    if (!start.await(10, TimeUnit.SECONDS)) {
+                        throw new IllegalStateException(
+                            "Concurrent requests did not start"
+                        );
+                    }
+
+                    return mockMvc.perform(
+                            post(
+                                "/api/v1/public/teacher-invitations/{token}/accept",
+                                invite.token()
+                            )
+                                .cookie(guest.cookie())
+                                .header(
+                                    "X-XSRF-TOKEN",
+                                    guest.token()
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                    acceptanceJson("Конкурентный преподаватель")
+                                )
+                        )
+                        .andReturn();
+                }));
+            }
+
+            assertThat(
+                ready.await(10, TimeUnit.SECONDS)
+            ).isTrue();
+
+            start.countDown();
+
+            List<MvcResult> responses = new ArrayList<>();
+
+            for (Future<MvcResult> request : requests) {
+                responses.add(
+                    request.get(30, TimeUnit.SECONDS)
+                );
+            }
+
+            List<Integer> statuses = responses.stream()
+                .map(result ->
+                    result.getResponse().getStatus()
+                )
+                .sorted()
+                .toList();
+
+            assertThat(statuses)
+                .containsExactly(201, 409);
+
+            MvcResult conflict = responses.stream()
+                .filter(result ->
+                    result.getResponse().getStatus() == 409
+                )
+                .findFirst()
+                .orElseThrow();
+
+            JsonNode error = objectMapper.readTree(
+                conflict.getResponse().getContentAsByteArray()
+            );
+
+            assertThat(error.path("code").asText())
+                .isEqualTo("TEACHER_INVITATION_NOT_ACTIVE");
+
+        } finally {
+            start.countDown();
+            executor.shutdownNow();
+        }
+
+        Long userCount = jdbcClient.sql("""
+                SELECT count(*)
+                FROM users
+                WHERE email = :email
+                """)
+            .param("email", invitedEmail)
+            .query(Long.class)
+            .single();
+
+        assertThat(userCount)
+            .isEqualTo(1L);
+
+        Long teacherCount = jdbcClient.sql("""
+                SELECT count(*)
+                FROM teachers t
+                JOIN users u ON u.id = t.user_id
+                WHERE u.email = :email
+                """)
+            .param("email", invitedEmail)
+            .query(Long.class)
+            .single();
+
+        assertThat(teacherCount)
+            .isEqualTo(1L);
+
+        Boolean accepted = jdbcClient.sql("""
+                SELECT accepted_at IS NOT NULL
+                FROM teacher_registration_invites
+                WHERE id = :id
+                """)
+            .param("id", invite.id())
+            .query(Boolean.class)
+            .single();
+
+        assertThat(accepted)
+            .isTrue();
     }
 
     private void assertInvitationCannotBeAccepted(
