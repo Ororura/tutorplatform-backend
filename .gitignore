@@ -3,3 +3,7 @@
 .idea
 
 /var/files/
+
+# Graphify
+graphify-out/
+.graphify/

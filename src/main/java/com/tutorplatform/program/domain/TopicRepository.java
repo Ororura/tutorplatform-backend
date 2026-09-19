@@ -1,5 +1,6 @@
 package com.tutorplatform.program.domain;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -8,7 +9,11 @@ public interface TopicRepository {
 
     Optional<TopicEntity> findById(UUID topicId);
 
+    List<TopicEntity> findByModuleId(UUID moduleId);
+
     boolean existsByModuleId(UUID moduleId);
 
     int findMaxPositionByModuleId(UUID moduleId);
+
+    void updatePosition(UUID moduleId, UUID topicId, int position);
 }

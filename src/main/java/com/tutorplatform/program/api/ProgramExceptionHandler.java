@@ -2,6 +2,7 @@ package com.tutorplatform.program.api;
 
 import com.tutorplatform.program.application.StudentProgramNotFoundException;
 import com.tutorplatform.program.application.InvalidLearningProgramModuleOrderException;
+import com.tutorplatform.program.application.InvalidLearningProgramTopicOrderException;
 import com.tutorplatform.program.application.LearningProgramNotFoundException;
 import com.tutorplatform.program.application.SubjectNotFoundException;
 import com.tutorplatform.program.application.InvalidLearningProgramStatusException;
@@ -62,6 +63,17 @@ public class ProgramExceptionHandler {
             ApiError.of(
                 "LEARNING_PROGRAM_MODULE_ORDER_INVALID",
                 "Module order must contain every module in the learning program exactly once",
+                MDC.get("traceId")
+            )
+        );
+    }
+
+    @ExceptionHandler(InvalidLearningProgramTopicOrderException.class)
+    ResponseEntity<ApiError> handleInvalidTopicOrder(InvalidLearningProgramTopicOrderException exception) {
+        return ResponseEntity.badRequest().body(
+            ApiError.of(
+                "LEARNING_PROGRAM_TOPIC_ORDER_INVALID",
+                "Topic order must contain every topic in the module exactly once",
                 MDC.get("traceId")
             )
         );
