@@ -275,11 +275,11 @@ class ProgramPersistenceIntegrationTest extends PostgresIntegrationTest {
             learningProgramRepository::findById,
             learningProgramRepository::saveAndFlush,
             value -> {
-                value.update("Первая версия", value.getDescription(), value.getStatus());
+                value.update("Первая версия", value.getDescription());
                 return value;
             },
             value -> {
-                value.update("Устаревшая версия", value.getDescription(), value.getStatus());
+                value.update("Устаревшая версия", value.getDescription());
                 return value;
             },
             "LearningProgramEntity"

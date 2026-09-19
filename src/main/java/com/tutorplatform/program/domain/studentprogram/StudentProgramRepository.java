@@ -11,4 +11,6 @@ public interface StudentProgramRepository {
     Optional<StudentProgramEntity> findByIdForUpdate(UUID studentProgramId);
 
     boolean existsActiveOrPaused(UUID studentId, UUID learningProgramId);
+
+    boolean existsByLearningProgramId(UUID learningProgramId);
 }

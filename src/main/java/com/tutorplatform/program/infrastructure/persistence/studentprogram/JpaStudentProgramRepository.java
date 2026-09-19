@@ -36,4 +36,9 @@ public class JpaStudentProgramRepository implements StudentProgramRepository {
     public boolean existsActiveOrPaused(UUID studentId, UUID learningProgramId) {
         return databaseRepository.existsActiveOrPaused(studentId, learningProgramId);
     }
+
+    @Override
+    public boolean existsByLearningProgramId(UUID learningProgramId) {
+        return databaseRepository.existsByLearningProgramId(learningProgramId);
+    }
 }

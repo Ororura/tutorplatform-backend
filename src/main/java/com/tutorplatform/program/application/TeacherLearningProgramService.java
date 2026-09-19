@@ -7,13 +7,16 @@ import com.tutorplatform.program.api.LearningProgramDetailsResponse;
 import com.tutorplatform.program.api.LearningProgramModuleDetailsResponse;
 import com.tutorplatform.program.api.LearningProgramTopicDetailsResponse;
 import com.tutorplatform.program.api.ProgramSubjectResponse;
+import com.tutorplatform.program.api.UpdateLearningProgramRequest;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramEntity;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramRepository;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
+import com.tutorplatform.program.domain.studentprogram.StudentProgramRepository;
 import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.subject.domain.SubjectEntity;
 import com.tutorplatform.subject.domain.SubjectRepository;
 import com.tutorplatform.subject.domain.SubjectStatus;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,17 +29,20 @@ public class TeacherLearningProgramService {
     private final StudentOwnershipQuery ownershipQuery;
     private final SubjectRepository subjectRepository;
     private final LearningProgramRepository learningProgramRepository;
+    private final StudentProgramRepository studentProgramRepository;
     private final TeacherLearningProgramQuery programQuery;
 
     public TeacherLearningProgramService(
         StudentOwnershipQuery ownershipQuery,
         SubjectRepository subjectRepository,
         LearningProgramRepository learningProgramRepository,
+        StudentProgramRepository studentProgramRepository,
         TeacherLearningProgramQuery programQuery
     ) {
         this.ownershipQuery = ownershipQuery;
         this.subjectRepository = subjectRepository;
         this.learningProgramRepository = learningProgramRepository;
+        this.studentProgramRepository = studentProgramRepository;
         this.programQuery = programQuery;
     }
 
@@ -75,6 +81,35 @@ public class TeacherLearningProgramService {
             UUID.randomUUID(), teacherId, subject.id(), request.title(), request.description(), LearningProgramStatus.DRAFT
         ));
         return response(saved, subject);
+    }
+
+    @Transactional
+    public LearningProgramDetailsResponse update(
+        AuthenticatedUser principal,
+        UUID programId,
+        UpdateLearningProgramRequest request
+    ) {
+        UUID teacherId = teacherId(principal);
+        LearningProgramEntity program = learningProgramRepository.findByIdForUpdate(programId)
+            .filter(candidate -> candidate.getTeacherId().equals(teacherId))
+            .orElseThrow(LearningProgramNotFoundException::new);
+        if (program.getStatus() == LearningProgramStatus.ARCHIVED) {
+            throw new InvalidLearningProgramStatusException("Archived learning program cannot be edited");
+        }
+        if (studentProgramRepository.existsByLearningProgramId(programId)) {
+            throw new InvalidLearningProgramStatusException("Assigned learning program cannot be edited");
+        }
+        if (!program.getVersion().equals(request.version())) {
+            throw new LearningProgramVersionConflictException();
+        }
+
+        program.update(request.title(), request.description());
+        try {
+            learningProgramRepository.saveAndFlush(program);
+        } catch (ObjectOptimisticLockingFailureException exception) {
+            throw new LearningProgramVersionConflictException(exception);
+        }
+        return get(principal, programId);
     }
 
     @Transactional

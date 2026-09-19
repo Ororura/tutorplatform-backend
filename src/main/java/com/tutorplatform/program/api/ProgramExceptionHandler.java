@@ -5,6 +5,7 @@ import com.tutorplatform.program.application.LearningProgramNotFoundException;
 import com.tutorplatform.program.application.SubjectNotFoundException;
 import com.tutorplatform.program.application.InvalidLearningProgramStatusException;
 import com.tutorplatform.program.application.StudentProgramAlreadyAssignedException;
+import com.tutorplatform.program.application.LearningProgramVersionConflictException;
 import com.tutorplatform.shared.api.ApiError;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
@@ -40,6 +41,17 @@ public class ProgramExceptionHandler {
     ResponseEntity<ApiError> handleInvalidStatus(InvalidLearningProgramStatusException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(
             ApiError.of("LEARNING_PROGRAM_STATUS_CONFLICT", exception.getMessage(), MDC.get("traceId"))
+        );
+    }
+
+    @ExceptionHandler(LearningProgramVersionConflictException.class)
+    ResponseEntity<ApiError> handleVersionConflict(LearningProgramVersionConflictException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+            ApiError.of(
+                "LEARNING_PROGRAM_VERSION_CONFLICT",
+                "Learning program was modified by another request",
+                MDC.get("traceId")
+            )
         );
     }
 

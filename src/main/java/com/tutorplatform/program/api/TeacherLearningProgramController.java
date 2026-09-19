@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,6 +54,16 @@ public class TeacherLearningProgramController implements TeacherLearningProgramA
     ) {
         LearningProgramSummaryResponse response = service.create(principal, request);
         return ResponseEntity.created(URI.create("/api/v1/teacher/programs/" + response.id())).body(response);
+    }
+
+    @Override
+    @PatchMapping("/{programId}")
+    public LearningProgramDetailsResponse updateProgram(
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID programId,
+        @Valid @RequestBody UpdateLearningProgramRequest request
+    ) {
+        return service.update(principal, programId, request);
     }
 
     @Override

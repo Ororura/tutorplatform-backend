@@ -21,4 +21,6 @@ interface StudentProgramDatabaseRepository extends JpaRepository<StudentProgramD
                                  com.tutorplatform.program.domain.studentprogram.StudentProgramStatus.PAUSED)
         """)
     boolean existsActiveOrPaused(UUID studentId, UUID learningProgramId);
+
+    boolean existsByLearningProgramId(UUID learningProgramId);
 }
