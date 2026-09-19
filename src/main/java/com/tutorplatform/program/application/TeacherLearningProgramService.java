@@ -3,6 +3,9 @@ package com.tutorplatform.program.application;
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.program.api.CreateLearningProgramRequest;
 import com.tutorplatform.program.api.LearningProgramSummaryResponse;
+import com.tutorplatform.program.api.LearningProgramDetailsResponse;
+import com.tutorplatform.program.api.LearningProgramModuleDetailsResponse;
+import com.tutorplatform.program.api.LearningProgramTopicDetailsResponse;
 import com.tutorplatform.program.api.ProgramSubjectResponse;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramEntity;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramRepository;
@@ -44,6 +47,24 @@ public class TeacherLearningProgramService {
                 program.id(), new ProgramSubjectResponse(program.subjectId(), program.subjectCode(), program.subjectName()),
                 program.title(), program.description(), program.status(), program.createdAt(), program.updatedAt()
             )).toList();
+    }
+
+    public LearningProgramDetailsResponse get(AuthenticatedUser principal, UUID programId) {
+        UUID teacherId = teacherId(principal);
+        TeacherLearningProgramQuery.LearningProgramDetails program = programQuery.findProgram(teacherId, programId)
+            .orElseThrow(LearningProgramNotFoundException::new);
+        boolean editable = program.status() != LearningProgramStatus.ARCHIVED && !program.hasAssignments();
+        return new LearningProgramDetailsResponse(
+            program.id(), new ProgramSubjectResponse(program.subjectId(), program.subjectCode(), program.subjectName()),
+            program.title(), program.description(), program.status(), program.version(), program.createdAt(), program.updatedAt(),
+            program.hasAssignments(), editable,
+            program.modules().stream().map(module -> new LearningProgramModuleDetailsResponse(
+                module.id(), module.title(), module.description(), module.position(),
+                module.topics().stream().map(topic -> new LearningProgramTopicDetailsResponse(
+                    topic.id(), topic.title(), topic.description(), topic.position(), topic.status(), topic.version()
+                )).toList()
+            )).toList()
+        );
     }
 
     @Transactional
