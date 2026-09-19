@@ -3,6 +3,7 @@ package com.tutorplatform.program.application;
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.program.api.CreateLearningProgramRequest;
 import com.tutorplatform.program.api.CreateLearningProgramModuleRequest;
+import com.tutorplatform.program.api.CreateLearningProgramTopicRequest;
 import com.tutorplatform.program.api.LearningProgramModuleResponse;
 import com.tutorplatform.program.api.LearningProgramSummaryResponse;
 import com.tutorplatform.program.api.LearningProgramDetailsResponse;
@@ -17,6 +18,8 @@ import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
 import com.tutorplatform.program.domain.ModuleEntity;
 import com.tutorplatform.program.domain.ModuleRepository;
 import com.tutorplatform.program.domain.TopicRepository;
+import com.tutorplatform.program.domain.TopicEntity;
+import com.tutorplatform.program.domain.TopicStatus;
 import com.tutorplatform.program.domain.studentprogram.StudentProgramRepository;
 import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.subject.domain.SubjectEntity;
@@ -109,6 +112,23 @@ public class TeacherLearningProgramService {
             moduleRepository.findMaxPositionByLearningProgramId(programId) + 1
         ));
         return new LearningProgramModuleResponse(module.id(), module.title(), module.description(), module.position());
+    }
+
+    @Transactional
+    public LearningProgramTopicDetailsResponse createTopic(
+        AuthenticatedUser principal,
+        UUID programId,
+        UUID moduleId,
+        CreateLearningProgramTopicRequest request
+    ) {
+        ModuleEntity module = requireModuleInEditableOwnedProgram(teacherId(principal), programId, moduleId);
+        TopicEntity topic = topicRepository.saveAndFlush(new TopicEntity(
+            UUID.randomUUID(), module.id(), request.title(), request.description(),
+            topicRepository.findMaxPositionByModuleId(moduleId) + 1, TopicStatus.DRAFT
+        ));
+        return new LearningProgramTopicDetailsResponse(
+            topic.id(), topic.title(), topic.description(), topic.position(), topic.status(), topic.version()
+        );
     }
 
     @Transactional

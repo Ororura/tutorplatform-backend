@@ -71,6 +71,20 @@ public class TeacherLearningProgramController implements TeacherLearningProgramA
     }
 
     @Override
+    @PostMapping("/{programId}/modules/{moduleId}/topics")
+    public ResponseEntity<LearningProgramTopicDetailsResponse> createTopic(
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID programId,
+        @PathVariable UUID moduleId,
+        @Valid @RequestBody CreateLearningProgramTopicRequest request
+    ) {
+        LearningProgramTopicDetailsResponse response = service.createTopic(principal, programId, moduleId, request);
+        return ResponseEntity.created(URI.create(
+            "/api/v1/teacher/programs/" + programId + "/modules/" + moduleId + "/topics/" + response.id()
+        )).body(response);
+    }
+
+    @Override
     @PatchMapping("/{programId}/modules/{moduleId}")
     public LearningProgramModuleResponse updateModule(
         @AuthenticationPrincipal AuthenticatedUser principal,

@@ -30,4 +30,9 @@ public class JpaTopicRepository implements TopicRepository {
     public boolean existsByModuleId(UUID moduleId) {
         return databaseRepository.existsByModuleId(moduleId);
     }
+
+    @Override
+    public int findMaxPositionByModuleId(UUID moduleId) {
+        return databaseRepository.findMaxPositionByModuleId(moduleId);
+    }
 }

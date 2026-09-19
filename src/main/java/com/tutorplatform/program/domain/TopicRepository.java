@@ -9,4 +9,6 @@ public interface TopicRepository {
     Optional<TopicEntity> findById(UUID topicId);
 
     boolean existsByModuleId(UUID moduleId);
+
+    int findMaxPositionByModuleId(UUID moduleId);
 }
