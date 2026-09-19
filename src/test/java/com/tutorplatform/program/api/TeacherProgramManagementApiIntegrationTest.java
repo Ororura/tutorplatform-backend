@@ -429,12 +429,62 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
     }
 
     @Test
+    void createsFirstModuleAndAppendsSequentialModulesWithoutChangingExistingOnes() throws Exception {
+        TeacherContext teacher = teacher("module-create@example.com");
+        LearningProgramEntity program = program(teacher.teacher, "Modules", LearningProgramStatus.DRAFT);
+
+        String firstResponse = createModule(teacher, program.getId(), "  Основы Python  ", "  Первый раздел  ")
+            .andExpect(status().isCreated())
+            .andExpect(header().exists("Location"))
+            .andExpect(jsonPath("$.title").value("Основы Python"))
+            .andExpect(jsonPath("$.description").value("Первый раздел"))
+            .andExpect(jsonPath("$.position").value(0))
+            .andReturn().getResponse().getContentAsString();
+        UUID firstId = UUID.fromString(objectMapper.readTree(firstResponse).get("id").textValue());
+
+        createModule(teacher, program.getId(), "Продолжение", null)
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.position").value(1));
+
+        ModuleEntity first = moduleRepository.findById(firstId).orElseThrow();
+        assertThat(first.title()).isEqualTo("Основы Python");
+        assertThat(first.description()).isEqualTo("Первый раздел");
+        assertThat(first.position()).isZero();
+    }
+
+    @Test
+    void createModuleRejectsForeignArchivedAndAssignedPrograms() throws Exception {
+        TeacherContext owner = teacher("module-create-owner@example.com");
+        TeacherContext foreign = teacher("module-create-foreign@example.com");
+        LearningProgramEntity owned = program(owner.teacher, "Owned", LearningProgramStatus.DRAFT);
+        LearningProgramEntity archived = program(owner.teacher, "Archived", LearningProgramStatus.ARCHIVED);
+        LearningProgramEntity assigned = program(owner.teacher, "Assigned", LearningProgramStatus.ACTIVE);
+        StudentEntity student = student(owner.teacher, "Student");
+        studentProgramRepository.saveAndFlush(new StudentProgramEntity(
+            UUID.randomUUID(), student.getId(), assigned.getId(), owner.teacher.id(),
+            StudentProgramStatus.COMPLETED, 480, Instant.parse("2026-09-01T00:00:00Z"),
+            Instant.parse("2026-09-02T00:00:00Z")
+        ));
+
+        createModule(foreign, owned.getId(), "Denied", null)
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_NOT_FOUND"));
+        createModule(owner, archived.getId(), "Denied", null)
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_STATUS_CONFLICT"));
+        createModule(owner, assigned.getId(), "Denied", null)
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_STATUS_CONFLICT"));
+    }
+
+    @Test
     void openApiPublishesStableManagementOperationIds() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.paths['/api/v1/teacher/subjects'].get.operationId").value("listTeacherSubjects"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs'].get.operationId").value("listTeacherLearningPrograms"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs'].post.operationId").value("createTeacherLearningProgram"))
+            .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}/modules'].post.operationId").value("createTeacherLearningProgramModule"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}'].get.operationId").value("getTeacherLearningProgram"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}'].patch.operationId").value("updateTeacherLearningProgram"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}/activate'].post.operationId").value("activateTeacherLearningProgram"))
@@ -450,6 +500,17 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
             .content("{\"learningProgramId\":\"" + programId + "\"" + intervalJson + "}"));
         action.andExpect(status().is(expectedStatus));
         if (code != null) action.andExpect(jsonPath("$.code").value(code));
+    }
+
+    private org.springframework.test.web.servlet.ResultActions createModule(
+        TeacherContext teacher,
+        UUID programId,
+        String title,
+        String description
+    ) throws Exception {
+        return mockMvc.perform(post("/api/v1/teacher/programs/{programId}/modules", programId)
+            .with(user(teacher.principal)).with(csrf()).contentType("application/json")
+            .content(objectMapper.writeValueAsString(new CreateLearningProgramModuleRequest(title, description))));
     }
 
     private void expectUpdateConflict(
