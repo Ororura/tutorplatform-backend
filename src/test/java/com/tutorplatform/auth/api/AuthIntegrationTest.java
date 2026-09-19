@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -46,9 +47,16 @@ class AuthIntegrationTest extends PostgresIntegrationTest {
     private TeacherRepository teacherRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private JdbcClient jdbcClient;
+
 
     @BeforeEach
     void cleanIdentityData() {
+        jdbcClient.sql(
+            "UPDATE platform_settings SET registration_mode = 'OPEN', updated_by_admin_id = NULL"
+        ).update();
+
         teacherRepository.deleteAll();
         userRepository.deleteAll();
     }
@@ -223,10 +231,39 @@ class AuthIntegrationTest extends PostgresIntegrationTest {
             .andExpect(jsonPath("$.components.schemas.TeacherRegistrationRequest.properties.displayName.maxLength").value(160))
             .andExpect(jsonPath("$.components.schemas.CurrentUserResponse.properties.id.format").value("uuid"))
             .andExpect(jsonPath("$.components.schemas.CurrentUserResponse.properties.roles.type").value("array"))
-            .andExpect(jsonPath("$.components.schemas.CurrentUserResponse.properties.roles.items.enum.length()").value(2))
+            .andExpect(jsonPath("$.components.schemas.CurrentUserResponse.properties.roles.items.enum.length()").value(3))
             .andExpect(jsonPath("$.components.schemas.ApiError.properties.timestamp.format").value("date-time"))
             .andExpect(jsonPath("$.paths['/api/v1/auth/login'].post.responses['401'].content['application/json'].schema['$ref']")
                 .value("#/components/schemas/ApiError"));
+    }
+
+
+    @Test
+    void inviteOnlyModeBlocksPublicTeacherRegistration() throws Exception {
+
+        jdbcClient.sql("""
+                UPDATE platform_settings
+                SET registration_mode = 'INVITE_ONLY'
+                WHERE id = 1
+                """).update();
+
+        CsrfExchange csrf = obtainCsrf();
+
+        mockMvc.perform(post("/api/v1/auth/register/teacher")
+                .cookie(csrf.sessionCookie())
+                .header(csrf.headerName(), csrf.token())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(registrationJson(
+                    "blocked@example.com",
+                    "Blocked Teacher"
+                )))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.code")
+                .value("REGISTRATION_INVITE_REQUIRED"));
+
+        assertThat(
+            userRepository.existsByEmail("blocked@example.com")
+        ).isFalse();
     }
 
     private Cookie register(String email, String displayName) throws Exception {

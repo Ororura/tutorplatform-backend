@@ -36,6 +36,9 @@ public class OpenApiConfig {
     OpenApiCustomizer publicOperationsDoNotRequireSessionCookie() {
         return openApi -> {
             clearGetSecurity(openApi, "/api/v1/auth/csrf");
+            clearGetSecurity(openApi, "/api/v1/public/registration-settings");
+            clearGetSecurity(openApi, "/api/v1/public/teacher-invitations/{token}");
+            clearPostSecurity(openApi, "/api/v1/public/teacher-invitations/{token}/accept");
             clearPostSecurity(openApi, "/api/v1/auth/register/teacher");
             clearPostSecurity(openApi, "/api/v1/auth/login");
             clearPostSecurity(openApi, "/api/v1/auth/logout");

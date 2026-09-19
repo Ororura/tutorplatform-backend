@@ -49,6 +49,8 @@ public class SecurityConfig {
                 .requireExplicitSave(true)
             )
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(GET, "/api/v1/public/registration-settings").permitAll()
+                .requestMatchers(GET, "/api/v1/public/teacher-invitations/*").permitAll()
                 .requestMatchers(GET, "/api/v1/public/progress/*").permitAll()
                 .requestMatchers(GET, "/api/v1/public/reports/*").permitAll()
                 .requestMatchers(GET, "/api/v1/public/reports/*/pdf").permitAll()
@@ -63,8 +65,10 @@ public class SecurityConfig {
                 .requestMatchers(POST,
                     "/api/v1/auth/login",
                     "/api/v1/auth/register/teacher",
-                    "/api/v1/public/student-invitations/*/accept"
+                    "/api/v1/public/student-invitations/*/accept",
+                    "/api/v1/public/teacher-invitations/*/accept"
                 ).permitAll()
+                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/v1/teacher/**").hasRole("TEACHER")
                 .requestMatchers("/api/v1/student/**").hasRole("STUDENT")
                 .anyRequest().authenticated()
