@@ -11,6 +11,7 @@ import com.tutorplatform.program.api.LearningProgramModuleDetailsResponse;
 import com.tutorplatform.program.api.LearningProgramTopicDetailsResponse;
 import com.tutorplatform.program.api.ProgramSubjectResponse;
 import com.tutorplatform.program.api.ReorderLearningProgramModulesRequest;
+import com.tutorplatform.program.api.ReorderLearningProgramTopicsRequest;
 import com.tutorplatform.program.api.UpdateLearningProgramRequest;
 import com.tutorplatform.program.api.UpdateLearningProgramModuleRequest;
 import com.tutorplatform.program.api.UpdateLearningProgramTopicRequest;
@@ -181,6 +182,40 @@ public class TeacherLearningProgramService {
         }
         for (int index = 0; index < orderedIds.size(); index++) {
             moduleRepository.updatePosition(programId, orderedIds.get(index), index);
+        }
+    }
+
+    @Transactional
+    public void reorderTopics(
+        AuthenticatedUser principal,
+        UUID programId,
+        UUID moduleId,
+        ReorderLearningProgramTopicsRequest request
+    ) {
+        requireModuleInEditableOwnedProgram(teacherId(principal), programId, moduleId);
+
+        List<TopicEntity> topics = topicRepository.findByModuleId(moduleId);
+        List<UUID> orderedIds = request.orderedIds();
+        Set<UUID> existingIds = new HashSet<>(topics.stream().map(TopicEntity::id).toList());
+        Set<UUID> requestedIds = new HashSet<>(orderedIds);
+        if (orderedIds.size() != topics.size()
+            || requestedIds.size() != orderedIds.size()
+            || !requestedIds.equals(existingIds)) {
+            throw new InvalidLearningProgramTopicOrderException();
+        }
+
+        int maxPosition = topics.stream().mapToInt(TopicEntity::position).max().orElse(-1);
+        long highestTemporaryPosition = (long) maxPosition + orderedIds.size();
+        if (highestTemporaryPosition > Integer.MAX_VALUE) {
+            throw new InvalidLearningProgramTopicOrderException();
+        }
+
+        int temporaryBase = maxPosition + 1;
+        for (int index = 0; index < orderedIds.size(); index++) {
+            topicRepository.updatePosition(moduleId, orderedIds.get(index), temporaryBase + index);
+        }
+        for (int index = 0; index < orderedIds.size(); index++) {
+            topicRepository.updatePosition(moduleId, orderedIds.get(index), index);
         }
     }
 

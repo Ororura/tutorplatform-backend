@@ -97,6 +97,18 @@ public class TeacherLearningProgramController implements TeacherLearningProgramA
     }
 
     @Override
+    @PutMapping("/{programId}/modules/{moduleId}/topics/order")
+    public ResponseEntity<Void> reorderTopics(
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID programId,
+        @PathVariable UUID moduleId,
+        @Valid @RequestBody ReorderLearningProgramTopicsRequest request
+    ) {
+        service.reorderTopics(principal, programId, moduleId, request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
     @PatchMapping("/{programId}/modules/{moduleId}")
     public LearningProgramModuleResponse updateModule(
         @AuthenticationPrincipal AuthenticatedUser principal,

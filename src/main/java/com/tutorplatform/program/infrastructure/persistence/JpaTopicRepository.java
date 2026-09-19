@@ -5,6 +5,7 @@ import jakarta.persistence.OptimisticLockException;
 import com.tutorplatform.program.domain.TopicRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -37,6 +38,11 @@ public class JpaTopicRepository implements TopicRepository {
     }
 
     @Override
+    public List<TopicEntity> findByModuleId(UUID moduleId) {
+        return databaseRepository.findByModuleId(moduleId).stream().map(TopicDatabaseModel::toEntity).toList();
+    }
+
+    @Override
     public boolean existsByModuleId(UUID moduleId) {
         return databaseRepository.existsByModuleId(moduleId);
     }
@@ -44,5 +50,12 @@ public class JpaTopicRepository implements TopicRepository {
     @Override
     public int findMaxPositionByModuleId(UUID moduleId) {
         return databaseRepository.findMaxPositionByModuleId(moduleId);
+    }
+
+    @Override
+    public void updatePosition(UUID moduleId, UUID topicId, int position) {
+        if (databaseRepository.updatePosition(moduleId, topicId, position) != 1) {
+            throw new IllegalStateException("Learning program topic position update failed");
+        }
     }
 }

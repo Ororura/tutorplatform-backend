@@ -90,6 +90,20 @@ public interface TeacherLearningProgramApi {
         @Valid CreateLearningProgramTopicRequest request
     );
 
+    @Operation(operationId = "reorderTeacherLearningProgramTopics", summary = "Reorder every topic in a module of an owned editable learning program")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Topics reordered"),
+        @ApiResponse(responseCode = "400", description = "Topic order is invalid", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "404", description = "Learning program or module not found", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "409", description = "Learning program cannot be edited", content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    ResponseEntity<Void> reorderTopics(
+        @Parameter(hidden = true) AuthenticatedUser principal,
+        @Parameter(schema = @Schema(format = "uuid")) UUID programId,
+        @Parameter(schema = @Schema(format = "uuid")) UUID moduleId,
+        @Valid ReorderLearningProgramTopicsRequest request
+    );
+
     @Operation(operationId = "updateTeacherLearningProgramModule", summary = "Update a module in an owned editable learning program")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Module updated"),
