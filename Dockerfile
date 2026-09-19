@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk-alpine AS build
+FROM eclipse-temurin:25-jdk-alpine AS build
 WORKDIR /workspace
 COPY gradlew gradlew.bat settings.gradle.kts build.gradle.kts gradle.properties ./
 COPY gradle ./gradle
@@ -6,7 +6,7 @@ RUN chmod +x gradlew && ./gradlew dependencies --no-daemon
 COPY src ./src
 RUN ./gradlew clean build -x test --no-daemon
 
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 RUN addgroup -S app \
     && adduser -S app -G app \
     && mkdir -p /var/lib/tutor/files \
