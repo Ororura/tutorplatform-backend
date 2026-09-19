@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
@@ -95,7 +95,7 @@ class FileMaterialApiIntegrationTest extends PostgresIntegrationTest {
         }
     }
 
-    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder upload(
+    private org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder upload(
         ContentFixture fixture, String type, String name, String mime, byte[] bytes, int position) {
         return multipart(materialsUrl(fixture.topic().id()) + "/upload")
             .file(new MockMultipartFile("file", name, mime, bytes))

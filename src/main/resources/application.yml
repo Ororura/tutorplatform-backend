@@ -9,6 +9,10 @@ spring:
   application:
     name: tutor-learning-platform-backend
 
+  http:
+    converters:
+      preferred-json-mapper: jackson2
+
   lifecycle:
     timeout-per-shutdown-phase: 20s
 
@@ -36,7 +40,6 @@ spring:
     locations: classpath:db/migration
 
   session:
-    store-type: jdbc
     jdbc:
       initialize-schema: always
       platform: postgresql
