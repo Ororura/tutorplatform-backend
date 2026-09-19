@@ -16,6 +16,20 @@ public class PlatformSettingsRepository {
         this.jdbcClient = jdbcClient;
     }
 
+
+    public RegistrationMode getRegistrationModeForRegistration() {
+        String mode = jdbcClient.sql("""
+                SELECT registration_mode
+                FROM platform_settings
+                WHERE id = 1
+                FOR SHARE
+                """)
+            .query(String.class)
+            .single();
+
+        return RegistrationMode.valueOf(mode);
+    }
+
     public PlatformSettings getSettings() {
         return jdbcClient.sql("""
                 SELECT

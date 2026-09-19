@@ -1,11 +1,12 @@
 package com.tutorplatform.platform.api;
 
-import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.platform.application.PlatformSettingsService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/admin/settings")
@@ -37,14 +38,14 @@ public class AdminPlatformSettingsController {
     )
     @PatchMapping("/registration")
     public PlatformSettingsResponse changeRegistrationMode(
-        @AuthenticationPrincipal AuthenticatedUser principal,
+        @AuthenticationPrincipal(expression = "id()") UUID adminId,
         @Valid @RequestBody ChangeRegistrationModeRequest request
     ) {
 
         return PlatformSettingsResponse.from(
             settingsService.changeRegistrationMode(
                 request.mode(),
-                principal.id()
+                adminId
             )
         );
     }
