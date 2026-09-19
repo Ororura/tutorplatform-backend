@@ -15,6 +15,8 @@ import com.tutorplatform.program.domain.learningprogram.LearningProgramEntity;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramRepository;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
 import com.tutorplatform.program.domain.studentprogram.StudentProgramRepository;
+import com.tutorplatform.program.domain.studentprogram.StudentProgramEntity;
+import com.tutorplatform.program.domain.studentprogram.StudentProgramStatus;
 import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressRepository;
 import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressStatus;
 import com.tutorplatform.student.domain.StudentEntity;
@@ -40,6 +42,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -147,6 +150,79 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
     }
 
     @Test
+    void getsOwnedProgramDetailsWithOrderedStructureAndAssignmentFlags() throws Exception {
+        TeacherContext teacher = teacher("program-details@example.com");
+        LearningProgramEntity program = program(teacher.teacher, "Details", LearningProgramStatus.ACTIVE);
+        ModuleEntity laterModule = moduleRepository.saveAndFlush(new ModuleEntity(
+            UUID.randomUUID(), program.getId(), "Later", "Later description", 2
+        ));
+        ModuleEntity firstModule = moduleRepository.saveAndFlush(new ModuleEntity(
+            UUID.randomUUID(), program.getId(), "First", "First description", 1
+        ));
+        TopicEntity laterTopic = topicRepository.saveAndFlush(new TopicEntity(
+            UUID.randomUUID(), firstModule.id(), "Later topic", "Later topic description", 3, TopicStatus.DRAFT
+        ));
+        TopicEntity firstTopic = topicRepository.saveAndFlush(new TopicEntity(
+            UUID.randomUUID(), firstModule.id(), "First topic", "First topic description", 1, TopicStatus.ACTIVE
+        ));
+        StudentEntity student = student(teacher.teacher, "Assigned");
+        studentProgramRepository.saveAndFlush(new StudentProgramEntity(
+            UUID.randomUUID(), student.getId(), program.getId(), teacher.teacher.id(),
+            StudentProgramStatus.ACTIVE, 480, Instant.parse("2026-09-01T00:00:00Z"), null
+        ));
+
+        mockMvc.perform(get("/api/v1/teacher/programs/{programId}", program.getId()).with(user(teacher.principal)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(program.getId().toString()))
+            .andExpect(jsonPath("$.subject.id").value(PYTHON.toString()))
+            .andExpect(jsonPath("$.title").value("Details"))
+            .andExpect(jsonPath("$.status").value("ACTIVE"))
+            .andExpect(jsonPath("$.version").isNumber())
+            .andExpect(jsonPath("$.createdAt").exists())
+            .andExpect(jsonPath("$.updatedAt").exists())
+            .andExpect(jsonPath("$.hasAssignments").value(true))
+            .andExpect(jsonPath("$.editable").value(false))
+            .andExpect(jsonPath("$.modules[0].id").value(firstModule.id().toString()))
+            .andExpect(jsonPath("$.modules[0].position").value(1))
+            .andExpect(jsonPath("$.modules[1].id").value(laterModule.id().toString()))
+            .andExpect(jsonPath("$.modules[0].topics[0].id").value(firstTopic.id().toString()))
+            .andExpect(jsonPath("$.modules[0].topics[0].status").value("ACTIVE"))
+            .andExpect(jsonPath("$.modules[0].topics[0].version").isNumber())
+            .andExpect(jsonPath("$.modules[0].topics[0].progressStatus").doesNotExist())
+            .andExpect(jsonPath("$.modules[0].topics[1].id").value(laterTopic.id().toString()));
+    }
+
+    @Test
+    void doesNotExposeForeignOrMissingProgramDetails() throws Exception {
+        TeacherContext teacher = teacher("program-details-owner@example.com");
+        TeacherContext foreign = teacher("program-details-foreign@example.com");
+        LearningProgramEntity foreignProgram = program(foreign.teacher, "Foreign", LearningProgramStatus.DRAFT);
+
+        mockMvc.perform(get("/api/v1/teacher/programs/{programId}", foreignProgram.getId()).with(user(teacher.principal)))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_NOT_FOUND"));
+        mockMvc.perform(get("/api/v1/teacher/programs/{programId}", UUID.randomUUID()).with(user(teacher.principal)))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_NOT_FOUND"));
+    }
+
+    @Test
+    void detailsAreEditableOnlyForUnassignedNonArchivedProgram() throws Exception {
+        TeacherContext teacher = teacher("program-details-editable@example.com");
+        LearningProgramEntity draft = program(teacher.teacher, "Draft", LearningProgramStatus.DRAFT);
+        LearningProgramEntity archived = program(teacher.teacher, "Archived", LearningProgramStatus.ARCHIVED);
+
+        mockMvc.perform(get("/api/v1/teacher/programs/{programId}", draft.getId()).with(user(teacher.principal)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.hasAssignments").value(false))
+            .andExpect(jsonPath("$.editable").value(true));
+        mockMvc.perform(get("/api/v1/teacher/programs/{programId}", archived.getId()).with(user(teacher.principal)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.hasAssignments").value(false))
+            .andExpect(jsonPath("$.editable").value(false));
+    }
+
+    @Test
     void assignmentIsOwnedActiveAtomicVisibleAndInitializesLockedProgress() throws Exception {
         TeacherContext teacher = teacher("assign@example.com");
         StudentEntity student = student(teacher.teacher, "Илья");
@@ -212,6 +288,7 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
             .andExpect(jsonPath("$.paths['/api/v1/teacher/subjects'].get.operationId").value("listTeacherSubjects"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs'].get.operationId").value("listTeacherLearningPrograms"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs'].post.operationId").value("createTeacherLearningProgram"))
+            .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}'].get.operationId").value("getTeacherLearningProgram"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}/activate'].post.operationId").value("activateTeacherLearningProgram"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/students/{studentId}/programs'].post.operationId").value("assignTeacherStudentProgram"));
     }

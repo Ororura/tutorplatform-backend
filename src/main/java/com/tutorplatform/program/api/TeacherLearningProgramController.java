@@ -37,6 +37,15 @@ public class TeacherLearningProgramController implements TeacherLearningProgramA
     }
 
     @Override
+    @GetMapping("/{programId}")
+    public LearningProgramDetailsResponse getProgram(
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID programId
+    ) {
+        return service.get(principal, programId);
+    }
+
+    @Override
     @PostMapping
     public ResponseEntity<LearningProgramSummaryResponse> createProgram(
         @AuthenticationPrincipal AuthenticatedUser principal,

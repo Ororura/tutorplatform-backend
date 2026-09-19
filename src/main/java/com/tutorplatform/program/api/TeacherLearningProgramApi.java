@@ -27,6 +27,18 @@ public interface TeacherLearningProgramApi {
         LearningProgramStatus status
     );
 
+    @Operation(operationId = "getTeacherLearningProgram", summary = "Get an owned learning program template")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Learning program template"),
+        @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "403", description = "Teacher role required", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "404", description = "Learning program not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    LearningProgramDetailsResponse getProgram(
+        @Parameter(hidden = true) AuthenticatedUser principal,
+        @Parameter(schema = @Schema(format = "uuid")) UUID programId
+    );
+
     @Operation(operationId = "createTeacherLearningProgram", summary = "Create a draft learning program template")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Learning program created"),
