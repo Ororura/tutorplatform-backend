@@ -7,4 +7,6 @@ public interface TopicRepository {
     TopicEntity saveAndFlush(TopicEntity topic);
 
     Optional<TopicEntity> findById(UUID topicId);
+
+    boolean existsByModuleId(UUID moduleId);
 }

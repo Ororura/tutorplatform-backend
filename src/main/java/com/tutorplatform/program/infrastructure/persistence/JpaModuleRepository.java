@@ -30,6 +30,11 @@ public class JpaModuleRepository implements ModuleRepository {
     }
 
     @Override
+    public void deleteById(UUID moduleId) {
+        databaseRepository.deleteById(moduleId);
+    }
+
+    @Override
     public int findMaxPositionByLearningProgramId(UUID learningProgramId) {
         return databaseRepository.findMaxPositionByLearningProgramId(learningProgramId);
     }

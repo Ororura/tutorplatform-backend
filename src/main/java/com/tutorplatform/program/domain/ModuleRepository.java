@@ -8,5 +8,7 @@ public interface ModuleRepository {
 
     Optional<ModuleEntity> findById(UUID moduleId);
 
+    void deleteById(UUID moduleId);
+
     int findMaxPositionByLearningProgramId(UUID learningProgramId);
 }
