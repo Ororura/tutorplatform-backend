@@ -5,6 +5,7 @@ import com.tutorplatform.platform.domain.TeacherRegistrationInviteStatus;
 import com.tutorplatform.platform.infrastructure.persistence.TeacherRegistrationInviteRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
@@ -166,6 +167,47 @@ public class TeacherRegistrationInviteService {
         }
     }
 
+
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public InvitationForAcceptance lockActiveInvitation(
+        String rawToken
+    ) {
+        if (rawToken == null || !rawToken.matches("^[A-Za-z0-9_-]{43}$")) {
+            throw new TeacherInvitationNotFoundException();
+        }
+
+        String tokenHash = tokenService.hash(rawToken);
+
+        TeacherRegistrationInvite invitation =
+            repository.findByTokenHashForUpdate(tokenHash)
+                .orElseThrow(TeacherInvitationNotFoundException::new);
+
+        if (!invitation.isActive(Instant.now())) {
+            throw new TeacherInvitationNotActiveException();
+        }
+
+        return new InvitationForAcceptance(
+            invitation.id(),
+            invitation.email()
+        );
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void markInvitationAccepted(UUID invitationId) {
+        int updated = repository.markAccepted(invitationId);
+
+        if (updated != 1) {
+            throw new TeacherInvitationNotActiveException();
+        }
+    }
+
+
+    public record InvitationForAcceptance(
+        UUID id,
+        String email
+    ) {
+    }
 
     public record PublicInvitation(
         String email,

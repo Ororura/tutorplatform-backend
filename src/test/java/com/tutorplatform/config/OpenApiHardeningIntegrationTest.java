@@ -36,6 +36,7 @@ class OpenApiHardeningIntegrationTest extends PostgresIntegrationTest {
         "getCsrfToken", "registerTeacher", "login", "logout",
         "getPublicStudentInvitation", "acceptStudentInvitation",
         "getPublicRegistrationSettings", "getPublicTeacherInvitation",
+        "acceptTeacherInvitation",
         "getPublicCurrentProgress", "getPublicProgressReport",
         "downloadPublicProgressReportPdf"
     );
@@ -92,7 +93,7 @@ class OpenApiHardeningIntegrationTest extends PostgresIntegrationTest {
                 }
             }
         }
-        assertThat(operationIds).hasSize(78);
+        assertThat(operationIds).hasSize(79);
 
         JsonNode publicPdf = document.required("paths")
             .required("/api/v1/public/reports/{token}/pdf")
