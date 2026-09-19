@@ -28,4 +28,9 @@ public class JpaModuleRepository implements ModuleRepository {
     public Optional<ModuleEntity> findById(UUID moduleId) {
         return databaseRepository.findById(moduleId).map(ModuleDatabaseModel::toEntity);
     }
+
+    @Override
+    public int findMaxPositionByLearningProgramId(UUID learningProgramId) {
+        return databaseRepository.findMaxPositionByLearningProgramId(learningProgramId);
+    }
 }

@@ -50,6 +50,19 @@ public interface TeacherLearningProgramApi {
         @Valid CreateLearningProgramRequest request
     );
 
+    @Operation(operationId = "createTeacherLearningProgramModule", summary = "Create a module in an owned editable learning program")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Module created"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "404", description = "Learning program not found", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "409", description = "Learning program cannot be edited", content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    ResponseEntity<LearningProgramModuleResponse> createModule(
+        @Parameter(hidden = true) AuthenticatedUser principal,
+        @Parameter(schema = @Schema(format = "uuid")) UUID programId,
+        @Valid CreateLearningProgramModuleRequest request
+    );
+
     @Operation(operationId = "updateTeacherLearningProgram", summary = "Update an owned unassigned learning program")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Learning program updated"),

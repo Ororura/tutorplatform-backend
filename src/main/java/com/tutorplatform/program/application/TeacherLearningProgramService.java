@@ -2,6 +2,8 @@ package com.tutorplatform.program.application;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.program.api.CreateLearningProgramRequest;
+import com.tutorplatform.program.api.CreateLearningProgramModuleRequest;
+import com.tutorplatform.program.api.LearningProgramModuleResponse;
 import com.tutorplatform.program.api.LearningProgramSummaryResponse;
 import com.tutorplatform.program.api.LearningProgramDetailsResponse;
 import com.tutorplatform.program.api.LearningProgramModuleDetailsResponse;
@@ -11,6 +13,8 @@ import com.tutorplatform.program.api.UpdateLearningProgramRequest;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramEntity;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramRepository;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
+import com.tutorplatform.program.domain.ModuleEntity;
+import com.tutorplatform.program.domain.ModuleRepository;
 import com.tutorplatform.program.domain.studentprogram.StudentProgramRepository;
 import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.subject.domain.SubjectEntity;
@@ -29,6 +33,7 @@ public class TeacherLearningProgramService {
     private final StudentOwnershipQuery ownershipQuery;
     private final SubjectRepository subjectRepository;
     private final LearningProgramRepository learningProgramRepository;
+    private final ModuleRepository moduleRepository;
     private final StudentProgramRepository studentProgramRepository;
     private final TeacherLearningProgramQuery programQuery;
 
@@ -36,12 +41,14 @@ public class TeacherLearningProgramService {
         StudentOwnershipQuery ownershipQuery,
         SubjectRepository subjectRepository,
         LearningProgramRepository learningProgramRepository,
+        ModuleRepository moduleRepository,
         StudentProgramRepository studentProgramRepository,
         TeacherLearningProgramQuery programQuery
     ) {
         this.ownershipQuery = ownershipQuery;
         this.subjectRepository = subjectRepository;
         this.learningProgramRepository = learningProgramRepository;
+        this.moduleRepository = moduleRepository;
         this.studentProgramRepository = studentProgramRepository;
         this.programQuery = programQuery;
     }
@@ -81,6 +88,30 @@ public class TeacherLearningProgramService {
             UUID.randomUUID(), teacherId, subject.id(), request.title(), request.description(), LearningProgramStatus.DRAFT
         ));
         return response(saved, subject);
+    }
+
+    @Transactional
+    public LearningProgramModuleResponse createModule(
+        AuthenticatedUser principal,
+        UUID programId,
+        CreateLearningProgramModuleRequest request
+    ) {
+        UUID teacherId = teacherId(principal);
+        LearningProgramEntity program = learningProgramRepository.findByIdForUpdate(programId)
+            .filter(candidate -> candidate.getTeacherId().equals(teacherId))
+            .orElseThrow(LearningProgramNotFoundException::new);
+        if (program.getStatus() == LearningProgramStatus.ARCHIVED) {
+            throw new InvalidLearningProgramStatusException("Archived learning program cannot be edited");
+        }
+        if (studentProgramRepository.existsByLearningProgramId(programId)) {
+            throw new InvalidLearningProgramStatusException("Assigned learning program cannot be edited");
+        }
+
+        ModuleEntity module = moduleRepository.saveAndFlush(new ModuleEntity(
+            UUID.randomUUID(), programId, request.title(), request.description(),
+            moduleRepository.findMaxPositionByLearningProgramId(programId) + 1
+        ));
+        return new LearningProgramModuleResponse(module.id(), module.title(), module.description(), module.position());
     }
 
     @Transactional
