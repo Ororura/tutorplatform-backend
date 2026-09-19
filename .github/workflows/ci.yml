@@ -108,3 +108,16 @@ jobs:
 
             docker image prune -f
           EOF
+      - name: Deploy Demo
+        run: |
+          ssh -i ~/.ssh/tutorplatform_deploy \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+            set -e
+
+            cd /opt/tutorplatform-demo
+
+            docker compose pull
+            docker compose up -d
+
+            docker image prune -f
+          EOF
