@@ -49,6 +49,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -223,6 +224,97 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
     }
 
     @Test
+    void patchUpdatesOwnedDraftAndActiveProgramsWithoutChangingSubjectOrStatus() throws Exception {
+        TeacherContext teacher = teacher("program-update@example.com");
+        LearningProgramEntity draft = program(teacher.teacher, "Draft", LearningProgramStatus.DRAFT);
+        LearningProgramEntity active = program(teacher.teacher, "Active", LearningProgramStatus.ACTIVE);
+
+        mockMvc.perform(patch("/api/v1/teacher/programs/{programId}", draft.getId())
+                .with(user(teacher.principal)).with(csrf()).contentType("application/json")
+                .content(updateRequest("  Python с нуля  ", "Описание", draft.getVersion())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.title").value("Python с нуля"))
+            .andExpect(jsonPath("$.description").value("Описание"))
+            .andExpect(jsonPath("$.subject.id").value(PYTHON.toString()))
+            .andExpect(jsonPath("$.status").value("DRAFT"))
+            .andExpect(jsonPath("$.version").value(draft.getVersion() + 1));
+
+        mockMvc.perform(patch("/api/v1/teacher/programs/{programId}", active.getId())
+                .with(user(teacher.principal)).with(csrf()).contentType("application/json")
+                .content(updateRequest("Updated active", null, active.getVersion())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.title").value("Updated active"))
+            .andExpect(jsonPath("$.description").doesNotExist())
+            .andExpect(jsonPath("$.status").value("ACTIVE"));
+    }
+
+    @Test
+    void patchHidesForeignProgram() throws Exception {
+        TeacherContext owner = teacher("program-update-owner@example.com");
+        TeacherContext foreign = teacher("program-update-foreign@example.com");
+        LearningProgramEntity program = program(owner.teacher, "Owned", LearningProgramStatus.DRAFT);
+
+        mockMvc.perform(patch("/api/v1/teacher/programs/{programId}", program.getId())
+                .with(user(foreign.principal)).with(csrf()).contentType("application/json")
+                .content(updateRequest("Denied", null, program.getVersion())))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_NOT_FOUND"));
+    }
+
+    @Test
+    void patchValidatesTrimmedTitleAndVersion() throws Exception {
+        TeacherContext teacher = teacher("program-update-validation@example.com");
+        LearningProgramEntity program = program(teacher.teacher, "Valid", LearningProgramStatus.DRAFT);
+        String tooLong = "x".repeat(201);
+
+        for (String body : List.of(
+            updateRequest("   ", null, program.getVersion()),
+            updateRequest(tooLong, null, program.getVersion()),
+            "{\"title\":\"Valid\",\"description\":null}",
+            "{\"title\":\"Valid\",\"description\":null,\"version\":-1}"
+        )) {
+            mockMvc.perform(patch("/api/v1/teacher/programs/{programId}", program.getId())
+                    .with(user(teacher.principal)).with(csrf()).contentType("application/json").content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+        }
+    }
+
+    @Test
+    void stalePatchReturnsVersionConflict() throws Exception {
+        TeacherContext teacher = teacher("program-update-version@example.com");
+        LearningProgramEntity program = program(teacher.teacher, "Initial", LearningProgramStatus.DRAFT);
+        String firstVersionUpdate = updateRequest("First", null, program.getVersion());
+
+        mockMvc.perform(patch("/api/v1/teacher/programs/{programId}", program.getId())
+                .with(user(teacher.principal)).with(csrf()).contentType("application/json")
+                .content(firstVersionUpdate))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(patch("/api/v1/teacher/programs/{programId}", program.getId())
+                .with(user(teacher.principal)).with(csrf()).contentType("application/json")
+                .content(firstVersionUpdate))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_VERSION_CONFLICT"));
+    }
+
+    @Test
+    void patchRejectsArchivedAndEverAssignedPrograms() throws Exception {
+        TeacherContext teacher = teacher("program-update-state@example.com");
+        LearningProgramEntity archived = program(teacher.teacher, "Archived", LearningProgramStatus.ARCHIVED);
+        LearningProgramEntity assigned = program(teacher.teacher, "Assigned", LearningProgramStatus.ACTIVE);
+        StudentEntity student = student(teacher.teacher, "Completed student");
+        studentProgramRepository.saveAndFlush(new StudentProgramEntity(
+            UUID.randomUUID(), student.getId(), assigned.getId(), teacher.teacher.id(),
+            StudentProgramStatus.COMPLETED, 480, Instant.parse("2026-09-01T00:00:00Z"),
+            Instant.parse("2026-09-02T00:00:00Z")
+        ));
+
+        expectUpdateConflict(teacher, archived, "LEARNING_PROGRAM_STATUS_CONFLICT");
+        expectUpdateConflict(teacher, assigned, "LEARNING_PROGRAM_STATUS_CONFLICT");
+    }
+
+    @Test
     void assignmentIsOwnedActiveAtomicVisibleAndInitializesLockedProgress() throws Exception {
         TeacherContext teacher = teacher("assign@example.com");
         StudentEntity student = student(teacher.teacher, "Илья");
@@ -289,6 +381,7 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs'].get.operationId").value("listTeacherLearningPrograms"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs'].post.operationId").value("createTeacherLearningProgram"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}'].get.operationId").value("getTeacherLearningProgram"))
+            .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}'].patch.operationId").value("updateTeacherLearningProgram"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}/activate'].post.operationId").value("activateTeacherLearningProgram"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/students/{studentId}/programs'].post.operationId").value("assignTeacherStudentProgram"));
     }
@@ -301,6 +394,22 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
             .content("{\"learningProgramId\":\"" + programId + "\"" + intervalJson + "}"));
         action.andExpect(status().is(expectedStatus));
         if (code != null) action.andExpect(jsonPath("$.code").value(code));
+    }
+
+    private void expectUpdateConflict(
+        TeacherContext teacher,
+        LearningProgramEntity program,
+        String code
+    ) throws Exception {
+        mockMvc.perform(patch("/api/v1/teacher/programs/{programId}", program.getId())
+                .with(user(teacher.principal)).with(csrf()).contentType("application/json")
+                .content(updateRequest("Updated", null, program.getVersion())))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value(code));
+    }
+
+    private String updateRequest(String title, String description, Long version) throws Exception {
+        return objectMapper.writeValueAsString(new UpdateLearningProgramRequest(title, description, version));
     }
 
     private TeacherContext teacher(String email) {

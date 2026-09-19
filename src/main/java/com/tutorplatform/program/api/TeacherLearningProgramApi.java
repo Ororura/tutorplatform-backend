@@ -50,6 +50,19 @@ public interface TeacherLearningProgramApi {
         @Valid CreateLearningProgramRequest request
     );
 
+    @Operation(operationId = "updateTeacherLearningProgram", summary = "Update an owned unassigned learning program")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Learning program updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "404", description = "Learning program not found", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "409", description = "Program cannot be edited or version is stale", content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    LearningProgramDetailsResponse updateProgram(
+        @Parameter(hidden = true) AuthenticatedUser principal,
+        @Parameter(schema = @Schema(format = "uuid")) UUID programId,
+        @Valid UpdateLearningProgramRequest request
+    );
+
     @Operation(operationId = "activateTeacherLearningProgram", summary = "Activate an owned draft learning program")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Learning program activated"),

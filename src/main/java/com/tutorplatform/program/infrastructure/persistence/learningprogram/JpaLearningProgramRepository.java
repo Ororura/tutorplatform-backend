@@ -25,4 +25,9 @@ public class JpaLearningProgramRepository implements LearningProgramRepository {
     public Optional<LearningProgramEntity> findById(UUID learningProgramId) {
         return databaseRepository.findById(learningProgramId).map(LearningProgramDatabaseModel::toEntity);
     }
+
+    @Override
+    public Optional<LearningProgramEntity> findByIdForUpdate(UUID learningProgramId) {
+        return databaseRepository.findWithLockById(learningProgramId).map(LearningProgramDatabaseModel::toEntity);
+    }
 }

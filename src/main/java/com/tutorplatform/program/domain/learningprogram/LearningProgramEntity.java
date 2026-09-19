@@ -49,10 +49,9 @@ public class LearningProgramEntity {
         this.updatedAt = updatedAt;
     }
 
-    public void update(String title, String description, LearningProgramStatus status) {
+    public void update(String title, String description) {
         this.title = Objects.requireNonNull(title);
         this.description = description;
-        this.status = Objects.requireNonNull(status);
     }
 
     public void activate() {

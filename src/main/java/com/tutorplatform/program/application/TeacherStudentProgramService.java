@@ -81,7 +81,7 @@ public class TeacherStudentProgramService {
         AssignStudentProgramRequest request
     ) {
         UUID teacherId = requireOwnedStudent(principal, studentId);
-        LearningProgramEntity learningProgram = learningProgramRepository.findById(request.learningProgramId())
+        LearningProgramEntity learningProgram = learningProgramRepository.findByIdForUpdate(request.learningProgramId())
             .filter(program -> program.getTeacherId().equals(teacherId))
             .orElseThrow(LearningProgramNotFoundException::new);
         if (learningProgram.getStatus() != LearningProgramStatus.ACTIVE) {
