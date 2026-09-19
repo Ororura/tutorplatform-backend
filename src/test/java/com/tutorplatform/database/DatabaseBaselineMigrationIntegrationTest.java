@@ -34,10 +34,10 @@ class DatabaseBaselineMigrationIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
-    void cleanDatabaseMigratesThroughV011() throws SQLException {
+    void cleanDatabaseMigratesThroughV012() throws SQLException {
         assertThat(Arrays.stream(flyway.info().applied())
             .map(migration -> migration.getVersion().toString()))
-            .containsExactly("001", "002", "003", "004", "005", "006", "007", "008", "009", "010", "011");
+            .containsExactly("001", "002", "003", "004", "005", "006", "007", "008", "009", "010", "011", "012");
 
         assertThat(queryStrings("""
             select table_name
@@ -54,7 +54,7 @@ class DatabaseBaselineMigrationIntegrationTest extends PostgresIntegrationTest {
                 "tasks", "topic_tasks", "skills", "task_skills", "programming_task_configs",
                 "task_test_cases", "homeworks", "homework_items", "submissions", "code_submissions",
                 "learning_periods", "progress_reports", "progress_shares", "report_shares",
-                "platform_settings"
+                "platform_settings", "teacher_registration_invites"
             );
     }
 
