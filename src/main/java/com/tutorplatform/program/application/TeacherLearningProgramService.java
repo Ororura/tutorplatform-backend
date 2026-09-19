@@ -10,6 +10,7 @@ import com.tutorplatform.program.api.LearningProgramDetailsResponse;
 import com.tutorplatform.program.api.LearningProgramModuleDetailsResponse;
 import com.tutorplatform.program.api.LearningProgramTopicDetailsResponse;
 import com.tutorplatform.program.api.ProgramSubjectResponse;
+import com.tutorplatform.program.api.ReorderLearningProgramModulesRequest;
 import com.tutorplatform.program.api.UpdateLearningProgramRequest;
 import com.tutorplatform.program.api.UpdateLearningProgramModuleRequest;
 import com.tutorplatform.program.api.UpdateLearningProgramTopicRequest;
@@ -32,7 +33,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.OptimisticLockException;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -146,6 +149,39 @@ public class TeacherLearningProgramService {
             module.id(), module.learningProgramId(), request.title(), request.description(), module.position()
         ));
         return new LearningProgramModuleResponse(saved.id(), saved.title(), saved.description(), saved.position());
+    }
+
+    @Transactional
+    public void reorderModules(
+        AuthenticatedUser principal,
+        UUID programId,
+        ReorderLearningProgramModulesRequest request
+    ) {
+        requireEditableOwnedProgram(teacherId(principal), programId);
+
+        List<ModuleEntity> modules = moduleRepository.findByLearningProgramId(programId);
+        List<UUID> orderedIds = request.orderedIds();
+        Set<UUID> existingIds = new HashSet<>(modules.stream().map(ModuleEntity::id).toList());
+        Set<UUID> requestedIds = new HashSet<>(orderedIds);
+        if (orderedIds.size() != modules.size()
+            || requestedIds.size() != orderedIds.size()
+            || !requestedIds.equals(existingIds)) {
+            throw new InvalidLearningProgramModuleOrderException();
+        }
+
+        int maxPosition = modules.stream().mapToInt(ModuleEntity::position).max().orElse(-1);
+        long highestTemporaryPosition = (long) maxPosition + orderedIds.size();
+        if (highestTemporaryPosition > Integer.MAX_VALUE) {
+            throw new InvalidLearningProgramModuleOrderException();
+        }
+
+        int temporaryBase = maxPosition + 1;
+        for (int index = 0; index < orderedIds.size(); index++) {
+            moduleRepository.updatePosition(programId, orderedIds.get(index), temporaryBase + index);
+        }
+        for (int index = 0; index < orderedIds.size(); index++) {
+            moduleRepository.updatePosition(programId, orderedIds.get(index), index);
+        }
     }
 
     @Transactional
