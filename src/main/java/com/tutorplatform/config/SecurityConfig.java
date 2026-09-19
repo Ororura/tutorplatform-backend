@@ -49,6 +49,7 @@ public class SecurityConfig {
                 .requireExplicitSave(true)
             )
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(GET, "/api/v1/public/registration-settings").permitAll()
                 .requestMatchers(GET, "/api/v1/public/progress/*").permitAll()
                 .requestMatchers(GET, "/api/v1/public/reports/*").permitAll()
                 .requestMatchers(GET, "/api/v1/public/reports/*/pdf").permitAll()
