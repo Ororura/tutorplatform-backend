@@ -1,6 +1,7 @@
 package com.tutorplatform.program.infrastructure.persistence;
 
 import com.tutorplatform.program.domain.TopicEntity;
+import jakarta.persistence.OptimisticLockException;
 import com.tutorplatform.program.domain.TopicRepository;
 import org.springframework.stereotype.Repository;
 
@@ -18,7 +19,16 @@ public class JpaTopicRepository implements TopicRepository {
 
     @Override
     public TopicEntity saveAndFlush(TopicEntity topic) {
-        return databaseRepository.saveAndFlush(new TopicDatabaseModel(topic)).toEntity();
+        TopicDatabaseModel model = databaseRepository.findById(topic.id())
+            .map(existing -> {
+                if (!existing.hasVersion(topic.version())) {
+                    throw new OptimisticLockException("Topic was modified by another transaction");
+                }
+                return existing;
+            })
+            .orElseGet(() -> new TopicDatabaseModel(topic));
+        model.updateFrom(topic);
+        return databaseRepository.saveAndFlush(model).toEntity();
     }
 
     @Override

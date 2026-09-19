@@ -12,6 +12,7 @@ import com.tutorplatform.program.api.LearningProgramTopicDetailsResponse;
 import com.tutorplatform.program.api.ProgramSubjectResponse;
 import com.tutorplatform.program.api.UpdateLearningProgramRequest;
 import com.tutorplatform.program.api.UpdateLearningProgramModuleRequest;
+import com.tutorplatform.program.api.UpdateLearningProgramTopicRequest;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramEntity;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramRepository;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
@@ -28,6 +29,8 @@ import com.tutorplatform.subject.domain.SubjectStatus;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import jakarta.persistence.OptimisticLockException;
 
 import java.util.List;
 import java.util.UUID;
@@ -143,6 +146,36 @@ public class TeacherLearningProgramService {
             module.id(), module.learningProgramId(), request.title(), request.description(), module.position()
         ));
         return new LearningProgramModuleResponse(saved.id(), saved.title(), saved.description(), saved.position());
+    }
+
+    @Transactional
+    public LearningProgramTopicDetailsResponse updateTopic(
+        AuthenticatedUser principal,
+        UUID programId,
+        UUID moduleId,
+        UUID topicId,
+        UpdateLearningProgramTopicRequest request
+    ) {
+        ModuleEntity module = requireModuleInEditableOwnedProgram(teacherId(principal), programId, moduleId);
+        TopicEntity topic = topicRepository.findById(topicId)
+            .filter(candidate -> candidate.moduleId().equals(module.id()))
+            .orElseThrow(LearningProgramTopicNotFoundException::new);
+        if (!topic.version().equals(request.version())) {
+            throw new LearningProgramTopicVersionConflictException();
+        }
+
+        TopicEntity updated = new TopicEntity(
+            topic.id(), topic.moduleId(), request.title(), request.description(), topic.position(), request.status(),
+            topic.version(), topic.createdAt(), topic.updatedAt()
+        );
+        try {
+            updated = topicRepository.saveAndFlush(updated);
+        } catch (ObjectOptimisticLockingFailureException | OptimisticLockException exception) {
+            throw new LearningProgramTopicVersionConflictException(exception);
+        }
+        return new LearningProgramTopicDetailsResponse(
+            updated.id(), updated.title(), updated.description(), updated.position(), updated.status(), updated.version()
+        );
     }
 
     @Transactional

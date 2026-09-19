@@ -96,6 +96,18 @@ public class TeacherLearningProgramController implements TeacherLearningProgramA
     }
 
     @Override
+    @PatchMapping("/{programId}/modules/{moduleId}/topics/{topicId}")
+    public LearningProgramTopicDetailsResponse updateTopic(
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID programId,
+        @PathVariable UUID moduleId,
+        @PathVariable UUID topicId,
+        @Valid @RequestBody UpdateLearningProgramTopicRequest request
+    ) {
+        return service.updateTopic(principal, programId, moduleId, topicId, request);
+    }
+
+    @Override
     @DeleteMapping("/{programId}/modules/{moduleId}")
     public ResponseEntity<Void> deleteModule(
         @AuthenticationPrincipal AuthenticatedUser principal,

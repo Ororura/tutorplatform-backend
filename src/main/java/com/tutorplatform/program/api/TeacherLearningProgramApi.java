@@ -91,6 +91,21 @@ public interface TeacherLearningProgramApi {
         @Valid UpdateLearningProgramModuleRequest request
     );
 
+    @Operation(operationId = "updateTeacherLearningProgramTopic", summary = "Update a topic in an owned editable learning program")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Topic updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "404", description = "Learning program, module, or topic not found", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "409", description = "Learning program cannot be edited or version is stale", content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    LearningProgramTopicDetailsResponse updateTopic(
+        @Parameter(hidden = true) AuthenticatedUser principal,
+        @Parameter(schema = @Schema(format = "uuid")) UUID programId,
+        @Parameter(schema = @Schema(format = "uuid")) UUID moduleId,
+        @Parameter(schema = @Schema(format = "uuid")) UUID topicId,
+        @Valid UpdateLearningProgramTopicRequest request
+    );
+
     @Operation(operationId = "deleteTeacherLearningProgramModule", summary = "Delete an empty module from an owned editable learning program")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Module deleted"),
