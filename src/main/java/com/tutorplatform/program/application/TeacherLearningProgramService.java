@@ -126,6 +126,16 @@ public class TeacherLearningProgramService {
         return response(saved, subject);
     }
 
+    @Transactional
+    public LearningProgramSummaryResponse archive(AuthenticatedUser principal, UUID programId) {
+        UUID teacherId = teacherId(principal);
+        LearningProgramEntity program = requireOwnedProgram(teacherId, programId);
+        program.archive();
+        LearningProgramEntity saved = learningProgramRepository.saveAndFlush(program);
+        SubjectEntity subject = subjectRepository.findById(saved.getSubjectId()).orElseThrow(SubjectNotFoundException::new);
+        return response(saved, subject);
+    }
+
     private SubjectEntity requireAccessibleActiveSubject(UUID teacherId, UUID subjectId) {
         return subjectRepository.findById(subjectId)
             .filter(subject -> subject.status() == SubjectStatus.ACTIVE)

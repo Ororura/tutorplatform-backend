@@ -61,6 +61,10 @@ public class LearningProgramEntity {
         status = LearningProgramStatus.ACTIVE;
     }
 
+    public void archive() {
+        status = LearningProgramStatus.ARCHIVED;
+    }
+
     public UUID getId() {
         return id;
     }

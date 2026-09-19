@@ -73,4 +73,14 @@ public interface TeacherLearningProgramApi {
         @Parameter(hidden = true) AuthenticatedUser principal,
         @Parameter(schema = @Schema(format = "uuid")) UUID programId
     );
+
+    @Operation(operationId = "archiveTeacherLearningProgram", summary = "Archive an owned learning program")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Learning program archived"),
+        @ApiResponse(responseCode = "404", description = "Learning program not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    LearningProgramSummaryResponse archiveProgram(
+        @Parameter(hidden = true) AuthenticatedUser principal,
+        @Parameter(schema = @Schema(format = "uuid")) UUID programId
+    );
 }
