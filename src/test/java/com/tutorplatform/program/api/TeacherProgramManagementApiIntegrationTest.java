@@ -49,6 +49,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -478,6 +479,79 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
     }
 
     @Test
+    void updatesModuleTrimsFieldsAndPreservesPosition() throws Exception {
+        TeacherContext teacher = teacher("module-update@example.com");
+        LearningProgramEntity program = program(teacher.teacher, "Modules", LearningProgramStatus.DRAFT);
+        ModuleEntity module = moduleRepository.saveAndFlush(new ModuleEntity(
+            UUID.randomUUID(), program.getId(), "Original", "Original description", 4
+        ));
+
+        updateModule(teacher, program.getId(), module.id(), "  New title  ", "  New description  ")
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(module.id().toString()))
+            .andExpect(jsonPath("$.title").value("New title"))
+            .andExpect(jsonPath("$.description").value("New description"))
+            .andExpect(jsonPath("$.position").value(4));
+
+        ModuleEntity updated = moduleRepository.findById(module.id()).orElseThrow();
+        assertThat(updated.position()).isEqualTo(4);
+        assertThat(updated.title()).isEqualTo("New title");
+
+        updateModule(teacher, program.getId(), module.id(), "   ", null)
+            .andExpect(status().isBadRequest());
+        updateModule(teacher, program.getId(), module.id(), "a".repeat(181), null)
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void moduleMutationHidesForeignAndMismatchedModulesAndRejectsNonEditablePrograms() throws Exception {
+        TeacherContext owner = teacher("module-mutation-owner@example.com");
+        TeacherContext foreign = teacher("module-mutation-foreign@example.com");
+        LearningProgramEntity owned = program(owner.teacher, "Owned", LearningProgramStatus.DRAFT);
+        LearningProgramEntity other = program(owner.teacher, "Other", LearningProgramStatus.DRAFT);
+        LearningProgramEntity foreignProgram = program(foreign.teacher, "Foreign", LearningProgramStatus.DRAFT);
+        LearningProgramEntity archived = program(owner.teacher, "Archived", LearningProgramStatus.ARCHIVED);
+        ModuleEntity module = moduleRepository.saveAndFlush(new ModuleEntity(UUID.randomUUID(), owned.getId(), "Module", null, 0));
+        ModuleEntity archivedModule = moduleRepository.saveAndFlush(new ModuleEntity(UUID.randomUUID(), archived.getId(), "Archived", null, 0));
+
+        updateModule(foreign, owned.getId(), module.id(), "Denied", null)
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_NOT_FOUND"));
+        updateModule(owner, other.getId(), module.id(), "Denied", null)
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_MODULE_NOT_FOUND"));
+        deleteModule(owner, foreignProgram.getId(), module.id())
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_NOT_FOUND"));
+        deleteModule(owner, archived.getId(), archivedModule.id())
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_STATUS_CONFLICT"));
+    }
+
+    @Test
+    void deletesOnlyEmptyModuleWithoutNormalizingOtherPositions() throws Exception {
+        TeacherContext teacher = teacher("module-delete@example.com");
+        LearningProgramEntity program = program(teacher.teacher, "Modules", LearningProgramStatus.DRAFT);
+        ModuleEntity deleted = moduleRepository.saveAndFlush(new ModuleEntity(UUID.randomUUID(), program.getId(), "Deleted", null, 0));
+        ModuleEntity retained = moduleRepository.saveAndFlush(new ModuleEntity(UUID.randomUUID(), program.getId(), "Retained", null, 3));
+        ModuleEntity withTopic = moduleRepository.saveAndFlush(new ModuleEntity(UUID.randomUUID(), program.getId(), "With topic", null, 5));
+        TopicEntity topic = topicRepository.saveAndFlush(new TopicEntity(
+            UUID.randomUUID(), withTopic.id(), "Topic", null, 0, TopicStatus.DRAFT
+        ));
+
+        deleteModule(teacher, program.getId(), withTopic.id())
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_MODULE_NOT_EMPTY"));
+        assertThat(moduleRepository.findById(withTopic.id())).isPresent();
+        assertThat(topicRepository.findById(topic.id())).isPresent();
+
+        deleteModule(teacher, program.getId(), deleted.id())
+            .andExpect(status().isNoContent());
+        assertThat(moduleRepository.findById(deleted.id())).isEmpty();
+        assertThat(moduleRepository.findById(retained.id()).orElseThrow().position()).isEqualTo(3);
+    }
+
+    @Test
     void openApiPublishesStableManagementOperationIds() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
             .andExpect(status().isOk())
@@ -485,6 +559,8 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs'].get.operationId").value("listTeacherLearningPrograms"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs'].post.operationId").value("createTeacherLearningProgram"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}/modules'].post.operationId").value("createTeacherLearningProgramModule"))
+            .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}/modules/{moduleId}'].patch.operationId").value("updateTeacherLearningProgramModule"))
+            .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}/modules/{moduleId}'].delete.operationId").value("deleteTeacherLearningProgramModule"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}'].get.operationId").value("getTeacherLearningProgram"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}'].patch.operationId").value("updateTeacherLearningProgram"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}/activate'].post.operationId").value("activateTeacherLearningProgram"))
@@ -511,6 +587,21 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
         return mockMvc.perform(post("/api/v1/teacher/programs/{programId}/modules", programId)
             .with(user(teacher.principal)).with(csrf()).contentType("application/json")
             .content(objectMapper.writeValueAsString(new CreateLearningProgramModuleRequest(title, description))));
+    }
+
+    private org.springframework.test.web.servlet.ResultActions updateModule(
+        TeacherContext teacher, UUID programId, UUID moduleId, String title, String description
+    ) throws Exception {
+        return mockMvc.perform(patch("/api/v1/teacher/programs/{programId}/modules/{moduleId}", programId, moduleId)
+            .with(user(teacher.principal)).with(csrf()).contentType("application/json")
+            .content(objectMapper.writeValueAsString(new UpdateLearningProgramModuleRequest(title, description))));
+    }
+
+    private org.springframework.test.web.servlet.ResultActions deleteModule(
+        TeacherContext teacher, UUID programId, UUID moduleId
+    ) throws Exception {
+        return mockMvc.perform(delete("/api/v1/teacher/programs/{programId}/modules/{moduleId}", programId, moduleId)
+            .with(user(teacher.principal)).with(csrf()));
     }
 
     private void expectUpdateConflict(

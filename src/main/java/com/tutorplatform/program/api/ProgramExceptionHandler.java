@@ -6,6 +6,8 @@ import com.tutorplatform.program.application.SubjectNotFoundException;
 import com.tutorplatform.program.application.InvalidLearningProgramStatusException;
 import com.tutorplatform.program.application.StudentProgramAlreadyAssignedException;
 import com.tutorplatform.program.application.LearningProgramVersionConflictException;
+import com.tutorplatform.program.application.LearningProgramModuleNotEmptyException;
+import com.tutorplatform.program.application.LearningProgramModuleNotFoundException;
 import com.tutorplatform.shared.api.ApiError;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
@@ -27,6 +29,20 @@ public class ProgramExceptionHandler {
     ResponseEntity<ApiError> handleLearningProgramNotFound(LearningProgramNotFoundException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
             ApiError.of("LEARNING_PROGRAM_NOT_FOUND", "Learning program not found", MDC.get("traceId"))
+        );
+    }
+
+    @ExceptionHandler(LearningProgramModuleNotFoundException.class)
+    ResponseEntity<ApiError> handleLearningProgramModuleNotFound(LearningProgramModuleNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+            ApiError.of("LEARNING_PROGRAM_MODULE_NOT_FOUND", "Learning program module not found", MDC.get("traceId"))
+        );
+    }
+
+    @ExceptionHandler(LearningProgramModuleNotEmptyException.class)
+    ResponseEntity<ApiError> handleLearningProgramModuleNotEmpty(LearningProgramModuleNotEmptyException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+            ApiError.of("LEARNING_PROGRAM_MODULE_NOT_EMPTY", "Learning program module must be empty", MDC.get("traceId"))
         );
     }
 

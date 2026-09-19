@@ -10,11 +10,13 @@ import com.tutorplatform.program.api.LearningProgramModuleDetailsResponse;
 import com.tutorplatform.program.api.LearningProgramTopicDetailsResponse;
 import com.tutorplatform.program.api.ProgramSubjectResponse;
 import com.tutorplatform.program.api.UpdateLearningProgramRequest;
+import com.tutorplatform.program.api.UpdateLearningProgramModuleRequest;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramEntity;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramRepository;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
 import com.tutorplatform.program.domain.ModuleEntity;
 import com.tutorplatform.program.domain.ModuleRepository;
+import com.tutorplatform.program.domain.TopicRepository;
 import com.tutorplatform.program.domain.studentprogram.StudentProgramRepository;
 import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.subject.domain.SubjectEntity;
@@ -34,6 +36,7 @@ public class TeacherLearningProgramService {
     private final SubjectRepository subjectRepository;
     private final LearningProgramRepository learningProgramRepository;
     private final ModuleRepository moduleRepository;
+    private final TopicRepository topicRepository;
     private final StudentProgramRepository studentProgramRepository;
     private final TeacherLearningProgramQuery programQuery;
 
@@ -42,6 +45,7 @@ public class TeacherLearningProgramService {
         SubjectRepository subjectRepository,
         LearningProgramRepository learningProgramRepository,
         ModuleRepository moduleRepository,
+        TopicRepository topicRepository,
         StudentProgramRepository studentProgramRepository,
         TeacherLearningProgramQuery programQuery
     ) {
@@ -49,6 +53,7 @@ public class TeacherLearningProgramService {
         this.subjectRepository = subjectRepository;
         this.learningProgramRepository = learningProgramRepository;
         this.moduleRepository = moduleRepository;
+        this.topicRepository = topicRepository;
         this.studentProgramRepository = studentProgramRepository;
         this.programQuery = programQuery;
     }
@@ -97,21 +102,36 @@ public class TeacherLearningProgramService {
         CreateLearningProgramModuleRequest request
     ) {
         UUID teacherId = teacherId(principal);
-        LearningProgramEntity program = learningProgramRepository.findByIdForUpdate(programId)
-            .filter(candidate -> candidate.getTeacherId().equals(teacherId))
-            .orElseThrow(LearningProgramNotFoundException::new);
-        if (program.getStatus() == LearningProgramStatus.ARCHIVED) {
-            throw new InvalidLearningProgramStatusException("Archived learning program cannot be edited");
-        }
-        if (studentProgramRepository.existsByLearningProgramId(programId)) {
-            throw new InvalidLearningProgramStatusException("Assigned learning program cannot be edited");
-        }
+        requireEditableOwnedProgram(teacherId, programId);
 
         ModuleEntity module = moduleRepository.saveAndFlush(new ModuleEntity(
             UUID.randomUUID(), programId, request.title(), request.description(),
             moduleRepository.findMaxPositionByLearningProgramId(programId) + 1
         ));
         return new LearningProgramModuleResponse(module.id(), module.title(), module.description(), module.position());
+    }
+
+    @Transactional
+    public LearningProgramModuleResponse updateModule(
+        AuthenticatedUser principal,
+        UUID programId,
+        UUID moduleId,
+        UpdateLearningProgramModuleRequest request
+    ) {
+        ModuleEntity module = requireModuleInEditableOwnedProgram(teacherId(principal), programId, moduleId);
+        ModuleEntity saved = moduleRepository.saveAndFlush(new ModuleEntity(
+            module.id(), module.learningProgramId(), request.title(), request.description(), module.position()
+        ));
+        return new LearningProgramModuleResponse(saved.id(), saved.title(), saved.description(), saved.position());
+    }
+
+    @Transactional
+    public void deleteModule(AuthenticatedUser principal, UUID programId, UUID moduleId) {
+        requireModuleInEditableOwnedProgram(teacherId(principal), programId, moduleId);
+        if (topicRepository.existsByModuleId(moduleId)) {
+            throw new LearningProgramModuleNotEmptyException();
+        }
+        moduleRepository.deleteById(moduleId);
     }
 
     @Transactional
@@ -178,6 +198,26 @@ public class TeacherLearningProgramService {
         return learningProgramRepository.findById(programId)
             .filter(program -> program.getTeacherId().equals(teacherId))
             .orElseThrow(LearningProgramNotFoundException::new);
+    }
+
+    private LearningProgramEntity requireEditableOwnedProgram(UUID teacherId, UUID programId) {
+        LearningProgramEntity program = learningProgramRepository.findByIdForUpdate(programId)
+            .filter(candidate -> candidate.getTeacherId().equals(teacherId))
+            .orElseThrow(LearningProgramNotFoundException::new);
+        if (program.getStatus() == LearningProgramStatus.ARCHIVED) {
+            throw new InvalidLearningProgramStatusException("Archived learning program cannot be edited");
+        }
+        if (studentProgramRepository.existsByLearningProgramId(programId)) {
+            throw new InvalidLearningProgramStatusException("Assigned learning program cannot be edited");
+        }
+        return program;
+    }
+
+    private ModuleEntity requireModuleInEditableOwnedProgram(UUID teacherId, UUID programId, UUID moduleId) {
+        requireEditableOwnedProgram(teacherId, programId);
+        return moduleRepository.findById(moduleId)
+            .filter(module -> module.learningProgramId().equals(programId))
+            .orElseThrow(LearningProgramModuleNotFoundException::new);
     }
 
     private UUID teacherId(AuthenticatedUser principal) {

@@ -25,4 +25,9 @@ public class JpaTopicRepository implements TopicRepository {
     public Optional<TopicEntity> findById(UUID topicId) {
         return databaseRepository.findById(topicId).map(TopicDatabaseModel::toEntity);
     }
+
+    @Override
+    public boolean existsByModuleId(UUID moduleId) {
+        return databaseRepository.existsByModuleId(moduleId);
+    }
 }
