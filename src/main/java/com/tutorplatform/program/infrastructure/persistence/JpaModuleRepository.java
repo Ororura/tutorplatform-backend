@@ -4,6 +4,7 @@ import com.tutorplatform.program.domain.ModuleEntity;
 import com.tutorplatform.program.domain.ModuleRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -27,6 +28,20 @@ public class JpaModuleRepository implements ModuleRepository {
     @Override
     public Optional<ModuleEntity> findById(UUID moduleId) {
         return databaseRepository.findById(moduleId).map(ModuleDatabaseModel::toEntity);
+    }
+
+    @Override
+    public List<ModuleEntity> findByLearningProgramId(UUID learningProgramId) {
+        return databaseRepository.findByLearningProgramId(learningProgramId).stream()
+            .map(ModuleDatabaseModel::toEntity)
+            .toList();
+    }
+
+    @Override
+    public void updatePosition(UUID learningProgramId, UUID moduleId, int position) {
+        if (databaseRepository.updatePosition(learningProgramId, moduleId, position) != 1) {
+            throw new IllegalStateException("Learning program module position update failed");
+        }
     }
 
     @Override

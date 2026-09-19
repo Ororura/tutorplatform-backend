@@ -1,6 +1,7 @@
 package com.tutorplatform.program.api;
 
 import com.tutorplatform.program.application.StudentProgramNotFoundException;
+import com.tutorplatform.program.application.InvalidLearningProgramModuleOrderException;
 import com.tutorplatform.program.application.LearningProgramNotFoundException;
 import com.tutorplatform.program.application.SubjectNotFoundException;
 import com.tutorplatform.program.application.InvalidLearningProgramStatusException;
@@ -52,6 +53,17 @@ public class ProgramExceptionHandler {
     ResponseEntity<ApiError> handleLearningProgramModuleNotEmpty(LearningProgramModuleNotEmptyException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(
             ApiError.of("LEARNING_PROGRAM_MODULE_NOT_EMPTY", "Learning program module must be empty", MDC.get("traceId"))
+        );
+    }
+
+    @ExceptionHandler(InvalidLearningProgramModuleOrderException.class)
+    ResponseEntity<ApiError> handleInvalidModuleOrder(InvalidLearningProgramModuleOrderException exception) {
+        return ResponseEntity.badRequest().body(
+            ApiError.of(
+                "LEARNING_PROGRAM_MODULE_ORDER_INVALID",
+                "Module order must contain every module in the learning program exactly once",
+                MDC.get("traceId")
+            )
         );
     }
 

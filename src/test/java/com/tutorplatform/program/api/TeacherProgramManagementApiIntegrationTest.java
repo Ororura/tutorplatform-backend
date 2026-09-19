@@ -53,6 +53,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -655,6 +656,91 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
     }
 
     @Test
+    void reordersModulesBySwappingTwoPositions() throws Exception {
+        TeacherContext teacher = teacher("module-order-swap@example.com");
+        LearningProgramEntity program = program(teacher.teacher, "Modules", LearningProgramStatus.DRAFT);
+        ModuleEntity first = module(program, "First", 0);
+        ModuleEntity second = module(program, "Second", 1);
+
+        reorderModules(teacher, program.getId(), List.of(second.id(), first.id()))
+            .andExpect(status().isNoContent());
+
+        assertThat(moduleRepository.findById(first.id()).orElseThrow().position()).isEqualTo(1);
+        assertThat(moduleRepository.findById(second.id()).orElseThrow().position()).isZero();
+    }
+
+    @Test
+    void reordersModulesInReverseToContiguousPositions() throws Exception {
+        TeacherContext teacher = teacher("module-order-reverse@example.com");
+        LearningProgramEntity program = program(teacher.teacher, "Modules", LearningProgramStatus.DRAFT);
+        ModuleEntity first = module(program, "First", 2);
+        ModuleEntity second = module(program, "Second", 5);
+        ModuleEntity third = module(program, "Third", 9);
+
+        reorderModules(teacher, program.getId(), List.of(third.id(), second.id(), first.id()))
+            .andExpect(status().isNoContent());
+
+        assertThat(moduleRepository.findById(third.id()).orElseThrow().position()).isZero();
+        assertThat(moduleRepository.findById(second.id()).orElseThrow().position()).isEqualTo(1);
+        assertThat(moduleRepository.findById(first.id()).orElseThrow().position()).isEqualTo(2);
+    }
+
+    @Test
+    void reorderModulesRejectsMissingForeignDuplicateAndEmptyIdsAtomically() throws Exception {
+        TeacherContext teacher = teacher("module-order-invalid@example.com");
+        LearningProgramEntity program = program(teacher.teacher, "Modules", LearningProgramStatus.DRAFT);
+        LearningProgramEntity other = program(teacher.teacher, "Other", LearningProgramStatus.DRAFT);
+        ModuleEntity first = module(program, "First", 0);
+        ModuleEntity second = module(program, "Second", 1);
+        ModuleEntity foreign = module(other, "Foreign", 0);
+
+        for (List<UUID> invalidOrder : List.of(
+            List.of(first.id()),
+            List.of(first.id(), foreign.id()),
+            List.of(first.id(), first.id()),
+            List.<UUID>of()
+        )) {
+            reorderModules(teacher, program.getId(), invalidOrder)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_MODULE_ORDER_INVALID"));
+            assertThat(moduleRepository.findById(first.id()).orElseThrow().position()).isZero();
+            assertThat(moduleRepository.findById(second.id()).orElseThrow().position()).isEqualTo(1);
+        }
+    }
+
+    @Test
+    void reorderModulesHidesProgramsOwnedByAnotherTeacher() throws Exception {
+        TeacherContext owner = teacher("module-order-owner@example.com");
+        TeacherContext foreign = teacher("module-order-foreign@example.com");
+        LearningProgramEntity program = program(owner.teacher, "Modules", LearningProgramStatus.DRAFT);
+        ModuleEntity first = module(program, "First", 0);
+
+        reorderModules(foreign, program.getId(), List.of(first.id()))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_NOT_FOUND"));
+        assertThat(moduleRepository.findById(first.id()).orElseThrow().position()).isZero();
+    }
+
+    @Test
+    void reorderModulesRejectsAssignedProgram() throws Exception {
+        TeacherContext teacher = teacher("module-order-assigned@example.com");
+        LearningProgramEntity program = program(teacher.teacher, "Modules", LearningProgramStatus.ACTIVE);
+        ModuleEntity first = module(program, "First", 0);
+        ModuleEntity second = module(program, "Second", 1);
+        StudentEntity student = student(teacher.teacher, "Student");
+        studentProgramRepository.saveAndFlush(new StudentProgramEntity(
+            UUID.randomUUID(), student.getId(), program.getId(), teacher.teacher.id(),
+            StudentProgramStatus.ACTIVE, 480, Instant.parse("2026-09-01T00:00:00Z"), null
+        ));
+
+        reorderModules(teacher, program.getId(), List.of(second.id(), first.id()))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_STATUS_CONFLICT"));
+        assertThat(moduleRepository.findById(first.id()).orElseThrow().position()).isZero();
+        assertThat(moduleRepository.findById(second.id()).orElseThrow().position()).isEqualTo(1);
+    }
+
+    @Test
     void moduleMutationHidesForeignAndMismatchedModulesAndRejectsNonEditablePrograms() throws Exception {
         TeacherContext owner = teacher("module-mutation-owner@example.com");
         TeacherContext foreign = teacher("module-mutation-foreign@example.com");
@@ -710,6 +796,7 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs'].get.operationId").value("listTeacherLearningPrograms"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs'].post.operationId").value("createTeacherLearningProgram"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}/modules'].post.operationId").value("createTeacherLearningProgramModule"))
+            .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}/modules/order'].put.operationId").value("reorderTeacherLearningProgramModules"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}/modules/{moduleId}/topics'].post.operationId").value("createTeacherLearningProgramTopic"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}/modules/{moduleId}/topics/{topicId}'].patch.operationId").value("updateTeacherLearningProgramTopic"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/programs/{programId}/modules/{moduleId}'].patch.operationId").value("updateTeacherLearningProgramModule"))
@@ -756,6 +843,14 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
         return mockMvc.perform(patch("/api/v1/teacher/programs/{programId}/modules/{moduleId}", programId, moduleId)
             .with(user(teacher.principal)).with(csrf()).contentType("application/json")
             .content(objectMapper.writeValueAsString(new UpdateLearningProgramModuleRequest(title, description))));
+    }
+
+    private org.springframework.test.web.servlet.ResultActions reorderModules(
+        TeacherContext teacher, UUID programId, List<UUID> orderedIds
+    ) throws Exception {
+        return mockMvc.perform(put("/api/v1/teacher/programs/{programId}/modules/order", programId)
+            .with(user(teacher.principal)).with(csrf()).contentType("application/json")
+            .content(objectMapper.writeValueAsString(new ReorderLearningProgramModulesRequest(orderedIds))));
     }
 
     private org.springframework.test.web.servlet.ResultActions updateTopic(
@@ -823,6 +918,10 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
         return learningProgramRepository.saveAndFlush(new LearningProgramEntity(
             UUID.randomUUID(), teacher.id(), PYTHON, title, null, status
         ));
+    }
+
+    private ModuleEntity module(LearningProgramEntity program, String title, int position) {
+        return moduleRepository.saveAndFlush(new ModuleEntity(UUID.randomUUID(), program.getId(), title, null, position));
     }
 
     private record TeacherContext(TeacherEntity teacher, AuthenticatedUser principal) {
