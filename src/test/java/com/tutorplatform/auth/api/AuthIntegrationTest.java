@@ -223,7 +223,7 @@ class AuthIntegrationTest extends PostgresIntegrationTest {
             .andExpect(jsonPath("$.components.schemas.TeacherRegistrationRequest.properties.displayName.maxLength").value(160))
             .andExpect(jsonPath("$.components.schemas.CurrentUserResponse.properties.id.format").value("uuid"))
             .andExpect(jsonPath("$.components.schemas.CurrentUserResponse.properties.roles.type").value("array"))
-            .andExpect(jsonPath("$.components.schemas.CurrentUserResponse.properties.roles.items.enum.length()").value(2))
+            .andExpect(jsonPath("$.components.schemas.CurrentUserResponse.properties.roles.items.enum.length()").value(3))
             .andExpect(jsonPath("$.components.schemas.ApiError.properties.timestamp.format").value("date-time"))
             .andExpect(jsonPath("$.paths['/api/v1/auth/login'].post.responses['401'].content['application/json'].schema['$ref']")
                 .value("#/components/schemas/ApiError"));
