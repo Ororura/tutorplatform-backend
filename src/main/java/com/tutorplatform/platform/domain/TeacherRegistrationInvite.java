@@ -14,6 +14,23 @@ public record TeacherRegistrationInvite(
     Instant createdAt
 ) {
 
+
+    public TeacherRegistrationInviteStatus status(Instant now) {
+        if (acceptedAt != null) {
+            return TeacherRegistrationInviteStatus.ACCEPTED;
+        }
+
+        if (revokedAt != null) {
+            return TeacherRegistrationInviteStatus.REVOKED;
+        }
+
+        if (!expiresAt.isAfter(now)) {
+            return TeacherRegistrationInviteStatus.EXPIRED;
+        }
+
+        return TeacherRegistrationInviteStatus.ACTIVE;
+    }
+
     public boolean isActive(Instant now) {
         return acceptedAt == null
             && revokedAt == null

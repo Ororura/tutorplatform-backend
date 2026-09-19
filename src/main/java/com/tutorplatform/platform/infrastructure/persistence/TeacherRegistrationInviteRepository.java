@@ -115,6 +115,36 @@ public class TeacherRegistrationInviteRepository {
             .list();
     }
 
+
+    public Optional<TeacherRegistrationInvite> findByIdAndAdminId(
+        UUID invitationId,
+        UUID adminId
+    ) {
+        return jdbcClient.sql(
+                SELECT_INVITE + """
+                WHERE id = :invitationId
+                  AND created_by_admin_id = :adminId
+                """
+            )
+            .param("invitationId", invitationId)
+            .param("adminId", adminId)
+            .query(TeacherRegistrationInviteRepository::mapRow)
+            .optional();
+    }
+
+    public boolean existsRegisteredUserByEmail(String email) {
+        return jdbcClient.sql("""
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM users
+                    WHERE email = :email
+                )
+                """)
+            .param("email", email)
+            .query(Boolean.class)
+            .single();
+    }
+
     public int revokeActive(
         UUID invitationId,
         UUID adminId

@@ -78,6 +78,9 @@ app:
   student-invites:
     ttl: ${STUDENT_INVITE_TTL:P7D}
     public-frontend-base-url: ${PUBLIC_FRONTEND_BASE_URL:http://localhost:3000}
+  teacher-invites:
+    ttl: ${TEACHER_INVITE_TTL:P7D}
+    public-frontend-base-url: ${PUBLIC_FRONTEND_BASE_URL:http://localhost:3000}
   reports:
     pdf:
       presentation-zone: ${REPORT_PDF_PRESENTATION_ZONE:Europe/Moscow}
