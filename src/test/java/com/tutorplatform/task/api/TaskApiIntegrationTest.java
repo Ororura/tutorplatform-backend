@@ -27,6 +27,9 @@ import com.tutorplatform.task.domain.task.TaskType;
 import com.tutorplatform.task.domain.programming.*;
 import com.tutorplatform.task.domain.topic.TopicTaskRepository;
 import com.tutorplatform.user.domain.*;
+import jakarta.persistence.EntityManagerFactory;
+import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -52,6 +55,7 @@ class TaskApiIntegrationTest extends PostgresIntegrationTest {
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
         PostgresIntegrationTest.configurePostgres(registry, "test_task_api", "008");
+        registry.add("spring.jpa.properties.hibernate.generate_statistics", () -> "true");
     }
 
     @Autowired
@@ -64,6 +68,8 @@ class TaskApiIntegrationTest extends PostgresIntegrationTest {
     private TaskRepository taskRepository;
     @Autowired
     private TopicTaskRepository topicTaskRepository;
+    @Autowired
+    private EntityManagerFactory entityManagerFactory;
     @Autowired
     private ProgrammingTaskConfigRepository programmingConfigRepository;
     @Autowired
@@ -486,6 +492,61 @@ class TaskApiIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
+    void listsOnlyTasksAttachedToOwnedTopicOrderedByPosition() throws Exception {
+        TaskFixture fixture = createFixture();
+        TaskFixture other = createFixture();
+        TaskResult first = createTask(fixture, "First", TaskDifficulty.EASY, TaskStatus.DRAFT);
+        TaskResult second = createTask(fixture, "Second", TaskDifficulty.HARD, TaskStatus.DRAFT);
+        TaskResult unrelated = createTask(other, "Unrelated", TaskDifficulty.MEDIUM, TaskStatus.DRAFT);
+        attach(fixture, first.id(), 1, false);
+        attach(fixture, second.id(), 0, true);
+        attach(other, unrelated.id(), 0, true);
+
+        mockMvc.perform(get(topicTasksUrl(fixture.topic().id())).with(user(fixture.principal())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[0].taskId").value(second.id().toString()))
+            .andExpect(jsonPath("$[0].title").value("Second"))
+            .andExpect(jsonPath("$[0].taskType").value("TEXT"))
+            .andExpect(jsonPath("$[0].difficulty").value("HARD"))
+            .andExpect(jsonPath("$[0].status").value("DRAFT"))
+            .andExpect(jsonPath("$[0].position").value(0))
+            .andExpect(jsonPath("$[0].required").value(true))
+            .andExpect(jsonPath("$[1].taskId").value(first.id().toString()))
+            .andExpect(jsonPath("$[1].position").value(1))
+            .andExpect(jsonPath("$[1].required").value(false));
+    }
+
+    @Test
+    void foreignTopicTasksAreNotDisclosed() throws Exception {
+        TaskFixture owner = createFixture();
+        TaskFixture foreign = createFixture();
+        TaskResult task = createTask(owner, "Secret", TaskDifficulty.EASY, TaskStatus.DRAFT);
+        attach(owner, task.id(), 0, true);
+
+        mockMvc.perform(get(topicTasksUrl(owner.topic().id())).with(user(foreign.principal())))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("TOPIC_NOT_FOUND"));
+    }
+
+    @Test
+    void topicTaskListQueryCountDoesNotGrowWithTaskCount() throws Exception {
+        TaskFixture fixture = createFixture();
+        for (int index = 0; index < 8; index++) {
+            TaskResult task = createTask(fixture, "Task " + index, TaskDifficulty.EASY, TaskStatus.DRAFT);
+            attach(fixture, task.id(), index, true);
+        }
+        Statistics statistics = statistics();
+        statistics.clear();
+
+        mockMvc.perform(get(topicTasksUrl(fixture.topic().id())).with(user(fixture.principal())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(8));
+
+        assertThat(statistics.getPrepareStatementCount()).isLessThanOrEqualTo(4);
+    }
+
+    @Test
     void duplicateAttachmentAndPositionAreRejected() throws Exception {
         TaskFixture fixture = createFixture();
         TaskResult first = createTask(fixture, "First", TaskDifficulty.EASY, TaskStatus.DRAFT);
@@ -595,6 +656,8 @@ class TaskApiIntegrationTest extends PostgresIntegrationTest {
                 .value("updateProgrammingTaskConfig"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/tasks/{taskId}/test-cases'].put.operationId")
                 .value("replaceTaskTestCases"))
+            .andExpect(jsonPath("$.paths['/api/v1/teacher/topics/{topicId}/tasks'].get.operationId")
+                .value("listTopicTasks"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/topics/{topicId}/tasks/{taskId}'].post.operationId")
                 .value("attachTaskToTopic"))
             .andExpect(jsonPath("$.components.schemas.CreateTaskRequest.properties.taskType").exists())
@@ -746,6 +809,14 @@ class TaskApiIntegrationTest extends PostgresIntegrationTest {
 
     private String attachmentUrl(UUID topicId, UUID taskId) {
         return "/api/v1/teacher/topics/" + topicId + "/tasks/" + taskId;
+    }
+
+    private String topicTasksUrl(UUID topicId) {
+        return "/api/v1/teacher/topics/" + topicId + "/tasks";
+    }
+
+    private Statistics statistics() {
+        return entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
     }
 
     private JsonNode json(MvcResult result) throws Exception {

@@ -5,6 +5,7 @@ import com.tutorplatform.task.api.topic.AttachTaskToTopicRequest;
 import com.tutorplatform.task.api.programming.UpdateProgrammingTaskConfigRequest;
 import com.tutorplatform.task.api.testcase.ReplaceTaskTestCasesRequest;
 import com.tutorplatform.task.api.topic.TopicTaskResponse;
+import com.tutorplatform.task.api.topic.TopicTaskDetailsResponse;
 import com.tutorplatform.task.api.programming.ProgrammingTaskConfigResponse;
 import com.tutorplatform.task.api.testcase.TaskTestCasesResponse;
 import com.tutorplatform.task.application.AttachTaskToTopicCommand;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.UUID;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/teacher")
@@ -109,6 +111,17 @@ public class TeacherTaskController implements TeacherTaskApi {
         @PathVariable UUID taskId
     ) {
         return TaskResponse.from(taskService.getTask(principal, taskId));
+    }
+
+    @Override
+    @GetMapping("/topics/{topicId}/tasks")
+    public List<TopicTaskDetailsResponse> listTopicTasks(
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID topicId
+    ) {
+        return taskService.listTopicTasks(principal, topicId).stream()
+            .map(TopicTaskDetailsResponse::from)
+            .toList();
     }
 
     @Override
