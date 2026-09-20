@@ -78,10 +78,13 @@ public class TeacherLessonMaterialController implements TeacherLessonMaterialApi
         // Filename is display metadata only. Strip path components for the browser's save dialog.
         String filename = download.filename().replace('\\', '/');
         filename = filename.substring(filename.lastIndexOf('/') + 1);
+        ContentDisposition.Builder disposition = download.materialType() == LessonMaterialType.IMAGE
+            ? ContentDisposition.inline()
+            : ContentDisposition.attachment();
         return ResponseEntity.ok()
             .contentType(MediaType.parseMediaType(download.mimeType()))
             .contentLength(download.content().length)
-            .header("Content-Disposition", ContentDisposition.attachment()
+            .header("Content-Disposition", disposition
                 .filename(filename, StandardCharsets.UTF_8).build().toString())
             .header("X-Content-Type-Options", "nosniff")
             .header("Cache-Control", "no-store")

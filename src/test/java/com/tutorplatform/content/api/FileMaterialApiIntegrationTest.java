@@ -140,7 +140,7 @@ class FileMaterialApiIntegrationTest extends PostgresIntegrationTest {
             .andExpect(header().string("Cache-Control", "no-store"))
             .andExpect(header().string("X-Content-Type-Options", "nosniff"))
             .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.allOf(
-                org.hamcrest.Matchers.startsWith("attachment;"),
+                org.hamcrest.Matchers.startsWith(type == LessonMaterialType.IMAGE ? "inline;" : "attachment;"),
                 org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString(STORAGE.toString())),
                 org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString(asset.storageKey())),
                 org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("../")))));

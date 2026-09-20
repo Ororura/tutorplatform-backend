@@ -121,7 +121,7 @@ public class FileMaterialService {
         }
         FileAssetEntity asset = assets.findById(material.fileAssetId())
             .orElseThrow(LessonMaterialNotFoundException::new);
-        return new Download(asset.originalFilename(), asset.mimeType(),
+        return new Download(material.materialType(), asset.originalFilename(), asset.mimeType(),
             storage.read(asset.storageKey(), asset.sizeBytes()));
     }
 
@@ -133,6 +133,6 @@ public class FileMaterialService {
         }
     }
 
-    public record Download(String filename, String mimeType, byte[] content) {
+    public record Download(LessonMaterialType materialType, String filename, String mimeType, byte[] content) {
     }
 }
