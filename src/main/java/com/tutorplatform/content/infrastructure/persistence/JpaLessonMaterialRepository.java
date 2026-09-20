@@ -46,6 +46,13 @@ public class JpaLessonMaterialRepository implements LessonMaterialRepository {
     }
 
     @Override
+    public void updatePosition(UUID topicId, UUID lessonMaterialId, int position) {
+        if (databaseRepository.updatePosition(topicId, lessonMaterialId, position) != 1) {
+            throw new IllegalStateException("Lesson material position update failed");
+        }
+    }
+
+    @Override
     public boolean existsByIdAndTopicId(UUID lessonMaterialId, UUID topicId) {
         return databaseRepository.existsByIdAndTopicId(lessonMaterialId, topicId);
     }

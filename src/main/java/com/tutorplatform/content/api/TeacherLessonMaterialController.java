@@ -2,6 +2,7 @@ package com.tutorplatform.content.api;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.content.api.request.CreateLessonMaterialRequest;
+import com.tutorplatform.content.api.request.ReorderLessonMaterialsRequest;
 import com.tutorplatform.content.api.request.UpdateLessonMaterialRequest;
 import com.tutorplatform.content.api.response.LessonMaterialResponse;
 import com.tutorplatform.content.application.CreateLessonMaterialCommand;
@@ -111,6 +112,17 @@ public class TeacherLessonMaterialController implements TeacherLessonMaterialApi
         return ResponseEntity.created(URI.create(
             "/api/v1/teacher/topics/" + topicId + "/materials/" + created.id()
         )).body(created);
+    }
+
+    @Override
+    @PutMapping("/order")
+    public ResponseEntity<Void> reorderLessonMaterials(
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID topicId,
+        @Valid @RequestBody ReorderLessonMaterialsRequest request
+    ) {
+        lessonMaterialService.reorderLessonMaterials(principal, topicId, request);
+        return ResponseEntity.noContent().build();
     }
 
     @Override

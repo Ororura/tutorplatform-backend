@@ -29,6 +29,15 @@ public class ContentExceptionHandler {
         ));
     }
 
+    @ExceptionHandler(InvalidLessonMaterialOrderException.class)
+    ResponseEntity<ApiError> handleInvalidLessonMaterialOrder(
+        InvalidLessonMaterialOrderException exception
+    ) {
+        return ResponseEntity.badRequest().body(ApiError.of(
+            "LESSON_MATERIAL_ORDER_INVALID", "Lesson material order is invalid", MDC.get("traceId")
+        ));
+    }
+
     @ExceptionHandler(TopicNotFoundException.class)
     ResponseEntity<ApiError> handleTopicNotFound(TopicNotFoundException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(

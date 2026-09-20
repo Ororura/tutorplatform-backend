@@ -15,5 +15,7 @@ public interface LessonMaterialRepository {
 
     List<LessonMaterialEntity> findAllByTopicIdOrderByPosition(UUID topicId);
 
+    void updatePosition(UUID topicId, UUID lessonMaterialId, int position);
+
     boolean existsByIdAndTopicId(UUID lessonMaterialId, UUID topicId);
 }

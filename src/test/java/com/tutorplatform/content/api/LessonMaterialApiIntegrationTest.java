@@ -15,6 +15,15 @@ import com.tutorplatform.program.domain.*;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramEntity;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramRepository;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
+import com.tutorplatform.program.domain.studentprogram.StudentProgramEntity;
+import com.tutorplatform.program.domain.studentprogram.StudentProgramRepository;
+import com.tutorplatform.program.domain.studentprogram.StudentProgramStatus;
+import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressEntity;
+import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressRepository;
+import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressStatus;
+import com.tutorplatform.student.domain.StudentEntity;
+import com.tutorplatform.student.domain.StudentRepository;
+import com.tutorplatform.student.domain.StudentStatus;
 import com.tutorplatform.subject.domain.SubjectEntity;
 import com.tutorplatform.subject.domain.SubjectRepository;
 import com.tutorplatform.subject.domain.SubjectStatus;
@@ -30,6 +39,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -62,6 +72,12 @@ class LessonMaterialApiIntegrationTest extends PostgresIntegrationTest {
     private SubjectRepository subjectRepository;
     @Autowired
     private LearningProgramRepository learningProgramRepository;
+    @Autowired
+    private StudentRepository studentRepository;
+    @Autowired
+    private StudentProgramRepository studentProgramRepository;
+    @Autowired
+    private StudentTopicProgressRepository studentTopicProgressRepository;
     @Autowired
     private ModuleRepository moduleRepository;
     @Autowired
@@ -180,6 +196,101 @@ class LessonMaterialApiIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
+    void putReordersAllMaterialsToContiguousPositions() throws Exception {
+        ContentFixture fixture = createFixture("api-material-order@example.com");
+        LessonMaterialResult first = createMaterial(fixture, "Первый", 2);
+        LessonMaterialResult second = createMaterial(fixture, "Второй", 5);
+        LessonMaterialResult third = createMaterial(fixture, "Третий", 9);
+
+        reorderMaterials(fixture, List.of(third.id(), second.id(), first.id()))
+            .andExpect(status().isNoContent());
+
+        mockMvc.perform(get(materialsUrl(fixture.topic().id())).with(user(fixture.principal())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(third.id().toString()))
+            .andExpect(jsonPath("$[0].position").value(0))
+            .andExpect(jsonPath("$[1].id").value(second.id().toString()))
+            .andExpect(jsonPath("$[1].position").value(1))
+            .andExpect(jsonPath("$[2].id").value(first.id().toString()))
+            .andExpect(jsonPath("$[2].position").value(2));
+    }
+
+    @Test
+    void putRejectsMissingForeignDuplicateAndEmptyIdsAtomically() throws Exception {
+        ContentFixture fixture = createFixture("api-material-order-invalid@example.com");
+        ContentFixture other = createFixture("api-material-order-foreign@example.com");
+        LessonMaterialResult first = createMaterial(fixture, "Первый", 0);
+        LessonMaterialResult second = createMaterial(fixture, "Второй", 1);
+        LessonMaterialResult foreign = createMaterial(other, "Чужой", 0);
+
+        for (List<UUID> invalidOrder : List.of(
+            List.of(first.id()),
+            List.of(first.id(), foreign.id()),
+            List.of(first.id(), first.id()),
+            List.of(first.id(), UUID.randomUUID()),
+            List.<UUID>of()
+        )) {
+            reorderMaterials(fixture, invalidOrder)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("LESSON_MATERIAL_ORDER_INVALID"));
+            assertThat(lessonMaterialService.getLessonMaterial(fixture.principal(), fixture.topic().id(), first.id()).position())
+                .isZero();
+            assertThat(lessonMaterialService.getLessonMaterial(fixture.principal(), fixture.topic().id(), second.id()).position())
+                .isEqualTo(1);
+        }
+    }
+
+    @Test
+    void putAcceptsEmptyOrderForEmptyTopic() throws Exception {
+        ContentFixture fixture = createFixture("api-material-order-empty@example.com");
+
+        reorderMaterials(fixture, List.of())
+            .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void putHidesForeignTopicFromAnotherTeacher() throws Exception {
+        ContentFixture owner = createFixture("api-material-order-owner@example.com");
+        ContentFixture foreign = createFixture("api-material-order-foreign-owner@example.com");
+        LessonMaterialResult material = createMaterial(owner, "Материал", 0);
+
+        mockMvc.perform(put(materialsUrl(owner.topic().id()) + "/order")
+                .with(user(foreign.principal()))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new ReorderMaterialsRequest(List.of(material.id())))))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("TOPIC_NOT_FOUND"));
+    }
+
+    @Test
+    void putAllowsReorderingAssignedProgramWithoutChangingTopicProgress() throws Exception {
+        ContentFixture fixture = createFixture("api-material-order-assigned@example.com");
+        LessonMaterialResult first = createMaterial(fixture, "Первый", 0);
+        LessonMaterialResult second = createMaterial(fixture, "Второй", 1);
+        LearningProgramEntity program = learningProgramRepository.findById(fixture.learningProgram().getId()).orElseThrow();
+        program.activate();
+        learningProgramRepository.saveAndFlush(program);
+        StudentEntity student = studentRepository.saveAndFlush(new StudentEntity(
+            UUID.randomUUID(), "Ученик", null, StudentStatus.ACTIVE
+        ));
+        UUID assignmentId = UUID.randomUUID();
+        studentProgramRepository.saveAndFlush(new StudentProgramEntity(
+            assignmentId, student.getId(), program.getId(), fixture.teacher().id(),
+            StudentProgramStatus.ACTIVE, 480, Instant.parse("2026-09-01T00:00:00Z"), null
+        ));
+        StudentTopicProgressEntity progress = studentTopicProgressRepository.saveAndFlush(new StudentTopicProgressEntity(
+            assignmentId, fixture.topic().id(), StudentTopicProgressStatus.AVAILABLE, null, null
+        ));
+
+        reorderMaterials(fixture, List.of(second.id(), first.id()))
+            .andExpect(status().isNoContent());
+
+        assertThat(studentTopicProgressRepository.findById(assignmentId, fixture.topic().id()).orElseThrow())
+            .isEqualTo(progress);
+    }
+
+    @Test
     void unauthenticatedRequestReturnsUnauthorized() throws Exception {
         mockMvc.perform(get(materialsUrl(UUID.randomUUID())))
             .andExpect(status().isUnauthorized())
@@ -202,6 +313,10 @@ class LessonMaterialApiIntegrationTest extends PostgresIntegrationTest {
                 .with(user(fixture.principal()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updateTextRequest(material)))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.code").value("CSRF_INVALID"));
+
+        reorderMaterialsWithoutCsrf(fixture, List.of(material.id()))
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.code").value("CSRF_INVALID"));
     }
@@ -276,6 +391,8 @@ class LessonMaterialApiIntegrationTest extends PostgresIntegrationTest {
                 .value("getLessonMaterial"))
             .andExpect(jsonPath("$.paths['/api/v1/teacher/topics/{topicId}/materials/{materialId}'].patch.operationId")
                 .value("updateLessonMaterial"))
+            .andExpect(jsonPath("$.paths['/api/v1/teacher/topics/{topicId}/materials/order'].put.operationId")
+                .value("reorderLessonMaterials"))
             .andExpect(jsonPath("$.components.schemas.CreateLessonMaterialRequest.properties.materialType.enum.length()")
                 .value(4))
             .andExpect(jsonPath("$.components.schemas.LessonMaterialResponse.properties.id.format")
@@ -318,6 +435,25 @@ class LessonMaterialApiIntegrationTest extends PostgresIntegrationTest {
         ));
     }
 
+    private org.springframework.test.web.servlet.ResultActions reorderMaterials(
+        ContentFixture fixture, List<UUID> orderedIds
+    ) throws Exception {
+        return mockMvc.perform(put(materialsUrl(fixture.topic().id()) + "/order")
+            .with(user(fixture.principal()))
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(new ReorderMaterialsRequest(orderedIds))));
+    }
+
+    private org.springframework.test.web.servlet.ResultActions reorderMaterialsWithoutCsrf(
+        ContentFixture fixture, List<UUID> orderedIds
+    ) throws Exception {
+        return mockMvc.perform(put(materialsUrl(fixture.topic().id()) + "/order")
+            .with(user(fixture.principal()))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(new ReorderMaterialsRequest(orderedIds))));
+    }
+
     private ContentFixture createFixture(String email) {
         UserEntity user = new UserEntity(UUID.randomUUID(), email, "password-hash", UserStatus.ACTIVE);
         user.addRole(UserRole.TEACHER);
@@ -346,7 +482,7 @@ class LessonMaterialApiIntegrationTest extends PostgresIntegrationTest {
             true,
             List.of(new SimpleGrantedAuthority("ROLE_TEACHER"))
         );
-        return new ContentFixture(principal, teacher, topic);
+        return new ContentFixture(principal, teacher, learningProgram, topic);
     }
 
     private String materialsUrl(UUID topicId) {
@@ -364,8 +500,12 @@ class LessonMaterialApiIntegrationTest extends PostgresIntegrationTest {
     private record ContentFixture(
         AuthenticatedUser principal,
         TeacherEntity teacher,
+        LearningProgramEntity learningProgram,
         TopicEntity topic
     ) {
+    }
+
+    private record ReorderMaterialsRequest(List<UUID> orderedIds) {
     }
 
     private record MaterialRequestBody(
