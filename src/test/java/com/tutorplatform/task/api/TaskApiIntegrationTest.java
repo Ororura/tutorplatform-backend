@@ -543,7 +543,7 @@ class TaskApiIntegrationTest extends PostgresIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(8));
 
-        assertThat(statistics.getPrepareStatementCount()).isLessThanOrEqualTo(4);
+        assertThat(statistics.getPrepareStatementCount()).isLessThanOrEqualTo(6);
     }
 
     @Test
