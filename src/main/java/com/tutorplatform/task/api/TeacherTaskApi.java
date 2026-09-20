@@ -6,6 +6,7 @@ import com.tutorplatform.task.api.topic.AttachTaskToTopicRequest;
 import com.tutorplatform.task.api.programming.UpdateProgrammingTaskConfigRequest;
 import com.tutorplatform.task.api.testcase.ReplaceTaskTestCasesRequest;
 import com.tutorplatform.task.api.topic.TopicTaskResponse;
+import com.tutorplatform.task.api.topic.TopicTaskDetailsResponse;
 import com.tutorplatform.task.api.programming.ProgrammingTaskConfigResponse;
 import com.tutorplatform.task.api.testcase.TaskTestCasesResponse;
 import com.tutorplatform.task.domain.task.TaskDifficulty;
@@ -19,6 +20,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
 
 import java.util.UUID;
+import java.util.List;
 
 public interface TeacherTaskApi {
 
@@ -92,6 +94,15 @@ public interface TeacherTaskApi {
     TaskTestCasesResponse replaceTaskTestCases(
         AuthenticatedUser principal, UUID taskId, ReplaceTaskTestCasesRequest request
     );
+
+    @Operation(operationId = "listTopicTasks", summary = "List tasks attached to an owned topic")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Attached tasks"),
+        @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "403", description = "Teacher role required", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "404", description = "Topic not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    List<TopicTaskDetailsResponse> listTopicTasks(AuthenticatedUser principal, UUID topicId);
 
     @Operation(operationId = "attachTaskToTopic", summary = "Attach a text task to a topic")
     @ApiResponses({

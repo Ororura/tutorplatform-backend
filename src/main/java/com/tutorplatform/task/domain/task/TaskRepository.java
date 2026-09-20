@@ -1,5 +1,6 @@
 package com.tutorplatform.task.domain.task;
 
+import java.util.Set;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -10,6 +11,8 @@ public interface TaskRepository {
     Optional<TaskEntity> findById(UUID taskId);
 
     Optional<TaskEntity> findOwnedById(UUID taskId, UUID teacherId);
+
+    List<TaskEntity> findAllById(Set<UUID> taskIds);
 
     List<TaskEntity> findAllByTeacherId(UUID teacherId);
 

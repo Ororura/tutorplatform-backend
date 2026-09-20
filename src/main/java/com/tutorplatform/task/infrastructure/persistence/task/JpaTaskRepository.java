@@ -6,6 +6,7 @@ import com.tutorplatform.task.domain.task.TaskStatus;
 import com.tutorplatform.task.domain.task.TaskType;
 import org.springframework.stereotype.Repository;
 
+import java.util.Set;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,6 +33,16 @@ public class JpaTaskRepository implements TaskRepository {
     @Override
     public Optional<TaskEntity> findOwnedById(UUID taskId, UUID teacherId) {
         return databaseRepository.findByIdAndTeacherId(taskId, teacherId).map(TaskDatabaseModel::toEntity);
+    }
+
+    @Override
+    public List<TaskEntity> findAllById(Set<UUID> taskIds) {
+        if (taskIds.isEmpty()) {
+            return List.of();
+        }
+        return databaseRepository.findAllById(taskIds).stream()
+            .map(TaskDatabaseModel::toEntity)
+            .toList();
     }
 
     @Override

@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
@@ -263,6 +265,27 @@ public class TaskService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public List<TopicTaskDetailsResult> listTopicTasks(AuthenticatedUser principal, UUID topicId) {
+        UUID teacherId = currentTeacherId(principal);
+        ProgramQuery.TopicContext topic = programQuery.findTopic(topicId)
+            .orElseThrow(TaskTopicNotFoundException::new);
+        if (!topic.isOwnedBy(teacherId)) {
+            throw new TaskTopicNotFoundException();
+        }
+
+        List<TopicTaskEntity> topicTasks = topicTaskRepository.findAllByTopicIdOrderByPosition(topicId);
+        Map<UUID, TaskEntity> tasksById = taskRepository.findAllById(topicTasks.stream()
+                .map(TopicTaskEntity::taskId)
+                .collect(Collectors.toSet()))
+            .stream()
+            .collect(Collectors.toMap(TaskEntity::getId, Function.identity()));
+
+        return topicTasks.stream()
+            .map(topicTask -> toDetailsResult(topicTask, tasksById.get(topicTask.taskId())))
+            .toList();
+    }
+
     private UUID currentTeacherId(AuthenticatedUser principal) {
         return teacherRepository.findByUserId(principal.id()).orElseThrow().id();
     }
@@ -283,6 +306,13 @@ public class TaskService {
         TaskEntity task = taskRepository.findOwnedById(taskId, teacherId)
             .orElseThrow(TaskNotFoundException::new);
         return task;
+    }
+
+    private TopicTaskDetailsResult toDetailsResult(TopicTaskEntity topicTask, TaskEntity task) {
+        return new TopicTaskDetailsResult(
+            task.getId(), task.getTitle(), task.getTaskType(), task.getDifficulty(), task.getStatus(),
+            topicTask.position(), topicTask.required()
+        );
     }
 
     private TaskEntity requireOwnedCodeTask(UUID taskId, UUID teacherId) {
