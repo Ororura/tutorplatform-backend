@@ -2,6 +2,7 @@ package com.tutorplatform.content.api;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.content.api.request.CreateLessonMaterialRequest;
+import com.tutorplatform.content.api.request.ReorderLessonMaterialsRequest;
 import com.tutorplatform.content.api.request.UpdateLessonMaterialRequest;
 import com.tutorplatform.content.api.response.LessonMaterialResponse;
 import com.tutorplatform.content.domain.LessonMaterialType;
@@ -59,6 +60,20 @@ public interface TeacherLessonMaterialApi {
         AuthenticatedUser principal,
         @Parameter(description = "Topic identifier", schema = @Schema(format = "uuid")) UUID topicId,
         CreateLessonMaterialRequest request
+    );
+
+    @Operation(operationId = "reorderLessonMaterials", summary = "Reorder every lesson material in an owned topic")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Lesson materials reordered"),
+        @ApiResponse(responseCode = "400", description = "Lesson material order is invalid", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "403", description = "Teacher role and CSRF required", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "404", description = "Topic not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    ResponseEntity<Void> reorderLessonMaterials(
+        AuthenticatedUser principal,
+        @Parameter(description = "Topic identifier", schema = @Schema(format = "uuid")) UUID topicId,
+        ReorderLessonMaterialsRequest request
     );
 
     @Operation(operationId = "listLessonMaterials", summary = "List lesson materials for a topic")

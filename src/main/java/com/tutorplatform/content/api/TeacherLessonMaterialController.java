@@ -2,6 +2,7 @@ package com.tutorplatform.content.api;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.content.api.request.CreateLessonMaterialRequest;
+import com.tutorplatform.content.api.request.ReorderLessonMaterialsRequest;
 import com.tutorplatform.content.api.request.UpdateLessonMaterialRequest;
 import com.tutorplatform.content.api.response.LessonMaterialResponse;
 import com.tutorplatform.content.application.CreateLessonMaterialCommand;
@@ -77,10 +78,13 @@ public class TeacherLessonMaterialController implements TeacherLessonMaterialApi
         // Filename is display metadata only. Strip path components for the browser's save dialog.
         String filename = download.filename().replace('\\', '/');
         filename = filename.substring(filename.lastIndexOf('/') + 1);
+        ContentDisposition.Builder disposition = download.materialType() == LessonMaterialType.IMAGE
+            ? ContentDisposition.inline()
+            : ContentDisposition.attachment();
         return ResponseEntity.ok()
             .contentType(MediaType.parseMediaType(download.mimeType()))
             .contentLength(download.content().length)
-            .header("Content-Disposition", ContentDisposition.attachment()
+            .header("Content-Disposition", disposition
                 .filename(filename, StandardCharsets.UTF_8).build().toString())
             .header("X-Content-Type-Options", "nosniff")
             .header("Cache-Control", "no-store")
@@ -111,6 +115,17 @@ public class TeacherLessonMaterialController implements TeacherLessonMaterialApi
         return ResponseEntity.created(URI.create(
             "/api/v1/teacher/topics/" + topicId + "/materials/" + created.id()
         )).body(created);
+    }
+
+    @Override
+    @PutMapping("/order")
+    public ResponseEntity<Void> reorderLessonMaterials(
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID topicId,
+        @Valid @RequestBody ReorderLessonMaterialsRequest request
+    ) {
+        lessonMaterialService.reorderLessonMaterials(principal, topicId, request);
+        return ResponseEntity.noContent().build();
     }
 
     @Override

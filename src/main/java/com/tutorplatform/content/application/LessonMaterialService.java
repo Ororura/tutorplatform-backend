@@ -2,6 +2,7 @@ package com.tutorplatform.content.application;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.content.application.exception.*;
+import com.tutorplatform.content.api.request.ReorderLessonMaterialsRequest;
 import com.tutorplatform.content.domain.LessonMaterialEntity;
 import com.tutorplatform.content.domain.LessonMaterialRepository;
 import com.tutorplatform.content.domain.LessonMaterialType;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -94,6 +96,41 @@ public class LessonMaterialService {
         return lessonMaterialRepository.findAllByTopicIdOrderByPosition(topicId).stream()
             .map(this::toResult)
             .toList();
+    }
+
+    @Transactional
+    public void reorderLessonMaterials(
+        AuthenticatedUser principal,
+        UUID topicId,
+        ReorderLessonMaterialsRequest request
+    ) {
+        UUID teacherId = currentTeacherId(principal);
+        requireOwnedTopic(topicId, teacherId);
+
+        List<LessonMaterialEntity> materials = lessonMaterialRepository
+            .findAllByTopicIdOrderByPosition(topicId);
+        List<UUID> orderedIds = request.orderedIds();
+        Set<UUID> existingIds = new HashSet<>(materials.stream().map(LessonMaterialEntity::getId).toList());
+        Set<UUID> requestedIds = new HashSet<>(orderedIds);
+        if (orderedIds.size() != materials.size()
+            || requestedIds.size() != orderedIds.size()
+            || !requestedIds.equals(existingIds)) {
+            throw new InvalidLessonMaterialOrderException();
+        }
+
+        int maxPosition = materials.stream().mapToInt(LessonMaterialEntity::getPosition).max().orElse(-1);
+        long highestTemporaryPosition = (long) maxPosition + orderedIds.size();
+        if (highestTemporaryPosition > Integer.MAX_VALUE) {
+            throw new InvalidLessonMaterialOrderException();
+        }
+
+        int temporaryBase = maxPosition + 1;
+        for (int index = 0; index < orderedIds.size(); index++) {
+            lessonMaterialRepository.updatePosition(topicId, orderedIds.get(index), temporaryBase + index);
+        }
+        for (int index = 0; index < orderedIds.size(); index++) {
+            lessonMaterialRepository.updatePosition(topicId, orderedIds.get(index), index);
+        }
     }
 
     @Transactional
