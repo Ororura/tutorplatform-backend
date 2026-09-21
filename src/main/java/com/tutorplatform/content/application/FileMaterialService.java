@@ -65,7 +65,7 @@ public class FileMaterialService {
             || filename.codePoints().anyMatch(Character::isISOControl)) {
             throw new InvalidLessonMaterialException("file", "invalid original filename");
         }
-        byte[] content = policy.readAndValidate(input, size, mimeType, type);
+        byte[] content = policy.readAndValidate(input, size, filename, mimeType, type);
         var object = storage.store(content);
         // afterCompletion includes failures at COMMIT, unlike a catch around repository.save().
         // MVP: rollback deletes the object; failed cleanup/unknown outcome is an actionable
@@ -116,6 +116,15 @@ public class FileMaterialService {
     @Transactional(readOnly = true)
     public Download download(AuthenticatedUser principal, UUID topicId, UUID materialId) {
         LessonMaterialResult material = materialService.getLessonMaterial(principal, topicId, materialId);
+        return download(material);
+    }
+
+    @Transactional(readOnly = true)
+    public Download downloadForAuthorizedTopic(UUID topicId, UUID materialId) {
+        return download(materialService.getLessonMaterialForAuthorizedTopic(topicId, materialId));
+    }
+
+    private Download download(LessonMaterialResult material) {
         if (material.fileAssetId() == null) {
             throw new LessonMaterialNotFoundException();
         }

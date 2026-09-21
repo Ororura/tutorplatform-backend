@@ -28,11 +28,14 @@ is introduced.
   Applies to actual bytes read as well as the multipart file-size limit.
 - `MATERIAL_FILES_MAX_REQUEST_SIZE`: 11MB, including multipart overhead; increase
   alongside the file limit if needed.
-- `MATERIAL_FILES_ALLOWED_MIME_TYPES`: comma-separated allowlist; defaults to
-  `application/pdf,image/png,image/jpeg,text/plain`. PDF/PNG/JPEG use minimal
-  signatures; text must be UTF-8 without binary control characters. New formats
-  require a minimal verifier before they can be enabled. These checks are not
-  antivirus or full document validation.
+- `MATERIAL_FILES_ALLOWED_MIME_TYPES`: comma-separated allowlist. FILE accepts
+  PDF, PNG/JPEG, ZIP and the educational text formats `.py`, `.sh`, `.js`, `.ts`,
+  `.java`, `.txt`, `.md`, `.json` and `.csv`; IMAGE accepts only PNG/JPEG.
+  Extension, declared MIME and content must agree. Text formats may arrive as
+  `text/plain` or `application/octet-stream`, but still must be valid UTF-8 without
+  binary control characters. PDF, images and ZIP use minimal signatures. New
+  formats require a minimal verifier before they can be enabled. These checks are
+  not antivirus or full document validation.
 
 Uploads/downloads use bounded in-memory byte arrays for this small-file MVP.
 Original names are metadata only; physical objects have server-generated UUID keys.

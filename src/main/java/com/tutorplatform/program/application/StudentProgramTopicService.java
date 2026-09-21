@@ -1,6 +1,7 @@
 package com.tutorplatform.program.application;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
+import com.tutorplatform.content.application.FileMaterialService;
 import com.tutorplatform.content.application.LessonMaterialService;
 import com.tutorplatform.program.api.StudentLessonMaterialResponse;
 import com.tutorplatform.program.api.StudentProgramTopicResponse;
@@ -26,6 +27,7 @@ public class StudentProgramTopicService {
     private final ModuleRepository moduleRepository;
     private final StudentTopicProgressRepository progressRepository;
     private final LessonMaterialService lessonMaterialService;
+    private final FileMaterialService fileMaterialService;
 
     public StudentProgramTopicService(
         StudentOwnershipQuery studentOwnershipQuery,
@@ -33,7 +35,8 @@ public class StudentProgramTopicService {
         TopicRepository topicRepository,
         ModuleRepository moduleRepository,
         StudentTopicProgressRepository progressRepository,
-        LessonMaterialService lessonMaterialService
+        LessonMaterialService lessonMaterialService,
+        FileMaterialService fileMaterialService
     ) {
         this.studentOwnershipQuery = studentOwnershipQuery;
         this.programQuery = programQuery;
@@ -41,6 +44,7 @@ public class StudentProgramTopicService {
         this.moduleRepository = moduleRepository;
         this.progressRepository = progressRepository;
         this.lessonMaterialService = lessonMaterialService;
+        this.fileMaterialService = fileMaterialService;
     }
 
     public StudentProgramTopicResponse getTopic(
@@ -48,17 +52,10 @@ public class StudentProgramTopicService {
         UUID studentProgramId,
         UUID topicId
     ) {
-        UUID studentId = studentOwnershipQuery.findStudentIdByUserId(principal.id())
-            .orElseThrow(StudentNotFoundException::new);
-        ProgramQuery.StudentProgramContext studentProgram = programQuery.findStudentProgram(studentProgramId)
-            .filter(program -> program.belongsToStudent(studentId))
-            .orElseThrow(StudentProgramNotFoundException::new);
-
-        TopicEntity topic = topicRepository.findById(topicId)
-            .orElseThrow(LearningProgramTopicNotFoundException::new);
-        ModuleEntity module = moduleRepository.findById(topic.moduleId())
-            .filter(value -> value.learningProgramId().equals(studentProgram.learningProgramId()))
-            .orElseThrow(LearningProgramTopicNotFoundException::new);
+        AuthorizedTopic authorized = authorizeTopic(principal, studentProgramId, topicId);
+        ProgramQuery.StudentProgramContext studentProgram = authorized.studentProgram();
+        TopicEntity topic = authorized.topic();
+        ModuleEntity module = authorized.module();
 
         return new StudentProgramTopicResponse(
             topic.id(),
@@ -73,5 +70,40 @@ public class StudentProgramTopicService {
                 .map(StudentLessonMaterialResponse::from)
                 .toList()
         );
+    }
+
+    public FileMaterialService.Download downloadMaterial(
+        AuthenticatedUser principal,
+        UUID studentProgramId,
+        UUID topicId,
+        UUID materialId
+    ) {
+        authorizeTopic(principal, studentProgramId, topicId);
+        return fileMaterialService.downloadForAuthorizedTopic(topicId, materialId);
+    }
+
+    private AuthorizedTopic authorizeTopic(
+        AuthenticatedUser principal,
+        UUID studentProgramId,
+        UUID topicId
+    ) {
+        UUID studentId = studentOwnershipQuery.findStudentIdByUserId(principal.id())
+            .orElseThrow(StudentNotFoundException::new);
+        ProgramQuery.StudentProgramContext studentProgram = programQuery.findStudentProgram(studentProgramId)
+            .filter(program -> program.belongsToStudent(studentId))
+            .orElseThrow(StudentProgramNotFoundException::new);
+        TopicEntity topic = topicRepository.findById(topicId)
+            .orElseThrow(LearningProgramTopicNotFoundException::new);
+        ModuleEntity module = moduleRepository.findById(topic.moduleId())
+            .filter(value -> value.learningProgramId().equals(studentProgram.learningProgramId()))
+            .orElseThrow(LearningProgramTopicNotFoundException::new);
+        return new AuthorizedTopic(studentProgram, topic, module);
+    }
+
+    private record AuthorizedTopic(
+        ProgramQuery.StudentProgramContext studentProgram,
+        TopicEntity topic,
+        ModuleEntity module
+    ) {
     }
 }
