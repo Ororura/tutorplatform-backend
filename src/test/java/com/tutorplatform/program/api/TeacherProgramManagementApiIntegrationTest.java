@@ -103,6 +103,44 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
     }
 
     @Test
+    void getsOwnedProgramBySlugAndHidesForeignPrograms() throws Exception {
+        TeacherContext teacher = teacher("slug-owner@example.com");
+        TeacherContext foreign = teacher("slug-foreign@example.com");
+
+        LearningProgramEntity own = program(
+            teacher.teacher,
+            "Питон с нуля",
+            LearningProgramStatus.DRAFT
+        );
+
+        program(
+            foreign.teacher,
+            "Чужая программа",
+            LearningProgramStatus.DRAFT
+        );
+
+        mockMvc.perform(
+                get("/api/v1/teacher/programs/by-slug/{slug}", "piton-s-nulya")
+                    .with(user(teacher.principal))
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(own.getId().toString()))
+            .andExpect(jsonPath("$.slug").value("piton-s-nulya"));
+
+        mockMvc.perform(
+                get("/api/v1/teacher/programs/by-slug/{slug}", "chuzhaya-programma")
+                    .with(user(teacher.principal))
+            )
+            .andExpect(status().isNotFound());
+
+        mockMvc.perform(
+                get("/api/v1/teacher/programs/by-slug/{slug}", "unknown-program")
+                    .with(user(teacher.principal))
+            )
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
     void archivesDraftActiveAndArchivedProgramsAndIsIdempotent() throws Exception {
         TeacherContext teacher = teacher("program-archive-transitions@example.com");
         LearningProgramEntity draft = program(teacher.teacher, "Draft", LearningProgramStatus.DRAFT);

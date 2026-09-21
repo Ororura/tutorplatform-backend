@@ -7,6 +7,7 @@ import java.util.UUID;
 
 public record LearningProgramTopicDetailsResponse(
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "uuid") UUID id,
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String slug,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String title,
     @Schema(nullable = true) String description,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, minimum = "0") int position,
