@@ -16,6 +16,7 @@ import com.tutorplatform.task.domain.task.TaskStatus;
 import com.tutorplatform.task.domain.task.TaskType;
 import com.tutorplatform.task.domain.topic.TopicTaskEntity;
 import com.tutorplatform.task.domain.topic.TopicTaskRepository;
+import com.tutorplatform.task.application.exception.TaskNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,6 +78,26 @@ public class StudentTopicTaskService {
             .map(topicTask -> toStudentResult(topicTask, tasksById.get(topicTask.taskId())))
             .filter(java.util.Objects::nonNull)
             .toList();
+    }
+
+    public ProgramQuery.StudentProgramContext requireTaskAccess(
+        UUID studentId,
+        UUID studentProgramId,
+        UUID topicId,
+        TaskQuery.TaskContext task
+    ) {
+        ProgramQuery.StudentProgramContext studentProgram = programQuery.findStudentProgram(studentProgramId)
+            .filter(program -> program.belongsToStudent(studentId))
+            .orElseThrow(StudentProgramNotFoundException::new);
+        if (!programQuery.topicBelongsToLearningProgram(topicId, studentProgram.learningProgramId())) {
+            throw new LearningProgramTopicNotFoundException();
+        }
+        if (!topicTaskRepository.existsByTopicIdAndTaskId(topicId, task.id())
+            || !studentProgram.isAssignedBy(task.teacherId())
+            || !studentProgram.subjectId().equals(task.subjectId())) {
+            throw new TaskNotFoundException();
+        }
+        return studentProgram;
     }
 
     private StudentTopicTaskResult toStudentResult(TopicTaskEntity topicTask, TaskEntity task) {

@@ -7,6 +7,7 @@ import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.submission.domain.CodeExecutionStatus;
 import com.tutorplatform.submission.domain.SubmissionStatus;
 import com.tutorplatform.task.application.TaskQuery;
+import com.tutorplatform.task.application.StudentTopicTaskService;
 import com.tutorplatform.task.domain.programming.*;
 import com.tutorplatform.task.domain.task.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,10 +33,11 @@ class CodeSubmissionServiceTest {
     private final TaskQuery tasks = mock(TaskQuery.class);
     private final SubmissionHomeworkContextQuery homework = mock(SubmissionHomeworkContextQuery.class);
     private final ProgramQuery programs = mock(ProgramQuery.class);
+    private final StudentTopicTaskService studentTopicTasks = mock(StudentTopicTaskService.class);
     private final CodeSubmissionTransactions transactions = mock(CodeSubmissionTransactions.class);
     private final ExecutionPort execution = mock(ExecutionPort.class);
     private final CodeSubmissionService service = new CodeSubmissionService(
-        ownership, tasks, homework, programs, transactions, execution
+        ownership, tasks, homework, programs, studentTopicTasks, transactions, execution
     );
 
     private final UUID userId = UUID.randomUUID();
@@ -92,7 +94,7 @@ class CodeSubmissionServiceTest {
             );
         });
 
-        service.submit(principal, taskId, homeworkItemId, "print(42)");
+        service.submit(principal, taskId, homeworkItemId, null, null, "print(42)");
 
         InOrder order = inOrder(transactions, execution);
         order.verify(transactions).createPending(
@@ -121,7 +123,7 @@ class CodeSubmissionServiceTest {
     void infrastructureFailureFinalizesExistingSubmissionAsSystemError() {
         when(execution.execute(any())).thenThrow(new IllegalStateException("worker secret"));
 
-        service.submit(principal, taskId, homeworkItemId, "pass");
+        service.submit(principal, taskId, homeworkItemId, null, null, "pass");
 
         verify(transactions).createPending(
             studentId, studentProgramId, taskId, homeworkItemId, "pass", 1
@@ -141,7 +143,7 @@ class CodeSubmissionServiceTest {
             return ExecutionResult.systemError(request.executionId(), 1);
         });
 
-        service.submit(principal, taskId, homeworkItemId, "pass");
+        service.submit(principal, taskId, homeworkItemId, null, null, "pass");
     }
 
     private TaskQuery.CodeTaskConfiguration configuration(boolean executionEnabled) {

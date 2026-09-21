@@ -11,6 +11,7 @@ import com.tutorplatform.student.application.coderunner.RunCodeException;
 import com.tutorplatform.student.application.coderunner.RunCodeException.Reason;
 import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.task.application.TaskQuery;
+import com.tutorplatform.task.application.StudentTopicTaskService;
 import com.tutorplatform.task.domain.programming.*;
 import com.tutorplatform.task.domain.task.TaskStatus;
 import com.tutorplatform.task.domain.task.TaskType;
@@ -41,6 +42,7 @@ class StudentRunCodeServiceTest {
     @Mock private ProgramQuery programQuery;
     @Mock private HomeworkQuery homeworkQuery;
     @Mock private TaskQuery taskQuery;
+    @Mock private StudentTopicTaskService studentTopicTaskService;
     @Mock private ExecutionPort executionPort;
 
     private StudentRunCodeService service;
@@ -58,7 +60,8 @@ class StudentRunCodeServiceTest {
     @BeforeEach
     void setUp() {
         service = new StudentRunCodeService(
-            studentOwnershipQuery, programQuery, homeworkQuery, taskQuery, executionPort
+            studentOwnershipQuery, programQuery, homeworkQuery, taskQuery,
+            studentTopicTaskService, executionPort
         );
         userId = UUID.randomUUID();
         studentId = UUID.randomUUID();
@@ -93,7 +96,9 @@ class StudentRunCodeServiceTest {
             ));
         });
 
-        RunCodeResult result = service.run(principal, taskId, homeworkItemId, "print(input())");
+        RunCodeResult result = service.run(
+            principal, taskId, homeworkItemId, null, null, "print(input())"
+        );
 
         ArgumentCaptor<ExecutionRequest> captor = ArgumentCaptor.forClass(ExecutionRequest.class);
         verify(executionPort).execute(captor.capture());
@@ -127,7 +132,7 @@ class StudentRunCodeServiceTest {
             );
         });
 
-        assertThat(service.run(principal, taskId, homeworkItemId, "pass").status())
+        assertThat(service.run(principal, taskId, homeworkItemId, null, null, "pass").status())
             .isEqualTo(status);
     }
 
@@ -135,7 +140,7 @@ class StudentRunCodeServiceTest {
     void unavailableWorkerProducesSanitizedSystemError() {
         when(executionPort.execute(any())).thenThrow(new IllegalStateException("docker secret path"));
 
-        RunCodeResult result = service.run(principal, taskId, homeworkItemId, "pass");
+        RunCodeResult result = service.run(principal, taskId, homeworkItemId, null, null, "pass");
 
         assertThat(result.status()).isEqualTo(ExecutionStatus.SYSTEM_ERROR);
         assertThat(result.stdoutExcerpt()).isNull();
@@ -203,7 +208,9 @@ class StudentRunCodeServiceTest {
     }
 
     private void assertReason(Reason reason) {
-        assertThatThrownBy(() -> service.run(principal, taskId, homeworkItemId, "pass"))
+        assertThatThrownBy(() -> service.run(
+            principal, taskId, homeworkItemId, null, null, "pass"
+        ))
             .isInstanceOfSatisfying(RunCodeException.class,
                 exception -> assertThat(exception.reason()).isEqualTo(reason));
         verifyNoInteractions(executionPort);

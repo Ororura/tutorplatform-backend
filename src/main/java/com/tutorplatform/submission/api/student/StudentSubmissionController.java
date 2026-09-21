@@ -52,7 +52,8 @@ public class StudentSubmissionController implements StudentSubmissionApi {
     ) {
         StudentSubmissionResponse response = StudentSubmissionResponse.from(
             codeSubmissionService.submit(
-                principal, taskId, request.homeworkItemId(), request.sourceCode()
+                principal, taskId, request.homeworkItemId(), request.studentProgramId(),
+                request.topicId(), request.sourceCode()
             )
         );
         return created(response);
