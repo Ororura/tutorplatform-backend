@@ -55,6 +55,7 @@ public class SecurityConfig {
                 .requestMatchers(GET, "/api/v1/public/reports/*").permitAll()
                 .requestMatchers(GET, "/api/v1/public/reports/*/pdf").permitAll()
                 .requestMatchers(GET,
+                    "/actuator/prometheus",
                     "/actuator/health/**",
                     "/v3/api-docs/**",
                     "/swagger-ui.html",
