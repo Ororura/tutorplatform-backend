@@ -22,6 +22,7 @@ import com.tutorplatform.user.domain.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -149,6 +150,41 @@ class FileMaterialApiIntegrationTest extends PostgresIntegrationTest {
             .with(user(stranger.principal()))).andExpect(status().isNotFound());
         mockMvc.perform(get(materialUrl(fixture.topic().id(), materialId) + "/download"))
             .andExpect(status().isUnauthorized());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "lesson.sh,application/octet-stream,#!/bin/sh\\necho lesson",
+        "lesson.py,text/plain,print('lesson')"
+    })
+    void uploadsEducationalSourceFilesAsFile(String name, String mime, String source) throws Exception {
+        var fixture = createFixture(UUID.randomUUID() + "@example.com");
+        var result = mockMvc.perform(upload(fixture, "FILE", name, mime, source.getBytes(), 0)
+                .with(user(fixture.principal())).with(csrf()))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.materialType").value("FILE"))
+            .andReturn();
+
+        UUID materialId = UUID.fromString(json(result).get("id").asText());
+        var material = lessonMaterialService.getLessonMaterial(fixture.principal(), fixture.topic().id(), materialId);
+        var asset = assets.findById(material.fileAssetId()).orElseThrow();
+        assertThat(asset.originalFilename()).isEqualTo(name);
+        assertThat(asset.mimeType()).isEqualTo(mime);
+
+        mockMvc.perform(get(materialUrl(fixture.topic().id(), materialId) + "/download")
+                .with(user(fixture.principal())))
+            .andExpect(status().isOk())
+            .andExpect(content().bytes(source.getBytes()))
+            .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.startsWith("attachment;")))
+            .andExpect(header().string("X-Content-Type-Options", "nosniff"));
+    }
+
+    @Test
+    void rejectsShellScriptAsImage() throws Exception {
+        var fixture = createFixture(UUID.randomUUID() + "@example.com");
+        mockMvc.perform(upload(fixture, "IMAGE", "lesson.sh", "text/plain", "#!/bin/sh".getBytes(), 0)
+                .with(user(fixture.principal())).with(csrf()))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
