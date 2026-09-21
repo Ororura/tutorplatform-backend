@@ -7,3 +7,5 @@
 # Graphify
 graphify-out/
 .graphify/
+
+requests.http

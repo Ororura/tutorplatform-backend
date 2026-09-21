@@ -46,4 +46,23 @@ public interface StudentProgramApi {
         @Parameter(hidden = true) AuthenticatedUser principal,
         @Parameter(schema = @Schema(format = "uuid")) UUID studentProgramId
     );
+
+    @Operation(
+        operationId = "getStudentProgramTopic",
+        summary = "Get a topic from a program assigned to the current student"
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Topic with ordered lesson materials"),
+        @ApiResponse(responseCode = "401", description = "Authentication required",
+            content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "403", description = "Student role required",
+            content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "404", description = "Student program or topic not found",
+            content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    StudentProgramTopicResponse getTopic(
+        @Parameter(hidden = true) AuthenticatedUser principal,
+        @Parameter(schema = @Schema(format = "uuid")) UUID studentProgramId,
+        @Parameter(schema = @Schema(format = "uuid")) UUID topicId
+    );
 }

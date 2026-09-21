@@ -1,6 +1,9 @@
 package com.tutorplatform.program.api;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
+import com.tutorplatform.content.domain.LessonMaterialEntity;
+import com.tutorplatform.content.domain.LessonMaterialRepository;
+import com.tutorplatform.content.domain.LessonMaterialType;
 import com.tutorplatform.program.domain.ModuleEntity;
 import com.tutorplatform.program.domain.ModuleRepository;
 import com.tutorplatform.program.domain.TopicEntity;
@@ -82,6 +85,8 @@ class StudentProgramApiIntegrationTest extends PostgresIntegrationTest {
     private TopicRepository topicRepository;
     @Autowired
     private StudentTopicProgressRepository progressRepository;
+    @Autowired
+    private LessonMaterialRepository lessonMaterialRepository;
 
     @Test
     void listReturnsOnlyCurrentStudentsPrograms() throws Exception {
@@ -148,12 +153,119 @@ class StudentProgramApiIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
+    void topicReturnsOwnTopicWithProgressAndOrderedMaterials() throws Exception {
+        Fixture fixture = createFixture("topic-detail");
+        StudentProgramEntity program = createProgram(fixture, "Java", Instant.now());
+        LearningProgramEntity learningProgram = learningProgramRepository
+            .findById(program.learningProgramId()).orElseThrow();
+        ModuleEntity module = createModule(learningProgram, "Коллекции", 0);
+        TopicEntity topic = createTopic(module, "Списки", 0);
+        createProgress(program, topic, StudentTopicProgressStatus.IN_PROGRESS);
+        LessonMaterialEntity later = createMaterial(fixture, topic, "Практика", 3);
+        LessonMaterialEntity first = createMaterial(fixture, topic, "Теория", 0);
+
+        StudentProgramEntity otherProgram = createProgram(fixture, "Python", Instant.now());
+        LearningProgramEntity otherLearningProgram = learningProgramRepository
+            .findById(otherProgram.learningProgramId()).orElseThrow();
+        TopicEntity otherTopic = createTopic(createModule(otherLearningProgram, "Чужой модуль", 0), "Чужая тема", 0);
+        createMaterial(fixture, otherTopic, "Чужой материал", 0);
+
+        mockMvc.perform(get(
+                "/api/v1/student/programs/{studentProgramId}/topics/{topicId}",
+                program.id(),
+                topic.id()
+            ).with(user(fixture.principal())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(topic.id().toString()))
+            .andExpect(jsonPath("$.title").value("Списки"))
+            .andExpect(jsonPath("$.description").value("Описание Списки"))
+            .andExpect(jsonPath("$.moduleId").value(module.id().toString()))
+            .andExpect(jsonPath("$.moduleTitle").value("Коллекции"))
+            .andExpect(jsonPath("$.progressStatus").value("IN_PROGRESS"))
+            .andExpect(jsonPath("$.materials.length()").value(2))
+            .andExpect(jsonPath("$.materials[0].id").value(first.getId().toString()))
+            .andExpect(jsonPath("$.materials[0].position").value(0))
+            .andExpect(jsonPath("$.materials[1].id").value(later.getId().toString()))
+            .andExpect(jsonPath("$.materials[1].position").value(3))
+            .andExpect(jsonPath("$.materials[?(@.title == 'Чужой материал')]").isEmpty())
+            .andExpect(jsonPath("$.teacherId").doesNotExist())
+            .andExpect(jsonPath("$.topicStatus").doesNotExist())
+            .andExpect(jsonPath("$.version").doesNotExist())
+            .andExpect(jsonPath("$.materials[0].createdByTeacherId").doesNotExist())
+            .andExpect(jsonPath("$.materials[0].version").doesNotExist())
+            .andExpect(jsonPath("$.materials[0].createdAt").doesNotExist())
+            .andExpect(jsonPath("$.materials[0].updatedAt").doesNotExist());
+    }
+
+    @Test
+    void topicDoesNotExposeAnotherStudentsProgram() throws Exception {
+        Fixture current = createFixture("topic-current");
+        Fixture foreign = createFixture("topic-foreign");
+        StudentProgramEntity foreignProgram = createProgram(foreign, "Чужая программа", Instant.now());
+        LearningProgramEntity learningProgram = learningProgramRepository
+            .findById(foreignProgram.learningProgramId()).orElseThrow();
+        TopicEntity topic = createTopic(createModule(learningProgram, "Модуль", 0), "Тема", 0);
+
+        mockMvc.perform(get(
+                "/api/v1/student/programs/{studentProgramId}/topics/{topicId}",
+                foreignProgram.id(),
+                topic.id()
+            ).with(user(current.principal())))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("STUDENT_PROGRAM_NOT_FOUND"));
+    }
+
+    @Test
+    void topicFromAnotherProgramIsNotFound() throws Exception {
+        Fixture fixture = createFixture("topic-other-program");
+        StudentProgramEntity requestedProgram = createProgram(fixture, "Первая программа", Instant.now());
+        StudentProgramEntity otherProgram = createProgram(fixture, "Вторая программа", Instant.now());
+        LearningProgramEntity otherLearningProgram = learningProgramRepository
+            .findById(otherProgram.learningProgramId()).orElseThrow();
+        TopicEntity otherTopic = createTopic(
+            createModule(otherLearningProgram, "Другой модуль", 0),
+            "Другая тема",
+            0
+        );
+
+        mockMvc.perform(get(
+                "/api/v1/student/programs/{studentProgramId}/topics/{topicId}",
+                requestedProgram.id(),
+                otherTopic.id()
+            ).with(user(fixture.principal())))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_TOPIC_NOT_FOUND"));
+    }
+
+    @Test
+    void missingTopicIsNotFound() throws Exception {
+        Fixture fixture = createFixture("topic-missing");
+        StudentProgramEntity program = createProgram(fixture, "Программа", Instant.now());
+
+        mockMvc.perform(get(
+                "/api/v1/student/programs/{studentProgramId}/topics/{topicId}",
+                program.id(),
+                UUID.randomUUID()
+            ).with(user(fixture.principal())))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_TOPIC_NOT_FOUND"));
+    }
+
+    @Test
     void endpointsRequireAuthentication() throws Exception {
         mockMvc.perform(get("/api/v1/student/programs"))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"));
 
         mockMvc.perform(get("/api/v1/student/programs/{studentProgramId}", UUID.randomUUID()))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"));
+
+        mockMvc.perform(get(
+                "/api/v1/student/programs/{studentProgramId}/topics/{topicId}",
+                UUID.randomUUID(),
+                UUID.randomUUID()
+            ))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"));
     }
@@ -232,6 +344,25 @@ class StudentProgramApiIntegrationTest extends PostgresIntegrationTest {
             program.id(), topic.id(), status,
             status == StudentTopicProgressStatus.IN_PROGRESS ? Instant.now() : null,
             null
+        ));
+    }
+
+    private LessonMaterialEntity createMaterial(
+        Fixture fixture,
+        TopicEntity topic,
+        String title,
+        int position
+    ) {
+        return lessonMaterialRepository.saveAndFlush(new LessonMaterialEntity(
+            UUID.randomUUID(),
+            topic.id(),
+            fixture.teacher().id(),
+            LessonMaterialType.TEXT,
+            title,
+            "Содержимое " + title,
+            null,
+            null,
+            position
         ));
     }
 

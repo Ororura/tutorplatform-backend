@@ -1,6 +1,7 @@
 package com.tutorplatform.program.api;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
+import com.tutorplatform.program.application.StudentProgramTopicService;
 import com.tutorplatform.program.application.TeacherStudentProgramService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,9 +17,14 @@ import java.util.UUID;
 public class StudentProgramController implements StudentProgramApi {
 
     private final TeacherStudentProgramService programService;
+    private final StudentProgramTopicService topicService;
 
-    public StudentProgramController(TeacherStudentProgramService programService) {
+    public StudentProgramController(
+        TeacherStudentProgramService programService,
+        StudentProgramTopicService topicService
+    ) {
         this.programService = programService;
+        this.topicService = topicService;
     }
 
     @Override
@@ -36,5 +42,15 @@ public class StudentProgramController implements StudentProgramApi {
         @PathVariable UUID studentProgramId
     ) {
         return programService.getProgramForStudent(principal, studentProgramId);
+    }
+
+    @Override
+    @GetMapping("/{studentProgramId}/topics/{topicId}")
+    public StudentProgramTopicResponse getTopic(
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable UUID studentProgramId,
+        @PathVariable UUID topicId
+    ) {
+        return topicService.getTopic(principal, studentProgramId, topicId);
     }
 }

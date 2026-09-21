@@ -93,6 +93,11 @@ public class LessonMaterialService {
     ) {
         UUID teacherId = currentTeacherId(principal);
         requireOwnedTopic(topicId, teacherId);
+        return listLessonMaterialsForAuthorizedTopic(topicId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<LessonMaterialResult> listLessonMaterialsForAuthorizedTopic(UUID topicId) {
         return lessonMaterialRepository.findAllByTopicIdOrderByPosition(topicId).stream()
             .map(this::toResult)
             .toList();
