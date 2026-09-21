@@ -26,7 +26,8 @@ public class StudentRunCodeController implements StudentRunCodeApi {
         @Valid @RequestBody RunCodeRequest request
     ) {
         return RunCodeResponse.from(runCodeService.run(
-            principal, taskId, request.homeworkItemId(), request.sourceCode()
+            principal, taskId, request.homeworkItemId(), request.studentProgramId(),
+            request.topicId(), request.sourceCode()
         ));
     }
 }

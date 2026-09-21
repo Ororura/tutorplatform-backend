@@ -8,6 +8,7 @@ import com.tutorplatform.student.application.management.StudentNotFoundException
 import com.tutorplatform.submission.application.exception.*;
 import com.tutorplatform.submission.domain.CodeExecutionStatus;
 import com.tutorplatform.task.application.TaskQuery;
+import com.tutorplatform.task.application.StudentTopicTaskService;
 import com.tutorplatform.task.application.exception.TaskNotFoundException;
 import com.tutorplatform.task.domain.programming.TaskTestCase;
 import com.tutorplatform.task.domain.task.TaskStatus;
@@ -29,6 +30,7 @@ public class CodeSubmissionService {
     private final TaskQuery taskQuery;
     private final SubmissionHomeworkContextQuery homeworkContextQuery;
     private final ProgramQuery programQuery;
+    private final StudentTopicTaskService studentTopicTaskService;
     private final CodeSubmissionTransactions transactions;
     private final ExecutionPort executionPort;
 
@@ -37,6 +39,7 @@ public class CodeSubmissionService {
         TaskQuery taskQuery,
         SubmissionHomeworkContextQuery homeworkContextQuery,
         ProgramQuery programQuery,
+        StudentTopicTaskService studentTopicTaskService,
         CodeSubmissionTransactions transactions,
         ExecutionPort executionPort
     ) {
@@ -44,6 +47,7 @@ public class CodeSubmissionService {
         this.taskQuery = taskQuery;
         this.homeworkContextQuery = homeworkContextQuery;
         this.programQuery = programQuery;
+        this.studentTopicTaskService = studentTopicTaskService;
         this.transactions = transactions;
         this.executionPort = executionPort;
     }
@@ -53,22 +57,25 @@ public class CodeSubmissionService {
         AuthenticatedUser principal,
         UUID taskId,
         UUID homeworkItemId,
+        UUID studentProgramId,
+        UUID topicId,
         String sourceCode
     ) {
-        validateRequest(homeworkItemId, sourceCode);
+        validateRequest(homeworkItemId, studentProgramId, topicId, sourceCode);
         UUID studentId = studentOwnershipQuery.findStudentIdByUserId(principal.id())
             .orElseThrow(StudentNotFoundException::new);
         TaskQuery.TaskContext task = taskQuery.findTask(taskId)
             .orElseThrow(TaskNotFoundException::new);
-        SubmissionHomeworkContextQuery.HomeworkSubmissionContext homework =
-            requireOwnedHomeworkContext(studentId, task, homeworkItemId);
+        SubmissionContext submissionContext = resolveSubmissionContext(
+            studentId, task, homeworkItemId, studentProgramId, topicId
+        );
         TaskQuery.CodeTaskConfiguration codeTask = taskQuery.findCodeTaskConfiguration(taskId)
             .orElseThrow(TaskNotFoundException::new);
         requireExecutable(codeTask);
 
         int configuredTestCount = codeTask.testCases().size();
         SubmissionResult pending = transactions.createPending(
-            studentId, homework.studentProgramId(), taskId, homeworkItemId,
+            studentId, submissionContext.studentProgramId(), taskId, homeworkItemId,
             sourceCode, configuredTestCount
         );
 
@@ -98,13 +105,42 @@ public class CodeSubmissionService {
         );
     }
 
-    private void validateRequest(UUID homeworkItemId, String sourceCode) {
-        if (homeworkItemId == null) {
-            throw new InvalidSubmissionException("homeworkItemId", "must not be null");
-        }
+    private void validateRequest(
+        UUID homeworkItemId,
+        UUID studentProgramId,
+        UUID topicId,
+        String sourceCode
+    ) {
         if (sourceCode == null || sourceCode.isBlank()) {
             throw new InvalidSubmissionException("sourceCode", "must not be blank");
         }
+        boolean homeworkContext = homeworkItemId != null;
+        boolean topicContext = studentProgramId != null && topicId != null;
+        if (homeworkContext == topicContext
+            || (homeworkContext && (studentProgramId != null || topicId != null))
+            || (!homeworkContext && !topicContext)) {
+            throw new InvalidSubmissionException(
+                "context", "must contain either homeworkItemId or studentProgramId and topicId"
+            );
+        }
+    }
+
+    private SubmissionContext resolveSubmissionContext(
+        UUID studentId,
+        TaskQuery.TaskContext task,
+        UUID homeworkItemId,
+        UUID studentProgramId,
+        UUID topicId
+    ) {
+        if (homeworkItemId != null) {
+            SubmissionHomeworkContextQuery.HomeworkSubmissionContext homework =
+                requireOwnedHomeworkContext(studentId, task, homeworkItemId);
+            return new SubmissionContext(homework.studentProgramId());
+        }
+        ProgramQuery.StudentProgramContext program = studentTopicTaskService.requireTaskAccess(
+            studentId, studentProgramId, topicId, task
+        );
+        return new SubmissionContext(program.id());
     }
 
     private SubmissionHomeworkContextQuery.HomeworkSubmissionContext requireOwnedHomeworkContext(
@@ -185,5 +221,8 @@ public class CodeSubmissionService {
             offset += Character.charCount(codePoint);
         }
         return result.toString();
+    }
+
+    private record SubmissionContext(UUID studentProgramId) {
     }
 }

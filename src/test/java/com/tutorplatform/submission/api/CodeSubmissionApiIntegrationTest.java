@@ -8,6 +8,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.execution.application.*;
 import com.tutorplatform.homework.domain.*;
+import com.tutorplatform.program.domain.ModuleEntity;
+import com.tutorplatform.program.domain.ModuleRepository;
+import com.tutorplatform.program.domain.TopicEntity;
+import com.tutorplatform.program.domain.TopicRepository;
+import com.tutorplatform.program.domain.TopicStatus;
 import com.tutorplatform.program.domain.learningprogram.*;
 import com.tutorplatform.program.domain.studentprogram.*;
 import com.tutorplatform.student.domain.*;
@@ -17,6 +22,8 @@ import com.tutorplatform.submission.domain.*;
 import com.tutorplatform.submission.application.CodeSubmissionTransactions;
 import com.tutorplatform.task.domain.programming.*;
 import com.tutorplatform.task.domain.task.*;
+import com.tutorplatform.task.domain.topic.TopicTaskEntity;
+import com.tutorplatform.task.domain.topic.TopicTaskRepository;
 import com.tutorplatform.user.domain.*;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
@@ -63,7 +70,10 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
     @Autowired private SubjectRepository subjectRepository;
     @Autowired private LearningProgramRepository learningProgramRepository;
     @Autowired private StudentProgramRepository studentProgramRepository;
+    @Autowired private ModuleRepository moduleRepository;
+    @Autowired private TopicRepository topicRepository;
     @Autowired private TaskRepository taskRepository;
+    @Autowired private TopicTaskRepository topicTaskRepository;
     @Autowired private ProgrammingTaskConfigRepository programmingConfigRepository;
     @Autowired private TaskTestCaseRepository testCaseRepository;
     @Autowired private HomeworkRepository homeworkRepository;
@@ -190,6 +200,155 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
+    void successfulStandaloneTopicSubmissionIsPersistedForStudentAndTask() throws Exception {
+        Fixture fixture = createFixture(
+            "standalone-passed", TaskType.CODE, TaskStatus.ACTIVE, true, HomeworkStatus.ASSIGNED
+        );
+        when(executionPort.execute(any())).thenAnswer(invocation -> {
+            ExecutionRequest request = invocation.getArgument(0);
+            return new ExecutionResult(
+                request.executionId(), ExecutionStatus.PASSED, 2, 2, 30,
+                "ok", null, List.of()
+            );
+        });
+
+        String response = submitPractice(fixture, "print(42)")
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.status").value("PASSED"))
+            .andExpect(jsonPath("$.homeworkItemId").doesNotExist())
+            .andExpect(jsonPath("$.execution.status").value("PASSED"))
+            .andReturn().getResponse().getContentAsString();
+
+        UUID submissionId = UUID.fromString(objectMapper.readTree(response).get("id").asText());
+        SubmissionEntity submission = submissionRepository.findById(submissionId).orElseThrow();
+        assertThat(submission.getStudentId()).isEqualTo(fixture.studentId());
+        assertThat(submission.getStudentProgramId()).isEqualTo(fixture.studentProgramId());
+        assertThat(submission.getTaskId()).isEqualTo(fixture.taskId());
+        assertThat(submission.getHomeworkItemId()).isNull();
+    }
+
+    @Test
+    void failedStandaloneTopicSubmissionIsPersisted() throws Exception {
+        Fixture fixture = createFixture(
+            "standalone-failed", TaskType.CODE, TaskStatus.ACTIVE, true, HomeworkStatus.ASSIGNED
+        );
+        when(executionPort.execute(any())).thenAnswer(invocation -> {
+            ExecutionRequest request = invocation.getArgument(0);
+            return new ExecutionResult(
+                request.executionId(), ExecutionStatus.FAILED, 1, 2, 18,
+                "wrong", null, List.of()
+            );
+        });
+
+        String response = submitPractice(fixture, "print(0)")
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.status").value("FAILED"))
+            .andExpect(jsonPath("$.execution.status").value("FAILED"))
+            .andExpect(jsonPath("$.execution.passedTests").value(1))
+            .andReturn().getResponse().getContentAsString();
+
+        UUID submissionId = UUID.fromString(objectMapper.readTree(response).get("id").asText());
+        assertThat(submissionRepository.findById(submissionId)).get()
+            .extracting(SubmissionEntity::getStatus).isEqualTo(SubmissionStatus.FAILED);
+    }
+
+    @Test
+    void foreignStudentProgramCannotBeUsedForStandaloneSubmission() throws Exception {
+        Fixture current = createFixture(
+            "standalone-owner", TaskType.CODE, TaskStatus.ACTIVE, true, HomeworkStatus.ASSIGNED
+        );
+        Fixture foreign = createFixture(
+            "standalone-foreign", TaskType.CODE, TaskStatus.ACTIVE, true, HomeworkStatus.ASSIGNED
+        );
+
+        submitPractice(current, foreign.studentProgramId(), current.topicId(), "pass")
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("STUDENT_PROGRAM_NOT_FOUND"));
+
+        verifyNoInteractions(executionPort);
+    }
+
+    @Test
+    void topicOutsideStudentProgramCannotBeUsedForStandaloneRun() throws Exception {
+        Fixture current = createFixture(
+            "run-owner", TaskType.CODE, TaskStatus.ACTIVE, true, HomeworkStatus.ASSIGNED
+        );
+        Fixture foreign = createFixture(
+            "run-foreign-topic", TaskType.CODE, TaskStatus.ACTIVE, true, HomeworkStatus.ASSIGNED
+        );
+
+        runPractice(current, current.studentProgramId(), foreign.topicId(), "pass")
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_TOPIC_NOT_FOUND"));
+
+        verifyNoInteractions(executionPort);
+    }
+
+    @Test
+    void standaloneRunUsesConfiguredTestsWithoutDisclosingHiddenData() throws Exception {
+        Fixture fixture = createFixture(
+            "standalone-hidden", TaskType.CODE, TaskStatus.ACTIVE, true, HomeworkStatus.ASSIGNED
+        );
+        when(executionPort.execute(any())).thenAnswer(invocation -> {
+            ExecutionRequest request = invocation.getArgument(0);
+            assertThat(request.testCases()).hasSize(2);
+            return new ExecutionResult(
+                request.executionId(), ExecutionStatus.FAILED, 1, 2, 20,
+                "secret", "secret error", List.of(
+                    new ExecutionTestResult(request.testCases().get(0).id(), true, 8, "1", null),
+                    new ExecutionTestResult(
+                        request.testCases().get(1).id(), false, 12,
+                        "DO_NOT_LEAK_OUTPUT", "DO_NOT_LEAK_ERROR"
+                    )
+                )
+            );
+        });
+
+        String response = runPractice(
+            fixture, fixture.studentProgramId(), fixture.topicId(), "print(input())"
+        )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("FAILED"))
+            .andExpect(jsonPath("$.passedTests").value(1))
+            .andExpect(jsonPath("$.totalTests").value(2))
+            .andExpect(jsonPath("$.stdoutExcerpt").doesNotExist())
+            .andExpect(jsonPath("$.stderrExcerpt").doesNotExist())
+            .andExpect(jsonPath("$.tests[1].hidden").value(true))
+            .andReturn().getResponse().getContentAsString();
+
+        assertThat(response)
+            .doesNotContain("PRIVATE_INPUT_VALUE")
+            .doesNotContain("PRIVATE_EXPECTED_VALUE")
+            .doesNotContain("DO_NOT_LEAK");
+    }
+
+    @Test
+    void passedStandaloneSubmissionDoesNotCompleteHomework() throws Exception {
+        Fixture fixture = createFixture(
+            "standalone-independent", TaskType.CODE, TaskStatus.ACTIVE, true, HomeworkStatus.ASSIGNED
+        );
+        when(executionPort.execute(any())).thenAnswer(invocation -> {
+            ExecutionRequest request = invocation.getArgument(0);
+            return new ExecutionResult(
+                request.executionId(), ExecutionStatus.PASSED, 2, 2, 15,
+                null, null, List.of()
+            );
+        });
+
+        submitPractice(fixture, "pass")
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.status").value("PASSED"));
+
+        assertThat(homeworkRepository.findById(fixture.homeworkId()).orElseThrow().getStatus())
+            .isEqualTo(HomeworkStatus.ASSIGNED);
+        mockMvc.perform(get("/api/v1/student/homeworks/{homeworkId}", fixture.homeworkId())
+                .with(user(fixture.principal())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("ASSIGNED"))
+            .andExpect(jsonPath("$.items[0].passed").value(false));
+    }
+
+    @Test
     void initialAndFinalPersistencePairsAreAtomic() {
         Fixture fixture = createFixture(
             "atomic", TaskType.CODE, TaskStatus.ACTIVE, true, HomeworkStatus.ASSIGNED
@@ -250,6 +409,47 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
             ))));
     }
 
+    private org.springframework.test.web.servlet.ResultActions submitPractice(
+        Fixture fixture,
+        String sourceCode
+    ) throws Exception {
+        return submitPractice(
+            fixture, fixture.studentProgramId(), fixture.topicId(), sourceCode
+        );
+    }
+
+    private org.springframework.test.web.servlet.ResultActions submitPractice(
+        Fixture fixture,
+        UUID studentProgramId,
+        UUID topicId,
+        String sourceCode
+    ) throws Exception {
+        return mockMvc.perform(post("/api/v1/student/tasks/{taskId}/code-submissions", fixture.taskId())
+            .with(user(fixture.principal())).with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(Map.of(
+                "studentProgramId", studentProgramId,
+                "topicId", topicId,
+                "sourceCode", sourceCode
+            ))));
+    }
+
+    private org.springframework.test.web.servlet.ResultActions runPractice(
+        Fixture fixture,
+        UUID studentProgramId,
+        UUID topicId,
+        String sourceCode
+    ) throws Exception {
+        return mockMvc.perform(post("/api/v1/student/tasks/{taskId}/run", fixture.taskId())
+            .with(user(fixture.principal())).with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(Map.of(
+                "studentProgramId", studentProgramId,
+                "topicId", topicId,
+                "sourceCode", sourceCode
+            ))));
+    }
+
     private long count(String table) {
         return ((Number) entityManager.createNativeQuery("select count(*) from " + table)
             .getSingleResult()).longValue();
@@ -289,6 +489,12 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
             UUID.randomUUID(), student.getId(), program.getId(), teacher.id(),
             StudentProgramStatus.ACTIVE, 480, Instant.now(), null
         ));
+        ModuleEntity module = moduleRepository.saveAndFlush(new ModuleEntity(
+            UUID.randomUUID(), program.getId(), "Module", null, 0
+        ));
+        TopicEntity topic = topicRepository.saveAndFlush(new TopicEntity(
+            UUID.randomUUID(), module.id(), "Topic", null, 0, TopicStatus.ACTIVE
+        ));
         TaskEntity task = taskRepository.saveAndFlush(new TaskEntity(
             UUID.randomUUID(), teacher.id(), subject.id(), "Task", "Description",
             taskType, TaskDifficulty.EASY, taskStatus
@@ -299,9 +505,13 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
             ));
             testCaseRepository.saveAllAndFlush(List.of(
                 new TaskTestCase(UUID.randomUUID(), task.getId(), "1", "1", false, ComparisonMode.EXACT, 0),
-                new TaskTestCase(UUID.randomUUID(), task.getId(), "hidden", "secret", true, ComparisonMode.EXACT, 1)
+                new TaskTestCase(
+                    UUID.randomUUID(), task.getId(), "PRIVATE_INPUT_VALUE", "PRIVATE_EXPECTED_VALUE",
+                    true, ComparisonMode.EXACT, 1
+                )
             ));
         }
+        topicTaskRepository.saveAndFlush(new TopicTaskEntity(topic.id(), task.getId(), 0, true));
         UUID homeworkId = UUID.randomUUID();
         UUID homeworkItemId = UUID.randomUUID();
         homeworkRepository.saveAndFlush(new HomeworkEntity(
@@ -314,7 +524,7 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
             new AuthenticatedUser(
                 studentUser.id(), studentUser.email(), "hash", true,
                 List.of(new SimpleGrantedAuthority("ROLE_STUDENT"))
-            ), student.getId(), studentProgram.id(), task.getId(), homeworkId, homeworkItemId
+            ), student.getId(), studentProgram.id(), topic.id(), task.getId(), homeworkId, homeworkItemId
         );
     }
 
@@ -322,6 +532,7 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
         AuthenticatedUser principal,
         UUID studentId,
         UUID studentProgramId,
+        UUID topicId,
         UUID taskId,
         UUID homeworkId,
         UUID homeworkItemId

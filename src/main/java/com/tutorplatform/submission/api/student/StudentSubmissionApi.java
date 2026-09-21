@@ -31,13 +31,13 @@ public interface StudentSubmissionApi {
         SubmitTextAnswerRequest request
     );
 
-    @Operation(operationId = "submitCodeAnswer", summary = "Submit and execute a CODE solution for a homework task")
+    @Operation(operationId = "submitCodeAnswer", summary = "Submit and execute a CODE solution for a homework or topic task")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "CODE submission created and executed"),
         @ApiResponse(responseCode = "400", description = "Validation or submission context error", content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(responseCode = "403", description = "Student role or CSRF token required", content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(responseCode = "404", description = "Task or homework item not found", content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(responseCode = "404", description = "Task, homework item, student program, or topic not found", content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(responseCode = "409", description = "Homework does not accept submissions", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     ResponseEntity<StudentSubmissionResponse> submitCodeAnswer(

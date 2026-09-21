@@ -9,6 +9,7 @@ import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.student.application.coderunner.RunCodeException.Reason;
 import com.tutorplatform.student.application.management.StudentNotFoundException;
 import com.tutorplatform.task.application.TaskQuery;
+import com.tutorplatform.task.application.StudentTopicTaskService;
 import com.tutorplatform.task.domain.programming.TaskTestCase;
 import com.tutorplatform.task.domain.task.TaskStatus;
 import com.tutorplatform.task.domain.task.TaskType;
@@ -31,6 +32,7 @@ public class StudentRunCodeService {
     private final ProgramQuery programQuery;
     private final HomeworkQuery homeworkQuery;
     private final TaskQuery taskQuery;
+    private final StudentTopicTaskService studentTopicTaskService;
     private final ExecutionPort executionPort;
 
     public StudentRunCodeService(
@@ -38,12 +40,14 @@ public class StudentRunCodeService {
         ProgramQuery programQuery,
         HomeworkQuery homeworkQuery,
         TaskQuery taskQuery,
+        StudentTopicTaskService studentTopicTaskService,
         ExecutionPort executionPort
     ) {
         this.studentOwnershipQuery = studentOwnershipQuery;
         this.programQuery = programQuery;
         this.homeworkQuery = homeworkQuery;
         this.taskQuery = taskQuery;
+        this.studentTopicTaskService = studentTopicTaskService;
         this.executionPort = executionPort;
     }
 
@@ -51,12 +55,16 @@ public class StudentRunCodeService {
         AuthenticatedUser principal,
         UUID taskId,
         UUID homeworkItemId,
+        UUID studentProgramId,
+        UUID topicId,
         String sourceCode
     ) {
         if (taskId == null) {
             throw new RunCodeException(Reason.TASK_NOT_FOUND);
         }
-        if (homeworkItemId == null || sourceCode == null || sourceCode.isBlank()) {
+        if (sourceCode == null || sourceCode.isBlank() || !validContext(
+            homeworkItemId, studentProgramId, topicId
+        )) {
             throw new RunCodeException(Reason.EXECUTION_CONTEXT_INVALID);
         }
 
@@ -64,7 +72,13 @@ public class StudentRunCodeService {
             .orElseThrow(StudentNotFoundException::new);
         TaskQuery.TaskContext taskContext = taskQuery.findTask(taskId)
             .orElseThrow(() -> new RunCodeException(Reason.TASK_NOT_FOUND));
-        requireOwnedHomeworkContext(studentId, taskContext, homeworkItemId);
+        if (homeworkItemId != null) {
+            requireOwnedHomeworkContext(studentId, taskContext, homeworkItemId);
+        } else {
+            studentTopicTaskService.requireTaskAccess(
+                studentId, studentProgramId, topicId, taskContext
+            );
+        }
         TaskQuery.CodeTaskConfiguration task = taskQuery.findCodeTaskConfiguration(taskId)
             .orElseThrow(() -> new RunCodeException(Reason.TASK_NOT_FOUND));
         requireExecutableTask(task);
@@ -99,6 +113,13 @@ public class StudentRunCodeService {
             executionResult = ExecutionResult.systemError(executionId, task.testCases().size());
         }
         return toStudentResult(executionResult, task.testCases());
+    }
+
+    private boolean validContext(UUID homeworkItemId, UUID studentProgramId, UUID topicId) {
+        boolean homeworkContext = homeworkItemId != null;
+        boolean topicContext = studentProgramId != null && topicId != null;
+        return homeworkContext != topicContext
+            && (!homeworkContext || (studentProgramId == null && topicId == null));
     }
 
     private void requireExecutableTask(TaskQuery.CodeTaskConfiguration task) {
