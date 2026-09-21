@@ -81,6 +81,14 @@ public class LessonMaterialService {
     ) {
         UUID teacherId = currentTeacherId(principal);
         requireOwnedTopicForMaterial(topicId, teacherId);
+        return getLessonMaterialForAuthorizedTopic(topicId, lessonMaterialId);
+    }
+
+    @Transactional(readOnly = true)
+    public LessonMaterialResult getLessonMaterialForAuthorizedTopic(
+        UUID topicId,
+        UUID lessonMaterialId
+    ) {
         return lessonMaterialRepository.findByIdAndTopicId(lessonMaterialId, topicId)
             .map(this::toResult)
             .orElseThrow(LessonMaterialNotFoundException::new);

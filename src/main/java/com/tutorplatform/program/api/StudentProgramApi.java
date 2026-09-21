@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.UUID;
@@ -64,5 +65,22 @@ public interface StudentProgramApi {
         @Parameter(hidden = true) AuthenticatedUser principal,
         @Parameter(schema = @Schema(format = "uuid")) UUID studentProgramId,
         @Parameter(schema = @Schema(format = "uuid")) UUID topicId
+    );
+
+    @Operation(
+        operationId = "downloadStudentProgramMaterial",
+        summary = "Download a material from a program assigned to the current student"
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Material content"),
+        @ApiResponse(responseCode = "401", description = "Authentication required"),
+        @ApiResponse(responseCode = "403", description = "Student role required"),
+        @ApiResponse(responseCode = "404", description = "Student program, topic, or material not found")
+    })
+    ResponseEntity<byte[]> downloadMaterial(
+        @Parameter(hidden = true) AuthenticatedUser principal,
+        @Parameter(schema = @Schema(format = "uuid")) UUID studentProgramId,
+        @Parameter(schema = @Schema(format = "uuid")) UUID topicId,
+        @Parameter(schema = @Schema(format = "uuid")) UUID materialId
     );
 }

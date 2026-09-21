@@ -116,6 +116,15 @@ public class FileMaterialService {
     @Transactional(readOnly = true)
     public Download download(AuthenticatedUser principal, UUID topicId, UUID materialId) {
         LessonMaterialResult material = materialService.getLessonMaterial(principal, topicId, materialId);
+        return download(material);
+    }
+
+    @Transactional(readOnly = true)
+    public Download downloadForAuthorizedTopic(UUID topicId, UUID materialId) {
+        return download(materialService.getLessonMaterialForAuthorizedTopic(topicId, materialId));
+    }
+
+    private Download download(LessonMaterialResult material) {
         if (material.fileAssetId() == null) {
             throw new LessonMaterialNotFoundException();
         }

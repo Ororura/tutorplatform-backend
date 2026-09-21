@@ -2,8 +2,12 @@ package com.tutorplatform.program.api;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.content.domain.LessonMaterialEntity;
+import com.tutorplatform.content.domain.FileAssetEntity;
+import com.tutorplatform.content.domain.FileAssetRepository;
 import com.tutorplatform.content.domain.LessonMaterialRepository;
 import com.tutorplatform.content.domain.LessonMaterialType;
+import com.tutorplatform.content.domain.StorageProvider;
+import com.tutorplatform.file.application.FileStorage;
 import com.tutorplatform.program.domain.ModuleEntity;
 import com.tutorplatform.program.domain.ModuleRepository;
 import com.tutorplatform.program.domain.TopicEntity;
@@ -45,11 +49,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -57,10 +65,27 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 class StudentProgramApiIntegrationTest extends PostgresIntegrationTest {
+    private static final Path STORAGE = temporaryStorage();
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
         PostgresIntegrationTest.configurePostgres(registry, "test_student_program_api", null);
+        registry.add("app.file-storage.directory", () -> STORAGE.toString());
+    }
+
+    private static Path temporaryStorage() {
+        try {
+            return Files.createTempDirectory("student-material-api-");
+        } catch (java.io.IOException exception) {
+            throw new java.io.UncheckedIOException(exception);
+        }
+    }
+
+    @org.junit.jupiter.api.AfterAll
+    static void cleanupStorage() throws Exception {
+        try (var paths = Files.walk(STORAGE)) {
+            for (Path path : paths.sorted(java.util.Comparator.reverseOrder()).toList()) Files.delete(path);
+        }
     }
 
     @Autowired
@@ -87,6 +112,10 @@ class StudentProgramApiIntegrationTest extends PostgresIntegrationTest {
     private StudentTopicProgressRepository progressRepository;
     @Autowired
     private LessonMaterialRepository lessonMaterialRepository;
+    @Autowired
+    private FileAssetRepository fileAssetRepository;
+    @Autowired
+    private FileStorage fileStorage;
 
     @Test
     void listReturnsOnlyCurrentStudentsPrograms() throws Exception {
@@ -238,6 +267,63 @@ class StudentProgramApiIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
+    void studentDownloadsFileFromAssignedProgramTopic() throws Exception {
+        Fixture fixture = createFixture("download-own");
+        StudentProgramEntity program = createProgram(fixture, "Java", Instant.now());
+        LearningProgramEntity learningProgram = learningProgramRepository
+            .findById(program.learningProgramId()).orElseThrow();
+        TopicEntity topic = createTopic(createModule(learningProgram, "Файлы", 0), "Конспект", 0);
+        byte[] content = "student material".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        LessonMaterialEntity material = createFileMaterial(fixture, topic, "lesson.txt", content);
+
+        mockMvc.perform(get(
+                "/api/v1/student/programs/{studentProgramId}/topics/{topicId}/materials/{materialId}/download",
+                program.id(), topic.id(), material.getId()
+            ).with(user(fixture.principal())))
+            .andExpect(status().isOk())
+            .andExpect(content().bytes(content))
+            .andExpect(content().contentType("text/plain"))
+            .andExpect(header().string("Cache-Control", "no-store"))
+            .andExpect(header().string("X-Content-Type-Options", "nosniff"))
+            .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.startsWith("attachment;")));
+    }
+
+    @Test
+    void studentCannotDownloadFileFromAnotherStudentsProgram() throws Exception {
+        Fixture current = createFixture("download-current");
+        Fixture foreign = createFixture("download-foreign");
+        StudentProgramEntity foreignProgram = createProgram(foreign, "Чужая", Instant.now());
+        LearningProgramEntity learningProgram = learningProgramRepository
+            .findById(foreignProgram.learningProgramId()).orElseThrow();
+        TopicEntity topic = createTopic(createModule(learningProgram, "Модуль", 0), "Тема", 0);
+        LessonMaterialEntity material = createFileMaterial(foreign, topic, "foreign.txt", "secret".getBytes());
+
+        mockMvc.perform(get(
+                "/api/v1/student/programs/{studentProgramId}/topics/{topicId}/materials/{materialId}/download",
+                foreignProgram.id(), topic.id(), material.getId()
+            ).with(user(current.principal())))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("STUDENT_PROGRAM_NOT_FOUND"));
+    }
+
+    @Test
+    void studentCannotDownloadArbitraryTeacherFileAsset() throws Exception {
+        Fixture fixture = createFixture("download-arbitrary");
+        StudentProgramEntity program = createProgram(fixture, "Java", Instant.now());
+        LearningProgramEntity learningProgram = learningProgramRepository
+            .findById(program.learningProgramId()).orElseThrow();
+        TopicEntity topic = createTopic(createModule(learningProgram, "Модуль", 0), "Тема", 0);
+        FileAssetEntity unattachedAsset = createFileAsset(fixture, "private.txt", "private".getBytes());
+
+        mockMvc.perform(get(
+                "/api/v1/student/programs/{studentProgramId}/topics/{topicId}/materials/{materialId}/download",
+                program.id(), topic.id(), unattachedAsset.id()
+            ).with(user(fixture.principal())))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("LESSON_MATERIAL_NOT_FOUND"));
+    }
+
+    @Test
     void missingTopicIsNotFound() throws Exception {
         Fixture fixture = createFixture("topic-missing");
         StudentProgramEntity program = createProgram(fixture, "Программа", Instant.now());
@@ -363,6 +449,27 @@ class StudentProgramApiIntegrationTest extends PostgresIntegrationTest {
             null,
             null,
             position
+        ));
+    }
+
+    private LessonMaterialEntity createFileMaterial(
+        Fixture fixture,
+        TopicEntity topic,
+        String filename,
+        byte[] content
+    ) {
+        FileAssetEntity asset = createFileAsset(fixture, filename, content);
+        return lessonMaterialRepository.saveAndFlush(new LessonMaterialEntity(
+            UUID.randomUUID(), topic.id(), fixture.teacher().id(), LessonMaterialType.FILE,
+            filename, null, asset.id(), null, 0
+        ));
+    }
+
+    private FileAssetEntity createFileAsset(Fixture fixture, String filename, byte[] content) {
+        FileStorage.StoredObject object = fileStorage.store(content);
+        return fileAssetRepository.saveAndFlush(new FileAssetEntity(
+            UUID.randomUUID(), fixture.teacher().id(), StorageProvider.valueOf(object.provider()), object.key(),
+            filename, "text/plain", content.length, "test-sha256"
         ));
     }
 
