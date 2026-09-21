@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public record LearningProgramSummaryResponse(
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "uuid") UUID id,
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String slug,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) ProgramSubjectResponse subject,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String title,
     @Schema(nullable = true) String description,

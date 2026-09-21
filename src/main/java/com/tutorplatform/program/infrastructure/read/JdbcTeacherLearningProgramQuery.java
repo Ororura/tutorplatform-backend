@@ -24,7 +24,7 @@ public class JdbcTeacherLearningProgramQuery implements TeacherLearningProgramQu
     public List<LearningProgramSummary> findPrograms(UUID teacherId, LearningProgramStatus status) {
         String statusClause = status == null ? "" : " AND program.status = :status";
         JdbcClient.StatementSpec statement = jdbcClient.sql("""
-            SELECT program.id, program.title, program.description, program.status,
+            SELECT program.id, program.slug, program.title, program.description, program.status,
                    program.created_at, program.updated_at,
                    subject.id AS subject_id, subject.code AS subject_code, subject.name AS subject_name
             FROM learning_programs program
@@ -37,6 +37,7 @@ public class JdbcTeacherLearningProgramQuery implements TeacherLearningProgramQu
         }
         return statement.query((resultSet, rowNumber) -> new LearningProgramSummary(
             resultSet.getObject("id", UUID.class),
+            resultSet.getString("slug"),
             resultSet.getObject("subject_id", UUID.class),
             resultSet.getString("subject_code"),
             resultSet.getString("subject_name"),
@@ -51,7 +52,7 @@ public class JdbcTeacherLearningProgramQuery implements TeacherLearningProgramQu
     @Override
     public Optional<LearningProgramDetails> findProgram(UUID teacherId, UUID learningProgramId) {
         return jdbcClient.sql("""
-            SELECT program.id, program.title, program.description, program.status, program.version,
+            SELECT program.id, program.slug, program.title, program.description, program.status, program.version,
                    program.created_at, program.updated_at,
                    subject.id AS subject_id, subject.code AS subject_code, subject.name AS subject_name
             FROM learning_programs program
@@ -62,6 +63,7 @@ public class JdbcTeacherLearningProgramQuery implements TeacherLearningProgramQu
             .param("teacherId", teacherId)
             .query((resultSet, rowNumber) -> new ProgramRow(
                 resultSet.getObject("id", UUID.class),
+                resultSet.getString("slug"),
                 resultSet.getObject("subject_id", UUID.class),
                 resultSet.getString("subject_code"),
                 resultSet.getString("subject_name"),
@@ -73,10 +75,53 @@ public class JdbcTeacherLearningProgramQuery implements TeacherLearningProgramQu
                 resultSet.getTimestamp("updated_at").toInstant()
             )).optional()
             .map(program -> new LearningProgramDetails(
-                program.id(), program.subjectId(), program.subjectCode(), program.subjectName(), program.title(),
+                program.id(), program.slug(), program.subjectId(), program.subjectCode(), program.subjectName(), program.title(),
                 program.description(), program.status(), program.version(), program.createdAt(), program.updatedAt(),
                 hasAssignments(program.id()), findModules(program.id())
             ));
+    }
+
+    @Override
+    public Optional<UUID> findProgramIdBySlug(UUID teacherId, String slug) {
+        return jdbcClient.sql("""
+            SELECT id
+            FROM learning_programs
+            WHERE teacher_id = :teacherId
+              AND slug = :slug
+            """)
+            .param("teacherId", teacherId)
+            .param("slug", slug)
+            .query(UUID.class)
+            .optional();
+    }
+
+    @Override
+    public Optional<String> findSlug(UUID teacherId, UUID learningProgramId) {
+        return jdbcClient.sql("""
+            SELECT slug
+            FROM learning_programs
+            WHERE teacher_id = :teacherId
+              AND id = :learningProgramId
+            """)
+            .param("teacherId", teacherId)
+            .param("learningProgramId", learningProgramId)
+            .query(String.class)
+            .optional();
+    }
+
+    @Override
+    public Optional<String> findTopicSlug(UUID learningProgramId, UUID topicId) {
+        return jdbcClient.sql("""
+            SELECT topic.slug
+            FROM topics topic
+            JOIN modules module ON module.id = topic.module_id
+            WHERE module.learning_program_id = :learningProgramId
+              AND topic.id = :topicId
+            """)
+            .param("learningProgramId", learningProgramId)
+            .param("topicId", topicId)
+            .query(String.class)
+            .optional();
     }
 
     @Override
@@ -120,7 +165,7 @@ public class JdbcTeacherLearningProgramQuery implements TeacherLearningProgramQu
             return List.of();
         }
         Map<UUID, List<TopicDetails>> topicsByModuleId = jdbcClient.sql("""
-            SELECT id, module_id, title, description, position, status, version
+            SELECT id, module_id, slug, title, description, position, status, version
             FROM topics
             WHERE module_id IN (:moduleIds)
             ORDER BY module_id ASC, position ASC, id ASC
@@ -128,11 +173,12 @@ public class JdbcTeacherLearningProgramQuery implements TeacherLearningProgramQu
             .param("moduleIds", modules.stream().map(ModuleRow::id).toList())
             .query((resultSet, rowNumber) -> new TopicRow(
                 resultSet.getObject("id", UUID.class), resultSet.getObject("module_id", UUID.class),
+                resultSet.getString("slug"),
                 resultSet.getString("title"), resultSet.getString("description"), resultSet.getInt("position"),
                 TopicStatus.valueOf(resultSet.getString("status")), resultSet.getObject("version", Long.class)
             )).list().stream().collect(Collectors.groupingBy(TopicRow::moduleId,
                 Collectors.mapping(topic -> new TopicDetails(
-                    topic.id(), topic.title(), topic.description(), topic.position(), topic.status(), topic.version()
+                    topic.id(), topic.slug(), topic.title(), topic.description(), topic.position(), topic.status(), topic.version()
                 ), Collectors.toList())));
         return modules.stream().map(module -> new ModuleDetails(
             module.id(), module.title(), module.description(), module.position(),
@@ -141,7 +187,7 @@ public class JdbcTeacherLearningProgramQuery implements TeacherLearningProgramQu
     }
 
     private record ProgramRow(
-        UUID id, UUID subjectId, String subjectCode, String subjectName, String title, String description,
+        UUID id, String slug, UUID subjectId, String subjectCode, String subjectName, String title, String description,
         LearningProgramStatus status, Long version, java.time.Instant createdAt, java.time.Instant updatedAt
     ) {
     }
@@ -150,7 +196,7 @@ public class JdbcTeacherLearningProgramQuery implements TeacherLearningProgramQu
     }
 
     private record TopicRow(
-        UUID id, UUID moduleId, String title, String description, int position, TopicStatus status, Long version
+        UUID id, UUID moduleId, String slug, String title, String description, int position, TopicStatus status, Long version
     ) {
     }
 }

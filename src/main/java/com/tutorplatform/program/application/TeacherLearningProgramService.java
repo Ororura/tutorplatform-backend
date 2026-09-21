@@ -72,9 +72,18 @@ public class TeacherLearningProgramService {
         UUID teacherId = teacherId(principal);
         return programQuery.findPrograms(teacherId, status).stream().map(program ->
             new LearningProgramSummaryResponse(
-                program.id(), new ProgramSubjectResponse(program.subjectId(), program.subjectCode(), program.subjectName()),
+                program.id(), program.slug(), new ProgramSubjectResponse(program.subjectId(), program.subjectCode(), program.subjectName()),
                 program.title(), program.description(), program.status(), program.createdAt(), program.updatedAt()
             )).toList();
+    }
+
+    public LearningProgramDetailsResponse getBySlug(AuthenticatedUser principal, String slug) {
+        UUID teacherId = teacherId(principal);
+
+        UUID programId = programQuery.findProgramIdBySlug(teacherId, slug)
+            .orElseThrow(LearningProgramNotFoundException::new);
+
+        return get(principal, programId);
     }
 
     public LearningProgramDetailsResponse get(AuthenticatedUser principal, UUID programId) {
@@ -83,13 +92,13 @@ public class TeacherLearningProgramService {
             .orElseThrow(LearningProgramNotFoundException::new);
         boolean editable = program.status() != LearningProgramStatus.ARCHIVED && !program.hasAssignments();
         return new LearningProgramDetailsResponse(
-            program.id(), new ProgramSubjectResponse(program.subjectId(), program.subjectCode(), program.subjectName()),
+            program.id(), program.slug(), new ProgramSubjectResponse(program.subjectId(), program.subjectCode(), program.subjectName()),
             program.title(), program.description(), program.status(), program.version(), program.createdAt(), program.updatedAt(),
             program.hasAssignments(), editable,
             program.modules().stream().map(module -> new LearningProgramModuleDetailsResponse(
                 module.id(), module.title(), module.description(), module.position(),
                 module.topics().stream().map(topic -> new LearningProgramTopicDetailsResponse(
-                    topic.id(), topic.title(), topic.description(), topic.position(), topic.status(), topic.version()
+                    topic.id(), topic.slug(), topic.title(), topic.description(), topic.position(), topic.status(), topic.version()
                 )).toList()
             )).toList()
         );
@@ -134,7 +143,7 @@ public class TeacherLearningProgramService {
             topicRepository.findMaxPositionByModuleId(moduleId) + 1, TopicStatus.DRAFT
         ));
         return new LearningProgramTopicDetailsResponse(
-            topic.id(), topic.title(), topic.description(), topic.position(), topic.status(), topic.version()
+            topic.id(), programQuery.findTopicSlug(programId, topic.id()).orElseThrow(LearningProgramTopicNotFoundException::new), topic.title(), topic.description(), topic.position(), topic.status(), topic.version()
         );
     }
 
@@ -245,7 +254,7 @@ public class TeacherLearningProgramService {
             throw new LearningProgramTopicVersionConflictException(exception);
         }
         return new LearningProgramTopicDetailsResponse(
-            updated.id(), updated.title(), updated.description(), updated.position(), updated.status(), updated.version()
+            updated.id(), programQuery.findTopicSlug(programId, updated.id()).orElseThrow(LearningProgramTopicNotFoundException::new), updated.title(), updated.description(), updated.position(), updated.status(), updated.version()
         );
     }
 
@@ -350,7 +359,9 @@ public class TeacherLearningProgramService {
 
     private LearningProgramSummaryResponse response(LearningProgramEntity program, SubjectEntity subject) {
         return new LearningProgramSummaryResponse(
-            program.getId(), new ProgramSubjectResponse(subject.id(), subject.code(), subject.name()),
+            program.getId(),
+            programQuery.findSlug(program.getTeacherId(), program.getId()).orElseThrow(LearningProgramNotFoundException::new),
+            new ProgramSubjectResponse(subject.id(), subject.code(), subject.name()),
             program.getTitle(), program.getDescription(), program.getStatus(), program.getCreatedAt(), program.getUpdatedAt()
         );
     }

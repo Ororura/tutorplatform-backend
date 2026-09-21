@@ -49,6 +49,15 @@ public class TeacherLearningProgramController implements TeacherLearningProgramA
     }
 
     @Override
+    @GetMapping("/by-slug/{slug}")
+    public LearningProgramDetailsResponse getProgramBySlug(
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @PathVariable String slug
+    ) {
+        return service.getBySlug(principal, slug);
+    }
+
+    @Override
     @PostMapping
     public ResponseEntity<LearningProgramSummaryResponse> createProgram(
         @AuthenticationPrincipal AuthenticatedUser principal,
