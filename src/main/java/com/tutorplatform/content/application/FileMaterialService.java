@@ -65,7 +65,8 @@ public class FileMaterialService {
             || filename.codePoints().anyMatch(Character::isISOControl)) {
             throw new InvalidLessonMaterialException("file", "invalid original filename");
         }
-        byte[] content = policy.readAndValidate(input, size, filename, mimeType, type);
+        String effectiveMimeType = mimeType == null || mimeType.isBlank() ? "application/octet-stream" : mimeType;
+        byte[] content = policy.readAndValidate(input, size, filename, effectiveMimeType, type);
         var object = storage.store(content);
         // afterCompletion includes failures at COMMIT, unlike a catch around repository.save().
         // MVP: rollback deletes the object; failed cleanup/unknown outcome is an actionable
@@ -99,7 +100,7 @@ public class FileMaterialService {
             StorageProvider.valueOf(object.provider()),
             object.key(),
             filename,
-            mimeType,
+            effectiveMimeType,
             content.length,
             sha256(content)
         ));
