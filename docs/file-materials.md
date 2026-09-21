@@ -30,10 +30,11 @@ is introduced.
   alongside the file limit if needed.
 - `MATERIAL_FILES_ALLOWED_MIME_TYPES`: comma-separated allowlist. FILE accepts
   PDF, PNG/JPEG, ZIP and the educational text formats `.py`, `.sh`, `.js`, `.ts`,
-  `.java`, `.txt`, `.md`, `.json` and `.csv`; IMAGE accepts only PNG/JPEG.
+  `.tsx`, `.java`, `.txt`, `.md`, `.json` and `.csv`; IMAGE accepts only PNG/JPEG.
   Extension, declared MIME and content must agree. Text formats may arrive as
-  `text/plain` or `application/octet-stream`, but still must be valid UTF-8 without
-  binary control characters. PDF, images and ZIP use minimal signatures. New
+  `text/plain` or `application/octet-stream`; `.ts` also accepts the browser-assigned
+  `video/mp2t`. Regardless of MIME, text files must be valid UTF-8 without binary
+  control characters. PDF, images and ZIP use minimal signatures. New
   formats require a minimal verifier before they can be enabled. These checks are
   not antivirus or full document validation.
 

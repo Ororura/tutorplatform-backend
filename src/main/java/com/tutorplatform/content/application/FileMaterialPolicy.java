@@ -31,7 +31,8 @@ public class FileMaterialPolicy {
         Map.entry(".py", withTextMimes("text/x-python", "application/x-python-code")),
         Map.entry(".sh", withTextMimes("application/x-sh", "text/x-shellscript")),
         Map.entry(".js", withTextMimes("application/javascript", "text/javascript")),
-        Map.entry(".ts", withTextMimes("application/typescript", "text/typescript")),
+        Map.entry(".ts", withTextMimes("application/typescript", "text/typescript", "video/mp2t")),
+        Map.entry(".tsx", withTextMimes("application/typescript", "text/typescript", "text/tsx")),
         Map.entry(".java", withTextMimes("text/x-java-source"))
     );
     private static final Map<String, String> IMAGE_MIME_TYPES = Map.of(
@@ -44,7 +45,7 @@ public class FileMaterialPolicy {
 
     public FileMaterialPolicy(
         @Value("${app.material-files.max-size-bytes:10485760}") int maxBytes,
-        @Value("${app.material-files.allowed-mime-types:application/pdf,image/png,image/jpeg,text/plain,application/octet-stream,application/zip,application/x-zip-compressed,text/markdown,text/csv,application/json,text/json,text/x-python,application/x-python-code,application/x-sh,text/x-shellscript,application/javascript,text/javascript,application/typescript,text/typescript,text/x-java-source}")
+        @Value("${app.material-files.allowed-mime-types:application/pdf,image/png,image/jpeg,text/plain,application/octet-stream,application/zip,application/x-zip-compressed,text/markdown,text/csv,application/json,text/json,text/x-python,application/x-python-code,application/x-sh,text/x-shellscript,application/javascript,text/javascript,application/typescript,text/typescript,text/tsx,video/mp2t,text/x-java-source}")
         Set<String> allowedMimeTypes
     ) {
         if (maxBytes <= 0 || maxBytes == Integer.MAX_VALUE) {
@@ -94,7 +95,7 @@ public class FileMaterialPolicy {
             case ".png" -> startsWith(bytes, new byte[]{(byte) 137, 80, 78, 71, 13, 10, 26, 10});
             case ".jpg", ".jpeg" -> startsWith(bytes, new byte[]{(byte) 255, (byte) 216, (byte) 255});
             case ".zip" -> isZip(bytes);
-            case ".txt", ".md", ".csv", ".json", ".py", ".sh", ".js", ".ts", ".java" -> isText(bytes);
+            case ".txt", ".md", ".csv", ".json", ".py", ".sh", ".js", ".ts", ".tsx", ".java" -> isText(bytes);
             default -> false;
         };
     }

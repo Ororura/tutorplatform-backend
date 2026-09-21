@@ -44,7 +44,8 @@ class FileMaterialPolicyTest {
 
     @Test
     void executableTextExtensionsStillRequireMatchingMimeAndTextContent() {
-        var policy = new FileMaterialPolicy(100, Set.of("text/plain", "application/octet-stream", "image/png"));
+        var policy = new FileMaterialPolicy(100,
+            Set.of("text/plain", "application/octet-stream", "image/png", "video/mp2t"));
         assertThat(policy.readAndValidate(new ByteArrayInputStream("#!/bin/sh\necho ok\n".getBytes()),
             18, "lesson.sh", "application/octet-stream", LessonMaterialType.FILE)).isNotEmpty();
         assertThatThrownBy(() -> policy.readAndValidate(new ByteArrayInputStream("#!/bin/sh".getBytes()),
@@ -53,5 +54,9 @@ class FileMaterialPolicyTest {
         assertThatThrownBy(() -> policy.readAndValidate(new ByteArrayInputStream("#!/bin/sh".getBytes()),
             9, "lesson.sh", "text/plain", LessonMaterialType.IMAGE))
             .isInstanceOf(InvalidLessonMaterialException.class);
+        assertThat(policy.readAndValidate(new ByteArrayInputStream("export const lesson = 1;".getBytes()),
+            24, "har-parser.ts", "video/mp2t", LessonMaterialType.FILE)).isNotEmpty();
+        assertThat(policy.readAndValidate(new ByteArrayInputStream("export const Lesson = () => <div />;".getBytes()),
+            37, "lesson.tsx", "application/octet-stream", LessonMaterialType.FILE)).isNotEmpty();
     }
 }

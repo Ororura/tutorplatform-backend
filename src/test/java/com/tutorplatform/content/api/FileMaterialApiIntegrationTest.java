@@ -155,7 +155,8 @@ class FileMaterialApiIntegrationTest extends PostgresIntegrationTest {
     @ParameterizedTest
     @CsvSource({
         "lesson.sh,application/octet-stream,#!/bin/sh\\necho lesson",
-        "lesson.py,text/plain,print('lesson')"
+        "lesson.py,text/plain,print('lesson')",
+        "har-parser.ts,video/mp2t,export const lesson = 1"
     })
     void uploadsEducationalSourceFilesAsFile(String name, String mime, String source) throws Exception {
         var fixture = createFixture(UUID.randomUUID() + "@example.com");
@@ -177,6 +178,22 @@ class FileMaterialApiIntegrationTest extends PostgresIntegrationTest {
             .andExpect(content().bytes(source.getBytes()))
             .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.startsWith("attachment;")))
             .andExpect(header().string("X-Content-Type-Options", "nosniff"));
+    }
+
+    @Test
+    void uploadsTsxWithMissingBrowserMimeAsOctetStream() throws Exception {
+        var fixture = createFixture(UUID.randomUUID() + "@example.com");
+        var result = mockMvc.perform(upload(fixture, "FILE", "lesson.tsx", null,
+                "export const Lesson = () => <div />;".getBytes(), 0)
+                .with(user(fixture.principal())).with(csrf()))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+        UUID materialId = UUID.fromString(json(result).get("id").asText());
+        var material = lessonMaterialService.getLessonMaterial(fixture.principal(), fixture.topic().id(), materialId);
+        var asset = assets.findById(material.fileAssetId()).orElseThrow();
+        assertThat(asset.originalFilename()).isEqualTo("lesson.tsx");
+        assertThat(asset.mimeType()).isEqualTo("application/octet-stream");
     }
 
     @Test
