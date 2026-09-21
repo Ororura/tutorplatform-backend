@@ -8,33 +8,19 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 public record CreateTaskRequest(
-    @NotNull
-    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "uuid")
-    UUID subjectId,
-
-    @NotBlank
-    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 220)
-    String title,
-
-    @NotNull
-    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-    String descriptionMarkdown,
-
-    @NotNull
-    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-    TaskDifficulty difficulty,
-
-    @Schema(description = "Defaults to TEXT when omitted", allowableValues = {"TEXT", "CODE"})
-    TaskType taskType,
-
-    @Valid
-    ProgrammingTaskConfigRequest programmingConfig,
-
-    List<@Valid TaskTestCaseRequest> testCases
-) {
-}
+        @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "uuid")
+                UUID subjectId,
+        @NotBlank @Schema(requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 220)
+                String title,
+        @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String descriptionMarkdown,
+        @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) TaskDifficulty difficulty,
+        @Schema(
+                        description = "Defaults to TEXT when omitted",
+                        allowableValues = {"TEXT", "CODE"})
+                TaskType taskType,
+        @Valid ProgrammingTaskConfigRequest programmingConfig,
+        List<@Valid TaskTestCaseRequest> testCases) {}

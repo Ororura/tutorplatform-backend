@@ -1,4 +1,3 @@
 package com.tutorplatform.student.application.management;
 
-public class StudentAlreadyRegisteredException extends RuntimeException {
-}
+public class StudentAlreadyRegisteredException extends RuntimeException {}

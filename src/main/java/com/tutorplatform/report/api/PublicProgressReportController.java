@@ -1,9 +1,9 @@
 package com.tutorplatform.report.api;
 
 import com.tutorplatform.report.api.response.PublicProgressReportResponse;
-import com.tutorplatform.report.application.PublicProgressReportService;
 import com.tutorplatform.report.application.ProgressReportPdfDownload;
 import com.tutorplatform.report.application.ProgressReportPdfService;
+import com.tutorplatform.report.application.PublicProgressReportService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,9 +18,8 @@ public class PublicProgressReportController implements PublicProgressReportApi {
     private final ProgressReportPdfService pdfService;
 
     public PublicProgressReportController(
-        PublicProgressReportService publicProgressReportService,
-        ProgressReportPdfService pdfService
-    ) {
+            PublicProgressReportService publicProgressReportService,
+            ProgressReportPdfService pdfService) {
         this.publicProgressReportService = publicProgressReportService;
         this.pdfService = pdfService;
     }

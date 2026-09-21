@@ -1,13 +1,13 @@
 package com.tutorplatform.shared.api;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(OutputCaptureExtension.class)
 class ApiExceptionHandlerTest {
@@ -16,7 +16,8 @@ class ApiExceptionHandlerTest {
 
     @Test
     void maxUploadSizeExceededUsesFileTooLargeContract() {
-        var response = handler.handleMaxUploadSizeExceeded(new MaxUploadSizeExceededException(1024));
+        var response =
+                handler.handleMaxUploadSizeExceeded(new MaxUploadSizeExceededException(1024));
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.PAYLOAD_TOO_LARGE);
         assertThat(response.getBody()).isNotNull();

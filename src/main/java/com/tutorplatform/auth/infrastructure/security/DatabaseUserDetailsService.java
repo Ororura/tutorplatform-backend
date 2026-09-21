@@ -21,17 +21,18 @@ public class DatabaseUserDetailsService implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        var user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        var user =
+                userRepository
+                        .findByEmail(email)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         return new AuthenticatedUser(
-            user.id(),
-            user.email(),
-            user.passwordHash(),
-            user.status() == UserStatus.ACTIVE,
-            user.roles().stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
-                .toList()
-        );
+                user.id(),
+                user.email(),
+                user.passwordHash(),
+                user.status() == UserStatus.ACTIVE,
+                user.roles().stream()
+                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
+                        .toList());
     }
 }

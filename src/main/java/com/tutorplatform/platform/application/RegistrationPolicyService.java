@@ -11,17 +11,14 @@ public class RegistrationPolicyService {
 
     private final PlatformSettingsRepository repository;
 
-    public RegistrationPolicyService(
-        PlatformSettingsRepository repository
-    ) {
+    public RegistrationPolicyService(PlatformSettingsRepository repository) {
         this.repository = repository;
     }
 
     @Transactional(propagation = Propagation.MANDATORY)
     public void requireOpenRegistration() {
 
-        RegistrationMode mode =
-            repository.getRegistrationModeForRegistration();
+        RegistrationMode mode = repository.getRegistrationModeForRegistration();
 
         if (mode != RegistrationMode.OPEN) {
             throw new RegistrationInviteRequiredException();

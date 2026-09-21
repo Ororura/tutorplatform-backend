@@ -1,11 +1,13 @@
 package com.tutorplatform.auth.api;
 
-import com.tutorplatform.test.PostgresIntegrationTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tutorplatform.test.PostgresIntegrationTest;
 import com.tutorplatform.user.domain.TeacherRepository;
 import com.tutorplatform.user.domain.UserRepository;
 import com.tutorplatform.user.domain.UserRole;
@@ -13,18 +15,15 @@ import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -37,25 +36,19 @@ class AuthIntegrationTest extends PostgresIntegrationTest {
 
     private static final String PASSWORD = "correct horse battery staple";
 
-    @Autowired
-    private MockMvc mockMvc;
-    @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private TeacherRepository teacherRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private JdbcClient jdbcClient;
-
+    @Autowired private MockMvc mockMvc;
+    @Autowired private ObjectMapper objectMapper;
+    @Autowired private UserRepository userRepository;
+    @Autowired private TeacherRepository teacherRepository;
+    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private JdbcClient jdbcClient;
 
     @BeforeEach
     void cleanIdentityData() {
-        jdbcClient.sql(
-            "UPDATE platform_settings SET registration_mode = 'OPEN', updated_by_admin_id = NULL"
-        ).update();
+        jdbcClient
+                .sql(
+                        "UPDATE platform_settings SET registration_mode = 'OPEN', updated_by_admin_id = NULL")
+                .update();
 
         teacherRepository.deleteAll();
         userRepository.deleteAll();
@@ -74,41 +67,44 @@ class AuthIntegrationTest extends PostgresIntegrationTest {
     void registerTeacherCreatesIdentityAtomicallyAndAuthenticatedSession() throws Exception {
         CsrfExchange csrf = obtainCsrf();
 
-        MvcResult registration = mockMvc.perform(post("/api/v1/auth/register/teacher")
-                .cookie(csrf.sessionCookie())
-                .header(csrf.headerName(), csrf.token())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+        MvcResult registration =
+                mockMvc.perform(
+                                post("/api/v1/auth/register/teacher")
+                                        .cookie(csrf.sessionCookie())
+                                        .header(csrf.headerName(), csrf.token())
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(
+                                                """
                     {
                       "displayName": "  Егор  ",
                       "email": "teacher@example.com",
                       "password": "correct horse battery staple"
                     }
                     """))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.id").isNotEmpty())
-            .andExpect(jsonPath("$.email").value("teacher@example.com"))
-            .andExpect(jsonPath("$.displayName").value("Егор"))
-            .andExpect(jsonPath("$.roles[0]").value("TEACHER"))
-            .andReturn();
+                        .andExpect(status().isCreated())
+                        .andExpect(jsonPath("$.id").isNotEmpty())
+                        .andExpect(jsonPath("$.email").value("teacher@example.com"))
+                        .andExpect(jsonPath("$.displayName").value("Егор"))
+                        .andExpect(jsonPath("$.roles[0]").value("TEACHER"))
+                        .andReturn();
 
         var user = userRepository.findByEmail("TEACHER@example.com").orElseThrow();
         assertThat(user.roles()).containsExactly(UserRole.TEACHER);
         assertThat(passwordEncoder.matches(PASSWORD, user.passwordHash())).isTrue();
         assertThat(user.passwordHash()).startsWith("$argon2");
         assertThat(teacherRepository.findByUserId(user.id()))
-            .get()
-            .extracting(teacher -> teacher.displayName())
-            .isEqualTo("Егор");
+                .get()
+                .extracting(teacher -> teacher.displayName())
+                .isEqualTo("Егор");
 
         Cookie authenticatedSession = sessionCookieFrom(registration, csrf.sessionCookie());
         assertThat(authenticatedSession.getValue()).isNotEqualTo(csrf.sessionCookie().getValue());
         mockMvc.perform(get("/api/v1/auth/me").cookie(authenticatedSession))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(user.id().toString()))
-            .andExpect(jsonPath("$.email").value("teacher@example.com"))
-            .andExpect(jsonPath("$.displayName").value("Егор"))
-            .andExpect(jsonPath("$.roles[0]").value("TEACHER"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(user.id().toString()))
+                .andExpect(jsonPath("$.email").value("teacher@example.com"))
+                .andExpect(jsonPath("$.displayName").value("Егор"))
+                .andExpect(jsonPath("$.roles[0]").value("TEACHER"));
     }
 
     @Test
@@ -116,13 +112,14 @@ class AuthIntegrationTest extends PostgresIntegrationTest {
         register("teacher@example.com", "Егор");
         CsrfExchange csrf = obtainCsrf();
 
-        mockMvc.perform(post("/api/v1/auth/register/teacher")
-                .cookie(csrf.sessionCookie())
-                .header(csrf.headerName(), csrf.token())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(registrationJson("TEACHER@example.com", "Другой")))
-            .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.code").value("EMAIL_ALREADY_REGISTERED"));
+        mockMvc.perform(
+                        post("/api/v1/auth/register/teacher")
+                                .cookie(csrf.sessionCookie())
+                                .header(csrf.headerName(), csrf.token())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(registrationJson("TEACHER@example.com", "Другой")))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("EMAIL_ALREADY_REGISTERED"));
 
         assertThat(userRepository.count()).isOne();
         assertThat(teacherRepository.count()).isOne();
@@ -132,20 +129,22 @@ class AuthIntegrationTest extends PostgresIntegrationTest {
     void registrationValidationReturnsStandardValidationError() throws Exception {
         CsrfExchange csrf = obtainCsrf();
 
-        mockMvc.perform(post("/api/v1/auth/register/teacher")
-                .cookie(csrf.sessionCookie())
-                .header(csrf.headerName(), csrf.token())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+        mockMvc.perform(
+                        post("/api/v1/auth/register/teacher")
+                                .cookie(csrf.sessionCookie())
+                                .header(csrf.headerName(), csrf.token())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        """
                     {
                       "displayName": " x ",
                       "email": "not-an-email",
                       "password": "too-short"
                     }
                     """))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
-            .andExpect(jsonPath("$.details.length()").value(3));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.details.length()").value(3));
 
         assertThat(userRepository.count()).isZero();
         assertThat(teacherRepository.count()).isZero();
@@ -155,13 +154,14 @@ class AuthIntegrationTest extends PostgresIntegrationTest {
     void malformedJsonReturnsStandardValidationError() throws Exception {
         CsrfExchange csrf = obtainCsrf();
 
-        mockMvc.perform(post("/api/v1/auth/register/teacher")
-                .cookie(csrf.sessionCookie())
-                .header(csrf.headerName(), csrf.token())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{"))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+        mockMvc.perform(
+                        post("/api/v1/auth/register/teacher")
+                                .cookie(csrf.sessionCookie())
+                                .header(csrf.headerName(), csrf.token())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
     }
 
     @Test
@@ -169,22 +169,24 @@ class AuthIntegrationTest extends PostgresIntegrationTest {
         register("teacher@example.com", "Егор");
 
         CsrfExchange validCsrf = obtainCsrf();
-        MvcResult login = mockMvc.perform(post("/api/v1/auth/login")
-                .cookie(validCsrf.sessionCookie())
-                .header(validCsrf.headerName(), validCsrf.token())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(loginJson("TEACHER@example.com", PASSWORD)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.email").value("teacher@example.com"))
-            .andExpect(jsonPath("$.displayName").value("Егор"))
-            .andExpect(jsonPath("$.roles[0]").value("TEACHER"))
-            .andReturn();
+        MvcResult login =
+                mockMvc.perform(
+                                post("/api/v1/auth/login")
+                                        .cookie(validCsrf.sessionCookie())
+                                        .header(validCsrf.headerName(), validCsrf.token())
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(loginJson("TEACHER@example.com", PASSWORD)))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.email").value("teacher@example.com"))
+                        .andExpect(jsonPath("$.displayName").value("Егор"))
+                        .andExpect(jsonPath("$.roles[0]").value("TEACHER"))
+                        .andReturn();
 
         Cookie authenticatedSession = sessionCookieFrom(login, validCsrf.sessionCookie());
-        assertThat(authenticatedSession.getValue()).isNotEqualTo(validCsrf.sessionCookie().getValue());
-        mockMvc.perform(get("/api/v1/auth/me")
-                .cookie(authenticatedSession))
-            .andExpect(status().isOk());
+        assertThat(authenticatedSession.getValue())
+                .isNotEqualTo(validCsrf.sessionCookie().getValue());
+        mockMvc.perform(get("/api/v1/auth/me").cookie(authenticatedSession))
+                .andExpect(status().isOk());
 
         assertInvalidCredentials("missing@example.com", PASSWORD);
         assertInvalidCredentials("teacher@example.com", "incorrect password value");
@@ -193,101 +195,126 @@ class AuthIntegrationTest extends PostgresIntegrationTest {
     @Test
     void currentUserRequiresSessionAndLogoutInvalidatesIt() throws Exception {
         mockMvc.perform(get("/api/v1/auth/me"))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"));
 
         Cookie authenticatedSession = register("teacher@example.com", "Егор");
         CsrfExchange authenticatedCsrf = obtainCsrf(authenticatedSession);
 
-        mockMvc.perform(post("/api/v1/auth/logout")
-                .cookie(authenticatedCsrf.sessionCookie())
-                .header(authenticatedCsrf.headerName(), authenticatedCsrf.token()))
-            .andExpect(status().isNoContent())
-            .andExpect(cookie().maxAge("TUTOR_SESSION", 0));
+        mockMvc.perform(
+                        post("/api/v1/auth/logout")
+                                .cookie(authenticatedCsrf.sessionCookie())
+                                .header(authenticatedCsrf.headerName(), authenticatedCsrf.token()))
+                .andExpect(status().isNoContent())
+                .andExpect(cookie().maxAge("TUTOR_SESSION", 0));
 
         mockMvc.perform(get("/api/v1/auth/me").cookie(authenticatedCsrf.sessionCookie()))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"));
     }
 
     @Test
     void stateChangingAuthEndpointsRequireCsrf() throws Exception {
-        mockMvc.perform(post("/api/v1/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(loginJson("teacher@example.com", PASSWORD)))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.code").value("CSRF_INVALID"));
+        mockMvc.perform(
+                        post("/api/v1/auth/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(loginJson("teacher@example.com", PASSWORD)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("CSRF_INVALID"));
     }
 
     @Test
     void openApiPublishesStableAuthOperationIdsAndSchemas() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.paths['/api/v1/auth/csrf'].get.operationId").value("getCsrfToken"))
-            .andExpect(jsonPath("$.paths['/api/v1/auth/register/teacher'].post.operationId").value("registerTeacher"))
-            .andExpect(jsonPath("$.paths['/api/v1/auth/login'].post.operationId").value("login"))
-            .andExpect(jsonPath("$.paths['/api/v1/auth/logout'].post.operationId").value("logout"))
-            .andExpect(jsonPath("$.paths['/api/v1/auth/me'].get.operationId").value("getCurrentUser"))
-            .andExpect(jsonPath("$.components.schemas.TeacherRegistrationRequest.properties.displayName.maxLength").value(160))
-            .andExpect(jsonPath("$.components.schemas.CurrentUserResponse.properties.id.format").value("uuid"))
-            .andExpect(jsonPath("$.components.schemas.CurrentUserResponse.properties.roles.type").value("array"))
-            .andExpect(jsonPath("$.components.schemas.CurrentUserResponse.properties.roles.items.enum.length()").value(3))
-            .andExpect(jsonPath("$.components.schemas.ApiError.properties.timestamp.format").value("date-time"))
-            .andExpect(jsonPath("$.paths['/api/v1/auth/login'].post.responses['401'].content['application/json'].schema['$ref']")
-                .value("#/components/schemas/ApiError"));
+                .andExpect(status().isOk())
+                .andExpect(
+                        jsonPath("$.paths['/api/v1/auth/csrf'].get.operationId")
+                                .value("getCsrfToken"))
+                .andExpect(
+                        jsonPath("$.paths['/api/v1/auth/register/teacher'].post.operationId")
+                                .value("registerTeacher"))
+                .andExpect(
+                        jsonPath("$.paths['/api/v1/auth/login'].post.operationId").value("login"))
+                .andExpect(
+                        jsonPath("$.paths['/api/v1/auth/logout'].post.operationId").value("logout"))
+                .andExpect(
+                        jsonPath("$.paths['/api/v1/auth/me'].get.operationId")
+                                .value("getCurrentUser"))
+                .andExpect(
+                        jsonPath(
+                                        "$.components.schemas.TeacherRegistrationRequest.properties.displayName.maxLength")
+                                .value(160))
+                .andExpect(
+                        jsonPath("$.components.schemas.CurrentUserResponse.properties.id.format")
+                                .value("uuid"))
+                .andExpect(
+                        jsonPath("$.components.schemas.CurrentUserResponse.properties.roles.type")
+                                .value("array"))
+                .andExpect(
+                        jsonPath(
+                                        "$.components.schemas.CurrentUserResponse.properties.roles.items.enum.length()")
+                                .value(3))
+                .andExpect(
+                        jsonPath("$.components.schemas.ApiError.properties.timestamp.format")
+                                .value("date-time"))
+                .andExpect(
+                        jsonPath(
+                                        "$.paths['/api/v1/auth/login'].post.responses['401'].content['application/json'].schema['$ref']")
+                                .value("#/components/schemas/ApiError"));
     }
-
 
     @Test
     void inviteOnlyModeBlocksPublicTeacherRegistration() throws Exception {
 
-        jdbcClient.sql("""
+        jdbcClient
+                .sql(
+                        """
                 UPDATE platform_settings
                 SET registration_mode = 'INVITE_ONLY'
                 WHERE id = 1
-                """).update();
+                """)
+                .update();
 
         CsrfExchange csrf = obtainCsrf();
 
-        mockMvc.perform(post("/api/v1/auth/register/teacher")
-                .cookie(csrf.sessionCookie())
-                .header(csrf.headerName(), csrf.token())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(registrationJson(
-                    "blocked@example.com",
-                    "Blocked Teacher"
-                )))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.code")
-                .value("REGISTRATION_INVITE_REQUIRED"));
+        mockMvc.perform(
+                        post("/api/v1/auth/register/teacher")
+                                .cookie(csrf.sessionCookie())
+                                .header(csrf.headerName(), csrf.token())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        registrationJson("blocked@example.com", "Blocked Teacher")))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("REGISTRATION_INVITE_REQUIRED"));
 
-        assertThat(
-            userRepository.existsByEmail("blocked@example.com")
-        ).isFalse();
+        assertThat(userRepository.existsByEmail("blocked@example.com")).isFalse();
     }
 
     private Cookie register(String email, String displayName) throws Exception {
         CsrfExchange csrf = obtainCsrf();
-        MvcResult result = mockMvc.perform(post("/api/v1/auth/register/teacher")
-                .cookie(csrf.sessionCookie())
-                .header(csrf.headerName(), csrf.token())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(registrationJson(email, displayName)))
-            .andExpect(status().isCreated())
-            .andReturn();
+        MvcResult result =
+                mockMvc.perform(
+                                post("/api/v1/auth/register/teacher")
+                                        .cookie(csrf.sessionCookie())
+                                        .header(csrf.headerName(), csrf.token())
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(registrationJson(email, displayName)))
+                        .andExpect(status().isCreated())
+                        .andReturn();
         return sessionCookieFrom(result, csrf.sessionCookie());
     }
 
     private void assertInvalidCredentials(String email, String password) throws Exception {
         CsrfExchange csrf = obtainCsrf();
-        mockMvc.perform(post("/api/v1/auth/login")
-                .cookie(csrf.sessionCookie())
-                .header(csrf.headerName(), csrf.token())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(loginJson(email, password)))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.code").value("AUTH_INVALID_CREDENTIALS"))
-            .andExpect(jsonPath("$.message").value("Invalid email or password"));
+        mockMvc.perform(
+                        post("/api/v1/auth/login")
+                                .cookie(csrf.sessionCookie())
+                                .header(csrf.headerName(), csrf.token())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(loginJson(email, password)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("AUTH_INVALID_CREDENTIALS"))
+                .andExpect(jsonPath("$.message").value("Invalid email or password"));
     }
 
     private CsrfExchange obtainCsrf() throws Exception {
@@ -300,17 +327,17 @@ class AuthIntegrationTest extends PostgresIntegrationTest {
             request.cookie(existingSession);
         }
 
-        MvcResult result = mockMvc.perform(request)
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.headerName").value("X-XSRF-TOKEN"))
-            .andReturn();
+        MvcResult result =
+                mockMvc.perform(request)
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.headerName").value("X-XSRF-TOKEN"))
+                        .andReturn();
 
         JsonNode body = objectMapper.readTree(result.getResponse().getContentAsByteArray());
         return new CsrfExchange(
-            body.required("headerName").textValue(),
-            body.required("token").textValue(),
-            sessionCookieFrom(result, existingSession)
-        );
+                body.required("headerName").textValue(),
+                body.required("token").textValue(),
+                sessionCookieFrom(result, existingSession));
     }
 
     private Cookie sessionCookieFrom(MvcResult result, Cookie fallback) {
@@ -323,13 +350,13 @@ class AuthIntegrationTest extends PostgresIntegrationTest {
     }
 
     private String registrationJson(String email, String displayName) throws Exception {
-        return objectMapper.writeValueAsString(new TeacherRegistrationRequest(displayName, email, PASSWORD));
+        return objectMapper.writeValueAsString(
+                new TeacherRegistrationRequest(displayName, email, PASSWORD));
     }
 
     private String loginJson(String email, String password) throws Exception {
         return objectMapper.writeValueAsString(new LoginRequest(email, password));
     }
 
-    private record CsrfExchange(String headerName, String token, Cookie sessionCookie) {
-    }
+    private record CsrfExchange(String headerName, String token, Cookie sessionCookie) {}
 }

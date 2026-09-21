@@ -4,19 +4,15 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-public record TopicTaskEntity(UUID topicId, UUID taskId, int position, boolean required, Instant createdAt) {
+public record TopicTaskEntity(
+        UUID topicId, UUID taskId, int position, boolean required, Instant createdAt) {
 
     public TopicTaskEntity(UUID topicId, UUID taskId, int position, boolean required) {
         this(topicId, taskId, position, required, null);
     }
 
     public TopicTaskEntity(
-        UUID topicId,
-        UUID taskId,
-        int position,
-        boolean required,
-        Instant createdAt
-    ) {
+            UUID topicId, UUID taskId, int position, boolean required, Instant createdAt) {
         this.topicId = Objects.requireNonNull(topicId);
         this.taskId = Objects.requireNonNull(taskId);
         if (position < 0) {

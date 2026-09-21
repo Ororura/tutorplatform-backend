@@ -5,12 +5,9 @@ import java.time.temporal.ChronoUnit;
 
 public final class InstantPrecision {
 
-    private InstantPrecision() {
-    }
+    private InstantPrecision() {}
 
     public static Instant database(Instant instant) {
-        return instant == null
-            ? null
-            : instant.truncatedTo(ChronoUnit.MICROS);
+        return instant == null ? null : instant.truncatedTo(ChronoUnit.MICROS);
     }
 }

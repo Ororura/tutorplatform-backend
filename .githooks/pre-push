@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+echo "[Backend] Running verification checks..."
+
+./gradlew build --console=plain
+
+echo "[Backend] Verification checks passed."

@@ -5,22 +5,24 @@ import com.tutorplatform.session.domain.AttendanceStatus;
 import com.tutorplatform.session.domain.LessonSessionEntity;
 import com.tutorplatform.user.infrastructure.persistence.TeacherDatabaseModel;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "lesson_sessions")
 public class LessonSessionDatabaseModel {
 
-    @Id
-    private UUID id;
+    @Id private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "student_program_id", nullable = false, insertable = false, updatable = false)
+    @JoinColumn(
+            name = "student_program_id",
+            nullable = false,
+            insertable = false,
+            updatable = false)
     private StudentProgramDatabaseModel studentProgram;
 
     @Column(name = "student_program_id", nullable = false)
@@ -43,8 +45,7 @@ public class LessonSessionDatabaseModel {
     @Column(name = "attendance_status", nullable = false, length = 24)
     private AttendanceStatus attendanceStatus;
 
-    @Column
-    private String summary;
+    @Column private String summary;
 
     @Column(name = "private_notes")
     private String privateNotes;
@@ -61,8 +62,7 @@ public class LessonSessionDatabaseModel {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    protected LessonSessionDatabaseModel() {
-    }
+    protected LessonSessionDatabaseModel() {}
 
     LessonSessionDatabaseModel(LessonSessionEntity lessonSession) {
         id = Objects.requireNonNull(lessonSession.id());
@@ -82,8 +82,16 @@ public class LessonSessionDatabaseModel {
 
     LessonSessionEntity toEntity() {
         return new LessonSessionEntity(
-            id, studentProgramId, teacherId, startedAt, durationMinutes, attendanceStatus,
-            summary, privateNotes, version, createdAt, updatedAt
-        );
+                id,
+                studentProgramId,
+                teacherId,
+                startedAt,
+                durationMinutes,
+                attendanceStatus,
+                summary,
+                privateNotes,
+                version,
+                createdAt,
+                updatedAt);
     }
 }

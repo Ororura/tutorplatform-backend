@@ -1,8 +1,9 @@
 package com.tutorplatform.homework.api;
 
-import com.tutorplatform.test.PostgresIntegrationTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.homework.application.CreateHomeworkCommand;
@@ -24,23 +25,20 @@ import com.tutorplatform.subject.domain.SubjectEntity;
 import com.tutorplatform.subject.domain.SubjectRepository;
 import com.tutorplatform.subject.domain.SubjectStatus;
 import com.tutorplatform.task.domain.task.*;
+import com.tutorplatform.test.PostgresIntegrationTest;
 import com.tutorplatform.user.domain.*;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.test.web.servlet.MockMvc;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -51,45 +49,41 @@ class HomeworkApiIntegrationTest extends PostgresIntegrationTest {
         PostgresIntegrationTest.configurePostgres(registry, "test_homework_api", "008");
     }
 
-    @Autowired
-    private MockMvc mockMvc;
-    @Autowired
-    private HomeworkService homeworkService;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private TeacherRepository teacherRepository;
-    @Autowired
-    private StudentRepository studentRepository;
-    @Autowired
-    private TeacherStudentLinkRepository teacherStudentLinkRepository;
-    @Autowired
-    private SubjectRepository subjectRepository;
-    @Autowired
-    private LearningProgramRepository learningProgramRepository;
-    @Autowired
-    private StudentProgramRepository studentProgramRepository;
-    @Autowired
-    private TaskRepository taskRepository;
+    @Autowired private MockMvc mockMvc;
+    @Autowired private HomeworkService homeworkService;
+    @Autowired private UserRepository userRepository;
+    @Autowired private TeacherRepository teacherRepository;
+    @Autowired private StudentRepository studentRepository;
+    @Autowired private TeacherStudentLinkRepository teacherStudentLinkRepository;
+    @Autowired private SubjectRepository subjectRepository;
+    @Autowired private LearningProgramRepository learningProgramRepository;
+    @Autowired private StudentProgramRepository studentProgramRepository;
+    @Autowired private TaskRepository taskRepository;
 
     @Test
     void postCreatesHomeworkAndReturnsDetails() throws Exception {
         Fixture fixture = createFixture("api-create-homework@example.com");
 
-        mockMvc.perform(post(homeworksUrl(fixture.student().getId()))
-                .with(user(fixture.principal()))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(createRequest(fixture)))
-            .andExpect(status().isCreated())
-            .andExpect(header().string("Location", org.hamcrest.Matchers.containsString("/homeworks/")))
-            .andExpect(jsonPath("$.studentProgramId").value(fixture.studentProgram().id().toString()))
-            .andExpect(jsonPath("$.title").value("Домашнее задание №1"))
-            .andExpect(jsonPath("$.status").value("ASSIGNED"))
-            .andExpect(jsonPath("$.assignedAt").isNotEmpty())
-            .andExpect(jsonPath("$.items.length()").value(2))
-            .andExpect(jsonPath("$.items[0].taskTitle").value("Первая задача"))
-            .andExpect(jsonPath("$.version").value(0));
+        mockMvc.perform(
+                        post(homeworksUrl(fixture.student().getId()))
+                                .with(user(fixture.principal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(createRequest(fixture)))
+                .andExpect(status().isCreated())
+                .andExpect(
+                        header().string(
+                                        "Location",
+                                        org.hamcrest.Matchers.containsString("/homeworks/")))
+                .andExpect(
+                        jsonPath("$.studentProgramId")
+                                .value(fixture.studentProgram().id().toString()))
+                .andExpect(jsonPath("$.title").value("Домашнее задание №1"))
+                .andExpect(jsonPath("$.status").value("ASSIGNED"))
+                .andExpect(jsonPath("$.assignedAt").isNotEmpty())
+                .andExpect(jsonPath("$.items.length()").value(2))
+                .andExpect(jsonPath("$.items[0].taskTitle").value("Первая задача"))
+                .andExpect(jsonPath("$.version").value(0));
     }
 
     @Test
@@ -97,25 +91,27 @@ class HomeworkApiIntegrationTest extends PostgresIntegrationTest {
         Fixture fixture = createFixture("api-read-homework@example.com");
         HomeworkResult homework = createHomework(fixture);
 
-        mockMvc.perform(get(homeworkUrl(fixture.student().getId(), homework.id()))
-                .with(user(fixture.principal())))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(homework.id().toString()))
-            .andExpect(jsonPath("$.description").value("Описание"))
-            .andExpect(jsonPath("$.items[0].position").value(0))
-            .andExpect(jsonPath("$.updatedAt").isNotEmpty());
+        mockMvc.perform(
+                        get(homeworkUrl(fixture.student().getId(), homework.id()))
+                                .with(user(fixture.principal())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(homework.id().toString()))
+                .andExpect(jsonPath("$.description").value("Описание"))
+                .andExpect(jsonPath("$.items[0].position").value(0))
+                .andExpect(jsonPath("$.updatedAt").isNotEmpty());
 
-        mockMvc.perform(get(homeworksUrl(fixture.student().getId()))
-                .with(user(fixture.principal()))
-                .param("page", "0")
-                .param("size", "20")
-                .param("sort", "assignedAt,desc"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.items[0].id").value(homework.id().toString()))
-            .andExpect(jsonPath("$.items[0].description").doesNotExist())
-            .andExpect(jsonPath("$.items[0].overdue").value(false))
-            .andExpect(jsonPath("$.page").value(0))
-            .andExpect(jsonPath("$.totalElements").value(1));
+        mockMvc.perform(
+                        get(homeworksUrl(fixture.student().getId()))
+                                .with(user(fixture.principal()))
+                                .param("page", "0")
+                                .param("size", "20")
+                                .param("sort", "assignedAt,desc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].id").value(homework.id().toString()))
+                .andExpect(jsonPath("$.items[0].description").doesNotExist())
+                .andExpect(jsonPath("$.items[0].overdue").value(false))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test
@@ -123,17 +119,20 @@ class HomeworkApiIntegrationTest extends PostgresIntegrationTest {
         Fixture fixture = createFixture("api-update-homework@example.com");
         HomeworkResult homework = createHomework(fixture);
 
-        mockMvc.perform(patch(homeworkUrl(fixture.student().getId(), homework.id()))
-                .with(user(fixture.principal()))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(updateRequest(fixture, homework.version())))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.title").value("Обновлённое ДЗ"))
-            .andExpect(jsonPath("$.description").value("Новое описание"))
-            .andExpect(jsonPath("$.items.length()").value(1))
-            .andExpect(jsonPath("$.items[0].taskId").value(fixture.secondTask().getId().toString()))
-            .andExpect(jsonPath("$.version").value(homework.version() + 1));
+        mockMvc.perform(
+                        patch(homeworkUrl(fixture.student().getId(), homework.id()))
+                                .with(user(fixture.principal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(updateRequest(fixture, homework.version())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Обновлённое ДЗ"))
+                .andExpect(jsonPath("$.description").value("Новое описание"))
+                .andExpect(jsonPath("$.items.length()").value(1))
+                .andExpect(
+                        jsonPath("$.items[0].taskId")
+                                .value(fixture.secondTask().getId().toString()))
+                .andExpect(jsonPath("$.version").value(homework.version() + 1));
     }
 
     @Test
@@ -141,24 +140,26 @@ class HomeworkApiIntegrationTest extends PostgresIntegrationTest {
         Fixture fixture = createFixture("api-cancel-homework@example.com");
         HomeworkResult homework = createHomework(fixture);
 
-        mockMvc.perform(post(homeworkUrl(fixture.student().getId(), homework.id()) + "/cancel")
-                .with(user(fixture.principal()))
-                .with(csrf()))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status").value("CANCELLED"))
-            .andExpect(jsonPath("$.completedAt").doesNotExist());
+        mockMvc.perform(
+                        post(homeworkUrl(fixture.student().getId(), homework.id()) + "/cancel")
+                                .with(user(fixture.principal()))
+                                .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELLED"))
+                .andExpect(jsonPath("$.completedAt").doesNotExist());
     }
 
     @Test
     void arbitrarySortIsRejected() throws Exception {
         Fixture fixture = createFixture("api-sort-homework@example.com");
 
-        mockMvc.perform(get(homeworksUrl(fixture.student().getId()))
-                .with(user(fixture.principal()))
-                .param("sort", "assignedByTeacherId,asc"))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
-            .andExpect(jsonPath("$.details[0].field").value("sort"));
+        mockMvc.perform(
+                        get(homeworksUrl(fixture.student().getId()))
+                                .with(user(fixture.principal()))
+                                .param("sort", "assignedByTeacherId,asc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.details[0].field").value("sort"));
     }
 
     @Test
@@ -167,28 +168,30 @@ class HomeworkApiIntegrationTest extends PostgresIntegrationTest {
         Fixture foreign = createFixture("api-homework-foreign@example.com");
         HomeworkResult homework = createHomework(owner);
 
-        mockMvc.perform(get(homeworkUrl(owner.student().getId(), homework.id()))
-                .with(user(foreign.principal())))
-            .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.code").value("STUDENT_NOT_FOUND"));
+        mockMvc.perform(
+                        get(homeworkUrl(owner.student().getId(), homework.id()))
+                                .with(user(foreign.principal())))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("STUDENT_NOT_FOUND"));
     }
 
     @Test
     void unauthenticatedRequestReturnsUnauthorized() throws Exception {
         mockMvc.perform(get(homeworksUrl(UUID.randomUUID())))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"));
     }
 
     @Test
     void postWithoutCsrfIsForbidden() throws Exception {
         Fixture fixture = createFixture("api-homework-post-csrf@example.com");
 
-        mockMvc.perform(post(homeworksUrl(fixture.student().getId()))
-                .with(user(fixture.principal()))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(createRequest(fixture)))
-            .andExpect(status().isForbidden());
+        mockMvc.perform(
+                        post(homeworksUrl(fixture.student().getId()))
+                                .with(user(fixture.principal()))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(createRequest(fixture)))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -196,82 +199,105 @@ class HomeworkApiIntegrationTest extends PostgresIntegrationTest {
         Fixture fixture = createFixture("api-homework-patch-csrf@example.com");
         HomeworkResult homework = createHomework(fixture);
 
-        mockMvc.perform(patch(homeworkUrl(fixture.student().getId(), homework.id()))
-                .with(user(fixture.principal()))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(updateRequest(fixture, homework.version())))
-            .andExpect(status().isForbidden());
+        mockMvc.perform(
+                        patch(homeworkUrl(fixture.student().getId(), homework.id()))
+                                .with(user(fixture.principal()))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(updateRequest(fixture, homework.version())))
+                .andExpect(status().isForbidden());
     }
 
     @Test
     void studentRoleCannotAccessTeacherHomeworkApi() throws Exception {
-        AuthenticatedUser studentPrincipal = new AuthenticatedUser(
-            UUID.randomUUID(), "student-homework@example.com", "password-hash", true,
-            List.of(new SimpleGrantedAuthority("ROLE_STUDENT"))
-        );
+        AuthenticatedUser studentPrincipal =
+                new AuthenticatedUser(
+                        UUID.randomUUID(),
+                        "student-homework@example.com",
+                        "password-hash",
+                        true,
+                        List.of(new SimpleGrantedAuthority("ROLE_STUDENT")));
 
         mockMvc.perform(get(homeworksUrl(UUID.randomUUID())).with(user(studentPrincipal)))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.code").value("ACCESS_DENIED"));
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("ACCESS_DENIED"));
     }
 
     @Test
     void requestValidationUsesExistingApiErrorFormat() throws Exception {
         Fixture fixture = createFixture("api-homework-validation@example.com");
-        String request = """
+        String request =
+                """
             {
               "studentProgramId": "%s",
               "title": " ",
               "items": []
             }
-            """.formatted(fixture.studentProgram().id());
+            """
+                        .formatted(fixture.studentProgram().id());
 
-        mockMvc.perform(post(homeworksUrl(fixture.student().getId()))
-                .with(user(fixture.principal()))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(request))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
-            .andExpect(jsonPath("$.timestamp").isNotEmpty())
-            .andExpect(jsonPath("$.details").isArray());
+        mockMvc.perform(
+                        post(homeworksUrl(fixture.student().getId()))
+                                .with(user(fixture.principal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(request))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                .andExpect(jsonPath("$.details").isArray());
     }
 
     @Test
     void openApiPublishesHomeworkOperationsAndSchemas() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.paths['/api/v1/teacher/students/{studentId}/homeworks'].post.operationId")
-                .value("createHomework"))
-            .andExpect(jsonPath("$.paths['/api/v1/teacher/students/{studentId}/homeworks'].get.operationId")
-                .value("listHomeworks"))
-            .andExpect(jsonPath("$.paths['/api/v1/teacher/students/{studentId}/homeworks/{homeworkId}'].get.operationId")
-                .value("getHomework"))
-            .andExpect(jsonPath("$.paths['/api/v1/teacher/students/{studentId}/homeworks/{homeworkId}'].patch.operationId")
-                .value("updateHomework"))
-            .andExpect(jsonPath("$.paths['/api/v1/teacher/students/{studentId}/homeworks/{homeworkId}/cancel'].post.operationId")
-                .value("cancelHomework"))
-            .andExpect(jsonPath("$.components.schemas.CreateHomeworkRequest.properties.studentProgramId.format")
-                .value("uuid"))
-            .andExpect(jsonPath("$.components.schemas.CreateHomeworkRequest.properties.dueAt.format")
-                .value("date-time"))
-            .andExpect(jsonPath("$.components.schemas.HomeworkDetailsResponse.properties.status.enum.length()")
-                .value(3))
-            .andExpect(jsonPath("$.components.schemas.ApiError.properties.code").exists());
+                .andExpect(status().isOk())
+                .andExpect(
+                        jsonPath(
+                                        "$.paths['/api/v1/teacher/students/{studentId}/homeworks'].post.operationId")
+                                .value("createHomework"))
+                .andExpect(
+                        jsonPath(
+                                        "$.paths['/api/v1/teacher/students/{studentId}/homeworks'].get.operationId")
+                                .value("listHomeworks"))
+                .andExpect(
+                        jsonPath(
+                                        "$.paths['/api/v1/teacher/students/{studentId}/homeworks/{homeworkId}'].get.operationId")
+                                .value("getHomework"))
+                .andExpect(
+                        jsonPath(
+                                        "$.paths['/api/v1/teacher/students/{studentId}/homeworks/{homeworkId}'].patch.operationId")
+                                .value("updateHomework"))
+                .andExpect(
+                        jsonPath(
+                                        "$.paths['/api/v1/teacher/students/{studentId}/homeworks/{homeworkId}/cancel'].post.operationId")
+                                .value("cancelHomework"))
+                .andExpect(
+                        jsonPath(
+                                        "$.components.schemas.CreateHomeworkRequest.properties.studentProgramId.format")
+                                .value("uuid"))
+                .andExpect(
+                        jsonPath(
+                                        "$.components.schemas.CreateHomeworkRequest.properties.dueAt.format")
+                                .value("date-time"))
+                .andExpect(
+                        jsonPath(
+                                        "$.components.schemas.HomeworkDetailsResponse.properties.status.enum.length()")
+                                .value(3))
+                .andExpect(jsonPath("$.components.schemas.ApiError.properties.code").exists());
     }
 
     private HomeworkResult createHomework(Fixture fixture) {
         return homeworkService.createHomework(
-            fixture.principal(),
-            new CreateHomeworkCommand(
-                fixture.student().getId(), fixture.studentProgram().id(),
-                "Домашнее задание №1", "Описание", Instant.now().plusSeconds(3600),
-                List.of(
-                    new HomeworkItemInput(fixture.firstTask().getId(), 0, true),
-                    new HomeworkItemInput(fixture.secondTask().getId(), 1, true)
-                )
-            )
-        );
+                fixture.principal(),
+                new CreateHomeworkCommand(
+                        fixture.student().getId(),
+                        fixture.studentProgram().id(),
+                        "Домашнее задание №1",
+                        "Описание",
+                        Instant.now().plusSeconds(3600),
+                        List.of(
+                                new HomeworkItemInput(fixture.firstTask().getId(), 0, true),
+                                new HomeworkItemInput(fixture.secondTask().getId(), 1, true))));
     }
 
     private String createRequest(Fixture fixture) {
@@ -286,11 +312,11 @@ class HomeworkApiIntegrationTest extends PostgresIntegrationTest {
                 {"taskId": "%s", "position": 1, "required": true}
               ]
             }
-            """.formatted(
-            fixture.studentProgram().id(),
-            fixture.firstTask().getId(),
-            fixture.secondTask().getId()
-        );
+            """
+                .formatted(
+                        fixture.studentProgram().id(),
+                        fixture.firstTask().getId(),
+                        fixture.secondTask().getId());
     }
 
     private String updateRequest(Fixture fixture, long version) {
@@ -304,46 +330,74 @@ class HomeworkApiIntegrationTest extends PostgresIntegrationTest {
                 {"taskId": "%s", "position": 0, "required": false}
               ]
             }
-            """.formatted(version, fixture.secondTask().getId());
+            """
+                .formatted(version, fixture.secondTask().getId());
     }
 
     private Fixture createFixture(String email) {
-        UserEntity user = new UserEntity(UUID.randomUUID(), email, "password-hash", UserStatus.ACTIVE);
+        UserEntity user =
+                new UserEntity(UUID.randomUUID(), email, "password-hash", UserStatus.ACTIVE);
         user.addRole(UserRole.TEACHER);
         userRepository.saveAndFlush(user);
-        TeacherEntity teacher = teacherRepository.saveAndFlush(new TeacherEntity(
-            UUID.randomUUID(), user, "Teacher"
-        ));
-        AuthenticatedUser principal = new AuthenticatedUser(
-            user.id(), email, "password-hash", true,
-            List.of(new SimpleGrantedAuthority("ROLE_TEACHER"))
-        );
-        StudentEntity student = studentRepository.saveAndFlush(new StudentEntity(
-            UUID.randomUUID(), "Ученик", null, StudentStatus.ACTIVE
-        ));
+        TeacherEntity teacher =
+                teacherRepository.saveAndFlush(
+                        new TeacherEntity(UUID.randomUUID(), user, "Teacher"));
+        AuthenticatedUser principal =
+                new AuthenticatedUser(
+                        user.id(),
+                        email,
+                        "password-hash",
+                        true,
+                        List.of(new SimpleGrantedAuthority("ROLE_TEACHER")));
+        StudentEntity student =
+                studentRepository.saveAndFlush(
+                        new StudentEntity(UUID.randomUUID(), "Ученик", null, StudentStatus.ACTIVE));
         teacherStudentLinkRepository.saveAndFlush(new TeacherStudentLinkEntity(teacher, student));
-        SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
-            UUID.randomUUID(), teacher.id(), null, "Предмет " + UUID.randomUUID(), null,
-            SubjectStatus.ACTIVE
-        ));
-        LearningProgramEntity program = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-            UUID.randomUUID(), teacher.id(), subject.id(), "Программа", null,
-            LearningProgramStatus.ACTIVE
-        ));
-        StudentProgramEntity studentProgram = studentProgramRepository.saveAndFlush(new StudentProgramEntity(
-            UUID.randomUUID(), student.getId(), program.getId(), teacher.id(),
-            StudentProgramStatus.ACTIVE, 480, Instant.now(), null
-        ));
+        SubjectEntity subject =
+                subjectRepository.saveAndFlush(
+                        new SubjectEntity(
+                                UUID.randomUUID(),
+                                teacher.id(),
+                                null,
+                                "Предмет " + UUID.randomUUID(),
+                                null,
+                                SubjectStatus.ACTIVE));
+        LearningProgramEntity program =
+                learningProgramRepository.saveAndFlush(
+                        new LearningProgramEntity(
+                                UUID.randomUUID(),
+                                teacher.id(),
+                                subject.id(),
+                                "Программа",
+                                null,
+                                LearningProgramStatus.ACTIVE));
+        StudentProgramEntity studentProgram =
+                studentProgramRepository.saveAndFlush(
+                        new StudentProgramEntity(
+                                UUID.randomUUID(),
+                                student.getId(),
+                                program.getId(),
+                                teacher.id(),
+                                StudentProgramStatus.ACTIVE,
+                                480,
+                                Instant.now(),
+                                null));
         TaskEntity first = createTask(teacher, subject, "Первая задача");
         TaskEntity second = createTask(teacher, subject, "Вторая задача");
         return new Fixture(teacher, principal, student, studentProgram, first, second);
     }
 
     private TaskEntity createTask(TeacherEntity teacher, SubjectEntity subject, String title) {
-        return taskRepository.saveAndFlush(new TaskEntity(
-            UUID.randomUUID(), teacher.id(), subject.id(), title, "Условие",
-            TaskType.TEXT, TaskDifficulty.EASY, TaskStatus.ACTIVE
-        ));
+        return taskRepository.saveAndFlush(
+                new TaskEntity(
+                        UUID.randomUUID(),
+                        teacher.id(),
+                        subject.id(),
+                        title,
+                        "Условие",
+                        TaskType.TEXT,
+                        TaskDifficulty.EASY,
+                        TaskStatus.ACTIVE));
     }
 
     private String homeworksUrl(UUID studentId) {
@@ -355,12 +409,10 @@ class HomeworkApiIntegrationTest extends PostgresIntegrationTest {
     }
 
     private record Fixture(
-        TeacherEntity teacher,
-        AuthenticatedUser principal,
-        StudentEntity student,
-        StudentProgramEntity studentProgram,
-        TaskEntity firstTask,
-        TaskEntity secondTask
-    ) {
-    }
+            TeacherEntity teacher,
+            AuthenticatedUser principal,
+            StudentEntity student,
+            StudentProgramEntity studentProgram,
+            TaskEntity firstTask,
+            TaskEntity secondTask) {}
 }

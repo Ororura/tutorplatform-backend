@@ -3,22 +3,24 @@ package com.tutorplatform.program.infrastructure.persistence;
 import com.tutorplatform.program.domain.ModuleEntity;
 import com.tutorplatform.program.infrastructure.persistence.learningprogram.LearningProgramDatabaseModel;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "modules")
 public class ModuleDatabaseModel {
 
-    @Id
-    private UUID id;
+    @Id private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "learning_program_id", nullable = false, insertable = false, updatable = false)
+    @JoinColumn(
+            name = "learning_program_id",
+            nullable = false,
+            insertable = false,
+            updatable = false)
     private LearningProgramDatabaseModel learningProgram;
 
     @Column(name = "learning_program_id", nullable = false)
@@ -27,8 +29,7 @@ public class ModuleDatabaseModel {
     @Column(nullable = false, length = 180)
     private String title;
 
-    @Column
-    private String description;
+    @Column private String description;
 
     @Column(nullable = false)
     private int position;
@@ -41,8 +42,7 @@ public class ModuleDatabaseModel {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    protected ModuleDatabaseModel() {
-    }
+    protected ModuleDatabaseModel() {}
 
     ModuleDatabaseModel(ModuleEntity module) {
         id = Objects.requireNonNull(module.id());
@@ -57,6 +57,7 @@ public class ModuleDatabaseModel {
     }
 
     ModuleEntity toEntity() {
-        return new ModuleEntity(id, learningProgramId, title, description, position, createdAt, updatedAt);
+        return new ModuleEntity(
+                id, learningProgramId, title, description, position, createdAt, updatedAt);
     }
 }

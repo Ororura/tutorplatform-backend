@@ -1,4 +1,3 @@
 package com.tutorplatform.student.application.exception.invite;
 
-public class StudentInviteEmailConflictException extends RuntimeException {
-}
+public class StudentInviteEmailConflictException extends RuntimeException {}

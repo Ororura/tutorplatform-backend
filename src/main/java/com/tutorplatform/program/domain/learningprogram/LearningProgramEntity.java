@@ -17,27 +17,25 @@ public class LearningProgramEntity {
     private LearningProgramStatus status;
 
     public LearningProgramEntity(
-        UUID id,
-        UUID teacherId,
-        UUID subjectId,
-        String title,
-        String description,
-        LearningProgramStatus status
-    ) {
+            UUID id,
+            UUID teacherId,
+            UUID subjectId,
+            String title,
+            String description,
+            LearningProgramStatus status) {
         this(id, teacherId, subjectId, title, description, status, null, null, null);
     }
 
     public LearningProgramEntity(
-        UUID id,
-        UUID teacherId,
-        UUID subjectId,
-        String title,
-        String description,
-        LearningProgramStatus status,
-        Long version,
-        Instant createdAt,
-        Instant updatedAt
-    ) {
+            UUID id,
+            UUID teacherId,
+            UUID subjectId,
+            String title,
+            String description,
+            LearningProgramStatus status,
+            Long version,
+            Instant createdAt,
+            Instant updatedAt) {
         this.id = Objects.requireNonNull(id);
         this.teacherId = Objects.requireNonNull(teacherId);
         this.subjectId = Objects.requireNonNull(subjectId);

@@ -2,28 +2,32 @@ package com.tutorplatform.file.infrastructure;
 
 import com.tutorplatform.file.application.FileStorage;
 import com.tutorplatform.file.application.FileStorageException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnProperty(prefix = "app.file-storage", name = "provider", havingValue = "LOCAL", matchIfMissing = true)
+@ConditionalOnProperty(
+        prefix = "app.file-storage",
+        name = "provider",
+        havingValue = "LOCAL",
+        matchIfMissing = true)
 public class LocalFileStorage implements FileStorage {
     private static final Logger log = LoggerFactory.getLogger(LocalFileStorage.class);
     private final Path directory;
 
     public LocalFileStorage(@Value("${app.file-storage.directory:./var/files}") String directory) {
         if (directory == null || directory.isBlank()) {
-            throw new IllegalArgumentException("app.file-storage.directory must not be blank for LOCAL storage");
+            throw new IllegalArgumentException(
+                    "app.file-storage.directory must not be blank for LOCAL storage");
         }
         this.directory = Path.of(directory).toAbsolutePath().normalize();
     }
@@ -36,7 +40,9 @@ public class LocalFileStorage implements FileStorage {
         try {
             Files.createDirectories(directory);
             // CREATE_NEW prevents overwrites, including existing symlinks.
-            try (var output = Files.newOutputStream(target, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
+            try (var output =
+                    Files.newOutputStream(
+                            target, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
                 created = true;
                 output.write(content);
             }
@@ -78,12 +84,14 @@ public class LocalFileStorage implements FileStorage {
     }
 
     private Path resolve(String key) {
-        if (key == null || !key.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")) {
+        if (key == null
+                || !key.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")) {
             throw new FileStorageException(new IllegalArgumentException("Invalid storage key"));
         }
         Path resolved = directory.resolve(key).normalize();
         if (!resolved.startsWith(directory)) {
-            throw new FileStorageException(new IllegalArgumentException("Storage key escapes directory"));
+            throw new FileStorageException(
+                    new IllegalArgumentException("Storage key escapes directory"));
         }
         return resolved;
     }

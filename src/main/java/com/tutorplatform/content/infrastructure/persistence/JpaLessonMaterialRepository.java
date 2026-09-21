@@ -2,11 +2,10 @@ package com.tutorplatform.content.infrastructure.persistence;
 
 import com.tutorplatform.content.domain.LessonMaterialEntity;
 import com.tutorplatform.content.domain.LessonMaterialRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaLessonMaterialRepository implements LessonMaterialRepository {
@@ -24,25 +23,30 @@ public class JpaLessonMaterialRepository implements LessonMaterialRepository {
 
     @Override
     public LessonMaterialEntity saveAndFlush(LessonMaterialEntity lessonMaterial) {
-        return databaseRepository.saveAndFlush(new LessonMaterialDatabaseModel(lessonMaterial)).toEntity();
+        return databaseRepository
+                .saveAndFlush(new LessonMaterialDatabaseModel(lessonMaterial))
+                .toEntity();
     }
 
     @Override
     public Optional<LessonMaterialEntity> findById(UUID lessonMaterialId) {
-        return databaseRepository.findById(lessonMaterialId).map(LessonMaterialDatabaseModel::toEntity);
+        return databaseRepository
+                .findById(lessonMaterialId)
+                .map(LessonMaterialDatabaseModel::toEntity);
     }
 
     @Override
     public Optional<LessonMaterialEntity> findByIdAndTopicId(UUID lessonMaterialId, UUID topicId) {
-        return databaseRepository.findByIdAndTopicId(lessonMaterialId, topicId)
-            .map(LessonMaterialDatabaseModel::toEntity);
+        return databaseRepository
+                .findByIdAndTopicId(lessonMaterialId, topicId)
+                .map(LessonMaterialDatabaseModel::toEntity);
     }
 
     @Override
     public List<LessonMaterialEntity> findAllByTopicIdOrderByPosition(UUID topicId) {
         return databaseRepository.findAllByTopicIdOrderByPositionAsc(topicId).stream()
-            .map(LessonMaterialDatabaseModel::toEntity)
-            .toList();
+                .map(LessonMaterialDatabaseModel::toEntity)
+                .toList();
     }
 
     @Override

@@ -2,10 +2,9 @@ package com.tutorplatform.task.infrastructure.persistence.topic;
 
 import com.tutorplatform.task.domain.topic.TopicTaskEntity;
 import com.tutorplatform.task.domain.topic.TopicTaskRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaTopicTaskRepository implements TopicTaskRepository {
@@ -24,8 +23,8 @@ public class JpaTopicTaskRepository implements TopicTaskRepository {
     @Override
     public List<TopicTaskEntity> findAllByTopicIdOrderByPosition(UUID topicId) {
         return databaseRepository.findAllByIdTopicIdOrderByPositionAsc(topicId).stream()
-            .map(TopicTaskDatabaseModel::toEntity)
-            .toList();
+                .map(TopicTaskDatabaseModel::toEntity)
+                .toList();
     }
 
     @Override

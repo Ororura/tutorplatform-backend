@@ -1,19 +1,19 @@
 package com.tutorplatform.program.infrastructure.persistence.studentprogram;
 
+import jakarta.persistence.LockModeType;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
-import jakarta.persistence.LockModeType;
-
-import java.util.Optional;
-import java.util.UUID;
-
-interface StudentProgramDatabaseRepository extends JpaRepository<StudentProgramDatabaseModel, UUID> {
+interface StudentProgramDatabaseRepository
+        extends JpaRepository<StudentProgramDatabaseModel, UUID> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<StudentProgramDatabaseModel> findWithLockById(UUID id);
 
-    @Query("""
+    @Query(
+            """
         select (count(program) > 0) from StudentProgramDatabaseModel program
         where program.studentId = :studentId
           and program.learningProgramId = :learningProgramId

@@ -1,7 +1,7 @@
 package com.tutorplatform.subject.domain;
 
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface SubjectRepository {

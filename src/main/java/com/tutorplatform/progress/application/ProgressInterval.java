@@ -3,9 +3,7 @@ package com.tutorplatform.progress.application;
 import java.time.Instant;
 import java.util.Objects;
 
-/**
- * A closed event-time interval. Both boundaries are included.
- */
+/** A closed event-time interval. Both boundaries are included. */
 public record ProgressInterval(Instant startedAt, Instant endedAt) {
 
     public ProgressInterval {

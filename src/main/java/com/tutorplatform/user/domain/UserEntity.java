@@ -6,14 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-public record UserEntity(UUID id, String email, String passwordHash, UserStatus status, Instant lastLoginAt,
-                         Instant createdAt, Instant updatedAt, Set<UserRole> roles) {
-
-    public UserEntity(UUID id, String email, String passwordHash, UserStatus status) {
-        this(id, email, passwordHash, status, null, null, null, Set.of());
-    }
-
-    public UserEntity(
+public record UserEntity(
         UUID id,
         String email,
         String passwordHash,
@@ -21,8 +14,21 @@ public record UserEntity(UUID id, String email, String passwordHash, UserStatus 
         Instant lastLoginAt,
         Instant createdAt,
         Instant updatedAt,
-        Set<UserRole> roles
-    ) {
+        Set<UserRole> roles) {
+
+    public UserEntity(UUID id, String email, String passwordHash, UserStatus status) {
+        this(id, email, passwordHash, status, null, null, null, Set.of());
+    }
+
+    public UserEntity(
+            UUID id,
+            String email,
+            String passwordHash,
+            UserStatus status,
+            Instant lastLoginAt,
+            Instant createdAt,
+            Instant updatedAt,
+            Set<UserRole> roles) {
         this.id = Objects.requireNonNull(id);
         this.email = Objects.requireNonNull(email);
         this.passwordHash = passwordHash;

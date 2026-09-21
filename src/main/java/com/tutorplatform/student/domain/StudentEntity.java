@@ -19,14 +19,13 @@ public class StudentEntity {
     }
 
     public StudentEntity(
-        UUID id,
-        UUID userId,
-        String firstName,
-        String lastName,
-        StudentStatus status,
-        Instant createdAt,
-        Instant updatedAt
-    ) {
+            UUID id,
+            UUID userId,
+            String firstName,
+            String lastName,
+            StudentStatus status,
+            Instant createdAt,
+            Instant updatedAt) {
         this.id = Objects.requireNonNull(id);
         this.userId = userId;
         this.firstName = Objects.requireNonNull(firstName);

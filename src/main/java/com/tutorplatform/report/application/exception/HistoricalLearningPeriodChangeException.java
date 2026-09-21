@@ -4,7 +4,8 @@ import java.util.UUID;
 
 public class HistoricalLearningPeriodChangeException extends RuntimeException {
     public HistoricalLearningPeriodChangeException(UUID studentProgramId) {
-        super("Session history no longer matches completed LearningPeriods for StudentProgram "
-            + studentProgramId);
+        super(
+                "Session history no longer matches completed LearningPeriods for StudentProgram "
+                        + studentProgramId);
     }
 }

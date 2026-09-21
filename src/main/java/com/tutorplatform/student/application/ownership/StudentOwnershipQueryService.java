@@ -4,11 +4,10 @@ import com.tutorplatform.student.domain.StudentRepository;
 import com.tutorplatform.student.domain.TeacherStudentRelationType;
 import com.tutorplatform.student.infrastructure.persistence.TeacherStudentLinkRepository;
 import com.tutorplatform.user.domain.TeacherRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
@@ -19,10 +18,9 @@ public class StudentOwnershipQueryService implements StudentOwnershipQuery {
     private final TeacherStudentLinkRepository teacherStudentLinkRepository;
 
     public StudentOwnershipQueryService(
-        TeacherRepository teacherRepository,
-        StudentRepository studentRepository,
-        TeacherStudentLinkRepository teacherStudentLinkRepository
-    ) {
+            TeacherRepository teacherRepository,
+            StudentRepository studentRepository,
+            TeacherStudentLinkRepository teacherStudentLinkRepository) {
         this.teacherRepository = teacherRepository;
         this.studentRepository = studentRepository;
         this.teacherStudentLinkRepository = teacherStudentLinkRepository;
@@ -41,10 +39,7 @@ public class StudentOwnershipQueryService implements StudentOwnershipQuery {
     @Override
     public boolean isActivePrimaryOwner(UUID teacherId, UUID studentId) {
         return teacherStudentLinkRepository
-            .existsByIdTeacherIdAndIdStudentIdAndRelationTypeAndEndedAtIsNull(
-                teacherId,
-                studentId,
-                TeacherStudentRelationType.PRIMARY
-            );
+                .existsByIdTeacherIdAndIdStudentIdAndRelationTypeAndEndedAtIsNull(
+                        teacherId, studentId, TeacherStudentRelationType.PRIMARY);
     }
 }

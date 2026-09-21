@@ -2,11 +2,10 @@ package com.tutorplatform.session.infrastructure.persistence;
 
 import com.tutorplatform.session.domain.LessonSessionTopicEntity;
 import com.tutorplatform.session.domain.LessonSessionTopicRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaLessonSessionTopicRepository implements LessonSessionTopicRepository {
@@ -19,27 +18,29 @@ public class JpaLessonSessionTopicRepository implements LessonSessionTopicReposi
 
     @Override
     public LessonSessionTopicEntity saveAndFlush(LessonSessionTopicEntity lessonSessionTopic) {
-        return databaseRepository.saveAndFlush(
-            new LessonSessionTopicDatabaseModel(lessonSessionTopic)
-        ).toEntity();
+        return databaseRepository
+                .saveAndFlush(new LessonSessionTopicDatabaseModel(lessonSessionTopic))
+                .toEntity();
     }
 
     @Override
     public List<LessonSessionTopicEntity> saveAllAndFlush(
-        List<LessonSessionTopicEntity> lessonSessionTopics
-    ) {
-        return databaseRepository.saveAllAndFlush(lessonSessionTopics.stream()
-                .map(LessonSessionTopicDatabaseModel::new)
-                .toList()).stream()
-            .map(LessonSessionTopicDatabaseModel::toEntity)
-            .toList();
+            List<LessonSessionTopicEntity> lessonSessionTopics) {
+        return databaseRepository
+                .saveAllAndFlush(
+                        lessonSessionTopics.stream()
+                                .map(LessonSessionTopicDatabaseModel::new)
+                                .toList())
+                .stream()
+                .map(LessonSessionTopicDatabaseModel::toEntity)
+                .toList();
     }
 
     @Override
     public List<LessonSessionTopicEntity> findAllByLessonSessionId(UUID lessonSessionId) {
         return databaseRepository.findAllByIdLessonSessionId(lessonSessionId).stream()
-            .map(LessonSessionTopicDatabaseModel::toEntity)
-            .toList();
+                .map(LessonSessionTopicDatabaseModel::toEntity)
+                .toList();
     }
 
     @Override
@@ -48,8 +49,8 @@ public class JpaLessonSessionTopicRepository implements LessonSessionTopicReposi
             return List.of();
         }
         return databaseRepository.findAllByIdLessonSessionIdIn(lessonSessionIds).stream()
-            .map(LessonSessionTopicDatabaseModel::toEntity)
-            .toList();
+                .map(LessonSessionTopicDatabaseModel::toEntity)
+                .toList();
     }
 
     @Override

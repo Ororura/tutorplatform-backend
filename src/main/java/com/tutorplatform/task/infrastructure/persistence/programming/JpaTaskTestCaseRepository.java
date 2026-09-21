@@ -2,10 +2,9 @@ package com.tutorplatform.task.infrastructure.persistence.programming;
 
 import com.tutorplatform.task.domain.programming.TaskTestCase;
 import com.tutorplatform.task.domain.programming.TaskTestCaseRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaTaskTestCaseRepository implements TaskTestCaseRepository {
@@ -17,14 +16,18 @@ public class JpaTaskTestCaseRepository implements TaskTestCaseRepository {
 
     @Override
     public List<TaskTestCase> saveAllAndFlush(List<TaskTestCase> testCases) {
-        return repository.saveAllAndFlush(testCases.stream().map(TaskTestCaseDatabaseModel::new).toList())
-            .stream().map(TaskTestCaseDatabaseModel::toDomain).toList();
+        return repository
+                .saveAllAndFlush(testCases.stream().map(TaskTestCaseDatabaseModel::new).toList())
+                .stream()
+                .map(TaskTestCaseDatabaseModel::toDomain)
+                .toList();
     }
 
     @Override
     public List<TaskTestCase> findAllByTaskId(UUID taskId) {
         return repository.findAllByTaskIdOrderByPosition(taskId).stream()
-            .map(TaskTestCaseDatabaseModel::toDomain).toList();
+                .map(TaskTestCaseDatabaseModel::toDomain)
+                .toList();
     }
 
     @Override

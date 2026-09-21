@@ -22,36 +22,46 @@ public class HomeworkEntity {
     private List<HomeworkItemEntity> items;
 
     public HomeworkEntity(
-        UUID id,
-        UUID studentProgramId,
-        UUID assignedByTeacherId,
-        String title,
-        String description,
-        Instant assignedAt,
-        Instant dueAt,
-        HomeworkStatus status,
-        Instant completedAt,
-        List<HomeworkItemEntity> items
-    ) {
-        this(id, studentProgramId, assignedByTeacherId, title, description, assignedAt, dueAt,
-            status, completedAt, items, null, null, null);
+            UUID id,
+            UUID studentProgramId,
+            UUID assignedByTeacherId,
+            String title,
+            String description,
+            Instant assignedAt,
+            Instant dueAt,
+            HomeworkStatus status,
+            Instant completedAt,
+            List<HomeworkItemEntity> items) {
+        this(
+                id,
+                studentProgramId,
+                assignedByTeacherId,
+                title,
+                description,
+                assignedAt,
+                dueAt,
+                status,
+                completedAt,
+                items,
+                null,
+                null,
+                null);
     }
 
     public HomeworkEntity(
-        UUID id,
-        UUID studentProgramId,
-        UUID assignedByTeacherId,
-        String title,
-        String description,
-        Instant assignedAt,
-        Instant dueAt,
-        HomeworkStatus status,
-        Instant completedAt,
-        List<HomeworkItemEntity> items,
-        Long version,
-        Instant createdAt,
-        Instant updatedAt
-    ) {
+            UUID id,
+            UUID studentProgramId,
+            UUID assignedByTeacherId,
+            String title,
+            String description,
+            Instant assignedAt,
+            Instant dueAt,
+            HomeworkStatus status,
+            Instant completedAt,
+            List<HomeworkItemEntity> items,
+            Long version,
+            Instant createdAt,
+            Instant updatedAt) {
         this.id = Objects.requireNonNull(id);
         this.studentProgramId = Objects.requireNonNull(studentProgramId);
         this.assignedByTeacherId = Objects.requireNonNull(assignedByTeacherId);
@@ -64,12 +74,11 @@ public class HomeworkEntity {
     }
 
     public void update(
-        String title,
-        String description,
-        Instant dueAt,
-        HomeworkStatus status,
-        Instant completedAt
-    ) {
+            String title,
+            String description,
+            Instant dueAt,
+            HomeworkStatus status,
+            Instant completedAt) {
         applyChanges(title, description, dueAt, status, completedAt);
     }
 
@@ -89,12 +98,11 @@ public class HomeworkEntity {
     }
 
     private void applyChanges(
-        String title,
-        String description,
-        Instant dueAt,
-        HomeworkStatus status,
-        Instant completedAt
-    ) {
+            String title,
+            String description,
+            Instant dueAt,
+            HomeworkStatus status,
+            Instant completedAt) {
         this.title = Objects.requireNonNull(title);
         this.description = description;
         this.dueAt = dueAt;

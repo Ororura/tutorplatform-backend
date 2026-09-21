@@ -20,29 +20,47 @@ public class AuthController implements AuthApi {
     private final AuthenticationSessionService authenticationSessionService;
     private final CurrentUserService currentUserService;
 
-    public AuthController(TeacherRegistrationService teacherRegistrationService, AuthenticationSessionService authenticationSessionService, CurrentUserService currentUserService) {
+    public AuthController(
+            TeacherRegistrationService teacherRegistrationService,
+            AuthenticationSessionService authenticationSessionService,
+            CurrentUserService currentUserService) {
         this.teacherRegistrationService = teacherRegistrationService;
         this.authenticationSessionService = authenticationSessionService;
         this.currentUserService = currentUserService;
     }
 
     @Override
-    @PostMapping(value = "/register/teacher", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(
+            value = "/register/teacher",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public CurrentUserResponse registerTeacher(@Valid @RequestBody TeacherRegistrationRequest registration, HttpServletRequest request, HttpServletResponse response) {
+    public CurrentUserResponse registerTeacher(
+            @Valid @RequestBody TeacherRegistrationRequest registration,
+            HttpServletRequest request,
+            HttpServletResponse response) {
         teacherRegistrationService.registerTeacher(registration);
-        return authenticationSessionService.authenticate(registration.email(), registration.password(), request, response);
+        return authenticationSessionService.authenticate(
+                registration.email(), registration.password(), request, response);
     }
 
     @Override
-    @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public CurrentUserResponse login(@Valid @RequestBody LoginRequest login, HttpServletRequest request, HttpServletResponse response) {
-        return authenticationSessionService.authenticate(login.email(), login.password(), request, response);
+    @PostMapping(
+            value = "/login",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public CurrentUserResponse login(
+            @Valid @RequestBody LoginRequest login,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+        return authenticationSessionService.authenticate(
+                login.email(), login.password(), request, response);
     }
 
     @Override
     @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CurrentUserResponse getCurrentUser(@AuthenticationPrincipal AuthenticatedUser principal) {
+    public CurrentUserResponse getCurrentUser(
+            @AuthenticationPrincipal AuthenticatedUser principal) {
         return currentUserService.getCurrentUser(principal);
     }
 

@@ -5,5 +5,6 @@ import java.util.UUID;
 
 public interface ProgrammingTaskConfigRepository {
     ProgrammingTaskConfig saveAndFlush(ProgrammingTaskConfig config);
+
     Optional<ProgrammingTaskConfig> findByTaskId(UUID taskId);
 }

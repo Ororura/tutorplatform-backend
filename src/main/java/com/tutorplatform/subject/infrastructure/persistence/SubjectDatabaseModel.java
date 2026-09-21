@@ -4,19 +4,17 @@ import com.tutorplatform.subject.domain.SubjectEntity;
 import com.tutorplatform.subject.domain.SubjectStatus;
 import com.tutorplatform.user.infrastructure.persistence.TeacherDatabaseModel;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "subjects")
 public class SubjectDatabaseModel {
 
-    @Id
-    private UUID id;
+    @Id private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_teacher_id", insertable = false, updatable = false)
@@ -31,8 +29,7 @@ public class SubjectDatabaseModel {
     @Column(nullable = false, length = 160)
     private String name;
 
-    @Column
-    private String description;
+    @Column private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 24)
@@ -46,8 +43,7 @@ public class SubjectDatabaseModel {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    protected SubjectDatabaseModel() {
-    }
+    protected SubjectDatabaseModel() {}
 
     SubjectDatabaseModel(SubjectEntity subject) {
         id = Objects.requireNonNull(subject.id());
@@ -63,6 +59,7 @@ public class SubjectDatabaseModel {
     }
 
     SubjectEntity toEntity() {
-        return new SubjectEntity(id, ownerTeacherId, code, name, description, status, createdAt, updatedAt);
+        return new SubjectEntity(
+                id, ownerTeacherId, code, name, description, status, createdAt, updatedAt);
     }
 }

@@ -5,17 +5,15 @@ import com.tutorplatform.student.domain.TeacherStudentRelationType;
 import com.tutorplatform.user.domain.TeacherEntity;
 import com.tutorplatform.user.infrastructure.persistence.TeacherDatabaseModel;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.Instant;
 import java.util.Objects;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "teacher_student_links")
 public class TeacherStudentLinkEntity {
 
-    @EmbeddedId
-    private TeacherStudentLinkId id;
+    @EmbeddedId private TeacherStudentLinkId id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "teacher_id", nullable = false, insertable = false, updatable = false)
@@ -40,8 +38,7 @@ public class TeacherStudentLinkEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    protected TeacherStudentLinkEntity() {
-    }
+    protected TeacherStudentLinkEntity() {}
 
     public TeacherStudentLinkEntity(TeacherEntity teacher, StudentEntity student) {
         Objects.requireNonNull(teacher);

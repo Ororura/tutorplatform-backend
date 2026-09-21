@@ -4,16 +4,14 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record TeacherRegistrationInvite(
-    UUID id,
-    UUID createdByAdminId,
-    String email,
-    String tokenHash,
-    Instant expiresAt,
-    Instant acceptedAt,
-    Instant revokedAt,
-    Instant createdAt
-) {
-
+        UUID id,
+        UUID createdByAdminId,
+        String email,
+        String tokenHash,
+        Instant expiresAt,
+        Instant acceptedAt,
+        Instant revokedAt,
+        Instant createdAt) {
 
     public TeacherRegistrationInviteStatus status(Instant now) {
         if (acceptedAt != null) {
@@ -32,8 +30,6 @@ public record TeacherRegistrationInvite(
     }
 
     public boolean isActive(Instant now) {
-        return acceptedAt == null
-            && revokedAt == null
-            && expiresAt.isAfter(now);
+        return acceptedAt == null && revokedAt == null && expiresAt.isAfter(now);
     }
 }

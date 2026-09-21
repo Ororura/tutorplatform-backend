@@ -2,11 +2,10 @@ package com.tutorplatform.subject.infrastructure.persistence;
 
 import com.tutorplatform.subject.domain.SubjectEntity;
 import com.tutorplatform.subject.domain.SubjectRepository;
-import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaSubjectRepository implements SubjectRepository {
@@ -19,8 +18,10 @@ public class JpaSubjectRepository implements SubjectRepository {
 
     @Override
     public SubjectEntity saveAndFlush(SubjectEntity subject) {
-        SubjectDatabaseModel model = databaseRepository.findById(subject.id())
-            .orElseGet(() -> new SubjectDatabaseModel(subject));
+        SubjectDatabaseModel model =
+                databaseRepository
+                        .findById(subject.id())
+                        .orElseGet(() -> new SubjectDatabaseModel(subject));
         model.updateFrom(subject);
         return databaseRepository.saveAndFlush(model).toEntity();
     }
@@ -31,9 +32,10 @@ public class JpaSubjectRepository implements SubjectRepository {
     }
 
     @Override
-    public List<SubjectEntity> findAccessibleByTeacherAndStatus(UUID teacherId, com.tutorplatform.subject.domain.SubjectStatus status) {
+    public List<SubjectEntity> findAccessibleByTeacherAndStatus(
+            UUID teacherId, com.tutorplatform.subject.domain.SubjectStatus status) {
         return databaseRepository.findAccessible(teacherId, status).stream()
-            .map(SubjectDatabaseModel::toEntity)
-            .toList();
+                .map(SubjectDatabaseModel::toEntity)
+                .toList();
     }
 }

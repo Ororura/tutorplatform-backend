@@ -1,4 +1,3 @@
 package com.tutorplatform.program.application;
 
-public class LearningProgramModuleNotFoundException extends RuntimeException {
-}
+public class LearningProgramModuleNotFoundException extends RuntimeException {}

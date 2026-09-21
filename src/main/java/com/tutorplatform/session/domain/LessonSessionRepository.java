@@ -11,5 +11,6 @@ public interface LessonSessionRepository {
 
     List<LessonSessionEntity> findAll();
 
-    Optional<LessonSessionEntity> findOwnedById(UUID lessonSessionId, UUID teacherId, UUID studentId);
+    Optional<LessonSessionEntity> findOwnedById(
+            UUID lessonSessionId, UUID teacherId, UUID studentId);
 }

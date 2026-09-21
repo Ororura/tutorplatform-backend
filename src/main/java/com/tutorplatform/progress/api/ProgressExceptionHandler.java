@@ -12,17 +12,24 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class ProgressExceptionHandler {
 
     @ExceptionHandler(InvalidProgressShareExpirationException.class)
-    ResponseEntity<ApiError> handleInvalidShareExpiration(InvalidProgressShareExpirationException exception) {
-        return ResponseEntity.badRequest().body(
-            ApiError.of("PROGRESS_SHARE_EXPIRATION_INVALID", "Expiration must be in the future", MDC.get("traceId"))
-        );
+    ResponseEntity<ApiError> handleInvalidShareExpiration(
+            InvalidProgressShareExpirationException exception) {
+        return ResponseEntity.badRequest()
+                .body(
+                        ApiError.of(
+                                "PROGRESS_SHARE_EXPIRATION_INVALID",
+                                "Expiration must be in the future",
+                                MDC.get("traceId")));
     }
 
     @ExceptionHandler(ProgressShareNotFoundException.class)
     ResponseEntity<ApiError> handleShareNotFound(ProgressShareNotFoundException exception) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-            ApiError.of("PROGRESS_SHARE_NOT_FOUND", "Progress share not found", MDC.get("traceId"))
-        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(
+                        ApiError.of(
+                                "PROGRESS_SHARE_NOT_FOUND",
+                                "Progress share not found",
+                                MDC.get("traceId")));
     }
 
     @ExceptionHandler(ProgressShareExpiredException.class)
@@ -37,14 +44,17 @@ public class ProgressExceptionHandler {
 
     @ExceptionHandler(ProgressStudentProgramNotFoundException.class)
     ResponseEntity<ApiError> handleStudentProgramNotFound(
-        ProgressStudentProgramNotFoundException exception
-    ) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-            ApiError.of("STUDENT_PROGRAM_NOT_FOUND", "Student program not found", MDC.get("traceId"))
-        );
+            ProgressStudentProgramNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(
+                        ApiError.of(
+                                "STUDENT_PROGRAM_NOT_FOUND",
+                                "Student program not found",
+                                MDC.get("traceId")));
     }
 
     private ResponseEntity<ApiError> gone(String code, String message) {
-        return ResponseEntity.status(HttpStatus.GONE).body(ApiError.of(code, message, MDC.get("traceId")));
+        return ResponseEntity.status(HttpStatus.GONE)
+                .body(ApiError.of(code, message, MDC.get("traceId")));
     }
 }

@@ -1,26 +1,21 @@
 package com.tutorplatform.submission.infrastructure.persistence;
 
 import com.tutorplatform.submission.domain.*;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-import java.util.UUID;
-
 @Repository
 public class JpaSubmissionRepository implements SubmissionRepository {
 
-    private static final Sort NEWEST_FIRST = Sort.by(
-        Sort.Order.desc("submittedAt"),
-        Sort.Order.desc("id")
-    );
-    private static final Sort ATTEMPTS_NEWEST_FIRST = Sort.by(
-        Sort.Order.desc("attemptNo"),
-        Sort.Order.desc("id")
-    );
+    private static final Sort NEWEST_FIRST =
+            Sort.by(Sort.Order.desc("submittedAt"), Sort.Order.desc("id"));
+    private static final Sort ATTEMPTS_NEWEST_FIRST =
+            Sort.by(Sort.Order.desc("attemptNo"), Sort.Order.desc("id"));
 
     private final SubmissionDatabaseRepository databaseRepository;
 
@@ -40,66 +35,74 @@ public class JpaSubmissionRepository implements SubmissionRepository {
 
     @Override
     public Optional<SubmissionEntity> findByIdAndStudentId(UUID submissionId, UUID studentId) {
-        return databaseRepository.findByIdAndStudentId(submissionId, studentId)
-            .map(SubmissionDatabaseModel::toEntity);
+        return databaseRepository
+                .findByIdAndStudentId(submissionId, studentId)
+                .map(SubmissionDatabaseModel::toEntity);
     }
 
     @Override
     public SubmissionPage findPageByStudentId(UUID studentId, int page, int size) {
-        return toPage(databaseRepository.findAllByStudentId(
-            studentId, PageRequest.of(page, size, NEWEST_FIRST)
-        ));
+        return toPage(
+                databaseRepository.findAllByStudentId(
+                        studentId, PageRequest.of(page, size, NEWEST_FIRST)));
     }
 
     @Override
     public SubmissionPage findPageByStudentIdAndTaskId(
-        UUID studentId,
-        UUID taskId,
-        int page,
-        int size
-    ) {
-        return toPage(databaseRepository.findAllByStudentIdAndTaskId(
-            studentId, taskId, PageRequest.of(page, size, NEWEST_FIRST)
-        ));
+            UUID studentId, UUID taskId, int page, int size) {
+        return toPage(
+                databaseRepository.findAllByStudentIdAndTaskId(
+                        studentId, taskId, PageRequest.of(page, size, NEWEST_FIRST)));
     }
 
     @Override
     public SubmissionPage findPageForTeacher(
-        UUID studentId,
-        SubmissionStatus status,
-        int page,
-        int size,
-        String sortField,
-        boolean ascending
-    ) {
+            UUID studentId,
+            SubmissionStatus status,
+            int page,
+            int size,
+            String sortField,
+            boolean ascending) {
         Sort.Direction direction = ascending ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, sortField).and(Sort.by(direction, "id"));
         PageRequest pageable = PageRequest.of(page, size, sort);
-        return toPage(status == null
-            ? databaseRepository.findAllByStudentId(studentId, pageable)
-            : databaseRepository.findAllByStudentIdAndStatus(studentId, status, pageable));
+        return toPage(
+                status == null
+                        ? databaseRepository.findAllByStudentId(studentId, pageable)
+                        : databaseRepository.findAllByStudentIdAndStatus(
+                                studentId, status, pageable));
     }
 
     @Override
     public SubmissionPage findAttempts(SubmissionAttemptContext context, int page, int size) {
-        return toPage(databaseRepository.findAttempts(
-            context.studentId(), context.studentProgramId(), context.taskId(), context.homeworkItemId(),
-            PageRequest.of(page, size, ATTEMPTS_NEWEST_FIRST)
-        ));
+        return toPage(
+                databaseRepository.findAttempts(
+                        context.studentId(),
+                        context.studentProgramId(),
+                        context.taskId(),
+                        context.homeworkItemId(),
+                        PageRequest.of(page, size, ATTEMPTS_NEWEST_FIRST)));
     }
 
     @Override
     public Optional<SubmissionEntity> findLatestAttempt(SubmissionAttemptContext context) {
-        return databaseRepository.findLatestAttempt(
-            context.studentId(), context.studentProgramId(), context.taskId(), context.homeworkItemId()
-        ).map(SubmissionDatabaseModel::toEntity);
+        return databaseRepository
+                .findLatestAttempt(
+                        context.studentId(),
+                        context.studentProgramId(),
+                        context.taskId(),
+                        context.homeworkItemId())
+                .map(SubmissionDatabaseModel::toEntity);
     }
 
     @Override
     public boolean existsByStatus(SubmissionAttemptContext context, SubmissionStatus status) {
         return databaseRepository.existsByStatus(
-            context.studentId(), context.studentProgramId(), context.taskId(), context.homeworkItemId(), status
-        );
+                context.studentId(),
+                context.studentProgramId(),
+                context.taskId(),
+                context.homeworkItemId(),
+                status);
     }
 
     @Override
@@ -107,15 +110,18 @@ public class JpaSubmissionRepository implements SubmissionRepository {
     public int nextAttemptNo(SubmissionAttemptContext context) {
         databaseRepository.lockStudentProgram(context.studentProgramId());
         return databaseRepository.findMaxAttemptNo(
-            context.studentId(), context.studentProgramId(), context.taskId(), context.homeworkItemId()
-        ) + 1;
+                        context.studentId(),
+                        context.studentProgramId(),
+                        context.taskId(),
+                        context.homeworkItemId())
+                + 1;
     }
 
-    private SubmissionPage toPage(org.springframework.data.domain.Page<SubmissionDatabaseModel> page) {
+    private SubmissionPage toPage(
+            org.springframework.data.domain.Page<SubmissionDatabaseModel> page) {
         return new SubmissionPage(
-            page.getContent().stream().map(SubmissionDatabaseModel::toEntity).toList(),
-            page.getTotalElements(),
-            page.getTotalPages()
-        );
+                page.getContent().stream().map(SubmissionDatabaseModel::toEntity).toList(),
+                page.getTotalElements(),
+                page.getTotalPages());
     }
 }

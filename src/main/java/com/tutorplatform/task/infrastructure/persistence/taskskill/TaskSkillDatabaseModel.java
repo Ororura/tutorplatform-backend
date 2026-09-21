@@ -4,16 +4,14 @@ import com.tutorplatform.task.domain.taskskill.TaskSkillEntity;
 import com.tutorplatform.task.infrastructure.persistence.skill.SkillDatabaseModel;
 import com.tutorplatform.task.infrastructure.persistence.task.TaskDatabaseModel;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.Instant;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "task_skills")
 public class TaskSkillDatabaseModel {
 
-    @EmbeddedId
-    private TaskSkillId id;
+    @EmbeddedId private TaskSkillId id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "task_id", nullable = false, insertable = false, updatable = false)
@@ -27,8 +25,7 @@ public class TaskSkillDatabaseModel {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    protected TaskSkillDatabaseModel() {
-    }
+    protected TaskSkillDatabaseModel() {}
 
     TaskSkillDatabaseModel(TaskSkillEntity taskSkill) {
         id = new TaskSkillId(taskSkill.taskId(), taskSkill.skillId());

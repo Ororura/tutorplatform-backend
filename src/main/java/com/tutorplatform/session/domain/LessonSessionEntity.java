@@ -4,25 +4,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-public record LessonSessionEntity(UUID id, UUID studentProgramId, UUID teacherId, Instant startedAt,
-                                  int durationMinutes, AttendanceStatus attendanceStatus, String summary,
-                                  String privateNotes, Long version, Instant createdAt, Instant updatedAt) {
-
-    public LessonSessionEntity(
-        UUID id,
-        UUID studentProgramId,
-        UUID teacherId,
-        Instant startedAt,
-        int durationMinutes,
-        AttendanceStatus attendanceStatus,
-        String summary,
-        String privateNotes
-    ) {
-        this(id, studentProgramId, teacherId, startedAt, durationMinutes, attendanceStatus,
-            summary, privateNotes, null, null, null);
-    }
-
-    public LessonSessionEntity(
+public record LessonSessionEntity(
         UUID id,
         UUID studentProgramId,
         UUID teacherId,
@@ -33,8 +15,43 @@ public record LessonSessionEntity(UUID id, UUID studentProgramId, UUID teacherId
         String privateNotes,
         Long version,
         Instant createdAt,
-        Instant updatedAt
-    ) {
+        Instant updatedAt) {
+
+    public LessonSessionEntity(
+            UUID id,
+            UUID studentProgramId,
+            UUID teacherId,
+            Instant startedAt,
+            int durationMinutes,
+            AttendanceStatus attendanceStatus,
+            String summary,
+            String privateNotes) {
+        this(
+                id,
+                studentProgramId,
+                teacherId,
+                startedAt,
+                durationMinutes,
+                attendanceStatus,
+                summary,
+                privateNotes,
+                null,
+                null,
+                null);
+    }
+
+    public LessonSessionEntity(
+            UUID id,
+            UUID studentProgramId,
+            UUID teacherId,
+            Instant startedAt,
+            int durationMinutes,
+            AttendanceStatus attendanceStatus,
+            String summary,
+            String privateNotes,
+            Long version,
+            Instant createdAt,
+            Instant updatedAt) {
         this.id = Objects.requireNonNull(id);
         this.studentProgramId = Objects.requireNonNull(studentProgramId);
         this.teacherId = Objects.requireNonNull(teacherId);

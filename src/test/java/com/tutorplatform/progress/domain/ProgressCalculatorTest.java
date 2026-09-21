@@ -1,12 +1,11 @@
 package com.tutorplatform.progress.domain;
 
-import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressStatus;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressStatus;
 import java.util.List;
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class ProgressCalculatorTest {
 
@@ -16,19 +15,19 @@ class ProgressCalculatorTest {
     @Test
     void oneAttendedSessionContributesItsMinutes() {
         assertThat(progress(new SessionMetrics(60, 1, 0, 1), List.of()).totalLearningMinutes())
-            .isEqualTo(60);
+                .isEqualTo(60);
     }
 
     @Test
     void attendedSessionMinutesAreSummed() {
         assertThat(progress(new SessionMetrics(150, 2, 0, 2), List.of()).totalLearningMinutes())
-            .isEqualTo(150);
+                .isEqualTo(150);
     }
 
     @Test
     void missedSessionDoesNotContributeMinutes() {
         assertThat(progress(new SessionMetrics(0, 0, 1, 1), List.of()).totalLearningMinutes())
-            .isZero();
+                .isZero();
     }
 
     @Test
@@ -42,13 +41,13 @@ class ProgressCalculatorTest {
     @Test
     void attendanceIsAttendedDividedByAttendedAndMissed() {
         assertThat(progress(new SessionMetrics(120, 2, 1, 3), List.of()).attendanceRate())
-            .isCloseTo(2.0 / 3.0, within(1.0e-12));
+                .isCloseTo(2.0 / 3.0, within(1.0e-12));
     }
 
     @Test
     void cancelledSessionDoesNotChangeAttendanceDenominator() {
         assertThat(progress(new SessionMetrics(60, 1, 0, 1), List.of()).attendanceRate())
-            .isEqualTo(1.0);
+                .isEqualTo(1.0);
     }
 
     @Test
@@ -81,10 +80,10 @@ class ProgressCalculatorTest {
 
     @Test
     void availableTopicIsNotCompleted() {
-        CurrentProgress progress = progress(
-            new SessionMetrics(0, 0, 0, 0),
-            List.of(topic("Available", StudentTopicProgressStatus.AVAILABLE))
-        );
+        CurrentProgress progress =
+                progress(
+                        new SessionMetrics(0, 0, 0, 0),
+                        List.of(topic("Available", StudentTopicProgressStatus.AVAILABLE)));
 
         assertThat(progress.completedTopics()).isEmpty();
         assertThat(progress.totalTopics()).isOne();
@@ -92,10 +91,10 @@ class ProgressCalculatorTest {
 
     @Test
     void lockedTopicIsNotCompleted() {
-        CurrentProgress progress = progress(
-            new SessionMetrics(0, 0, 0, 0),
-            List.of(topic("Locked", StudentTopicProgressStatus.LOCKED))
-        );
+        CurrentProgress progress =
+                progress(
+                        new SessionMetrics(0, 0, 0, 0),
+                        List.of(topic("Locked", StudentTopicProgressStatus.LOCKED)));
 
         assertThat(progress.completedTopics()).isEmpty();
         assertThat(progress.totalTopics()).isOne();
@@ -103,13 +102,12 @@ class ProgressCalculatorTest {
 
     private CurrentProgress progress(SessionMetrics sessions, List<TopicProgress> topics) {
         return calculator.calculate(
-            STUDENT_PROGRAM_ID,
-            sessions,
-            topics,
-            new HomeworkMetrics(0, 0),
-            new PracticeMetrics(0, 0),
-            new AssessmentAverages(null, null, null, null)
-        );
+                STUDENT_PROGRAM_ID,
+                sessions,
+                topics,
+                new HomeworkMetrics(0, 0),
+                new PracticeMetrics(0, 0),
+                new AssessmentAverages(null, null, null, null));
     }
 
     private TopicProgress topic(String title, StudentTopicProgressStatus status) {

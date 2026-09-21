@@ -1,44 +1,39 @@
 package com.tutorplatform.homework.application;
 
 import com.tutorplatform.homework.domain.HomeworkStatus;
-
 import java.util.Optional;
 import java.util.UUID;
 
 public interface HomeworkQuery {
 
     HomeworkPage findPageByTeacherAndStudent(
-        UUID teacherId,
-        UUID studentId,
-        UUID studentProgramId,
-        HomeworkStatus status,
-        int page,
-        int size,
-        String sortField,
-        boolean ascending
-    );
+            UUID teacherId,
+            UUID studentId,
+            UUID studentProgramId,
+            HomeworkStatus status,
+            int page,
+            int size,
+            String sortField,
+            boolean ascending);
 
     StudentHomeworkPage findPageByStudent(
-        UUID studentId,
-        UUID studentProgramId,
-        HomeworkStatus status,
-        int page,
-        int size,
-        String sortField,
-        boolean ascending
-    );
+            UUID studentId,
+            UUID studentProgramId,
+            HomeworkStatus status,
+            int page,
+            int size,
+            String sortField,
+            boolean ascending);
 
     Optional<StudentHomeworkDetails> findDetailsByStudent(UUID studentId, UUID homeworkId);
 
     Optional<StudentTaskContext> findStudentTaskContext(UUID homeworkItemId);
 
     record StudentTaskContext(
-        UUID homeworkId,
-        UUID studentProgramId,
-        UUID assignedByTeacherId,
-        HomeworkStatus homeworkStatus,
-        UUID homeworkItemId,
-        UUID taskId
-    ) {
-    }
+            UUID homeworkId,
+            UUID studentProgramId,
+            UUID assignedByTeacherId,
+            HomeworkStatus homeworkStatus,
+            UUID homeworkItemId,
+            UUID taskId) {}
 }

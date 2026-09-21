@@ -19,32 +19,40 @@ public class TaskEntity {
     private TaskStatus status;
 
     public TaskEntity(
-        UUID id,
-        UUID teacherId,
-        UUID subjectId,
-        String title,
-        String descriptionMarkdown,
-        TaskType taskType,
-        TaskDifficulty difficulty,
-        TaskStatus status
-    ) {
-        this(id, teacherId, subjectId, title, descriptionMarkdown, taskType, difficulty, status,
-            null, null, null);
+            UUID id,
+            UUID teacherId,
+            UUID subjectId,
+            String title,
+            String descriptionMarkdown,
+            TaskType taskType,
+            TaskDifficulty difficulty,
+            TaskStatus status) {
+        this(
+                id,
+                teacherId,
+                subjectId,
+                title,
+                descriptionMarkdown,
+                taskType,
+                difficulty,
+                status,
+                null,
+                null,
+                null);
     }
 
     public TaskEntity(
-        UUID id,
-        UUID teacherId,
-        UUID subjectId,
-        String title,
-        String descriptionMarkdown,
-        TaskType taskType,
-        TaskDifficulty difficulty,
-        TaskStatus status,
-        Long version,
-        Instant createdAt,
-        Instant updatedAt
-    ) {
+            UUID id,
+            UUID teacherId,
+            UUID subjectId,
+            String title,
+            String descriptionMarkdown,
+            TaskType taskType,
+            TaskDifficulty difficulty,
+            TaskStatus status,
+            Long version,
+            Instant createdAt,
+            Instant updatedAt) {
         this.id = Objects.requireNonNull(id);
         this.teacherId = Objects.requireNonNull(teacherId);
         this.subjectId = Objects.requireNonNull(subjectId);
@@ -55,22 +63,20 @@ public class TaskEntity {
     }
 
     public void update(
-        String title,
-        String descriptionMarkdown,
-        TaskType taskType,
-        TaskDifficulty difficulty,
-        TaskStatus status
-    ) {
+            String title,
+            String descriptionMarkdown,
+            TaskType taskType,
+            TaskDifficulty difficulty,
+            TaskStatus status) {
         applyChanges(title, descriptionMarkdown, taskType, difficulty, status);
     }
 
     private void applyChanges(
-        String title,
-        String descriptionMarkdown,
-        TaskType taskType,
-        TaskDifficulty difficulty,
-        TaskStatus status
-    ) {
+            String title,
+            String descriptionMarkdown,
+            TaskType taskType,
+            TaskDifficulty difficulty,
+            TaskStatus status) {
         this.title = Objects.requireNonNull(title);
         this.descriptionMarkdown = Objects.requireNonNull(descriptionMarkdown);
         this.taskType = Objects.requireNonNull(taskType);

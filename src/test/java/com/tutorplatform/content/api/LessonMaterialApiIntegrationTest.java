@@ -1,8 +1,10 @@
 package com.tutorplatform.content.api;
 
-import com.tutorplatform.test.PostgresIntegrationTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,27 +29,23 @@ import com.tutorplatform.student.domain.StudentStatus;
 import com.tutorplatform.subject.domain.SubjectEntity;
 import com.tutorplatform.subject.domain.SubjectRepository;
 import com.tutorplatform.subject.domain.SubjectStatus;
+import com.tutorplatform.test.PostgresIntegrationTest;
 import com.tutorplatform.user.domain.*;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -58,51 +56,47 @@ class LessonMaterialApiIntegrationTest extends PostgresIntegrationTest {
         PostgresIntegrationTest.configurePostgres(registry, "test_lesson_material_api", "008");
     }
 
-    @Autowired
-    private MockMvc mockMvc;
-    @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
-    private LessonMaterialService lessonMaterialService;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private TeacherRepository teacherRepository;
-    @Autowired
-    private SubjectRepository subjectRepository;
-    @Autowired
-    private LearningProgramRepository learningProgramRepository;
-    @Autowired
-    private StudentRepository studentRepository;
-    @Autowired
-    private StudentProgramRepository studentProgramRepository;
-    @Autowired
-    private StudentTopicProgressRepository studentTopicProgressRepository;
-    @Autowired
-    private ModuleRepository moduleRepository;
-    @Autowired
-    private TopicRepository topicRepository;
+    @Autowired private MockMvc mockMvc;
+    @Autowired private ObjectMapper objectMapper;
+    @Autowired private LessonMaterialService lessonMaterialService;
+    @Autowired private UserRepository userRepository;
+    @Autowired private TeacherRepository teacherRepository;
+    @Autowired private SubjectRepository subjectRepository;
+    @Autowired private LearningProgramRepository learningProgramRepository;
+    @Autowired private StudentRepository studentRepository;
+    @Autowired private StudentProgramRepository studentProgramRepository;
+    @Autowired private StudentTopicProgressRepository studentTopicProgressRepository;
+    @Autowired private ModuleRepository moduleRepository;
+    @Autowired private TopicRepository topicRepository;
 
     @Test
     void postCreatesMarkdownMaterial() throws Exception {
         ContentFixture fixture = createFixture("api-markdown-material@example.com");
 
-        MvcResult result = mockMvc.perform(post(materialsUrl(fixture.topic().id()))
-                .with(user(fixture.principal()))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(createRequest("MARKDOWN", "Цикл for", "# Цикл", null, 0)))
-            .andExpect(status().isCreated())
-            .andExpect(header().string("Location", org.hamcrest.Matchers.containsString("/materials/")))
-            .andExpect(jsonPath("$.topicId").value(fixture.topic().id().toString()))
-            .andExpect(jsonPath("$.materialType").value("MARKDOWN"))
-            .andExpect(jsonPath("$.title").value("Цикл for"))
-            .andExpect(jsonPath("$.content").value("# Цикл"))
-            .andExpect(jsonPath("$.position").value(0))
-            .andExpect(jsonPath("$.version").value(0))
-            .andExpect(jsonPath("$.createdAt").isNotEmpty())
-            .andExpect(jsonPath("$.updatedAt").isNotEmpty())
-            .andReturn();
+        MvcResult result =
+                mockMvc.perform(
+                                post(materialsUrl(fixture.topic().id()))
+                                        .with(user(fixture.principal()))
+                                        .with(csrf())
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(
+                                                createRequest(
+                                                        "MARKDOWN", "Цикл for", "# Цикл", null, 0)))
+                        .andExpect(status().isCreated())
+                        .andExpect(
+                                header().string(
+                                                "Location",
+                                                org.hamcrest.Matchers.containsString(
+                                                        "/materials/")))
+                        .andExpect(jsonPath("$.topicId").value(fixture.topic().id().toString()))
+                        .andExpect(jsonPath("$.materialType").value("MARKDOWN"))
+                        .andExpect(jsonPath("$.title").value("Цикл for"))
+                        .andExpect(jsonPath("$.content").value("# Цикл"))
+                        .andExpect(jsonPath("$.position").value(0))
+                        .andExpect(jsonPath("$.version").value(0))
+                        .andExpect(jsonPath("$.createdAt").isNotEmpty())
+                        .andExpect(jsonPath("$.updatedAt").isNotEmpty())
+                        .andReturn();
 
         assertThat(json(result).required("id").textValue()).isNotBlank();
     }
@@ -111,31 +105,37 @@ class LessonMaterialApiIntegrationTest extends PostgresIntegrationTest {
     void postCreatesTextMaterial() throws Exception {
         ContentFixture fixture = createFixture("api-text-material@example.com");
 
-        mockMvc.perform(post(materialsUrl(fixture.topic().id()))
-                .with(user(fixture.principal()))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(createRequest("TEXT", "Конспект", "Текст урока", null, 0)))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.materialType").value("TEXT"))
-            .andExpect(jsonPath("$.content").value("Текст урока"));
+        mockMvc.perform(
+                        post(materialsUrl(fixture.topic().id()))
+                                .with(user(fixture.principal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(createRequest("TEXT", "Конспект", "Текст урока", null, 0)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.materialType").value("TEXT"))
+                .andExpect(jsonPath("$.content").value("Текст урока"));
     }
 
     @Test
     void postCreatesLinkMaterial() throws Exception {
         ContentFixture fixture = createFixture("api-link-material@example.com");
 
-        mockMvc.perform(post(materialsUrl(fixture.topic().id()))
-                .with(user(fixture.principal()))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(createRequest(
-                    "LINK", "Документация Python", null, "https://docs.python.org/3/", 0
-                )))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.materialType").value("LINK"))
-            .andExpect(jsonPath("$.content").doesNotExist())
-            .andExpect(jsonPath("$.externalUrl").value("https://docs.python.org/3/"));
+        mockMvc.perform(
+                        post(materialsUrl(fixture.topic().id()))
+                                .with(user(fixture.principal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        createRequest(
+                                                "LINK",
+                                                "Документация Python",
+                                                null,
+                                                "https://docs.python.org/3/",
+                                                0)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.materialType").value("LINK"))
+                .andExpect(jsonPath("$.content").doesNotExist())
+                .andExpect(jsonPath("$.externalUrl").value("https://docs.python.org/3/"));
     }
 
     @Test
@@ -144,13 +144,12 @@ class LessonMaterialApiIntegrationTest extends PostgresIntegrationTest {
         LessonMaterialResult second = createMaterial(fixture, "Второй", 1);
         LessonMaterialResult first = createMaterial(fixture, "Первый", 0);
 
-        mockMvc.perform(get(materialsUrl(fixture.topic().id()))
-                .with(user(fixture.principal())))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].id").value(first.id().toString()))
-            .andExpect(jsonPath("$[0].position").value(0))
-            .andExpect(jsonPath("$[1].id").value(second.id().toString()))
-            .andExpect(jsonPath("$[1].position").value(1));
+        mockMvc.perform(get(materialsUrl(fixture.topic().id())).with(user(fixture.principal())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(first.id().toString()))
+                .andExpect(jsonPath("$[0].position").value(0))
+                .andExpect(jsonPath("$[1].id").value(second.id().toString()))
+                .andExpect(jsonPath("$[1].position").value(1));
     }
 
     @Test
@@ -158,19 +157,21 @@ class LessonMaterialApiIntegrationTest extends PostgresIntegrationTest {
         ContentFixture fixture = createFixture("api-get-material@example.com");
         LessonMaterialResult material = createMaterial(fixture, "Материал", 0);
 
-        mockMvc.perform(get(materialUrl(fixture.topic().id(), material.id()))
-                .with(user(fixture.principal())))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(material.id().toString()))
-            .andExpect(jsonPath("$.topicId").value(fixture.topic().id().toString()))
-            .andExpect(jsonPath("$.title").value("Материал"));
+        mockMvc.perform(
+                        get(materialUrl(fixture.topic().id(), material.id()))
+                                .with(user(fixture.principal())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(material.id().toString()))
+                .andExpect(jsonPath("$.topicId").value(fixture.topic().id().toString()))
+                .andExpect(jsonPath("$.title").value("Материал"));
     }
 
     @Test
     void patchUpdatesMaterial() throws Exception {
         ContentFixture fixture = createFixture("api-patch-material@example.com");
         LessonMaterialResult material = createMaterial(fixture, "Материал", 0);
-        String request = """
+        String request =
+                """
             {
               "materialType": "LINK",
               "title": "Документация",
@@ -179,20 +180,22 @@ class LessonMaterialApiIntegrationTest extends PostgresIntegrationTest {
               "position": 2,
               "version": %d
             }
-            """.formatted(material.version());
+            """
+                        .formatted(material.version());
 
-        mockMvc.perform(patch(materialUrl(fixture.topic().id(), material.id()))
-                .with(user(fixture.principal()))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(request))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.materialType").value("LINK"))
-            .andExpect(jsonPath("$.title").value("Документация"))
-            .andExpect(jsonPath("$.content").doesNotExist())
-            .andExpect(jsonPath("$.externalUrl").value("https://example.com/updated"))
-            .andExpect(jsonPath("$.position").value(2))
-            .andExpect(jsonPath("$.version").value(material.version() + 1));
+        mockMvc.perform(
+                        patch(materialUrl(fixture.topic().id(), material.id()))
+                                .with(user(fixture.principal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(request))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.materialType").value("LINK"))
+                .andExpect(jsonPath("$.title").value("Документация"))
+                .andExpect(jsonPath("$.content").doesNotExist())
+                .andExpect(jsonPath("$.externalUrl").value("https://example.com/updated"))
+                .andExpect(jsonPath("$.position").value(2))
+                .andExpect(jsonPath("$.version").value(material.version() + 1));
     }
 
     @Test
@@ -203,16 +206,16 @@ class LessonMaterialApiIntegrationTest extends PostgresIntegrationTest {
         LessonMaterialResult third = createMaterial(fixture, "Третий", 9);
 
         reorderMaterials(fixture, List.of(third.id(), second.id(), first.id()))
-            .andExpect(status().isNoContent());
+                .andExpect(status().isNoContent());
 
         mockMvc.perform(get(materialsUrl(fixture.topic().id())).with(user(fixture.principal())))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].id").value(third.id().toString()))
-            .andExpect(jsonPath("$[0].position").value(0))
-            .andExpect(jsonPath("$[1].id").value(second.id().toString()))
-            .andExpect(jsonPath("$[1].position").value(1))
-            .andExpect(jsonPath("$[2].id").value(first.id().toString()))
-            .andExpect(jsonPath("$[2].position").value(2));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(third.id().toString()))
+                .andExpect(jsonPath("$[0].position").value(0))
+                .andExpect(jsonPath("$[1].id").value(second.id().toString()))
+                .andExpect(jsonPath("$[1].position").value(1))
+                .andExpect(jsonPath("$[2].id").value(first.id().toString()))
+                .andExpect(jsonPath("$[2].position").value(2));
     }
 
     @Test
@@ -223,20 +226,28 @@ class LessonMaterialApiIntegrationTest extends PostgresIntegrationTest {
         LessonMaterialResult second = createMaterial(fixture, "Второй", 1);
         LessonMaterialResult foreign = createMaterial(other, "Чужой", 0);
 
-        for (List<UUID> invalidOrder : List.of(
-            List.of(first.id()),
-            List.of(first.id(), foreign.id()),
-            List.of(first.id(), first.id()),
-            List.of(first.id(), UUID.randomUUID()),
-            List.<UUID>of()
-        )) {
+        for (List<UUID> invalidOrder :
+                List.of(
+                        List.of(first.id()),
+                        List.of(first.id(), foreign.id()),
+                        List.of(first.id(), first.id()),
+                        List.of(first.id(), UUID.randomUUID()),
+                        List.<UUID>of())) {
             reorderMaterials(fixture, invalidOrder)
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("LESSON_MATERIAL_ORDER_INVALID"));
-            assertThat(lessonMaterialService.getLessonMaterial(fixture.principal(), fixture.topic().id(), first.id()).position())
-                .isZero();
-            assertThat(lessonMaterialService.getLessonMaterial(fixture.principal(), fixture.topic().id(), second.id()).position())
-                .isEqualTo(1);
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("LESSON_MATERIAL_ORDER_INVALID"));
+            assertThat(
+                            lessonMaterialService
+                                    .getLessonMaterial(
+                                            fixture.principal(), fixture.topic().id(), first.id())
+                                    .position())
+                    .isZero();
+            assertThat(
+                            lessonMaterialService
+                                    .getLessonMaterial(
+                                            fixture.principal(), fixture.topic().id(), second.id())
+                                    .position())
+                    .isEqualTo(1);
         }
     }
 
@@ -244,8 +255,7 @@ class LessonMaterialApiIntegrationTest extends PostgresIntegrationTest {
     void putAcceptsEmptyOrderForEmptyTopic() throws Exception {
         ContentFixture fixture = createFixture("api-material-order-empty@example.com");
 
-        reorderMaterials(fixture, List.of())
-            .andExpect(status().isNoContent());
+        reorderMaterials(fixture, List.of()).andExpect(status().isNoContent());
     }
 
     @Test
@@ -254,13 +264,17 @@ class LessonMaterialApiIntegrationTest extends PostgresIntegrationTest {
         ContentFixture foreign = createFixture("api-material-order-foreign-owner@example.com");
         LessonMaterialResult material = createMaterial(owner, "Материал", 0);
 
-        mockMvc.perform(put(materialsUrl(owner.topic().id()) + "/order")
-                .with(user(foreign.principal()))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(new ReorderMaterialsRequest(List.of(material.id())))))
-            .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.code").value("TOPIC_NOT_FOUND"));
+        mockMvc.perform(
+                        put(materialsUrl(owner.topic().id()) + "/order")
+                                .with(user(foreign.principal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                new ReorderMaterialsRequest(
+                                                        List.of(material.id())))))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("TOPIC_NOT_FOUND"));
     }
 
     @Test
@@ -268,33 +282,48 @@ class LessonMaterialApiIntegrationTest extends PostgresIntegrationTest {
         ContentFixture fixture = createFixture("api-material-order-assigned@example.com");
         LessonMaterialResult first = createMaterial(fixture, "Первый", 0);
         LessonMaterialResult second = createMaterial(fixture, "Второй", 1);
-        LearningProgramEntity program = learningProgramRepository.findById(fixture.learningProgram().getId()).orElseThrow();
+        LearningProgramEntity program =
+                learningProgramRepository.findById(fixture.learningProgram().getId()).orElseThrow();
         program.activate();
         learningProgramRepository.saveAndFlush(program);
-        StudentEntity student = studentRepository.saveAndFlush(new StudentEntity(
-            UUID.randomUUID(), "Ученик", null, StudentStatus.ACTIVE
-        ));
+        StudentEntity student =
+                studentRepository.saveAndFlush(
+                        new StudentEntity(UUID.randomUUID(), "Ученик", null, StudentStatus.ACTIVE));
         UUID assignmentId = UUID.randomUUID();
-        studentProgramRepository.saveAndFlush(new StudentProgramEntity(
-            assignmentId, student.getId(), program.getId(), fixture.teacher().id(),
-            StudentProgramStatus.ACTIVE, 480, Instant.parse("2026-09-01T00:00:00Z"), null
-        ));
-        StudentTopicProgressEntity progress = studentTopicProgressRepository.saveAndFlush(new StudentTopicProgressEntity(
-            assignmentId, fixture.topic().id(), StudentTopicProgressStatus.AVAILABLE, null, null
-        ));
+        studentProgramRepository.saveAndFlush(
+                new StudentProgramEntity(
+                        assignmentId,
+                        student.getId(),
+                        program.getId(),
+                        fixture.teacher().id(),
+                        StudentProgramStatus.ACTIVE,
+                        480,
+                        Instant.parse("2026-09-01T00:00:00Z"),
+                        null));
+        StudentTopicProgressEntity progress =
+                studentTopicProgressRepository.saveAndFlush(
+                        new StudentTopicProgressEntity(
+                                assignmentId,
+                                fixture.topic().id(),
+                                StudentTopicProgressStatus.AVAILABLE,
+                                null,
+                                null));
 
         reorderMaterials(fixture, List.of(second.id(), first.id()))
-            .andExpect(status().isNoContent());
+                .andExpect(status().isNoContent());
 
-        assertThat(studentTopicProgressRepository.findById(assignmentId, fixture.topic().id()).orElseThrow())
-            .isEqualTo(progress);
+        assertThat(
+                        studentTopicProgressRepository
+                                .findById(assignmentId, fixture.topic().id())
+                                .orElseThrow())
+                .isEqualTo(progress);
     }
 
     @Test
     void unauthenticatedRequestReturnsUnauthorized() throws Exception {
         mockMvc.perform(get(materialsUrl(UUID.randomUUID())))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"));
     }
 
     @Test
@@ -302,38 +331,40 @@ class LessonMaterialApiIntegrationTest extends PostgresIntegrationTest {
         ContentFixture fixture = createFixture("api-material-csrf@example.com");
         LessonMaterialResult material = createMaterial(fixture, "Материал", 0);
 
-        mockMvc.perform(post(materialsUrl(fixture.topic().id()))
-                .with(user(fixture.principal()))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(createRequest("TEXT", "Новый", "Содержимое", null, 1)))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.code").value("CSRF_INVALID"));
+        mockMvc.perform(
+                        post(materialsUrl(fixture.topic().id()))
+                                .with(user(fixture.principal()))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(createRequest("TEXT", "Новый", "Содержимое", null, 1)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("CSRF_INVALID"));
 
-        mockMvc.perform(patch(materialUrl(fixture.topic().id(), material.id()))
-                .with(user(fixture.principal()))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(updateTextRequest(material)))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.code").value("CSRF_INVALID"));
+        mockMvc.perform(
+                        patch(materialUrl(fixture.topic().id(), material.id()))
+                                .with(user(fixture.principal()))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(updateTextRequest(material)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("CSRF_INVALID"));
 
         reorderMaterialsWithoutCsrf(fixture, List.of(material.id()))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.code").value("CSRF_INVALID"));
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("CSRF_INVALID"));
     }
 
     @Test
     void studentRoleCannotAccessTeacherMaterials() throws Exception {
-        AuthenticatedUser studentPrincipal = new AuthenticatedUser(
-            UUID.randomUUID(),
-            "student-material-role@example.com",
-            "password-hash",
-            true,
-            List.of(new SimpleGrantedAuthority("ROLE_STUDENT"))
-        );
+        AuthenticatedUser studentPrincipal =
+                new AuthenticatedUser(
+                        UUID.randomUUID(),
+                        "student-material-role@example.com",
+                        "password-hash",
+                        true,
+                        List.of(new SimpleGrantedAuthority("ROLE_STUDENT")));
 
         mockMvc.perform(get(materialsUrl(UUID.randomUUID())).with(user(studentPrincipal)))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.code").value("ACCESS_DENIED"));
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("ACCESS_DENIED"));
     }
 
     @Test
@@ -341,147 +372,197 @@ class LessonMaterialApiIntegrationTest extends PostgresIntegrationTest {
         ContentFixture owner = createFixture("api-material-owner@example.com");
         ContentFixture foreign = createFixture("api-material-foreign@example.com");
 
-        mockMvc.perform(get(materialsUrl(owner.topic().id()))
-                .with(user(foreign.principal())))
-            .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.code").value("TOPIC_NOT_FOUND"));
+        mockMvc.perform(get(materialsUrl(owner.topic().id())).with(user(foreign.principal())))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("TOPIC_NOT_FOUND"));
     }
 
     @Test
     void invalidBodyReturnsValidationError() throws Exception {
         ContentFixture fixture = createFixture("api-invalid-material@example.com");
 
-        mockMvc.perform(post(materialsUrl(fixture.topic().id()))
-                .with(user(fixture.principal()))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(createRequest("TEXT", "", "Содержимое", null, -1)))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
-            .andExpect(jsonPath("$.details[*].field")
-                .value(org.hamcrest.Matchers.hasItems("title", "position")));
+        mockMvc.perform(
+                        post(materialsUrl(fixture.topic().id()))
+                                .with(user(fixture.principal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(createRequest("TEXT", "", "Содержимое", null, -1)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(
+                        jsonPath("$.details[*].field")
+                                .value(org.hamcrest.Matchers.hasItems("title", "position")));
     }
 
     @ParameterizedTest
-    @EnumSource(value = LessonMaterialType.class, names = {"FILE", "IMAGE"})
+    @EnumSource(
+            value = LessonMaterialType.class,
+            names = {"FILE", "IMAGE"})
     void fileAndImageCreationAreRejected(LessonMaterialType type) throws Exception {
-        ContentFixture fixture = createFixture(
-            "api-unsupported-" + type.name().toLowerCase() + "@example.com"
-        );
+        ContentFixture fixture =
+                createFixture("api-unsupported-" + type.name().toLowerCase() + "@example.com");
 
-        mockMvc.perform(post(materialsUrl(fixture.topic().id()))
-                .with(user(fixture.principal()))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(createRequest(type.name(), "Unsupported", null, null, 0)))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
-            .andExpect(jsonPath("$.details[0].field").value("materialType"));
+        mockMvc.perform(
+                        post(materialsUrl(fixture.topic().id()))
+                                .with(user(fixture.principal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(createRequest(type.name(), "Unsupported", null, null, 0)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.details[0].field").value("materialType"));
     }
 
     @Test
     void openApiPublishesMaterialOperationsAndSchemas() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.paths['/api/v1/teacher/topics/{topicId}/materials'].post.operationId")
-                .value("createLessonMaterial"))
-            .andExpect(jsonPath("$.paths['/api/v1/teacher/topics/{topicId}/materials'].get.operationId")
-                .value("listLessonMaterials"))
-            .andExpect(jsonPath("$.paths['/api/v1/teacher/topics/{topicId}/materials/{materialId}'].get.operationId")
-                .value("getLessonMaterial"))
-            .andExpect(jsonPath("$.paths['/api/v1/teacher/topics/{topicId}/materials/{materialId}'].patch.operationId")
-                .value("updateLessonMaterial"))
-            .andExpect(jsonPath("$.paths['/api/v1/teacher/topics/{topicId}/materials/order'].put.operationId")
-                .value("reorderLessonMaterials"))
-            .andExpect(jsonPath("$.components.schemas.CreateLessonMaterialRequest.properties.materialType.enum.length()")
-                .value(4))
-            .andExpect(jsonPath("$.components.schemas.LessonMaterialResponse.properties.id.format")
-                .value("uuid"))
-            .andExpect(jsonPath("$.components.schemas.LessonMaterialResponse.properties.topicId.format")
-                .value("uuid"))
-            .andExpect(jsonPath("$.components.schemas.LessonMaterialResponse.properties.createdAt.format")
-                .value("date-time"))
-            .andExpect(jsonPath("$.components.schemas.LessonMaterialResponse.properties.updatedAt.format")
-                .value("date-time"))
-            .andExpect(jsonPath("$.paths['/api/v1/teacher/topics/{topicId}/materials'].post.responses['400'].content['*/*'].schema.$ref")
-                .value("#/components/schemas/ApiError"));
+                .andExpect(status().isOk())
+                .andExpect(
+                        jsonPath(
+                                        "$.paths['/api/v1/teacher/topics/{topicId}/materials'].post.operationId")
+                                .value("createLessonMaterial"))
+                .andExpect(
+                        jsonPath(
+                                        "$.paths['/api/v1/teacher/topics/{topicId}/materials'].get.operationId")
+                                .value("listLessonMaterials"))
+                .andExpect(
+                        jsonPath(
+                                        "$.paths['/api/v1/teacher/topics/{topicId}/materials/{materialId}'].get.operationId")
+                                .value("getLessonMaterial"))
+                .andExpect(
+                        jsonPath(
+                                        "$.paths['/api/v1/teacher/topics/{topicId}/materials/{materialId}'].patch.operationId")
+                                .value("updateLessonMaterial"))
+                .andExpect(
+                        jsonPath(
+                                        "$.paths['/api/v1/teacher/topics/{topicId}/materials/order'].put.operationId")
+                                .value("reorderLessonMaterials"))
+                .andExpect(
+                        jsonPath(
+                                        "$.components.schemas.CreateLessonMaterialRequest.properties.materialType.enum.length()")
+                                .value(4))
+                .andExpect(
+                        jsonPath("$.components.schemas.LessonMaterialResponse.properties.id.format")
+                                .value("uuid"))
+                .andExpect(
+                        jsonPath(
+                                        "$.components.schemas.LessonMaterialResponse.properties.topicId.format")
+                                .value("uuid"))
+                .andExpect(
+                        jsonPath(
+                                        "$.components.schemas.LessonMaterialResponse.properties.createdAt.format")
+                                .value("date-time"))
+                .andExpect(
+                        jsonPath(
+                                        "$.components.schemas.LessonMaterialResponse.properties.updatedAt.format")
+                                .value("date-time"))
+                .andExpect(
+                        jsonPath(
+                                        "$.paths['/api/v1/teacher/topics/{topicId}/materials'].post.responses['400'].content['*/*'].schema.$ref")
+                                .value("#/components/schemas/ApiError"));
     }
 
-    private LessonMaterialResult createMaterial(ContentFixture fixture, String title, int position) {
+    private LessonMaterialResult createMaterial(
+            ContentFixture fixture, String title, int position) {
         return lessonMaterialService.createLessonMaterial(
-            fixture.principal(),
-            new CreateLessonMaterialCommand(
-                fixture.topic().id(), LessonMaterialType.TEXT, title, "Содержимое",
-                null, null, position
-            )
-        );
+                fixture.principal(),
+                new CreateLessonMaterialCommand(
+                        fixture.topic().id(),
+                        LessonMaterialType.TEXT,
+                        title,
+                        "Содержимое",
+                        null,
+                        null,
+                        position));
     }
 
     private String createRequest(
-        String materialType,
-        String title,
-        String content,
-        String externalUrl,
-        int position
-    ) throws Exception {
-        return objectMapper.writeValueAsString(new MaterialRequestBody(
-            materialType, title, content, externalUrl, position, null
-        ));
+            String materialType, String title, String content, String externalUrl, int position)
+            throws Exception {
+        return objectMapper.writeValueAsString(
+                new MaterialRequestBody(materialType, title, content, externalUrl, position, null));
     }
 
     private String updateTextRequest(LessonMaterialResult material) throws Exception {
-        return objectMapper.writeValueAsString(new MaterialRequestBody(
-            "TEXT", material.title(), material.content(), null, material.position(), material.version()
-        ));
+        return objectMapper.writeValueAsString(
+                new MaterialRequestBody(
+                        "TEXT",
+                        material.title(),
+                        material.content(),
+                        null,
+                        material.position(),
+                        material.version()));
     }
 
     private org.springframework.test.web.servlet.ResultActions reorderMaterials(
-        ContentFixture fixture, List<UUID> orderedIds
-    ) throws Exception {
-        return mockMvc.perform(put(materialsUrl(fixture.topic().id()) + "/order")
-            .with(user(fixture.principal()))
-            .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(new ReorderMaterialsRequest(orderedIds))));
+            ContentFixture fixture, List<UUID> orderedIds) throws Exception {
+        return mockMvc.perform(
+                put(materialsUrl(fixture.topic().id()) + "/order")
+                        .with(user(fixture.principal()))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                                objectMapper.writeValueAsString(
+                                        new ReorderMaterialsRequest(orderedIds))));
     }
 
     private org.springframework.test.web.servlet.ResultActions reorderMaterialsWithoutCsrf(
-        ContentFixture fixture, List<UUID> orderedIds
-    ) throws Exception {
-        return mockMvc.perform(put(materialsUrl(fixture.topic().id()) + "/order")
-            .with(user(fixture.principal()))
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(new ReorderMaterialsRequest(orderedIds))));
+            ContentFixture fixture, List<UUID> orderedIds) throws Exception {
+        return mockMvc.perform(
+                put(materialsUrl(fixture.topic().id()) + "/order")
+                        .with(user(fixture.principal()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                                objectMapper.writeValueAsString(
+                                        new ReorderMaterialsRequest(orderedIds))));
     }
 
     private ContentFixture createFixture(String email) {
-        UserEntity user = new UserEntity(UUID.randomUUID(), email, "password-hash", UserStatus.ACTIVE);
+        UserEntity user =
+                new UserEntity(UUID.randomUUID(), email, "password-hash", UserStatus.ACTIVE);
         user.addRole(UserRole.TEACHER);
         userRepository.saveAndFlush(user);
-        TeacherEntity teacher = teacherRepository.saveAndFlush(new TeacherEntity(
-            UUID.randomUUID(), user, "Teacher"
-        ));
-        SubjectEntity subject = subjectRepository.saveAndFlush(new SubjectEntity(
-            UUID.randomUUID(), teacher.id(), null, "Предмет " + UUID.randomUUID(),
-            null, SubjectStatus.ACTIVE
-        ));
-        LearningProgramEntity learningProgram = learningProgramRepository.saveAndFlush(new LearningProgramEntity(
-            UUID.randomUUID(), teacher.id(), subject.id(), "Программа", null,
-            LearningProgramStatus.DRAFT
-        ));
-        ModuleEntity module = moduleRepository.saveAndFlush(new ModuleEntity(
-            UUID.randomUUID(), learningProgram.getId(), "Модуль", null, 0
-        ));
-        TopicEntity topic = topicRepository.saveAndFlush(new TopicEntity(
-            UUID.randomUUID(), module.id(), "Тема", null, 0, TopicStatus.DRAFT
-        ));
-        AuthenticatedUser principal = new AuthenticatedUser(
-            user.id(),
-            email,
-            "password-hash",
-            true,
-            List.of(new SimpleGrantedAuthority("ROLE_TEACHER"))
-        );
+        TeacherEntity teacher =
+                teacherRepository.saveAndFlush(
+                        new TeacherEntity(UUID.randomUUID(), user, "Teacher"));
+        SubjectEntity subject =
+                subjectRepository.saveAndFlush(
+                        new SubjectEntity(
+                                UUID.randomUUID(),
+                                teacher.id(),
+                                null,
+                                "Предмет " + UUID.randomUUID(),
+                                null,
+                                SubjectStatus.ACTIVE));
+        LearningProgramEntity learningProgram =
+                learningProgramRepository.saveAndFlush(
+                        new LearningProgramEntity(
+                                UUID.randomUUID(),
+                                teacher.id(),
+                                subject.id(),
+                                "Программа",
+                                null,
+                                LearningProgramStatus.DRAFT));
+        ModuleEntity module =
+                moduleRepository.saveAndFlush(
+                        new ModuleEntity(
+                                UUID.randomUUID(), learningProgram.getId(), "Модуль", null, 0));
+        TopicEntity topic =
+                topicRepository.saveAndFlush(
+                        new TopicEntity(
+                                UUID.randomUUID(),
+                                module.id(),
+                                "Тема",
+                                null,
+                                0,
+                                TopicStatus.DRAFT));
+        AuthenticatedUser principal =
+                new AuthenticatedUser(
+                        user.id(),
+                        email,
+                        "password-hash",
+                        true,
+                        List.of(new SimpleGrantedAuthority("ROLE_TEACHER")));
         return new ContentFixture(principal, teacher, learningProgram, topic);
     }
 
@@ -498,23 +579,18 @@ class LessonMaterialApiIntegrationTest extends PostgresIntegrationTest {
     }
 
     private record ContentFixture(
-        AuthenticatedUser principal,
-        TeacherEntity teacher,
-        LearningProgramEntity learningProgram,
-        TopicEntity topic
-    ) {
-    }
+            AuthenticatedUser principal,
+            TeacherEntity teacher,
+            LearningProgramEntity learningProgram,
+            TopicEntity topic) {}
 
-    private record ReorderMaterialsRequest(List<UUID> orderedIds) {
-    }
+    private record ReorderMaterialsRequest(List<UUID> orderedIds) {}
 
     private record MaterialRequestBody(
-        String materialType,
-        String title,
-        String content,
-        String externalUrl,
-        int position,
-        Long version
-    ) {
-    }
+            String materialType,
+            String title,
+            String content,
+            String externalUrl,
+            int position,
+            Long version) {}
 }

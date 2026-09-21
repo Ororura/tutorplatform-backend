@@ -4,20 +4,22 @@ import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressEntit
 import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressStatus;
 import com.tutorplatform.program.infrastructure.persistence.TopicDatabaseModel;
 import jakarta.persistence.*;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.Instant;
 import java.util.Objects;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "student_topic_progress")
 public class StudentTopicProgressDatabaseModel {
 
-    @EmbeddedId
-    private StudentTopicProgressId id;
+    @EmbeddedId private StudentTopicProgressId id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "student_program_id", nullable = false, insertable = false, updatable = false)
+    @JoinColumn(
+            name = "student_program_id",
+            nullable = false,
+            insertable = false,
+            updatable = false)
     private StudentProgramDatabaseModel studentProgram;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -38,8 +40,7 @@ public class StudentTopicProgressDatabaseModel {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    protected StudentTopicProgressDatabaseModel() {
-    }
+    protected StudentTopicProgressDatabaseModel() {}
 
     StudentTopicProgressDatabaseModel(StudentTopicProgressEntity progress) {
         id = new StudentTopicProgressId(progress.studentProgramId(), progress.topicId());
@@ -54,7 +55,11 @@ public class StudentTopicProgressDatabaseModel {
 
     StudentTopicProgressEntity toEntity() {
         return new StudentTopicProgressEntity(
-            id.getStudentProgramId(), id.getTopicId(), status, startedAt, completedAt, updatedAt
-        );
+                id.getStudentProgramId(),
+                id.getTopicId(),
+                status,
+                startedAt,
+                completedAt,
+                updatedAt);
     }
 }

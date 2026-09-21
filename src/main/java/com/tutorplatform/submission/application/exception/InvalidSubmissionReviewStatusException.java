@@ -1,4 +1,3 @@
 package com.tutorplatform.submission.application.exception;
 
-public class InvalidSubmissionReviewStatusException extends RuntimeException {
-}
+public class InvalidSubmissionReviewStatusException extends RuntimeException {}

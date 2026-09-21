@@ -5,15 +5,14 @@ import java.util.Objects;
 import java.util.UUID;
 
 public record ProgrammingTaskConfig(
-    UUID taskId,
-    ProgrammingLanguage language,
-    String starterCode,
-    boolean executionEnabled,
-    int timeLimitMs,
-    int memoryLimitMb,
-    Instant createdAt,
-    Instant updatedAt
-) {
+        UUID taskId,
+        ProgrammingLanguage language,
+        String starterCode,
+        boolean executionEnabled,
+        int timeLimitMs,
+        int memoryLimitMb,
+        Instant createdAt,
+        Instant updatedAt) {
     public ProgrammingTaskConfig {
         Objects.requireNonNull(taskId, "taskId is required");
         Objects.requireNonNull(language, "language is required");
@@ -26,13 +25,20 @@ public record ProgrammingTaskConfig(
     }
 
     public ProgrammingTaskConfig(
-        UUID taskId,
-        ProgrammingLanguage language,
-        String starterCode,
-        boolean executionEnabled,
-        int timeLimitMs,
-        int memoryLimitMb
-    ) {
-        this(taskId, language, starterCode, executionEnabled, timeLimitMs, memoryLimitMb, null, null);
+            UUID taskId,
+            ProgrammingLanguage language,
+            String starterCode,
+            boolean executionEnabled,
+            int timeLimitMs,
+            int memoryLimitMb) {
+        this(
+                taskId,
+                language,
+                starterCode,
+                executionEnabled,
+                timeLimitMs,
+                memoryLimitMb,
+                null,
+                null);
     }
 }

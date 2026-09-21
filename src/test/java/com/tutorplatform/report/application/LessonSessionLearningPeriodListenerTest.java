@@ -1,20 +1,19 @@
 package com.tutorplatform.report.application;
 
-import com.tutorplatform.session.application.LessonSessionChangedEvent;
-import com.tutorplatform.session.domain.AttendanceStatus;
-import org.junit.jupiter.api.Test;
-
-import java.time.Instant;
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.*;
+
+import com.tutorplatform.session.application.LessonSessionChangedEvent;
+import com.tutorplatform.session.domain.AttendanceStatus;
+import java.time.Instant;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
 
 class LessonSessionLearningPeriodListenerTest {
 
     private final LearningPeriodService service = mock(LearningPeriodService.class);
     private final LessonSessionLearningPeriodListener listener =
-        new LessonSessionLearningPeriodListener(service);
+            new LessonSessionLearningPeriodListener(service);
 
     @Test
     void attendedCreateTriggersRecalculation() {
@@ -36,10 +35,16 @@ class LessonSessionLearningPeriodListenerTest {
     @Test
     void attendedRelevantUpdateTriggersRecalculation() {
         Instant startedAt = Instant.parse("2026-01-01T10:00:00Z");
-        LessonSessionChangedEvent event = new LessonSessionChangedEvent(
-            UUID.randomUUID(), UUID.randomUUID(), AttendanceStatus.MISSED,
-            startedAt, 90, AttendanceStatus.ATTENDED, startedAt, 60
-        );
+        LessonSessionChangedEvent event =
+                new LessonSessionChangedEvent(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        AttendanceStatus.MISSED,
+                        startedAt,
+                        90,
+                        AttendanceStatus.ATTENDED,
+                        startedAt,
+                        60);
 
         listener.onLessonSessionChanged(event);
 
@@ -56,8 +61,13 @@ class LessonSessionLearningPeriodListenerTest {
 
     private LessonSessionChangedEvent created(AttendanceStatus status) {
         return new LessonSessionChangedEvent(
-            UUID.randomUUID(), UUID.randomUUID(), status,
-            Instant.parse("2026-01-01T10:00:00Z"), 60, null, null, null
-        );
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                status,
+                Instant.parse("2026-01-01T10:00:00Z"),
+                60,
+                null,
+                null,
+                null);
     }
 }

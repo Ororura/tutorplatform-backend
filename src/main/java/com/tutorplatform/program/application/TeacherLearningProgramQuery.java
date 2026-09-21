@@ -1,7 +1,6 @@
 package com.tutorplatform.program.application;
 
 import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -21,24 +20,41 @@ public interface TeacherLearningProgramQuery {
     List<UUID> findTopicIds(UUID learningProgramId);
 
     record LearningProgramSummary(
-        UUID id, String slug, UUID subjectId, String subjectCode, String subjectName, String title,
-        String description, LearningProgramStatus status, Instant createdAt, Instant updatedAt
-    ) {
-    }
+            UUID id,
+            String slug,
+            UUID subjectId,
+            String subjectCode,
+            String subjectName,
+            String title,
+            String description,
+            LearningProgramStatus status,
+            Instant createdAt,
+            Instant updatedAt) {}
 
     record LearningProgramDetails(
-        UUID id, String slug, UUID subjectId, String subjectCode, String subjectName, String title,
-        String description, LearningProgramStatus status, Long version, Instant createdAt, Instant updatedAt,
-        boolean hasAssignments, List<ModuleDetails> modules
-    ) {
-    }
+            UUID id,
+            String slug,
+            UUID subjectId,
+            String subjectCode,
+            String subjectName,
+            String title,
+            String description,
+            LearningProgramStatus status,
+            Long version,
+            Instant createdAt,
+            Instant updatedAt,
+            boolean hasAssignments,
+            List<ModuleDetails> modules) {}
 
-    record ModuleDetails(UUID id, String title, String description, int position, List<TopicDetails> topics) {
-    }
+    record ModuleDetails(
+            UUID id, String title, String description, int position, List<TopicDetails> topics) {}
 
     record TopicDetails(
-        UUID id, String slug, String title, String description, int position,
-        com.tutorplatform.program.domain.TopicStatus status, Long version
-    ) {
-    }
+            UUID id,
+            String slug,
+            String title,
+            String description,
+            int position,
+            com.tutorplatform.program.domain.TopicStatus status,
+            Long version) {}
 }

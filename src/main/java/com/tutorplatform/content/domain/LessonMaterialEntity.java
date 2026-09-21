@@ -20,34 +20,43 @@ public class LessonMaterialEntity {
     private int position;
 
     public LessonMaterialEntity(
-        UUID id,
-        UUID topicId,
-        UUID createdByTeacherId,
-        LessonMaterialType materialType,
-        String title,
-        String content,
-        UUID fileAssetId,
-        String externalUrl,
-        int position
-    ) {
-        this(id, topicId, createdByTeacherId, materialType, title, content, fileAssetId,
-            externalUrl, position, null, null, null);
+            UUID id,
+            UUID topicId,
+            UUID createdByTeacherId,
+            LessonMaterialType materialType,
+            String title,
+            String content,
+            UUID fileAssetId,
+            String externalUrl,
+            int position) {
+        this(
+                id,
+                topicId,
+                createdByTeacherId,
+                materialType,
+                title,
+                content,
+                fileAssetId,
+                externalUrl,
+                position,
+                null,
+                null,
+                null);
     }
 
     public LessonMaterialEntity(
-        UUID id,
-        UUID topicId,
-        UUID createdByTeacherId,
-        LessonMaterialType materialType,
-        String title,
-        String content,
-        UUID fileAssetId,
-        String externalUrl,
-        int position,
-        Long version,
-        Instant createdAt,
-        Instant updatedAt
-    ) {
+            UUID id,
+            UUID topicId,
+            UUID createdByTeacherId,
+            LessonMaterialType materialType,
+            String title,
+            String content,
+            UUID fileAssetId,
+            String externalUrl,
+            int position,
+            Long version,
+            Instant createdAt,
+            Instant updatedAt) {
         this.id = Objects.requireNonNull(id);
         this.topicId = Objects.requireNonNull(topicId);
         this.createdByTeacherId = Objects.requireNonNull(createdByTeacherId);
@@ -58,24 +67,22 @@ public class LessonMaterialEntity {
     }
 
     public void update(
-        LessonMaterialType materialType,
-        String title,
-        String content,
-        UUID fileAssetId,
-        String externalUrl,
-        int position
-    ) {
+            LessonMaterialType materialType,
+            String title,
+            String content,
+            UUID fileAssetId,
+            String externalUrl,
+            int position) {
         applyChanges(materialType, title, content, fileAssetId, externalUrl, position);
     }
 
     private void applyChanges(
-        LessonMaterialType materialType,
-        String title,
-        String content,
-        UUID fileAssetId,
-        String externalUrl,
-        int position
-    ) {
+            LessonMaterialType materialType,
+            String title,
+            String content,
+            UUID fileAssetId,
+            String externalUrl,
+            int position) {
         LessonMaterialType requiredType = Objects.requireNonNull(materialType);
         if (position < 0) {
             throw new IllegalArgumentException("position must be greater than or equal to 0");
@@ -105,8 +112,8 @@ public class LessonMaterialEntity {
 
     private boolean requiresContent(LessonMaterialType type) {
         return type == LessonMaterialType.MARKDOWN
-            || type == LessonMaterialType.TEXT
-            || type == LessonMaterialType.CODE_EXAMPLE;
+                || type == LessonMaterialType.TEXT
+                || type == LessonMaterialType.CODE_EXAMPLE;
     }
 
     private boolean requiresFileAsset(LessonMaterialType type) {

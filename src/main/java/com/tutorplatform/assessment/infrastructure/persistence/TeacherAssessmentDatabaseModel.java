@@ -5,19 +5,17 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "teacher_assessments")
 public class TeacherAssessmentDatabaseModel {
 
-    @Id
-    private UUID id;
+    @Id private UUID id;
 
     @Column(name = "lesson_session_id", nullable = false, unique = true, updatable = false)
     private UUID lessonSessionId;
@@ -45,8 +43,7 @@ public class TeacherAssessmentDatabaseModel {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    protected TeacherAssessmentDatabaseModel() {
-    }
+    protected TeacherAssessmentDatabaseModel() {}
 
     TeacherAssessmentDatabaseModel(TeacherAssessmentEntity assessment) {
         id = Objects.requireNonNull(assessment.getId());
@@ -67,9 +64,15 @@ public class TeacherAssessmentDatabaseModel {
 
     TeacherAssessmentEntity toEntity() {
         return new TeacherAssessmentEntity(
-            id, lessonSessionId, toDomainScore(understandingScore), toDomainScore(independenceScore),
-            toDomainScore(practiceScore), toDomainScore(homeworkScore), publicComment, createdAt, updatedAt
-        );
+                id,
+                lessonSessionId,
+                toDomainScore(understandingScore),
+                toDomainScore(independenceScore),
+                toDomainScore(practiceScore),
+                toDomainScore(homeworkScore),
+                publicComment,
+                createdAt,
+                updatedAt);
     }
 
     private static Short toDatabaseScore(Integer score) {

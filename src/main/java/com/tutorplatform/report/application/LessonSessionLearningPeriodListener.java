@@ -10,9 +10,8 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Component
 public class LessonSessionLearningPeriodListener {
 
-    private static final Logger log = LoggerFactory.getLogger(
-        LessonSessionLearningPeriodListener.class
-    );
+    private static final Logger log =
+            LoggerFactory.getLogger(LessonSessionLearningPeriodListener.class);
 
     private final LearningPeriodService learningPeriodService;
 
@@ -28,8 +27,10 @@ public class LessonSessionLearningPeriodListener {
         try {
             learningPeriodService.recalculateAfterSession(event);
         } catch (RuntimeException exception) {
-            log.error("LearningPeriod recalculation failed after LessonSession change {}",
-                event.lessonSessionId(), exception);
+            log.error(
+                    "LearningPeriod recalculation failed after LessonSession change {}",
+                    event.lessonSessionId(),
+                    exception);
         }
     }
 }

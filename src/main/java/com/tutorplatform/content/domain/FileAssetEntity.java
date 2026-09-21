@@ -4,25 +4,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-public record FileAssetEntity(UUID id, UUID uploadedByTeacherId, StorageProvider storageProvider, String storageKey,
-                              String originalFilename, String mimeType, long sizeBytes, String sha256,
-                              Instant createdAt) {
-
-    public FileAssetEntity(
-        UUID id,
-        UUID uploadedByTeacherId,
-        StorageProvider storageProvider,
-        String storageKey,
-        String originalFilename,
-        String mimeType,
-        long sizeBytes,
-        String sha256
-    ) {
-        this(id, uploadedByTeacherId, storageProvider, storageKey, originalFilename, mimeType,
-            sizeBytes, sha256, null);
-    }
-
-    public FileAssetEntity(
+public record FileAssetEntity(
         UUID id,
         UUID uploadedByTeacherId,
         StorageProvider storageProvider,
@@ -31,8 +13,39 @@ public record FileAssetEntity(UUID id, UUID uploadedByTeacherId, StorageProvider
         String mimeType,
         long sizeBytes,
         String sha256,
-        Instant createdAt
-    ) {
+        Instant createdAt) {
+
+    public FileAssetEntity(
+            UUID id,
+            UUID uploadedByTeacherId,
+            StorageProvider storageProvider,
+            String storageKey,
+            String originalFilename,
+            String mimeType,
+            long sizeBytes,
+            String sha256) {
+        this(
+                id,
+                uploadedByTeacherId,
+                storageProvider,
+                storageKey,
+                originalFilename,
+                mimeType,
+                sizeBytes,
+                sha256,
+                null);
+    }
+
+    public FileAssetEntity(
+            UUID id,
+            UUID uploadedByTeacherId,
+            StorageProvider storageProvider,
+            String storageKey,
+            String originalFilename,
+            String mimeType,
+            long sizeBytes,
+            String sha256,
+            Instant createdAt) {
         this.id = Objects.requireNonNull(id);
         this.uploadedByTeacherId = Objects.requireNonNull(uploadedByTeacherId);
         this.storageProvider = Objects.requireNonNull(storageProvider);

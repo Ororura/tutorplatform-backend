@@ -4,31 +4,35 @@ import com.tutorplatform.user.domain.UserEntity;
 import com.tutorplatform.user.domain.UserRole;
 import com.tutorplatform.user.domain.UserStatus;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "users")
 public class UserDatabaseModel {
-    @Id
-    private UUID id;
+    @Id private UUID id;
+
     @Column(nullable = false, unique = true, columnDefinition = "citext")
     private String email;
+
     @Column(name = "password_hash")
     private String passwordHash;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 24)
     private UserStatus status;
+
     @Column(name = "last_login_at")
     private Instant lastLoginAt;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
@@ -39,8 +43,7 @@ public class UserDatabaseModel {
     @Column(name = "role", nullable = false, length = 32)
     private Set<UserRole> roles = new HashSet<>();
 
-    protected UserDatabaseModel() {
-    }
+    protected UserDatabaseModel() {}
 
     UserDatabaseModel(UserEntity user) {
         this.id = user.id();
@@ -57,7 +60,8 @@ public class UserDatabaseModel {
     }
 
     UserEntity toEntity() {
-        return new UserEntity(id, email, passwordHash, status, lastLoginAt, createdAt, updatedAt, roles);
+        return new UserEntity(
+                id, email, passwordHash, status, lastLoginAt, createdAt, updatedAt, roles);
     }
 
     public UUID getId() {

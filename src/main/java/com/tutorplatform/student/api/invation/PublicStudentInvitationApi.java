@@ -16,60 +16,50 @@ import jakarta.servlet.http.HttpServletResponse;
 public interface PublicStudentInvitationApi {
 
     @Operation(
-        operationId = "getPublicStudentInvitation",
-        summary = "Get public student invitation metadata"
-    )
+            operationId = "getPublicStudentInvitation",
+            summary = "Get public student invitation metadata")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Invitation metadata"),
         @ApiResponse(
-            responseCode = "404",
-            description = "Invitation not found",
-            content = @Content(schema = @Schema(implementation = ApiError.class))
-        ),
+                responseCode = "404",
+                description = "Invitation not found",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(
-            responseCode = "410",
-            description = "Invitation is expired, revoked, or accepted",
-            content = @Content(schema = @Schema(implementation = ApiError.class))
-        )
+                responseCode = "410",
+                description = "Invitation is expired, revoked, or accepted",
+                content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     PublicStudentInviteResponse getPublicStudentInvitation(String token);
 
-    @Operation(
-        operationId = "acceptStudentInvitation",
-        summary = "Accept a student invitation"
-    )
+    @Operation(operationId = "acceptStudentInvitation", summary = "Accept a student invitation")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Invitation accepted and student authenticated"),
         @ApiResponse(
-            responseCode = "400",
-            description = "Validation failed",
-            content = @Content(schema = @Schema(implementation = ApiError.class))
-        ),
+                responseCode = "200",
+                description = "Invitation accepted and student authenticated"),
         @ApiResponse(
-            responseCode = "403",
-            description = "Missing or invalid CSRF token",
-            content = @Content(schema = @Schema(implementation = ApiError.class))
-        ),
+                responseCode = "400",
+                description = "Validation failed",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(
-            responseCode = "404",
-            description = "Invitation not found",
-            content = @Content(schema = @Schema(implementation = ApiError.class))
-        ),
+                responseCode = "403",
+                description = "Missing or invalid CSRF token",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(
-            responseCode = "409",
-            description = "Student or email conflict",
-            content = @Content(schema = @Schema(implementation = ApiError.class))
-        ),
+                responseCode = "404",
+                description = "Invitation not found",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(
-            responseCode = "410",
-            description = "Invitation is expired, revoked, or accepted",
-            content = @Content(schema = @Schema(implementation = ApiError.class))
-        )
+                responseCode = "409",
+                description = "Student or email conflict",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "410",
+                description = "Invitation is expired, revoked, or accepted",
+                content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     CurrentUserResponse acceptStudentInvitation(
-        String token,
-        AcceptStudentInviteRequest request,
-        @Parameter(hidden = true) HttpServletRequest servletRequest,
-        @Parameter(hidden = true) HttpServletResponse servletResponse
-    );
+            String token,
+            AcceptStudentInviteRequest request,
+            @Parameter(hidden = true) HttpServletRequest servletRequest,
+            @Parameter(hidden = true) HttpServletResponse servletResponse);
 }

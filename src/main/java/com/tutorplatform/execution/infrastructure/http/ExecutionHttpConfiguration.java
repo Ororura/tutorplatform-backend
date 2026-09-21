@@ -5,5 +5,4 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @EnableConfigurationProperties(ExecutionProperties.class)
-class ExecutionHttpConfiguration {
-}
+class ExecutionHttpConfiguration {}

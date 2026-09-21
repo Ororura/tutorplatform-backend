@@ -3,14 +3,13 @@ package com.tutorplatform.report.application;
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.report.application.exception.ProgressReportPdfRenderException;
 import com.tutorplatform.report.domain.ProgressReport;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service
 public class ProgressReportPdfService {
@@ -25,13 +24,12 @@ public class ProgressReportPdfService {
     private final int maxOutputBytes;
 
     public ProgressReportPdfService(
-        ProgressReportQueryService queryService,
-        PublicProgressReportService publicProgressReportService,
-        ProgressReportPdfModelFactory modelFactory,
-        ProgressReportPdfRenderer renderer,
-        @Value("${app.reports.pdf.max-input-characters:200000}") int maxInputCharacters,
-        @Value("${app.reports.pdf.max-output-bytes:5242880}") int maxOutputBytes
-    ) {
+            ProgressReportQueryService queryService,
+            PublicProgressReportService publicProgressReportService,
+            ProgressReportPdfModelFactory modelFactory,
+            ProgressReportPdfRenderer renderer,
+            @Value("${app.reports.pdf.max-input-characters:200000}") int maxInputCharacters,
+            @Value("${app.reports.pdf.max-output-bytes:5242880}") int maxOutputBytes) {
         this.queryService = queryService;
         this.publicProgressReportService = publicProgressReportService;
         this.modelFactory = modelFactory;
@@ -42,8 +40,7 @@ public class ProgressReportPdfService {
 
     @Transactional(readOnly = true)
     public ProgressReportPdfDownload downloadForTeacher(
-        AuthenticatedUser principal, UUID reportId
-    ) {
+            AuthenticatedUser principal, UUID reportId) {
         return render(queryService.get(principal, reportId));
     }
 
@@ -61,27 +58,29 @@ public class ProgressReportPdfService {
                 throw new ProgressReportPdfRenderException("output_limit");
             }
             return new ProgressReportPdfDownload(
-                "progress-report-" + report.id() + ".pdf", content
-            );
+                    "progress-report-" + report.id() + ".pdf", content);
         } catch (ProgressReportPdfRenderException exception) {
             log.warn(
-                "Progress report PDF generation failed: reportId={}, traceId={}, category={}",
-                report.id(), MDC.get("traceId"), exception.category()
-            );
+                    "Progress report PDF generation failed: reportId={}, traceId={}, category={}",
+                    report.id(),
+                    MDC.get("traceId"),
+                    exception.category());
             throw exception;
         } catch (RuntimeException exception) {
             log.warn(
-                "Progress report PDF generation failed: reportId={}, traceId={}, category=renderer",
-                report.id(), MDC.get("traceId")
-            );
+                    "Progress report PDF generation failed: reportId={}, traceId={}, category=renderer",
+                    report.id(),
+                    MDC.get("traceId"));
             throw new ProgressReportPdfRenderException("renderer", exception);
         }
     }
 
     private void enforceInputLimit(ProgressReportPdfModel model) {
         long characters = length(model.teacherSummary()) + length(model.nextPeriodPlan());
-        characters += model.completedTopics().stream().mapToLong(topic -> length(topic.title())).sum();
-        characters += model.inProgressTopics().stream().mapToLong(topic -> length(topic.title())).sum();
+        characters +=
+                model.completedTopics().stream().mapToLong(topic -> length(topic.title())).sum();
+        characters +=
+                model.inProgressTopics().stream().mapToLong(topic -> length(topic.title())).sum();
         characters += model.skills().stream().mapToLong(skill -> length(skill.name())).sum();
         if (characters > maxInputCharacters) {
             throw new ProgressReportPdfRenderException("input_limit");

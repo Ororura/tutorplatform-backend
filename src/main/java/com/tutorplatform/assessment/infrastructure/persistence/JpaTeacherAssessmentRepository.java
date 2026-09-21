@@ -2,10 +2,9 @@ package com.tutorplatform.assessment.infrastructure.persistence;
 
 import com.tutorplatform.assessment.domain.TeacherAssessmentEntity;
 import com.tutorplatform.assessment.domain.TeacherAssessmentRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaTeacherAssessmentRepository implements TeacherAssessmentRepository {
@@ -18,23 +17,29 @@ public class JpaTeacherAssessmentRepository implements TeacherAssessmentReposito
 
     @Override
     public TeacherAssessmentEntity saveAndFlush(TeacherAssessmentEntity assessment) {
-        TeacherAssessmentDatabaseModel databaseModel = databaseRepository.findById(assessment.getId())
-            .map(existing -> {
-                existing.updateFrom(assessment);
-                return existing;
-            })
-            .orElseGet(() -> new TeacherAssessmentDatabaseModel(assessment));
+        TeacherAssessmentDatabaseModel databaseModel =
+                databaseRepository
+                        .findById(assessment.getId())
+                        .map(
+                                existing -> {
+                                    existing.updateFrom(assessment);
+                                    return existing;
+                                })
+                        .orElseGet(() -> new TeacherAssessmentDatabaseModel(assessment));
         return databaseRepository.saveAndFlush(databaseModel).toEntity();
     }
 
     @Override
     public Optional<TeacherAssessmentEntity> findById(UUID assessmentId) {
-        return databaseRepository.findById(assessmentId).map(TeacherAssessmentDatabaseModel::toEntity);
+        return databaseRepository
+                .findById(assessmentId)
+                .map(TeacherAssessmentDatabaseModel::toEntity);
     }
 
     @Override
     public Optional<TeacherAssessmentEntity> findByLessonSessionId(UUID lessonSessionId) {
-        return databaseRepository.findByLessonSessionId(lessonSessionId)
-            .map(TeacherAssessmentDatabaseModel::toEntity);
+        return databaseRepository
+                .findByLessonSessionId(lessonSessionId)
+                .map(TeacherAssessmentDatabaseModel::toEntity);
     }
 }

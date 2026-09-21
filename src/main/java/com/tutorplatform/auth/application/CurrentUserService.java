@@ -6,10 +6,9 @@ import com.tutorplatform.auth.infrastructure.persistence.CurrentUserQueryReposit
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.user.domain.UserEntity;
 import com.tutorplatform.user.domain.UserRepository;
+import java.util.Comparator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Comparator;
 
 @Service
 public class CurrentUserService {
@@ -18,9 +17,7 @@ public class CurrentUserService {
     private final CurrentUserQueryRepository currentUserQueryRepository;
 
     public CurrentUserService(
-        UserRepository userRepository,
-        CurrentUserQueryRepository currentUserQueryRepository
-    ) {
+            UserRepository userRepository, CurrentUserQueryRepository currentUserQueryRepository) {
         this.userRepository = userRepository;
         this.currentUserQueryRepository = currentUserQueryRepository;
     }
@@ -31,13 +28,12 @@ public class CurrentUserService {
         String displayName = currentUserQueryRepository.findDisplayName(user.id()).orElseThrow();
 
         return new CurrentUserResponse(
-            user.id(),
-            user.email(),
-            displayName,
-            user.roles().stream()
-                .map(role -> UserRole.valueOf(role.name()))
-                .sorted(Comparator.comparing(UserRole::name))
-                .toList()
-        );
+                user.id(),
+                user.email(),
+                displayName,
+                user.roles().stream()
+                        .map(role -> UserRole.valueOf(role.name()))
+                        .sorted(Comparator.comparing(UserRole::name))
+                        .toList());
     }
 }

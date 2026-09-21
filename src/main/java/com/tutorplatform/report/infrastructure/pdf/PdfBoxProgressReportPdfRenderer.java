@@ -3,6 +3,14 @@ package com.tutorplatform.report.infrastructure.pdf;
 import com.tutorplatform.report.application.ProgressReportPdfModel;
 import com.tutorplatform.report.application.ProgressReportPdfRenderer;
 import com.tutorplatform.report.application.exception.ProgressReportPdfRenderException;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -12,15 +20,6 @@ import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 
 @Component
 public class PdfBoxProgressReportPdfRenderer implements ProgressReportPdfRenderer {
@@ -34,8 +33,7 @@ public class PdfBoxProgressReportPdfRenderer implements ProgressReportPdfRendere
     private final DateTimeFormatter dateFormatter;
 
     public PdfBoxProgressReportPdfRenderer(
-        @Value("${app.reports.pdf.presentation-zone:Europe/Moscow}") String presentationZone
-    ) {
+            @Value("${app.reports.pdf.presentation-zone:Europe/Moscow}") String presentationZone) {
         this.presentationZone = ZoneId.of(presentationZone);
         this.dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     }
@@ -43,8 +41,8 @@ public class PdfBoxProgressReportPdfRenderer implements ProgressReportPdfRendere
     @Override
     public byte[] render(ProgressReportPdfModel model) {
         try (PDDocument document = new PDDocument();
-             var fontStream = new ClassPathResource(FONT_RESOURCE).getInputStream();
-             var output = new ByteArrayOutputStream()) {
+                var fontStream = new ClassPathResource(FONT_RESOURCE).getInputStream();
+                var output = new ByteArrayOutputStream()) {
             PDFont font = PDType0Font.load(document, fontStream, true);
             try (Writer writer = new Writer(document, font)) {
                 writer.title("Отчёт о прогрессе");
@@ -52,29 +50,51 @@ public class PdfBoxProgressReportPdfRenderer implements ProgressReportPdfRendere
 
                 writer.section("1. Общая статистика");
                 writer.keyValue("Время обучения", formatMinutes(model.learningMinutes()));
-                writer.keyValue("Количество занятий", Long.toString(model.metrics().sessionsCount()));
-                writer.keyValue("Посещаемость", Math.round(model.metrics().attendanceRate() * 100) + "%");
-                writer.keyValue("Домашние задания", fraction(
-                    model.metrics().homeworkCompleted(), model.metrics().homeworkAssigned()));
-                writer.keyValue("Практические задания", fraction(
-                    model.metrics().practiceCompleted(), model.metrics().practiceAssigned()));
+                writer.keyValue(
+                        "Количество занятий", Long.toString(model.metrics().sessionsCount()));
+                writer.keyValue(
+                        "Посещаемость", Math.round(model.metrics().attendanceRate() * 100) + "%");
+                writer.keyValue(
+                        "Домашние задания",
+                        fraction(
+                                model.metrics().homeworkCompleted(),
+                                model.metrics().homeworkAssigned()));
+                writer.keyValue(
+                        "Практические задания",
+                        fraction(
+                                model.metrics().practiceCompleted(),
+                                model.metrics().practiceAssigned()));
 
                 writer.section("2. Оценка преподавателя");
                 writer.keyValue("Понимание", assessment(model.assessment().understandingAverage()));
-                writer.keyValue("Самостоятельность", assessment(model.assessment().independenceAverage()));
+                writer.keyValue(
+                        "Самостоятельность", assessment(model.assessment().independenceAverage()));
                 writer.keyValue("Практика", assessment(model.assessment().practiceAverage()));
-                writer.keyValue("Домашняя работа", assessment(model.assessment().homeworkAverage()));
+                writer.keyValue(
+                        "Домашняя работа", assessment(model.assessment().homeworkAverage()));
 
                 writer.section("3. Темы");
                 writer.subheading("Завершённые");
-                writer.list(model.completedTopics().stream().map(ProgressReportPdfModel.Topic::title).toList());
+                writer.list(
+                        model.completedTopics().stream()
+                                .map(ProgressReportPdfModel.Topic::title)
+                                .toList());
                 writer.subheading("В процессе");
-                writer.list(model.inProgressTopics().stream().map(ProgressReportPdfModel.Topic::title).toList());
+                writer.list(
+                        model.inProgressTopics().stream()
+                                .map(ProgressReportPdfModel.Topic::title)
+                                .toList());
 
                 if (!model.skills().isEmpty()) {
                     writer.subheading("Навыки");
-                    writer.list(model.skills().stream()
-                        .map(skill -> skill.name() + ": " + assessment(skill.progress())).toList());
+                    writer.list(
+                            model.skills().stream()
+                                    .map(
+                                            skill ->
+                                                    skill.name()
+                                                            + ": "
+                                                            + assessment(skill.progress()))
+                                    .toList());
                 }
 
                 writer.section("4. Комментарий преподавателя");
@@ -94,7 +114,8 @@ public class PdfBoxProgressReportPdfRenderer implements ProgressReportPdfRendere
 
     private String formatPeriod(ProgressReportPdfModel model) {
         return dateFormatter.format(model.periodStartedAt().atZone(presentationZone))
-            + " - " + dateFormatter.format(model.periodEndedAt().atZone(presentationZone));
+                + " - "
+                + dateFormatter.format(model.periodEndedAt().atZone(presentationZone));
     }
 
     private static String formatMinutes(int minutes) {
@@ -111,7 +132,9 @@ public class PdfBoxProgressReportPdfRenderer implements ProgressReportPdfRendere
     }
 
     private static String assessment(BigDecimal value) {
-        return value == null ? "Нет оценки" : value.setScale(1, RoundingMode.HALF_UP).toPlainString();
+        return value == null
+                ? "Нет оценки"
+                : value.setScale(1, RoundingMode.HALF_UP).toPlainString();
     }
 
     private static String orMissing(String value) {
@@ -182,8 +205,11 @@ public class PdfBoxProgressReportPdfRenderer implements ProgressReportPdfRendere
                 List<String> lines = wrap(item, availableWidth(indent), BODY_SIZE);
                 for (int index = 0; index < lines.size(); index++) {
                     ensure(LINE_HEIGHT);
-                    line((index == 0 ? "• " : "") + lines.get(index), BODY_SIZE,
-                        index == 0 ? MARGIN : indent, LINE_HEIGHT);
+                    line(
+                            (index == 0 ? "• " : "") + lines.get(index),
+                            BODY_SIZE,
+                            index == 0 ? MARGIN : indent,
+                            LINE_HEIGHT);
                 }
             }
         }

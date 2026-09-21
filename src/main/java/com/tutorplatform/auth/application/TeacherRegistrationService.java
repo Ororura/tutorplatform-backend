@@ -4,12 +4,11 @@ import com.tutorplatform.auth.api.TeacherRegistrationRequest;
 import com.tutorplatform.platform.application.RegistrationPolicyService;
 import com.tutorplatform.platform.application.invite.TeacherRegistrationInviteService;
 import com.tutorplatform.user.domain.*;
+import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service
 public class TeacherRegistrationService {
@@ -21,12 +20,11 @@ public class TeacherRegistrationService {
     private final TeacherRegistrationInviteService invitationService;
 
     public TeacherRegistrationService(
-        UserRepository userRepository,
-        TeacherRepository teacherRepository,
-        PasswordEncoder passwordEncoder,
-        RegistrationPolicyService registrationPolicyService,
-        TeacherRegistrationInviteService invitationService
-    ) {
+            UserRepository userRepository,
+            TeacherRepository teacherRepository,
+            PasswordEncoder passwordEncoder,
+            RegistrationPolicyService registrationPolicyService,
+            TeacherRegistrationInviteService invitationService) {
         this.userRepository = userRepository;
         this.teacherRepository = teacherRepository;
         this.passwordEncoder = passwordEncoder;
@@ -41,23 +39,12 @@ public class TeacherRegistrationService {
     }
 
     @Transactional
-    public String registerInvitedTeacher(
-        String rawToken,
-        String displayName,
-        String password
-    ) {
-        var invitation =
-            invitationService.lockActiveInvitation(rawToken);
+    public String registerInvitedTeacher(String rawToken, String displayName, String password) {
+        var invitation = invitationService.lockActiveInvitation(rawToken);
 
-        createTeacher(new TeacherRegistrationRequest(
-            displayName,
-            invitation.email(),
-            password
-        ));
+        createTeacher(new TeacherRegistrationRequest(displayName, invitation.email(), password));
 
-        invitationService.markInvitationAccepted(
-            invitation.id()
-        );
+        invitationService.markInvitationAccepted(invitation.id());
 
         return invitation.email();
     }
@@ -67,12 +54,12 @@ public class TeacherRegistrationService {
             throw new EmailAlreadyRegisteredException();
         }
 
-        UserEntity user = new UserEntity(
-            UUID.randomUUID(),
-            request.email(),
-            passwordEncoder.encode(request.password()),
-            UserStatus.ACTIVE
-        );
+        UserEntity user =
+                new UserEntity(
+                        UUID.randomUUID(),
+                        request.email(),
+                        passwordEncoder.encode(request.password()),
+                        UserStatus.ACTIVE);
         user.addRole(UserRole.TEACHER);
 
         try {

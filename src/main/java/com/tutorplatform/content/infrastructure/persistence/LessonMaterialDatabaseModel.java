@@ -5,19 +5,17 @@ import com.tutorplatform.content.domain.LessonMaterialType;
 import com.tutorplatform.program.infrastructure.persistence.TopicDatabaseModel;
 import com.tutorplatform.user.infrastructure.persistence.TeacherDatabaseModel;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "lesson_materials")
 public class LessonMaterialDatabaseModel {
 
-    @Id
-    private UUID id;
+    @Id private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "topic_id", nullable = false, insertable = false, updatable = false)
@@ -27,7 +25,11 @@ public class LessonMaterialDatabaseModel {
     private UUID topicId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "created_by_teacher_id", nullable = false, insertable = false, updatable = false)
+    @JoinColumn(
+            name = "created_by_teacher_id",
+            nullable = false,
+            insertable = false,
+            updatable = false)
     private TeacherDatabaseModel createdByTeacher;
 
     @Column(name = "created_by_teacher_id", nullable = false)
@@ -68,8 +70,7 @@ public class LessonMaterialDatabaseModel {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    protected LessonMaterialDatabaseModel() {
-    }
+    protected LessonMaterialDatabaseModel() {}
 
     LessonMaterialDatabaseModel(LessonMaterialEntity lessonMaterial) {
         id = Objects.requireNonNull(lessonMaterial.getId());
@@ -90,8 +91,17 @@ public class LessonMaterialDatabaseModel {
 
     LessonMaterialEntity toEntity() {
         return new LessonMaterialEntity(
-            id, topicId, createdByTeacherId, materialType, title, content, fileAssetId,
-            externalUrl, position, version, createdAt, updatedAt
-        );
+                id,
+                topicId,
+                createdByTeacherId,
+                materialType,
+                title,
+                content,
+                fileAssetId,
+                externalUrl,
+                position,
+                version,
+                createdAt,
+                updatedAt);
     }
 }

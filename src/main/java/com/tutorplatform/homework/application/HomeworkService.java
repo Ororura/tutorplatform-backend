@@ -8,26 +8,24 @@ import com.tutorplatform.homework.domain.HomeworkRepository;
 import com.tutorplatform.homework.domain.HomeworkStatus;
 import com.tutorplatform.program.application.ProgramQuery;
 import com.tutorplatform.shared.time.InstantPrecision;
-import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.student.application.management.StudentNotFoundException;
+import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.task.application.TaskQuery;
 import com.tutorplatform.task.application.exception.TaskNotFoundException;
 import com.tutorplatform.task.domain.task.TaskStatus;
 import com.tutorplatform.task.domain.task.TaskType;
+import java.time.Instant;
+import java.util.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.util.*;
-
 @Service
 public class HomeworkService {
 
-    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
-        "assignedAt", "dueAt", "createdAt", "title"
-    );
+    private static final Set<String> ALLOWED_SORT_FIELDS =
+            Set.of("assignedAt", "dueAt", "createdAt", "title");
 
     private final StudentOwnershipQuery studentOwnershipQuery;
     private final ProgramQuery programQuery;
@@ -36,12 +34,11 @@ public class HomeworkService {
     private final HomeworkQuery homeworkQuery;
 
     public HomeworkService(
-        StudentOwnershipQuery studentOwnershipQuery,
-        ProgramQuery programQuery,
-        TaskQuery taskQuery,
-        HomeworkRepository homeworkRepository,
-        HomeworkQuery homeworkQuery
-    ) {
+            StudentOwnershipQuery studentOwnershipQuery,
+            ProgramQuery programQuery,
+            TaskQuery taskQuery,
+            HomeworkRepository homeworkRepository,
+            HomeworkQuery homeworkQuery) {
         this.studentOwnershipQuery = studentOwnershipQuery;
         this.programQuery = programQuery;
         this.taskQuery = taskQuery;
@@ -50,29 +47,28 @@ public class HomeworkService {
     }
 
     @Transactional
-    public HomeworkResult createHomework(AuthenticatedUser principal, CreateHomeworkCommand command) {
+    public HomeworkResult createHomework(
+            AuthenticatedUser principal, CreateHomeworkCommand command) {
         UUID teacherId = currentTeacherId(principal);
         requireOwnedStudent(teacherId, command.studentId());
-        ProgramQuery.StudentProgramContext studentProgram = requireStudentProgram(
-            command.studentProgramId(), command.studentId(), teacherId
-        );
+        ProgramQuery.StudentProgramContext studentProgram =
+                requireStudentProgram(command.studentProgramId(), command.studentId(), teacherId);
         String title = validateTitle(command.title());
-        ValidatedItems validatedItems = validateItems(
-            command.items(), teacherId, studentProgram.subjectId()
-        );
+        ValidatedItems validatedItems =
+                validateItems(command.items(), teacherId, studentProgram.subjectId());
         UUID homeworkId = UUID.randomUUID();
-        HomeworkEntity homework = new HomeworkEntity(
-            homeworkId,
-            studentProgram.id(),
-            teacherId,
-            title,
-            command.description(),
-            InstantPrecision.database(Instant.now()),
-            command.dueAt(),
-            HomeworkStatus.ASSIGNED,
-            null,
-            createItems(homeworkId, command.items(), Map.of())
-        );
+        HomeworkEntity homework =
+                new HomeworkEntity(
+                        homeworkId,
+                        studentProgram.id(),
+                        teacherId,
+                        title,
+                        command.description(),
+                        InstantPrecision.database(Instant.now()),
+                        command.dueAt(),
+                        HomeworkStatus.ASSIGNED,
+                        null,
+                        createItems(homeworkId, command.items(), Map.of()));
         try {
             return toResult(homeworkRepository.saveAndFlush(homework), validatedItems.tasksById());
         } catch (DataIntegrityViolationException exception) {
@@ -82,10 +78,7 @@ public class HomeworkService {
 
     @Transactional(readOnly = true)
     public HomeworkResult getHomework(
-        AuthenticatedUser principal,
-        UUID studentId,
-        UUID homeworkId
-    ) {
+            AuthenticatedUser principal, UUID studentId, UUID homeworkId) {
         UUID teacherId = currentTeacherId(principal);
         HomeworkEntity homework = requireOwnedHomework(teacherId, studentId, homeworkId);
         return toResult(homework, taskMap(homework.getItems()));
@@ -93,46 +86,60 @@ public class HomeworkService {
 
     @Transactional(readOnly = true)
     public HomeworkPageResult listHomeworks(
-        AuthenticatedUser principal,
-        UUID studentId,
-        UUID studentProgramId,
-        HomeworkStatus status,
-        int page,
-        int size,
-        String sort
-    ) {
+            AuthenticatedUser principal,
+            UUID studentId,
+            UUID studentProgramId,
+            HomeworkStatus status,
+            int page,
+            int size,
+            String sort) {
         SortParameters sortParameters = validateListParameters(page, size, sort);
         UUID teacherId = currentTeacherId(principal);
         requireOwnedStudent(teacherId, studentId);
         if (studentProgramId != null) {
             requireStudentProgram(studentProgramId, studentId, teacherId);
         }
-        HomeworkPage result = homeworkQuery.findPageByTeacherAndStudent(
-            teacherId, studentId, studentProgramId, status, page, size,
-            sortParameters.field(), sortParameters.ascending()
-        );
+        HomeworkPage result =
+                homeworkQuery.findPageByTeacherAndStudent(
+                        teacherId,
+                        studentId,
+                        studentProgramId,
+                        status,
+                        page,
+                        size,
+                        sortParameters.field(),
+                        sortParameters.ascending());
         Instant now = Instant.now();
         return new HomeworkPageResult(
-            result.items().stream().map(item -> new HomeworkSummaryResult(
-                item.id(), item.studentProgramId(), item.title(), item.status(),
-                item.assignedAt(), item.dueAt(), isOverdue(
-                item.dueAt(), item.status(), item.completedAt(), now
-            ), item.createdAt()
-            )).toList(),
-            page,
-            size,
-            result.totalElements(),
-            result.totalPages()
-        );
+                result.items().stream()
+                        .map(
+                                item ->
+                                        new HomeworkSummaryResult(
+                                                item.id(),
+                                                item.studentProgramId(),
+                                                item.title(),
+                                                item.status(),
+                                                item.assignedAt(),
+                                                item.dueAt(),
+                                                isOverdue(
+                                                        item.dueAt(),
+                                                        item.status(),
+                                                        item.completedAt(),
+                                                        now),
+                                                item.createdAt()))
+                        .toList(),
+                page,
+                size,
+                result.totalElements(),
+                result.totalPages());
     }
 
     @Transactional
     public HomeworkResult updateHomework(
-        AuthenticatedUser principal,
-        UUID studentId,
-        UUID homeworkId,
-        UpdateHomeworkCommand command
-    ) {
+            AuthenticatedUser principal,
+            UUID studentId,
+            UUID homeworkId,
+            UpdateHomeworkCommand command) {
         UUID teacherId = currentTeacherId(principal);
         HomeworkEntity current = requireOwnedHomework(teacherId, studentId, homeworkId);
         if (current.getStatus() != HomeworkStatus.ASSIGNED) {
@@ -141,32 +148,30 @@ public class HomeworkService {
         if (command.version() == null || command.version() < 0) {
             throw new InvalidHomeworkException("version", "must be greater than or equal to 0");
         }
-        ProgramQuery.StudentProgramContext studentProgram = requireStudentProgram(
-            current.getStudentProgramId(), studentId, teacherId
-        );
+        ProgramQuery.StudentProgramContext studentProgram =
+                requireStudentProgram(current.getStudentProgramId(), studentId, teacherId);
         String title = validateTitle(command.title());
-        ValidatedItems validatedItems = validateItems(
-            command.items(), teacherId, studentProgram.subjectId()
-        );
+        ValidatedItems validatedItems =
+                validateItems(command.items(), teacherId, studentProgram.subjectId());
         Map<Integer, UUID> existingIdsByPosition = new HashMap<>();
         for (HomeworkItemEntity item : current.getItems()) {
             existingIdsByPosition.put(item.position(), item.id());
         }
-        HomeworkEntity updated = new HomeworkEntity(
-            current.getId(),
-            current.getStudentProgramId(),
-            current.getAssignedByTeacherId(),
-            title,
-            command.description(),
-            current.getAssignedAt(),
-            command.dueAt(),
-            current.getStatus(),
-            current.getCompletedAt(),
-            createItems(current.getId(), command.items(), existingIdsByPosition),
-            command.version(),
-            current.getCreatedAt(),
-            current.getUpdatedAt()
-        );
+        HomeworkEntity updated =
+                new HomeworkEntity(
+                        current.getId(),
+                        current.getStudentProgramId(),
+                        current.getAssignedByTeacherId(),
+                        title,
+                        command.description(),
+                        current.getAssignedAt(),
+                        command.dueAt(),
+                        current.getStatus(),
+                        current.getCompletedAt(),
+                        createItems(current.getId(), command.items(), existingIdsByPosition),
+                        command.version(),
+                        current.getCreatedAt(),
+                        current.getUpdatedAt());
         try {
             return toResult(homeworkRepository.saveAndFlush(updated), validatedItems.tasksById());
         } catch (ObjectOptimisticLockingFailureException exception) {
@@ -178,10 +183,7 @@ public class HomeworkService {
 
     @Transactional
     public HomeworkResult cancelHomework(
-        AuthenticatedUser principal,
-        UUID studentId,
-        UUID homeworkId
-    ) {
+            AuthenticatedUser principal, UUID studentId, UUID homeworkId) {
         UUID teacherId = currentTeacherId(principal);
         HomeworkEntity current = requireOwnedHomework(teacherId, studentId, homeworkId);
         if (current.getStatus() == HomeworkStatus.CANCELLED) {
@@ -191,9 +193,11 @@ public class HomeworkService {
             throw new InvalidHomeworkException("status", "only assigned homework can be cancelled");
         }
         current.update(
-            current.getTitle(), current.getDescription(), current.getDueAt(),
-            HomeworkStatus.CANCELLED, null
-        );
+                current.getTitle(),
+                current.getDescription(),
+                current.getDueAt(),
+                HomeworkStatus.CANCELLED,
+                null);
         try {
             return toResult(homeworkRepository.saveAndFlush(current), taskMap(current.getItems()));
         } catch (ObjectOptimisticLockingFailureException exception) {
@@ -212,14 +216,13 @@ public class HomeworkService {
     }
 
     private ProgramQuery.StudentProgramContext requireStudentProgram(
-        UUID studentProgramId,
-        UUID studentId,
-        UUID teacherId
-    ) {
-        ProgramQuery.StudentProgramContext studentProgram = programQuery
-            .findStudentProgram(studentProgramId)
-            .orElseThrow(HomeworkStudentProgramNotFoundException::new);
-        if (!studentProgram.belongsToStudent(studentId) || !studentProgram.isAssignedBy(teacherId)) {
+            UUID studentProgramId, UUID studentId, UUID teacherId) {
+        ProgramQuery.StudentProgramContext studentProgram =
+                programQuery
+                        .findStudentProgram(studentProgramId)
+                        .orElseThrow(HomeworkStudentProgramNotFoundException::new);
+        if (!studentProgram.belongsToStudent(studentId)
+                || !studentProgram.isAssignedBy(teacherId)) {
             throw new HomeworkStudentProgramNotFoundException();
         }
         return studentProgram;
@@ -227,14 +230,17 @@ public class HomeworkService {
 
     private HomeworkEntity requireOwnedHomework(UUID teacherId, UUID studentId, UUID homeworkId) {
         requireOwnedStudent(teacherId, studentId);
-        HomeworkEntity homework = homeworkRepository.findByIdWithItems(homeworkId)
-            .orElseThrow(HomeworkNotFoundException::new);
-        ProgramQuery.StudentProgramContext studentProgram = programQuery
-            .findStudentProgram(homework.getStudentProgramId())
-            .orElseThrow(HomeworkNotFoundException::new);
+        HomeworkEntity homework =
+                homeworkRepository
+                        .findByIdWithItems(homeworkId)
+                        .orElseThrow(HomeworkNotFoundException::new);
+        ProgramQuery.StudentProgramContext studentProgram =
+                programQuery
+                        .findStudentProgram(homework.getStudentProgramId())
+                        .orElseThrow(HomeworkNotFoundException::new);
         if (!studentProgram.belongsToStudent(studentId)
-            || !studentProgram.isAssignedBy(teacherId)
-            || !homework.getAssignedByTeacherId().equals(teacherId)) {
+                || !studentProgram.isAssignedBy(teacherId)
+                || !homework.getAssignedByTeacherId().equals(teacherId)) {
             throw new HomeworkNotFoundException();
         }
         return homework;
@@ -251,7 +257,8 @@ public class HomeworkService {
         return normalized;
     }
 
-    private ValidatedItems validateItems(List<HomeworkItemInput> items, UUID teacherId, UUID subjectId) {
+    private ValidatedItems validateItems(
+            List<HomeworkItemInput> items, UUID teacherId, UUID subjectId) {
         if (items == null || items.isEmpty()) {
             throw new InvalidHomeworkException("items", "must not be empty");
         }
@@ -265,7 +272,8 @@ public class HomeworkService {
                 throw new InvalidHomeworkException("items", "duplicate taskId is not allowed");
             }
             if (item.position() < 0) {
-                throw new InvalidHomeworkException("items.position", "must be greater than or equal to 0");
+                throw new InvalidHomeworkException(
+                        "items.position", "must be greater than or equal to 0");
             }
             if (!positions.add(item.position())) {
                 throw new HomeworkItemPositionConflictException();
@@ -281,7 +289,7 @@ public class HomeworkService {
                 throw new TaskNotFoundException();
             }
             if ((task.type() != TaskType.TEXT && task.type() != TaskType.CODE)
-                || task.status() != TaskStatus.ACTIVE) {
+                    || task.status() != TaskStatus.ACTIVE) {
                 throw new HomeworkTaskNotAssignableException();
             }
             if (!task.subjectId().equals(subjectId)) {
@@ -292,20 +300,21 @@ public class HomeworkService {
     }
 
     private List<HomeworkItemEntity> createItems(
-        UUID homeworkId,
-        List<HomeworkItemInput> inputs,
-        Map<Integer, UUID> existingIdsByPosition
-    ) {
+            UUID homeworkId,
+            List<HomeworkItemInput> inputs,
+            Map<Integer, UUID> existingIdsByPosition) {
         return inputs.stream()
-            .map(input -> new HomeworkItemEntity(
-                existingIdsByPosition.getOrDefault(input.position(), UUID.randomUUID()),
-                homeworkId,
-                input.taskId(),
-                input.position(),
-                input.required()
-            ))
-            .sorted(Comparator.comparingInt(HomeworkItemEntity::position))
-            .toList();
+                .map(
+                        input ->
+                                new HomeworkItemEntity(
+                                        existingIdsByPosition.getOrDefault(
+                                                input.position(), UUID.randomUUID()),
+                                        homeworkId,
+                                        input.taskId(),
+                                        input.position(),
+                                        input.required()))
+                .sorted(Comparator.comparingInt(HomeworkItemEntity::position))
+                .toList();
     }
 
     private Map<UUID, TaskQuery.TaskContext> taskMap(List<HomeworkItemEntity> items) {
@@ -317,40 +326,45 @@ public class HomeworkService {
     }
 
     private HomeworkResult toResult(
-        HomeworkEntity homework,
-        Map<UUID, TaskQuery.TaskContext> tasksById
-    ) {
+            HomeworkEntity homework, Map<UUID, TaskQuery.TaskContext> tasksById) {
         Instant now = Instant.now();
         List<HomeworkItemResult> items = new ArrayList<>();
         homework.getItems().stream()
-            .sorted(Comparator.comparingInt(HomeworkItemEntity::position))
-            .forEach(item -> {
-                TaskQuery.TaskContext task = tasksById.get(item.taskId());
-                items.add(new HomeworkItemResult(
-                    item.id(), item.taskId(), task == null ? null : task.title(),
-                    item.position(), item.required()
-                ));
-            });
+                .sorted(Comparator.comparingInt(HomeworkItemEntity::position))
+                .forEach(
+                        item -> {
+                            TaskQuery.TaskContext task = tasksById.get(item.taskId());
+                            items.add(
+                                    new HomeworkItemResult(
+                                            item.id(),
+                                            item.taskId(),
+                                            task == null ? null : task.title(),
+                                            item.position(),
+                                            item.required()));
+                        });
         return new HomeworkResult(
-            homework.getId(), homework.getStudentProgramId(), homework.getTitle(),
-            homework.getDescription(), homework.getStatus(), homework.getAssignedAt(),
-            homework.getDueAt(), isOverdue(
-            homework.getDueAt(), homework.getStatus(), homework.getCompletedAt(), now
-        ), homework.getCompletedAt(), List.copyOf(items), homework.getVersion(),
-            homework.getCreatedAt(), homework.getUpdatedAt()
-        );
+                homework.getId(),
+                homework.getStudentProgramId(),
+                homework.getTitle(),
+                homework.getDescription(),
+                homework.getStatus(),
+                homework.getAssignedAt(),
+                homework.getDueAt(),
+                isOverdue(
+                        homework.getDueAt(), homework.getStatus(), homework.getCompletedAt(), now),
+                homework.getCompletedAt(),
+                List.copyOf(items),
+                homework.getVersion(),
+                homework.getCreatedAt(),
+                homework.getUpdatedAt());
     }
 
     private boolean isOverdue(
-        Instant dueAt,
-        HomeworkStatus status,
-        Instant completedAt,
-        Instant now
-    ) {
+            Instant dueAt, HomeworkStatus status, Instant completedAt, Instant now) {
         return dueAt != null
-            && dueAt.isBefore(now)
-            && status == HomeworkStatus.ASSIGNED
-            && completedAt == null;
+                && dueAt.isBefore(now)
+                && status == HomeworkStatus.ASSIGNED
+                && completedAt == null;
     }
 
     private SortParameters validateListParameters(int page, int size, String sort) {
@@ -363,8 +377,7 @@ public class HomeworkService {
         String[] parts = sort.split(",", -1);
         if (parts.length != 2 || !ALLOWED_SORT_FIELDS.contains(parts[0])) {
             throw new InvalidHomeworkException(
-                "sort", "must use assignedAt, dueAt, createdAt, or title"
-            );
+                    "sort", "must use assignedAt, dueAt, createdAt, or title");
         }
         if (!parts[1].equals("asc") && !parts[1].equals("desc")) {
             throw new InvalidHomeworkException("sort", "direction must be asc or desc");
@@ -372,9 +385,7 @@ public class HomeworkService {
         return new SortParameters(parts[0], parts[1].equals("asc"));
     }
 
-    private record ValidatedItems(Map<UUID, TaskQuery.TaskContext> tasksById) {
-    }
+    private record ValidatedItems(Map<UUID, TaskQuery.TaskContext> tasksById) {}
 
-    private record SortParameters(String field, boolean ascending) {
-    }
+    private record SortParameters(String field, boolean ascending) {}
 }

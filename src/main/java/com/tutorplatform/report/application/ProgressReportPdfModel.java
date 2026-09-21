@@ -5,17 +5,16 @@ import java.time.Instant;
 import java.util.List;
 
 public record ProgressReportPdfModel(
-    Instant periodStartedAt,
-    Instant periodEndedAt,
-    int learningMinutes,
-    Metrics metrics,
-    Assessment assessment,
-    List<Topic> completedTopics,
-    List<Topic> inProgressTopics,
-    List<Skill> skills,
-    String teacherSummary,
-    String nextPeriodPlan
-) {
+        Instant periodStartedAt,
+        Instant periodEndedAt,
+        int learningMinutes,
+        Metrics metrics,
+        Assessment assessment,
+        List<Topic> completedTopics,
+        List<Topic> inProgressTopics,
+        List<Skill> skills,
+        String teacherSummary,
+        String nextPeriodPlan) {
     public ProgressReportPdfModel {
         completedTopics = List.copyOf(completedTopics);
         inProgressTopics = List.copyOf(inProgressTopics);
@@ -23,27 +22,21 @@ public record ProgressReportPdfModel(
     }
 
     public record Metrics(
-        int learningMinutes,
-        long sessionsCount,
-        double attendanceRate,
-        long homeworkAssigned,
-        long homeworkCompleted,
-        long practiceAssigned,
-        long practiceCompleted
-    ) {
-    }
+            int learningMinutes,
+            long sessionsCount,
+            double attendanceRate,
+            long homeworkAssigned,
+            long homeworkCompleted,
+            long practiceAssigned,
+            long practiceCompleted) {}
 
     public record Assessment(
-        BigDecimal understandingAverage,
-        BigDecimal independenceAverage,
-        BigDecimal practiceAverage,
-        BigDecimal homeworkAverage
-    ) {
-    }
+            BigDecimal understandingAverage,
+            BigDecimal independenceAverage,
+            BigDecimal practiceAverage,
+            BigDecimal homeworkAverage) {}
 
-    public record Topic(String title) {
-    }
+    public record Topic(String title) {}
 
-    public record Skill(String name, BigDecimal progress) {
-    }
+    public record Skill(String name, BigDecimal progress) {}
 }

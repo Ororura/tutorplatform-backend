@@ -3,18 +3,16 @@ package com.tutorplatform.homework.infrastructure.persistence;
 import com.tutorplatform.homework.domain.HomeworkItemEntity;
 import com.tutorplatform.task.infrastructure.persistence.task.TaskDatabaseModel;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "homework_items")
 public class HomeworkItemDatabaseModel {
 
-    @Id
-    private UUID id;
+    @Id private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "task_id", nullable = false, insertable = false, updatable = false)
@@ -33,8 +31,7 @@ public class HomeworkItemDatabaseModel {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    protected HomeworkItemDatabaseModel() {
-    }
+    protected HomeworkItemDatabaseModel() {}
 
     HomeworkItemDatabaseModel(HomeworkItemEntity item) {
         id = Objects.requireNonNull(item.id());

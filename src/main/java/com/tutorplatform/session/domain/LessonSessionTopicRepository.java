@@ -7,7 +7,8 @@ import java.util.UUID;
 public interface LessonSessionTopicRepository {
     LessonSessionTopicEntity saveAndFlush(LessonSessionTopicEntity lessonSessionTopic);
 
-    List<LessonSessionTopicEntity> saveAllAndFlush(List<LessonSessionTopicEntity> lessonSessionTopics);
+    List<LessonSessionTopicEntity> saveAllAndFlush(
+            List<LessonSessionTopicEntity> lessonSessionTopics);
 
     List<LessonSessionTopicEntity> findAllByLessonSessionId(UUID lessonSessionId);
 

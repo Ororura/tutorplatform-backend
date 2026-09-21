@@ -1,9 +1,9 @@
 package com.tutorplatform.student.application.management;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
+import com.tutorplatform.student.api.management.*;
 import com.tutorplatform.student.api.management.StudentAccountResponse;
 import com.tutorplatform.student.api.management.StudentDetailsResponse;
-import com.tutorplatform.student.api.management.*;
 import com.tutorplatform.student.domain.StudentAccountStatus;
 import com.tutorplatform.student.domain.StudentEntity;
 import com.tutorplatform.student.domain.StudentRepository;
@@ -13,17 +13,17 @@ import com.tutorplatform.student.infrastructure.persistence.TeacherStudentLinkEn
 import com.tutorplatform.student.infrastructure.persistence.TeacherStudentLinkRepository;
 import com.tutorplatform.user.domain.TeacherEntity;
 import com.tutorplatform.user.domain.TeacherRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class StudentService {
 
-    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("createdAt", "firstName", "lastName");
+    private static final Set<String> ALLOWED_SORT_FIELDS =
+            Set.of("createdAt", "firstName", "lastName");
 
     private final TeacherRepository teacherRepository;
     private final StudentRepository studentRepository;
@@ -31,11 +31,10 @@ public class StudentService {
     private final StudentQueryRepository studentQueryRepository;
 
     public StudentService(
-        TeacherRepository teacherRepository,
-        StudentRepository studentRepository,
-        TeacherStudentLinkRepository teacherStudentLinkRepository,
-        StudentQueryRepository studentQueryRepository
-    ) {
+            TeacherRepository teacherRepository,
+            StudentRepository studentRepository,
+            TeacherStudentLinkRepository teacherStudentLinkRepository,
+            StudentQueryRepository studentQueryRepository) {
         this.teacherRepository = teacherRepository;
         this.studentRepository = studentRepository;
         this.teacherStudentLinkRepository = teacherStudentLinkRepository;
@@ -43,57 +42,59 @@ public class StudentService {
     }
 
     @Transactional
-    public StudentSummaryResponse createStudent(AuthenticatedUser principal, CreateStudentRequest request) {
+    public StudentSummaryResponse createStudent(
+            AuthenticatedUser principal, CreateStudentRequest request) {
         TeacherEntity teacher = currentTeacher(principal);
-        StudentEntity student = studentRepository.saveAndFlush(new StudentEntity(
-            UUID.randomUUID(),
-            request.firstName(),
-            request.lastName(),
-            StudentStatus.ACTIVE
-        ));
+        StudentEntity student =
+                studentRepository.saveAndFlush(
+                        new StudentEntity(
+                                UUID.randomUUID(),
+                                request.firstName(),
+                                request.lastName(),
+                                StudentStatus.ACTIVE));
         teacherStudentLinkRepository.saveAndFlush(new TeacherStudentLinkEntity(teacher, student));
 
         return new StudentSummaryResponse(
-            student.getId(),
-            student.getFirstName(),
-            student.getLastName(),
-            student.getStatus(),
-            StudentAccountStatus.UNREGISTERED,
-            student.getCreatedAt()
-        );
+                student.getId(),
+                student.getFirstName(),
+                student.getLastName(),
+                student.getStatus(),
+                StudentAccountStatus.UNREGISTERED,
+                student.getCreatedAt());
     }
 
     @Transactional(readOnly = true)
     public StudentPageResponse listStudents(
-        AuthenticatedUser principal,
-        int page,
-        int size,
-        String query,
-        StudentAccountStatus accountStatus,
-        String sort
-    ) {
+            AuthenticatedUser principal,
+            int page,
+            int size,
+            String query,
+            StudentAccountStatus accountStatus,
+            String sort) {
         UUID teacherId = currentTeacher(principal).id();
         ListParameters parameters = validateListParameters(page, size, query, sort);
-        StudentQueryRepository.StudentPage result = studentQueryRepository.findStudents(
-            teacherId,
-            page,
-            size,
-            parameters.searchPattern(),
-            accountStatus,
-            parameters.sortField(),
-            parameters.ascending()
-        );
+        StudentQueryRepository.StudentPage result =
+                studentQueryRepository.findStudents(
+                        teacherId,
+                        page,
+                        size,
+                        parameters.searchPattern(),
+                        accountStatus,
+                        parameters.sortField(),
+                        parameters.ascending());
 
-        var items = result.items().stream()
-            .map(row -> new StudentSummaryResponse(
-                row.id(),
-                row.firstName(),
-                row.lastName(),
-                row.status(),
-                row.accountStatus(),
-                row.createdAt()
-            ))
-            .toList();
+        var items =
+                result.items().stream()
+                        .map(
+                                row ->
+                                        new StudentSummaryResponse(
+                                                row.id(),
+                                                row.firstName(),
+                                                row.lastName(),
+                                                row.status(),
+                                                row.accountStatus(),
+                                                row.createdAt()))
+                        .toList();
         int totalPages = Math.toIntExact((result.totalElements() + size - 1) / size);
         return new StudentPageResponse(items, page, size, result.totalElements(), totalPages);
     }
@@ -101,35 +102,36 @@ public class StudentService {
     @Transactional(readOnly = true)
     public StudentDetailsResponse getStudent(AuthenticatedUser principal, UUID studentId) {
         UUID teacherId = currentTeacher(principal).id();
-        return toDetails(studentQueryRepository.findDetails(teacherId, studentId)
-            .orElseThrow(StudentNotFoundException::new));
+        return toDetails(
+                studentQueryRepository
+                        .findDetails(teacherId, studentId)
+                        .orElseThrow(StudentNotFoundException::new));
     }
 
     @Transactional
     public UpdateStudentResponse updateStudent(
-        AuthenticatedUser principal,
-        UUID studentId,
-        UpdateStudentRequest request
-    ) {
+            AuthenticatedUser principal, UUID studentId, UpdateStudentRequest request) {
         UUID teacherId = currentTeacher(principal).id();
-        StudentEntity student = studentRepository.findOwnedStudent(teacherId, studentId)
-            .orElseThrow(StudentNotFoundException::new);
+        StudentEntity student =
+                studentRepository
+                        .findOwnedStudent(teacherId, studentId)
+                        .orElseThrow(StudentNotFoundException::new);
         student.updateNames(
-            request.firstName() == null ? student.getFirstName() : request.firstName(),
-            request.lastName() == null ? student.getLastName() : request.lastName()
-        );
+                request.firstName() == null ? student.getFirstName() : request.firstName(),
+                request.lastName() == null ? student.getLastName() : request.lastName());
         studentRepository.saveAndFlush(student);
 
-        StudentQueryRepository.StudentDetailsRow updated = studentQueryRepository.findDetails(teacherId, studentId)
-            .orElseThrow(StudentNotFoundException::new);
+        StudentQueryRepository.StudentDetailsRow updated =
+                studentQueryRepository
+                        .findDetails(teacherId, studentId)
+                        .orElseThrow(StudentNotFoundException::new);
         return new UpdateStudentResponse(
-            updated.id(),
-            updated.firstName(),
-            updated.lastName(),
-            updated.status(),
-            updated.accountStatus(),
-            updated.updatedAt()
-        );
+                updated.id(),
+                updated.firstName(),
+                updated.lastName(),
+                updated.status(),
+                updated.accountStatus(),
+                updated.updatedAt());
     }
 
     private TeacherEntity currentTeacher(AuthenticatedUser principal) {
@@ -138,7 +140,8 @@ public class StudentService {
 
     private ListParameters validateListParameters(int page, int size, String query, String sort) {
         if (page < 0) {
-            throw new InvalidStudentListParameterException("page", "must be greater than or equal to 0");
+            throw new InvalidStudentListParameterException(
+                    "page", "must be greater than or equal to 0");
         }
         if (size < 1 || size > 100) {
             throw new InvalidStudentListParameterException("size", "must be between 1 and 100");
@@ -146,18 +149,18 @@ public class StudentService {
 
         String normalizedQuery = query == null ? null : query.strip();
         if (normalizedQuery != null && normalizedQuery.length() > 100) {
-            throw new InvalidStudentListParameterException("query", "size must be between 0 and 100");
+            throw new InvalidStudentListParameterException(
+                    "query", "size must be between 0 and 100");
         }
-        String searchPattern = normalizedQuery == null || normalizedQuery.isEmpty()
-            ? null
-            : "%" + escapeLike(normalizedQuery.toLowerCase(Locale.ROOT)) + "%";
+        String searchPattern =
+                normalizedQuery == null || normalizedQuery.isEmpty()
+                        ? null
+                        : "%" + escapeLike(normalizedQuery.toLowerCase(Locale.ROOT)) + "%";
 
         String[] sortParts = sort.split(",", -1);
         if (sortParts.length != 2 || !ALLOWED_SORT_FIELDS.contains(sortParts[0])) {
             throw new InvalidStudentListParameterException(
-                "sort",
-                "must use createdAt, firstName, or lastName"
-            );
+                    "sort", "must use createdAt, firstName, or lastName");
         }
         if (!sortParts[1].equals("asc") && !sortParts[1].equals("desc")) {
             throw new InvalidStudentListParameterException("sort", "direction must be asc or desc");
@@ -172,20 +175,17 @@ public class StudentService {
 
     private StudentDetailsResponse toDetails(StudentQueryRepository.StudentDetailsRow row) {
         return new StudentDetailsResponse(
-            row.id(),
-            row.firstName(),
-            row.lastName(),
-            row.status(),
-            new StudentAccountResponse(row.accountStatus(), row.accountEmail()),
-            new StudentRelationResponse(
-                StudentRelationResponse.RelationType.valueOf(row.relationType().name()),
-                row.relationStartedAt()
-            ),
-            row.createdAt(),
-            row.updatedAt()
-        );
+                row.id(),
+                row.firstName(),
+                row.lastName(),
+                row.status(),
+                new StudentAccountResponse(row.accountStatus(), row.accountEmail()),
+                new StudentRelationResponse(
+                        StudentRelationResponse.RelationType.valueOf(row.relationType().name()),
+                        row.relationStartedAt()),
+                row.createdAt(),
+                row.updatedAt());
     }
 
-    private record ListParameters(String searchPattern, String sortField, boolean ascending) {
-    }
+    private record ListParameters(String searchPattern, String sortField, boolean ascending) {}
 }

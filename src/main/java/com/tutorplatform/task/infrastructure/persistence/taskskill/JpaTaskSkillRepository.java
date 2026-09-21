@@ -2,10 +2,9 @@ package com.tutorplatform.task.infrastructure.persistence.taskskill;
 
 import com.tutorplatform.task.domain.taskskill.TaskSkillEntity;
 import com.tutorplatform.task.domain.taskskill.TaskSkillRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaTaskSkillRepository implements TaskSkillRepository {
@@ -24,7 +23,7 @@ public class JpaTaskSkillRepository implements TaskSkillRepository {
     @Override
     public List<TaskSkillEntity> findAllByTaskId(UUID taskId) {
         return databaseRepository.findAllByIdTaskId(taskId).stream()
-            .map(TaskSkillDatabaseModel::toEntity)
-            .toList();
+                .map(TaskSkillDatabaseModel::toEntity)
+                .toList();
     }
 }

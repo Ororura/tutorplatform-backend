@@ -1,4 +1,3 @@
 package com.tutorplatform.session.application.exception;
 
-public class TopicOutsideStudentProgramException extends RuntimeException {
-}
+public class TopicOutsideStudentProgramException extends RuntimeException {}

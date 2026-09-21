@@ -18,32 +18,39 @@ public class SubmissionEntity {
     private SubmissionStatus status;
 
     public SubmissionEntity(
-        UUID id,
-        UUID studentId,
-        UUID studentProgramId,
-        UUID taskId,
-        UUID homeworkItemId,
-        int attemptNo,
-        SubmissionStatus status,
-        String textAnswer,
-        Instant submittedAt
-    ) {
-        this(id, studentId, studentProgramId, taskId, homeworkItemId, attemptNo, status,
-            textAnswer, submittedAt, null);
+            UUID id,
+            UUID studentId,
+            UUID studentProgramId,
+            UUID taskId,
+            UUID homeworkItemId,
+            int attemptNo,
+            SubmissionStatus status,
+            String textAnswer,
+            Instant submittedAt) {
+        this(
+                id,
+                studentId,
+                studentProgramId,
+                taskId,
+                homeworkItemId,
+                attemptNo,
+                status,
+                textAnswer,
+                submittedAt,
+                null);
     }
 
     public SubmissionEntity(
-        UUID id,
-        UUID studentId,
-        UUID studentProgramId,
-        UUID taskId,
-        UUID homeworkItemId,
-        int attemptNo,
-        SubmissionStatus status,
-        String textAnswer,
-        Instant submittedAt,
-        Instant createdAt
-    ) {
+            UUID id,
+            UUID studentId,
+            UUID studentProgramId,
+            UUID taskId,
+            UUID homeworkItemId,
+            int attemptNo,
+            SubmissionStatus status,
+            String textAnswer,
+            Instant submittedAt,
+            Instant createdAt) {
         this.id = Objects.requireNonNull(id);
         this.studentId = Objects.requireNonNull(studentId);
         this.studentProgramId = Objects.requireNonNull(studentProgramId);
@@ -114,8 +121,8 @@ public class SubmissionEntity {
             throw new IllegalStateException("Submission is not awaiting code execution");
         }
         if (finalStatus != SubmissionStatus.PASSED
-            && finalStatus != SubmissionStatus.FAILED
-            && finalStatus != SubmissionStatus.SYSTEM_ERROR) {
+                && finalStatus != SubmissionStatus.FAILED
+                && finalStatus != SubmissionStatus.SYSTEM_ERROR) {
             throw new IllegalArgumentException("Invalid final code submission status");
         }
         status = finalStatus;

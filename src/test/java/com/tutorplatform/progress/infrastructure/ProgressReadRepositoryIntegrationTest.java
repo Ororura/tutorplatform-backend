@@ -1,21 +1,19 @@
 package com.tutorplatform.progress.infrastructure;
 
-import com.tutorplatform.test.PostgresIntegrationTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.tutorplatform.progress.application.GetCurrentProgressService;
 import com.tutorplatform.progress.domain.*;
+import com.tutorplatform.test.PostgresIntegrationTest;
+import java.math.BigDecimal;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Transactional
@@ -26,12 +24,9 @@ class ProgressReadRepositoryIntegrationTest extends PostgresIntegrationTest {
         PostgresIntegrationTest.configurePostgres(registry, "test_progress_read_repository", "008");
     }
 
-    @Autowired
-    private JdbcProgressReadRepository repository;
-    @Autowired
-    private GetCurrentProgressService service;
-    @Autowired
-    private JdbcTemplate jdbc;
+    @Autowired private JdbcProgressReadRepository repository;
+    @Autowired private GetCurrentProgressService service;
+    @Autowired private JdbcTemplate jdbc;
 
     @Test
     void sessionMetricsSumOnlyAttendedAndExcludeCancelledFromRelevantCount() {
@@ -68,9 +63,9 @@ class ProgressReadRepositoryIntegrationTest extends PostgresIntegrationTest {
         UUID lockedTopic = topic(other, module(other, 0), 0, "Other", "LOCKED");
 
         assertThat(repository.findTopicProgress(fixture.studentProgramId()))
-            .extracting(TopicProgress::topicId)
-            .containsExactly(firstTopic, secondTopic, thirdTopic)
-            .doesNotContain(lockedTopic);
+                .extracting(TopicProgress::topicId)
+                .containsExactly(firstTopic, secondTopic, thirdTopic)
+                .doesNotContain(lockedTopic);
     }
 
     @Test
@@ -83,7 +78,7 @@ class ProgressReadRepositoryIntegrationTest extends PostgresIntegrationTest {
         homework(other, "COMPLETED");
 
         assertThat(repository.getHomeworkMetrics(fixture.studentProgramId()))
-            .isEqualTo(new HomeworkMetrics(2, 1));
+                .isEqualTo(new HomeworkMetrics(2, 1));
     }
 
     @Test
@@ -106,7 +101,7 @@ class ProgressReadRepositoryIntegrationTest extends PostgresIntegrationTest {
         submission(fixture, systemErrorTask, systemErrorItem, 1, "SYSTEM_ERROR");
 
         assertThat(repository.getPracticeMetrics(fixture.studentProgramId()))
-            .isEqualTo(new PracticeMetrics(4, 1));
+                .isEqualTo(new PracticeMetrics(4, 1));
     }
 
     @Test
@@ -118,7 +113,7 @@ class ProgressReadRepositoryIntegrationTest extends PostgresIntegrationTest {
         submission(fixture, taskId, firstItem, 1, "PASSED");
 
         assertThat(repository.getPracticeMetrics(fixture.studentProgramId()))
-            .isEqualTo(new PracticeMetrics(1, 1));
+                .isEqualTo(new PracticeMetrics(1, 1));
     }
 
     @Test
@@ -137,7 +132,7 @@ class ProgressReadRepositoryIntegrationTest extends PostgresIntegrationTest {
         submission(other, otherTask, otherItem, 1, "PASSED");
 
         assertThat(repository.getPracticeMetrics(fixture.studentProgramId()))
-            .isEqualTo(new PracticeMetrics(1, 0));
+                .isEqualTo(new PracticeMetrics(1, 0));
     }
 
     @Test
@@ -163,7 +158,7 @@ class ProgressReadRepositoryIntegrationTest extends PostgresIntegrationTest {
         assessment(session(other, "ATTENDED", 60), 5, 5, 5, 5);
 
         assertThat(repository.getAssessmentAverages(fixture.studentProgramId()))
-            .isEqualTo(new AssessmentAverages(null, null, null, null));
+                .isEqualTo(new AssessmentAverages(null, null, null, null));
     }
 
     @Test
@@ -194,10 +189,12 @@ class ProgressReadRepositoryIntegrationTest extends PostgresIntegrationTest {
         assertThat(progress.sessionsCount()).isEqualTo(3);
         assertThat(progress.attendanceRate()).isCloseTo(2.0 / 3.0, within(1.0e-12));
         assertThat(progress.totalTopics()).isEqualTo(2);
-        assertThat(progress.completedTopics()).extracting(TopicProgress::topicId)
-            .containsExactly(completedTopic);
-        assertThat(progress.inProgressTopics()).extracting(TopicProgress::topicId)
-            .containsExactly(inProgressTopic);
+        assertThat(progress.completedTopics())
+                .extracting(TopicProgress::topicId)
+                .containsExactly(completedTopic);
+        assertThat(progress.inProgressTopics())
+                .extracting(TopicProgress::topicId)
+                .containsExactly(inProgressTopic);
         assertThat(progress.homeworkAssigned()).isEqualTo(2);
         assertThat(progress.homeworkCompleted()).isOne();
         assertThat(progress.practiceAssigned()).isEqualTo(2);
@@ -223,7 +220,7 @@ class ProgressReadRepositoryIntegrationTest extends PostgresIntegrationTest {
         assertThat(progress.practiceAssigned()).isZero();
         assertThat(progress.practiceCompleted()).isZero();
         assertThat(progress.assessmentAverages())
-            .isEqualTo(new AssessmentAverages(null, null, null, null));
+                .isEqualTo(new AssessmentAverages(null, null, null, null));
     }
 
     @Test
@@ -242,21 +239,24 @@ class ProgressReadRepositoryIntegrationTest extends PostgresIntegrationTest {
         service.getCurrentProgress(fixture.studentProgramId());
 
         assertThat(factCount(fixture.studentProgramId())).isEqualTo(factsBefore);
-        assertThat(jdbc.queryForObject(
-            "SELECT status FROM student_topic_progress WHERE student_program_id = ?",
-            String.class,
-            fixture.studentProgramId()
-        )).isEqualTo("IN_PROGRESS");
-        assertThat(jdbc.queryForObject(
-            "SELECT status FROM homeworks WHERE id = ?",
-            String.class,
-            homeworkId
-        )).isEqualTo("ASSIGNED");
-        assertThat(jdbc.queryForObject(
-            "SELECT status FROM submissions WHERE homework_item_id = ?",
-            String.class,
-            itemId
-        )).isEqualTo("PASSED");
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT status FROM student_topic_progress WHERE student_program_id = ?",
+                                String.class,
+                                fixture.studentProgramId()))
+                .isEqualTo("IN_PROGRESS");
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT status FROM homeworks WHERE id = ?",
+                                String.class,
+                                homeworkId))
+                .isEqualTo("ASSIGNED");
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT status FROM submissions WHERE homework_item_id = ?",
+                                String.class,
+                                itemId))
+                .isEqualTo("PASSED");
     }
 
     private Fixture fixture() {
@@ -267,61 +267,135 @@ class ProgressReadRepositoryIntegrationTest extends PostgresIntegrationTest {
         UUID learningProgramId = UUID.randomUUID();
         UUID studentProgramId = UUID.randomUUID();
         jdbc.update("INSERT INTO users(id, email) VALUES (?, ?)", userId, userId + "@example.com");
-        jdbc.update("INSERT INTO teachers(id, user_id, display_name) VALUES (?, ?, 'Teacher')", teacherId, userId);
+        jdbc.update(
+                "INSERT INTO teachers(id, user_id, display_name) VALUES (?, ?, 'Teacher')",
+                teacherId,
+                userId);
         jdbc.update("INSERT INTO students(id, first_name) VALUES (?, 'Student')", studentId);
-        jdbc.update("INSERT INTO subjects(id, owner_teacher_id, name) VALUES (?, ?, ?)", subjectId, teacherId, "Subject " + subjectId);
-        jdbc.update("INSERT INTO learning_programs(id, teacher_id, subject_id, title, status) VALUES (?, ?, ?, 'Program', 'ACTIVE')", learningProgramId, teacherId, subjectId);
-        jdbc.update("INSERT INTO student_programs(id, student_id, learning_program_id, assigned_by_teacher_id) VALUES (?, ?, ?, ?)", studentProgramId, studentId, learningProgramId, teacherId);
+        jdbc.update(
+                "INSERT INTO subjects(id, owner_teacher_id, name) VALUES (?, ?, ?)",
+                subjectId,
+                teacherId,
+                "Subject " + subjectId);
+        jdbc.update(
+                "INSERT INTO learning_programs(id, teacher_id, subject_id, title, status) VALUES (?, ?, ?, 'Program', 'ACTIVE')",
+                learningProgramId,
+                teacherId,
+                subjectId);
+        jdbc.update(
+                "INSERT INTO student_programs(id, student_id, learning_program_id, assigned_by_teacher_id) VALUES (?, ?, ?, ?)",
+                studentProgramId,
+                studentId,
+                learningProgramId,
+                teacherId);
         return new Fixture(teacherId, studentId, subjectId, learningProgramId, studentProgramId);
     }
 
     private UUID module(Fixture fixture, int position) {
         UUID id = UUID.randomUUID();
-        jdbc.update("INSERT INTO modules(id, learning_program_id, title, position) VALUES (?, ?, ?, ?)", id, fixture.learningProgramId(), "Module " + id, position);
+        jdbc.update(
+                "INSERT INTO modules(id, learning_program_id, title, position) VALUES (?, ?, ?, ?)",
+                id,
+                fixture.learningProgramId(),
+                "Module " + id,
+                position);
         return id;
     }
 
     private UUID topic(Fixture fixture, UUID moduleId, int position, String title, String status) {
         UUID id = UUID.randomUUID();
-        jdbc.update("INSERT INTO topics(id, module_id, title, position, status) VALUES (?, ?, ?, ?, 'ACTIVE')", id, moduleId, title, position);
-        jdbc.update("INSERT INTO student_topic_progress(student_program_id, topic_id, status) VALUES (?, ?, ?)", fixture.studentProgramId(), id, status);
+        jdbc.update(
+                "INSERT INTO topics(id, module_id, title, position, status) VALUES (?, ?, ?, ?, 'ACTIVE')",
+                id,
+                moduleId,
+                title,
+                position);
+        jdbc.update(
+                "INSERT INTO student_topic_progress(student_program_id, topic_id, status) VALUES (?, ?, ?)",
+                fixture.studentProgramId(),
+                id,
+                status);
         return id;
     }
 
     private UUID session(Fixture fixture, String attendanceStatus, int durationMinutes) {
         UUID id = UUID.randomUUID();
-        jdbc.update("INSERT INTO lesson_sessions(id, student_program_id, teacher_id, started_at, duration_minutes, attendance_status) VALUES (?, ?, ?, now(), ?, ?)", id, fixture.studentProgramId(), fixture.teacherId(), durationMinutes, attendanceStatus);
+        jdbc.update(
+                "INSERT INTO lesson_sessions(id, student_program_id, teacher_id, started_at, duration_minutes, attendance_status) VALUES (?, ?, ?, now(), ?, ?)",
+                id,
+                fixture.studentProgramId(),
+                fixture.teacherId(),
+                durationMinutes,
+                attendanceStatus);
         return id;
     }
 
     private UUID homework(Fixture fixture, String status) {
         UUID id = UUID.randomUUID();
-        jdbc.update("INSERT INTO homeworks(id, student_program_id, assigned_by_teacher_id, title, status, completed_at) VALUES (?, ?, ?, 'Homework', ?, CASE WHEN ? = 'COMPLETED' THEN now() END)", id, fixture.studentProgramId(), fixture.teacherId(), status, status);
+        jdbc.update(
+                "INSERT INTO homeworks(id, student_program_id, assigned_by_teacher_id, title, status, completed_at) VALUES (?, ?, ?, 'Homework', ?, CASE WHEN ? = 'COMPLETED' THEN now() END)",
+                id,
+                fixture.studentProgramId(),
+                fixture.teacherId(),
+                status,
+                status);
         return id;
     }
 
     private UUID task(Fixture fixture, String title) {
         UUID id = UUID.randomUUID();
-        jdbc.update("INSERT INTO tasks(id, teacher_id, subject_id, title, description_markdown, task_type, status) VALUES (?, ?, ?, ?, 'Description', 'TEXT', 'ACTIVE')", id, fixture.teacherId(), fixture.subjectId(), title);
+        jdbc.update(
+                "INSERT INTO tasks(id, teacher_id, subject_id, title, description_markdown, task_type, status) VALUES (?, ?, ?, ?, 'Description', 'TEXT', 'ACTIVE')",
+                id,
+                fixture.teacherId(),
+                fixture.subjectId(),
+                title);
         return id;
     }
 
     private UUID item(UUID homeworkId, UUID taskId, int position) {
         UUID id = UUID.randomUUID();
-        jdbc.update("INSERT INTO homework_items(id, homework_id, task_id, position) VALUES (?, ?, ?, ?)", id, homeworkId, taskId, position);
+        jdbc.update(
+                "INSERT INTO homework_items(id, homework_id, task_id, position) VALUES (?, ?, ?, ?)",
+                id,
+                homeworkId,
+                taskId,
+                position);
         return id;
     }
 
-    private void submission(Fixture fixture, UUID taskId, UUID homeworkItemId, int attempt, String status) {
-        jdbc.update("INSERT INTO submissions(id, student_id, student_program_id, task_id, homework_item_id, attempt_no, status) VALUES (?, ?, ?, ?, ?, ?, ?)", UUID.randomUUID(), fixture.studentId(), fixture.studentProgramId(), taskId, homeworkItemId, attempt, status);
+    private void submission(
+            Fixture fixture, UUID taskId, UUID homeworkItemId, int attempt, String status) {
+        jdbc.update(
+                "INSERT INTO submissions(id, student_id, student_program_id, task_id, homework_item_id, attempt_no, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                UUID.randomUUID(),
+                fixture.studentId(),
+                fixture.studentProgramId(),
+                taskId,
+                homeworkItemId,
+                attempt,
+                status);
     }
 
-    private void assessment(UUID sessionId, Integer understanding, Integer independence, Integer practice, Integer homework) {
-        jdbc.update("INSERT INTO teacher_assessments(id, lesson_session_id, understanding_score, independence_score, practice_score, homework_score) VALUES (?, ?, ?, ?, ?, ?)", UUID.randomUUID(), sessionId, understanding, independence, practice, homework);
+    private void assessment(
+            UUID sessionId,
+            Integer understanding,
+            Integer independence,
+            Integer practice,
+            Integer homework) {
+        jdbc.update(
+                "INSERT INTO teacher_assessments(id, lesson_session_id, understanding_score, independence_score, practice_score, homework_score) VALUES (?, ?, ?, ?, ?, ?)",
+                UUID.randomUUID(),
+                sessionId,
+                understanding,
+                independence,
+                practice,
+                homework);
     }
 
     private int factCount(UUID studentProgramId) {
-        return jdbc.queryForObject("""
+        return jdbc.queryForObject(
+                """
             SELECT
                 (SELECT COUNT(*) FROM lesson_sessions WHERE student_program_id = ?) +
                 (SELECT COUNT(*) FROM student_topic_progress WHERE student_program_id = ?) +
@@ -331,9 +405,13 @@ class ProgressReadRepositoryIntegrationTest extends PostgresIntegrationTest {
                    FROM teacher_assessments assessment
                    JOIN lesson_sessions session ON session.id = assessment.lesson_session_id
                   WHERE session.student_program_id = ?)
-            """, Integer.class,
-            studentProgramId, studentProgramId, studentProgramId, studentProgramId, studentProgramId
-        );
+            """,
+                Integer.class,
+                studentProgramId,
+                studentProgramId,
+                studentProgramId,
+                studentProgramId,
+                studentProgramId);
     }
 
     private static void assertDecimal(BigDecimal actual, String expected) {
@@ -345,11 +423,9 @@ class ProgressReadRepositoryIntegrationTest extends PostgresIntegrationTest {
     }
 
     private record Fixture(
-        UUID teacherId,
-        UUID studentId,
-        UUID subjectId,
-        UUID learningProgramId,
-        UUID studentProgramId
-    ) {
-    }
+            UUID teacherId,
+            UUID studentId,
+            UUID subjectId,
+            UUID learningProgramId,
+            UUID studentProgramId) {}
 }

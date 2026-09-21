@@ -1,4 +1,3 @@
 package com.tutorplatform.homework.application.exception;
 
-public class HomeworkTaskNotAssignableException extends RuntimeException {
-}
+public class HomeworkTaskNotAssignableException extends RuntimeException {}

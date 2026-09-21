@@ -10,11 +10,10 @@ public interface LessonSessionQuery {
     Optional<LessonSessionContext> findContextByIdForUpdate(UUID lessonSessionId);
 
     LessonSessionPage findPageByTeacherAndStudent(
-        UUID teacherId,
-        UUID studentId,
-        int page,
-        int size,
-        String sortField,
-        boolean ascending
-    );
+            UUID teacherId,
+            UUID studentId,
+            int page,
+            int size,
+            String sortField,
+            boolean ascending);
 }

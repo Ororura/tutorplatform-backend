@@ -1,10 +1,9 @@
 package com.tutorplatform.auth.infrastructure.persistence;
 
-import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.stereotype.Repository;
-
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class CurrentUserQueryRepository {
@@ -16,7 +15,9 @@ public class CurrentUserQueryRepository {
     }
 
     public Optional<String> findDisplayName(UUID userId) {
-        return jdbcClient.sql("""
+        return jdbcClient
+                .sql(
+                        """
                 SELECT COALESCE(
                     teacher.display_name,
                     trim(concat_ws(' ', student.first_name, student.last_name))
@@ -26,8 +27,8 @@ public class CurrentUserQueryRepository {
                 LEFT JOIN students student ON student.user_id = users.id
                 WHERE users.id = :userId
                 """)
-            .param("userId", userId)
-            .query(String.class)
-            .optional();
+                .param("userId", userId)
+                .query(String.class)
+                .optional();
     }
 }

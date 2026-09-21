@@ -24,78 +24,50 @@ public class PublicTeacherInvitationAcceptanceController {
     private final AuthenticationSessionService sessionService;
 
     public PublicTeacherInvitationAcceptanceController(
-        TeacherRegistrationService registrationService,
-        AuthenticationSessionService sessionService
-    ) {
+            TeacherRegistrationService registrationService,
+            AuthenticationSessionService sessionService) {
         this.registrationService = registrationService;
         this.sessionService = sessionService;
     }
 
     @Operation(
-        operationId = "acceptTeacherInvitation",
-        summary = "Register a teacher using an invitation"
-    )
+            operationId = "acceptTeacherInvitation",
+            summary = "Register a teacher using an invitation")
     @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Teacher registered and authenticated"),
         @ApiResponse(
-            responseCode = "201",
-            description = "Teacher registered and authenticated"
-        ),
+                responseCode = "400",
+                description = "Validation failed",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(
-            responseCode = "400",
-            description = "Validation failed",
-            content = @Content(
-                schema = @Schema(implementation = ApiError.class)
-            )
-        ),
+                responseCode = "403",
+                description = "Invalid CSRF token",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(
-            responseCode = "403",
-            description = "Invalid CSRF token",
-            content = @Content(
-                schema = @Schema(implementation = ApiError.class)
-            )
-        ),
+                responseCode = "404",
+                description = "Invitation not found",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(
-            responseCode = "404",
-            description = "Invitation not found",
-            content = @Content(
-                schema = @Schema(implementation = ApiError.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "409",
-            description = "Invitation unavailable or email registered",
-            content = @Content(
-                schema = @Schema(implementation = ApiError.class)
-            )
-        )
+                responseCode = "409",
+                description = "Invitation unavailable or email registered",
+                content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     @PostMapping(
-        value = "/{token}/accept",
-        consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE
-    )
+            value = "/{token}/accept",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CurrentUserResponse> acceptInvitation(
-        @PathVariable String token,
-        @Valid @RequestBody AcceptTeacherInvitationRequest registration,
-        HttpServletRequest request,
-        HttpServletResponse response
-    ) {
-        String email = registrationService.registerInvitedTeacher(
-            token,
-            registration.displayName(),
-            registration.password()
-        );
+            @PathVariable String token,
+            @Valid @RequestBody AcceptTeacherInvitationRequest registration,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+        String email =
+                registrationService.registerInvitedTeacher(
+                        token, registration.displayName(), registration.password());
 
         CurrentUserResponse currentUser =
-            sessionService.authenticate(
-                email,
-                registration.password(),
-                request,
-                response
-            );
+                sessionService.authenticate(email, registration.password(), request, response);
 
-        return ResponseEntity.status(201)
-            .cacheControl(CacheControl.noStore())
-            .body(currentUser);
+        return ResponseEntity.status(201).cacheControl(CacheControl.noStore()).body(currentUser);
     }
 }

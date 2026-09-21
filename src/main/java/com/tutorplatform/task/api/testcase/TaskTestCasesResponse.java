@@ -1,7 +1,6 @@
 package com.tutorplatform.task.api.testcase;
 
 import com.tutorplatform.task.domain.programming.TaskTestCase;
-
 import java.util.List;
 
 public record TaskTestCasesResponse(List<TaskTestCaseResponse> items) {

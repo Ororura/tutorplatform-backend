@@ -27,13 +27,15 @@ public class PublicStudentInvitationController implements PublicStudentInvitatio
     }
 
     @Override
-    @PostMapping(value = "/{token}/accept", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(
+            value = "/{token}/accept",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public CurrentUserResponse acceptStudentInvitation(
-        @PathVariable String token,
-        @Valid @RequestBody AcceptStudentInviteRequest request,
-        HttpServletRequest servletRequest,
-        HttpServletResponse servletResponse
-    ) {
+            @PathVariable String token,
+            @Valid @RequestBody AcceptStudentInviteRequest request,
+            HttpServletRequest servletRequest,
+            HttpServletResponse servletResponse) {
         return invitationService.acceptInvitation(token, request, servletRequest, servletResponse);
     }
 }

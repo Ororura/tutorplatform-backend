@@ -6,24 +6,13 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record AcceptTeacherInvitationRequest(
+        @NotBlank @Size(min = 2, max = 160) @Schema(example = "Егор") String displayName,
+        @NotNull
+                @Size(min = 10, max = 128)
+                @Schema(example = "correct horse battery staple", format = "password")
+                String password) {
 
-    @NotBlank
-    @Size(min = 2, max = 160)
-    @Schema(example = "Егор")
-    String displayName,
-
-    @NotNull
-    @Size(min = 10, max = 128)
-    @Schema(
-        example = "correct horse battery staple",
-        format = "password"
-    )
-    String password
-
-) {
     public AcceptTeacherInvitationRequest {
-        displayName = displayName == null
-            ? null
-            : displayName.strip();
+        displayName = displayName == null ? null : displayName.strip();
     }
 }

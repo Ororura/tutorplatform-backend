@@ -4,12 +4,11 @@ import com.tutorplatform.task.domain.task.TaskEntity;
 import com.tutorplatform.task.domain.task.TaskRepository;
 import com.tutorplatform.task.domain.task.TaskStatus;
 import com.tutorplatform.task.domain.task.TaskType;
-import org.springframework.stereotype.Repository;
-
-import java.util.Set;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaTaskRepository implements TaskRepository {
@@ -32,7 +31,9 @@ public class JpaTaskRepository implements TaskRepository {
 
     @Override
     public Optional<TaskEntity> findOwnedById(UUID taskId, UUID teacherId) {
-        return databaseRepository.findByIdAndTeacherId(taskId, teacherId).map(TaskDatabaseModel::toEntity);
+        return databaseRepository
+                .findByIdAndTeacherId(taskId, teacherId)
+                .map(TaskDatabaseModel::toEntity);
     }
 
     @Override
@@ -41,8 +42,8 @@ public class JpaTaskRepository implements TaskRepository {
             return List.of();
         }
         return databaseRepository.findAllById(taskIds).stream()
-            .map(TaskDatabaseModel::toEntity)
-            .toList();
+                .map(TaskDatabaseModel::toEntity)
+                .toList();
     }
 
     @Override
@@ -52,13 +53,11 @@ public class JpaTaskRepository implements TaskRepository {
 
     @Override
     public List<TaskEntity> findAllByTeacherId(
-        UUID teacherId,
-        UUID subjectId,
-        TaskStatus status,
-        TaskType taskType
-    ) {
-        return databaseRepository.findAllByTeacherId(teacherId, subjectId, status, taskType).stream()
-            .map(TaskDatabaseModel::toEntity)
-            .toList();
+            UUID teacherId, UUID subjectId, TaskStatus status, TaskType taskType) {
+        return databaseRepository
+                .findAllByTeacherId(teacherId, subjectId, status, taskType)
+                .stream()
+                .map(TaskDatabaseModel::toEntity)
+                .toList();
     }
 }

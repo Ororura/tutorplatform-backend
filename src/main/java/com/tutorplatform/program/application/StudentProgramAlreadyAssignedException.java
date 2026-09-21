@@ -5,6 +5,5 @@ public class StudentProgramAlreadyAssignedException extends RuntimeException {
         super(cause);
     }
 
-    public StudentProgramAlreadyAssignedException() {
-    }
+    public StudentProgramAlreadyAssignedException() {}
 }

@@ -2,21 +2,21 @@ package com.tutorplatform.task.infrastructure.persistence.task;
 
 import com.tutorplatform.task.domain.task.TaskStatus;
 import com.tutorplatform.task.domain.task.TaskType;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 interface TaskDatabaseRepository extends JpaRepository<TaskDatabaseModel, UUID> {
 
     Optional<TaskDatabaseModel> findByIdAndTeacherId(UUID taskId, UUID teacherId);
 
-    @Query("""
+    @Query(
+            """
         select task
         from TaskDatabaseModel task
         where task.teacherId = :teacherId
@@ -26,13 +26,13 @@ interface TaskDatabaseRepository extends JpaRepository<TaskDatabaseModel, UUID> 
         order by task.createdAt desc
         """)
     List<TaskDatabaseModel> findAllByTeacherId(
-        @Param("teacherId") UUID teacherId,
-        @Param("subjectId") UUID subjectId,
-        @Param("status") TaskStatus status,
-        @Param("taskType") TaskType taskType
-    );
+            @Param("teacherId") UUID teacherId,
+            @Param("subjectId") UUID subjectId,
+            @Param("status") TaskStatus status,
+            @Param("taskType") TaskType taskType);
 
-    @Query("""
+    @Query(
+            """
         select task
         from TaskDatabaseModel task
         where task.teacherId = :teacherId
@@ -42,11 +42,10 @@ interface TaskDatabaseRepository extends JpaRepository<TaskDatabaseModel, UUID> 
           and (:difficulty is null or task.difficulty = :difficulty)
         """)
     Page<TaskDatabaseModel> findPageByTeacher(
-        @Param("teacherId") UUID teacherId,
-        @Param("taskType") TaskType taskType,
-        @Param("subjectId") UUID subjectId,
-        @Param("status") TaskStatus status,
-        @Param("difficulty") com.tutorplatform.task.domain.task.TaskDifficulty difficulty,
-        Pageable pageable
-    );
+            @Param("teacherId") UUID teacherId,
+            @Param("taskType") TaskType taskType,
+            @Param("subjectId") UUID subjectId,
+            @Param("status") TaskStatus status,
+            @Param("difficulty") com.tutorplatform.task.domain.task.TaskDifficulty difficulty,
+            Pageable pageable);
 }

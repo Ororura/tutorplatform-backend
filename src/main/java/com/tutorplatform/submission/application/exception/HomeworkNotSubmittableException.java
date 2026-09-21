@@ -1,4 +1,3 @@
 package com.tutorplatform.submission.application.exception;
 
-public class HomeworkNotSubmittableException extends RuntimeException {
-}
+public class HomeworkNotSubmittableException extends RuntimeException {}

@@ -2,10 +2,9 @@ package com.tutorplatform.program.infrastructure.persistence.learningprogram;
 
 import com.tutorplatform.program.domain.learningprogram.LearningProgramEntity;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaLearningProgramRepository implements LearningProgramRepository {
@@ -18,16 +17,22 @@ public class JpaLearningProgramRepository implements LearningProgramRepository {
 
     @Override
     public LearningProgramEntity saveAndFlush(LearningProgramEntity learningProgram) {
-        return databaseRepository.saveAndFlush(new LearningProgramDatabaseModel(learningProgram)).toEntity();
+        return databaseRepository
+                .saveAndFlush(new LearningProgramDatabaseModel(learningProgram))
+                .toEntity();
     }
 
     @Override
     public Optional<LearningProgramEntity> findById(UUID learningProgramId) {
-        return databaseRepository.findById(learningProgramId).map(LearningProgramDatabaseModel::toEntity);
+        return databaseRepository
+                .findById(learningProgramId)
+                .map(LearningProgramDatabaseModel::toEntity);
     }
 
     @Override
     public Optional<LearningProgramEntity> findByIdForUpdate(UUID learningProgramId) {
-        return databaseRepository.findWithLockById(learningProgramId).map(LearningProgramDatabaseModel::toEntity);
+        return databaseRepository
+                .findWithLockById(learningProgramId)
+                .map(LearningProgramDatabaseModel::toEntity);
     }
 }

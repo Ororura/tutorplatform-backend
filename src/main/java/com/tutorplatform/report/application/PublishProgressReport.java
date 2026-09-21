@@ -2,16 +2,15 @@ package com.tutorplatform.report.application;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.report.application.exception.ProgressReportNotFoundException;
-import com.tutorplatform.report.application.exception.ProgressReportVersionConflictException;
 import com.tutorplatform.report.application.exception.ProgressReportNotPublishableException;
+import com.tutorplatform.report.application.exception.ProgressReportVersionConflictException;
 import com.tutorplatform.report.domain.ProgressReport;
 import com.tutorplatform.report.domain.ProgressReportRepository;
+import java.time.Instant;
+import java.util.UUID;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.util.UUID;
 
 @Service
 public class PublishProgressReport {
@@ -20,21 +19,18 @@ public class PublishProgressReport {
     private final ProgressReportRepository repository;
 
     PublishProgressReport(
-        ProgressReportAuthorization authorization,
-        ProgressReportRepository repository
-    ) {
+            ProgressReportAuthorization authorization, ProgressReportRepository repository) {
         this.authorization = authorization;
         this.repository = repository;
     }
 
     @Transactional
     public ProgressReport publish(
-        AuthenticatedUser principal,
-        UUID studentId,
-        UUID studentProgramId,
-        UUID reportId,
-        long version
-    ) {
+            AuthenticatedUser principal,
+            UUID studentId,
+            UUID studentProgramId,
+            UUID reportId,
+            long version) {
         if (version < 0) {
             throw new IllegalArgumentException("version must not be negative");
         }
@@ -43,29 +39,24 @@ public class PublishProgressReport {
     }
 
     @Transactional
-    public ProgressReport publish(
-        AuthenticatedUser principal,
-        UUID reportId,
-        long version
-    ) {
+    public ProgressReport publish(AuthenticatedUser principal, UUID reportId, long version) {
         if (version < 0) {
             throw new IllegalArgumentException("version must not be negative");
         }
         UUID teacherId = authorization.currentTeacherId(principal);
-        ProgressReport current = repository.findOwnedById(reportId, teacherId)
-            .orElseThrow(ProgressReportNotFoundException::new);
+        ProgressReport current =
+                repository
+                        .findOwnedById(reportId, teacherId)
+                        .orElseThrow(ProgressReportNotFoundException::new);
         return publishCurrent(current, version);
     }
 
     private ProgressReport publishOwned(
-        UUID teacherId,
-        UUID studentProgramId,
-        UUID reportId,
-        long version
-    ) {
-        ProgressReport current = repository.findOwnedById(
-            reportId, studentProgramId, teacherId
-        ).orElseThrow(ProgressReportNotFoundException::new);
+            UUID teacherId, UUID studentProgramId, UUID reportId, long version) {
+        ProgressReport current =
+                repository
+                        .findOwnedById(reportId, studentProgramId, teacherId)
+                        .orElseThrow(ProgressReportNotFoundException::new);
         return publishCurrent(current, version);
     }
 

@@ -6,8 +6,5 @@ import jakarta.validation.constraints.PositiveOrZero;
 
 @Schema(name = "PublishProgressReportRequest")
 public record PublishProgressReportRequest(
-    @NotNull @PositiveOrZero
-    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, minimum = "0")
-    Long version
-) {
-}
+        @NotNull @PositiveOrZero @Schema(requiredMode = Schema.RequiredMode.REQUIRED, minimum = "0")
+                Long version) {}

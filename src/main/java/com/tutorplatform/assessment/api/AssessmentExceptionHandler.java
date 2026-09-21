@@ -16,25 +16,34 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class AssessmentExceptionHandler {
 
     @ExceptionHandler(TeacherAssessmentNotFoundException.class)
-    ResponseEntity<ApiError> handleAssessmentNotFound(TeacherAssessmentNotFoundException exception) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-            ApiError.of("ASSESSMENT_NOT_FOUND", "Assessment not found", MDC.get("traceId"))
-        );
+    ResponseEntity<ApiError> handleAssessmentNotFound(
+            TeacherAssessmentNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(
+                        ApiError.of(
+                                "ASSESSMENT_NOT_FOUND",
+                                "Assessment not found",
+                                MDC.get("traceId")));
     }
 
     @ExceptionHandler(InvalidTeacherAssessmentScoreException.class)
     ResponseEntity<ApiError> handleInvalidScore(InvalidTeacherAssessmentScoreException exception) {
-        return ResponseEntity.badRequest().body(
-            ApiError.of("ASSESSMENT_SCORE_INVALID", exception.getMessage(), MDC.get("traceId"))
-        );
+        return ResponseEntity.badRequest()
+                .body(
+                        ApiError.of(
+                                "ASSESSMENT_SCORE_INVALID",
+                                exception.getMessage(),
+                                MDC.get("traceId")));
     }
 
     @ExceptionHandler(TeacherAssessmentConflictException.class)
-    ResponseEntity<ApiError> handleAssessmentConflict(TeacherAssessmentConflictException exception) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiError.of(
-            "ASSESSMENT_CONFLICT",
-            "Assessment was modified by another request",
-            MDC.get("traceId")
-        ));
+    ResponseEntity<ApiError> handleAssessmentConflict(
+            TeacherAssessmentConflictException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(
+                        ApiError.of(
+                                "ASSESSMENT_CONFLICT",
+                                "Assessment was modified by another request",
+                                MDC.get("traceId")));
     }
 }
