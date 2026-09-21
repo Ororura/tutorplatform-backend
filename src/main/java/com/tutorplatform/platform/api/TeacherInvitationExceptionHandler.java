@@ -16,41 +16,33 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class TeacherInvitationExceptionHandler {
 
     @ExceptionHandler(TeacherInvitationNotFoundException.class)
-    ResponseEntity<ApiError> handleNotFound(
-        TeacherInvitationNotFoundException exception
-    ) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-            ApiError.of(
-                "TEACHER_INVITATION_NOT_FOUND",
-                exception.getMessage(),
-                MDC.get("traceId")
-            )
-        );
+    ResponseEntity<ApiError> handleNotFound(TeacherInvitationNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(
+                        ApiError.of(
+                                "TEACHER_INVITATION_NOT_FOUND",
+                                exception.getMessage(),
+                                MDC.get("traceId")));
     }
 
     @ExceptionHandler(TeacherInvitationNotActiveException.class)
-    ResponseEntity<ApiError> handleNotActive(
-        TeacherInvitationNotActiveException exception
-    ) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(
-            ApiError.of(
-                "TEACHER_INVITATION_NOT_ACTIVE",
-                exception.getMessage(),
-                MDC.get("traceId")
-            )
-        );
+    ResponseEntity<ApiError> handleNotActive(TeacherInvitationNotActiveException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(
+                        ApiError.of(
+                                "TEACHER_INVITATION_NOT_ACTIVE",
+                                exception.getMessage(),
+                                MDC.get("traceId")));
     }
 
     @ExceptionHandler(TeacherInvitationEmailAlreadyRegisteredException.class)
     ResponseEntity<ApiError> handleEmailRegistered(
-        TeacherInvitationEmailAlreadyRegisteredException exception
-    ) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(
-            ApiError.of(
-                "EMAIL_ALREADY_REGISTERED",
-                exception.getMessage(),
-                MDC.get("traceId")
-            )
-        );
+            TeacherInvitationEmailAlreadyRegisteredException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(
+                        ApiError.of(
+                                "EMAIL_ALREADY_REGISTERED",
+                                exception.getMessage(),
+                                MDC.get("traceId")));
     }
 }

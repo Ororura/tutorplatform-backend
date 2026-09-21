@@ -1,12 +1,11 @@
 package com.tutorplatform.assessment.infrastructure.persistence;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 interface TeacherAssessmentDatabaseRepository
-    extends JpaRepository<TeacherAssessmentDatabaseModel, UUID> {
+        extends JpaRepository<TeacherAssessmentDatabaseModel, UUID> {
 
     Optional<TeacherAssessmentDatabaseModel> findByLessonSessionId(UUID lessonSessionId);
 }

@@ -1,4 +1,3 @@
 package com.tutorplatform.session.application.exception;
 
-public class StudentProgramNotFoundException extends RuntimeException {
-}
+public class StudentProgramNotFoundException extends RuntimeException {}

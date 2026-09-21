@@ -3,9 +3,6 @@ package com.tutorplatform.student.infrastructure.persistence;
 import com.tutorplatform.student.domain.StudentAccountStatus;
 import com.tutorplatform.student.domain.StudentStatus;
 import com.tutorplatform.student.domain.TeacherStudentRelationType;
-import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.stereotype.Repository;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -13,11 +10,14 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class StudentQueryRepository {
 
-    private static final String ACCOUNT_STATUS_SQL = """
+    private static final String ACCOUNT_STATUS_SQL =
+            """
         CASE
             WHEN s.user_id IS NOT NULL THEN 'REGISTERED'
             WHEN EXISTS (
@@ -38,16 +38,42 @@ public class StudentQueryRepository {
         this.jdbcClient = jdbcClient;
     }
 
-    private static StudentSummaryRow mapSummary(ResultSet resultSet, int rowNumber) throws SQLException {
-        return new StudentSummaryRow(resultSet.getObject("id", UUID.class), resultSet.getString("first_name"), resultSet.getString("last_name"), StudentStatus.valueOf(resultSet.getString("status")), StudentAccountStatus.valueOf(resultSet.getString("account_status")), resultSet.getTimestamp("created_at").toInstant());
+    private static StudentSummaryRow mapSummary(ResultSet resultSet, int rowNumber)
+            throws SQLException {
+        return new StudentSummaryRow(
+                resultSet.getObject("id", UUID.class),
+                resultSet.getString("first_name"),
+                resultSet.getString("last_name"),
+                StudentStatus.valueOf(resultSet.getString("status")),
+                StudentAccountStatus.valueOf(resultSet.getString("account_status")),
+                resultSet.getTimestamp("created_at").toInstant());
     }
 
-    private static StudentDetailsRow mapDetails(ResultSet resultSet, int rowNumber) throws SQLException {
-        return new StudentDetailsRow(resultSet.getObject("id", UUID.class), resultSet.getString("first_name"), resultSet.getString("last_name"), StudentStatus.valueOf(resultSet.getString("status")), StudentAccountStatus.valueOf(resultSet.getString("account_status")), resultSet.getString("account_email"), TeacherStudentRelationType.valueOf(resultSet.getString("relation_type")), resultSet.getTimestamp("started_at").toInstant(), resultSet.getTimestamp("created_at").toInstant(), resultSet.getTimestamp("updated_at").toInstant());
+    private static StudentDetailsRow mapDetails(ResultSet resultSet, int rowNumber)
+            throws SQLException {
+        return new StudentDetailsRow(
+                resultSet.getObject("id", UUID.class),
+                resultSet.getString("first_name"),
+                resultSet.getString("last_name"),
+                StudentStatus.valueOf(resultSet.getString("status")),
+                StudentAccountStatus.valueOf(resultSet.getString("account_status")),
+                resultSet.getString("account_email"),
+                TeacherStudentRelationType.valueOf(resultSet.getString("relation_type")),
+                resultSet.getTimestamp("started_at").toInstant(),
+                resultSet.getTimestamp("created_at").toInstant(),
+                resultSet.getTimestamp("updated_at").toInstant());
     }
 
-    public StudentPage findStudents(UUID teacherId, int page, int size, String searchPattern, StudentAccountStatus accountStatus, String sortField, boolean ascending) {
-        String filters = ("""
+    public StudentPage findStudents(
+            UUID teacherId,
+            int page,
+            int size,
+            String searchPattern,
+            StudentAccountStatus accountStatus,
+            String sortField,
+            boolean ascending) {
+        String filters =
+                ("""
             FROM teacher_student_links link
             JOIN students s ON s.id = link.student_id
             WHERE link.teacher_id = :teacherId
@@ -57,9 +83,11 @@ public class StudentQueryRepository {
                    OR lower(s.first_name) LIKE :searchPattern ESCAPE '\\'
                    OR lower(COALESCE(s.last_name, '')) LIKE :searchPattern ESCAPE '\\')
               AND (:accountStatus IS NULL OR (%s) = :accountStatus)
-            """).formatted(ACCOUNT_STATUS_SQL);
+            """)
+                        .formatted(ACCOUNT_STATUS_SQL);
 
-        String selectSql = ("""
+        String selectSql =
+                ("""
             SELECT s.id,
                    s.first_name,
                    s.last_name,
@@ -76,17 +104,29 @@ public class StudentQueryRepository {
                 CASE WHEN :sortField = 'lastName' AND NOT :ascending THEN lower(s.last_name) END DESC NULLS LAST,
                 s.id ASC
             LIMIT :size OFFSET :offset
-            """).formatted(ACCOUNT_STATUS_SQL, filters);
+            """)
+                        .formatted(ACCOUNT_STATUS_SQL, filters);
 
-        long totalElements = statement("SELECT count(*) " + filters, teacherId, searchPattern, accountStatus).query(Long.class).single();
+        long totalElements =
+                statement("SELECT count(*) " + filters, teacherId, searchPattern, accountStatus)
+                        .query(Long.class)
+                        .single();
 
-        List<StudentSummaryRow> items = statement(selectSql, teacherId, searchPattern, accountStatus).param("sortField", sortField).param("ascending", ascending).param("size", size).param("offset", (long) page * size).query(StudentQueryRepository::mapSummary).list();
+        List<StudentSummaryRow> items =
+                statement(selectSql, teacherId, searchPattern, accountStatus)
+                        .param("sortField", sortField)
+                        .param("ascending", ascending)
+                        .param("size", size)
+                        .param("offset", (long) page * size)
+                        .query(StudentQueryRepository::mapSummary)
+                        .list();
 
         return new StudentPage(items, totalElements);
     }
 
     public Optional<StudentDetailsRow> findDetails(UUID teacherId, UUID studentId) {
-        String sql = ("""
+        String sql =
+                ("""
             SELECT s.id,
                    s.first_name,
                    s.last_name,
@@ -114,25 +154,48 @@ public class StudentQueryRepository {
               AND link.student_id = :studentId
               AND link.relation_type = 'PRIMARY'
               AND link.ended_at IS NULL
-            """).formatted(ACCOUNT_STATUS_SQL);
+            """)
+                        .formatted(ACCOUNT_STATUS_SQL);
 
-        return jdbcClient.sql(sql).param("teacherId", teacherId).param("studentId", studentId).query(StudentQueryRepository::mapDetails).optional();
+        return jdbcClient
+                .sql(sql)
+                .param("teacherId", teacherId)
+                .param("studentId", studentId)
+                .query(StudentQueryRepository::mapDetails)
+                .optional();
     }
 
-    private JdbcClient.StatementSpec statement(String sql, UUID teacherId, String searchPattern, StudentAccountStatus accountStatus) {
-        return jdbcClient.sql(sql).param("teacherId", teacherId).param("searchPattern", searchPattern, Types.VARCHAR).param("accountStatus", accountStatus == null ? null : accountStatus.name(), Types.VARCHAR);
+    private JdbcClient.StatementSpec statement(
+            String sql, UUID teacherId, String searchPattern, StudentAccountStatus accountStatus) {
+        return jdbcClient
+                .sql(sql)
+                .param("teacherId", teacherId)
+                .param("searchPattern", searchPattern, Types.VARCHAR)
+                .param(
+                        "accountStatus",
+                        accountStatus == null ? null : accountStatus.name(),
+                        Types.VARCHAR);
     }
 
-    public record StudentPage(List<StudentSummaryRow> items, long totalElements) {
-    }
+    public record StudentPage(List<StudentSummaryRow> items, long totalElements) {}
 
-    public record StudentSummaryRow(UUID id, String firstName, String lastName, StudentStatus status,
-                                    StudentAccountStatus accountStatus, Instant createdAt) {
-    }
+    public record StudentSummaryRow(
+            UUID id,
+            String firstName,
+            String lastName,
+            StudentStatus status,
+            StudentAccountStatus accountStatus,
+            Instant createdAt) {}
 
-    public record StudentDetailsRow(UUID id, String firstName, String lastName, StudentStatus status,
-                                    StudentAccountStatus accountStatus, String accountEmail,
-                                    TeacherStudentRelationType relationType, Instant relationStartedAt,
-                                    Instant createdAt, Instant updatedAt) {
-    }
+    public record StudentDetailsRow(
+            UUID id,
+            String firstName,
+            String lastName,
+            StudentStatus status,
+            StudentAccountStatus accountStatus,
+            String accountEmail,
+            TeacherStudentRelationType relationType,
+            Instant relationStartedAt,
+            Instant createdAt,
+            Instant updatedAt) {}
 }

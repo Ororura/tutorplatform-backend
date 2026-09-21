@@ -6,18 +6,16 @@ import com.tutorplatform.submission.domain.SubmissionEntity;
 import com.tutorplatform.submission.domain.SubmissionStatus;
 import com.tutorplatform.task.infrastructure.persistence.task.TaskDatabaseModel;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "submissions")
 public class SubmissionDatabaseModel {
 
-    @Id
-    private UUID id;
+    @Id private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "student_id", nullable = false, insertable = false, updatable = false)
@@ -27,7 +25,11 @@ public class SubmissionDatabaseModel {
     private UUID studentId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "student_program_id", nullable = false, insertable = false, updatable = false)
+    @JoinColumn(
+            name = "student_program_id",
+            nullable = false,
+            insertable = false,
+            updatable = false)
     private StudentProgramDatabaseModel studentProgram;
 
     @Column(name = "student_program_id", nullable = false, updatable = false)
@@ -60,8 +62,7 @@ public class SubmissionDatabaseModel {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    protected SubmissionDatabaseModel() {
-    }
+    protected SubmissionDatabaseModel() {}
 
     SubmissionDatabaseModel(SubmissionEntity submission) {
         id = Objects.requireNonNull(submission.getId());
@@ -77,8 +78,15 @@ public class SubmissionDatabaseModel {
 
     SubmissionEntity toEntity() {
         return new SubmissionEntity(
-            id, studentId, studentProgramId, taskId, homeworkItemId, attemptNo, status,
-            textAnswer, submittedAt, createdAt
-        );
+                id,
+                studentId,
+                studentProgramId,
+                taskId,
+                homeworkItemId,
+                attemptNo,
+                status,
+                textAnswer,
+                submittedAt,
+                createdAt);
     }
 }

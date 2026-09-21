@@ -40,8 +40,7 @@ public final class DemoDataIds {
     public static final UUID REPORT_SHARE = id("dc000000-0000-4000-8000-000000000002");
     public static final UUID EXPIRED_REPORT_SHARE = id("dc000000-0000-4000-8000-000000000003");
 
-    private DemoDataIds() {
-    }
+    private DemoDataIds() {}
 
     private static UUID id(String value) {
         return UUID.fromString(value);

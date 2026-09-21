@@ -7,39 +7,60 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.springframework.http.ResponseEntity;
-
 import java.util.UUID;
+import org.springframework.http.ResponseEntity;
 
 public interface TeacherAssessmentApi {
 
     @Operation(operationId = "getTeacherAssessment", summary = "Get a lesson session assessment")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Assessment details"),
-        @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(responseCode = "403", description = "Teacher role required", content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(responseCode = "404", description = "Lesson session or assessment not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
+        @ApiResponse(
+                responseCode = "401",
+                description = "Authentication required",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "403",
+                description = "Teacher role required",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Lesson session or assessment not found",
+                content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     TeacherAssessmentResponse getTeacherAssessment(
-        AuthenticatedUser principal,
-        UUID studentId,
-        UUID sessionId
-    );
+            AuthenticatedUser principal, UUID studentId, UUID sessionId);
 
-    @Operation(operationId = "saveTeacherAssessment", summary = "Create or replace a lesson session assessment")
+    @Operation(
+            operationId = "saveTeacherAssessment",
+            summary = "Create or replace a lesson session assessment")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Assessment updated"),
         @ApiResponse(responseCode = "201", description = "Assessment created"),
-        @ApiResponse(responseCode = "400", description = "Validation failed", content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(responseCode = "403", description = "Teacher role required", content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(responseCode = "404", description = "Lesson session not found", content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(responseCode = "409", description = "Concurrent assessment conflict", content = @Content(schema = @Schema(implementation = ApiError.class)))
+        @ApiResponse(
+                responseCode = "400",
+                description = "Validation failed",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "401",
+                description = "Authentication required",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "403",
+                description = "Teacher role required",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Lesson session not found",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "409",
+                description = "Concurrent assessment conflict",
+                content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     ResponseEntity<TeacherAssessmentResponse> saveTeacherAssessment(
-        AuthenticatedUser principal,
-        UUID studentId,
-        UUID sessionId,
-        SaveTeacherAssessmentRequest request
-    );
+            AuthenticatedUser principal,
+            UUID studentId,
+            UUID sessionId,
+            SaveTeacherAssessmentRequest request);
 }

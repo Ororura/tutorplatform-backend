@@ -4,19 +4,17 @@ import com.tutorplatform.student.domain.StudentEntity;
 import com.tutorplatform.student.domain.StudentStatus;
 import com.tutorplatform.user.infrastructure.persistence.UserDatabaseModel;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "students")
 public class StudentDatabaseModel {
 
-    @Id
-    private UUID id;
+    @Id private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", unique = true, insertable = false, updatable = false)
@@ -43,8 +41,7 @@ public class StudentDatabaseModel {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    protected StudentDatabaseModel() {
-    }
+    protected StudentDatabaseModel() {}
 
     StudentDatabaseModel(StudentEntity student) {
         this.id = Objects.requireNonNull(student.getId());
@@ -59,15 +56,7 @@ public class StudentDatabaseModel {
     }
 
     StudentEntity toEntity() {
-        return new StudentEntity(
-            id,
-            userId,
-            firstName,
-            lastName,
-            status,
-            createdAt,
-            updatedAt
-        );
+        return new StudentEntity(id, userId, firstName, lastName, status, createdAt, updatedAt);
     }
 
     public UUID getId() {

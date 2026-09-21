@@ -1,4 +1,3 @@
 package com.tutorplatform.report.application.exception;
 
-public class ReportShareNotFoundException extends RuntimeException {
-}
+public class ReportShareNotFoundException extends RuntimeException {}

@@ -5,15 +5,14 @@ import com.tutorplatform.homework.domain.HomeworkItemEntity;
 import com.tutorplatform.homework.domain.HomeworkRepository;
 import com.tutorplatform.homework.domain.HomeworkStatus;
 import com.tutorplatform.submission.application.SubmissionQuery;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class HomeworkCompletionService {
@@ -22,52 +21,52 @@ public class HomeworkCompletionService {
     private final SubmissionQuery submissionQuery;
 
     public HomeworkCompletionService(
-        HomeworkRepository homeworkRepository,
-        SubmissionQuery submissionQuery
-    ) {
+            HomeworkRepository homeworkRepository, SubmissionQuery submissionQuery) {
         this.homeworkRepository = homeworkRepository;
         this.submissionQuery = submissionQuery;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recalculate(
-        UUID homeworkItemId,
-        UUID studentId,
-        UUID studentProgramId,
-        UUID taskId
-    ) {
-        HomeworkEntity homework = homeworkRepository.findByHomeworkItemIdWithItems(homeworkItemId)
-            .orElse(null);
+            UUID homeworkItemId, UUID studentId, UUID studentProgramId, UUID taskId) {
+        HomeworkEntity homework =
+                homeworkRepository.findByHomeworkItemIdWithItems(homeworkItemId).orElse(null);
         if (homework == null
-            || homework.getStatus() != HomeworkStatus.ASSIGNED
-            || !homework.getStudentProgramId().equals(studentProgramId)) {
+                || homework.getStatus() != HomeworkStatus.ASSIGNED
+                || !homework.getStudentProgramId().equals(studentProgramId)) {
             return;
         }
-        HomeworkItemEntity triggeringItem = homework.getItems().stream()
-            .filter(item -> item.id().equals(homeworkItemId) && item.taskId().equals(taskId))
-            .findFirst()
-            .orElse(null);
+        HomeworkItemEntity triggeringItem =
+                homework.getItems().stream()
+                        .filter(
+                                item ->
+                                        item.id().equals(homeworkItemId)
+                                                && item.taskId().equals(taskId))
+                        .findFirst()
+                        .orElse(null);
         if (triggeringItem == null) {
             return;
         }
 
-        List<HomeworkItemEntity> requiredItems = homework.getItems().stream()
-            .filter(HomeworkItemEntity::required)
-            .toList();
+        List<HomeworkItemEntity> requiredItems =
+                homework.getItems().stream().filter(HomeworkItemEntity::required).toList();
         if (requiredItems.isEmpty()) {
             return;
         }
-        Set<UUID> requiredItemIds = requiredItems.stream()
-            .map(HomeworkItemEntity::id)
-            .collect(Collectors.toUnmodifiableSet());
-        Set<SubmissionQuery.PassedHomeworkItem> passedItems = submissionQuery.findPassedHomeworkItems(
-            studentId, studentProgramId, requiredItemIds
-        );
-        boolean allRequiredItemsPassed = requiredItems.stream().allMatch(requiredItem ->
-            passedItems.contains(new SubmissionQuery.PassedHomeworkItem(
-                requiredItem.id(), requiredItem.taskId()
-            ))
-        );
+        Set<UUID> requiredItemIds =
+                requiredItems.stream()
+                        .map(HomeworkItemEntity::id)
+                        .collect(Collectors.toUnmodifiableSet());
+        Set<SubmissionQuery.PassedHomeworkItem> passedItems =
+                submissionQuery.findPassedHomeworkItems(
+                        studentId, studentProgramId, requiredItemIds);
+        boolean allRequiredItemsPassed =
+                requiredItems.stream()
+                        .allMatch(
+                                requiredItem ->
+                                        passedItems.contains(
+                                                new SubmissionQuery.PassedHomeworkItem(
+                                                        requiredItem.id(), requiredItem.taskId())));
         if (allRequiredItemsPassed) {
             homework.complete(Instant.now());
             homeworkRepository.saveAndFlush(homework);

@@ -1,21 +1,20 @@
 package com.tutorplatform.test;
 
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.testcontainers.postgresql.PostgreSQLContainer;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class PostgresIntegrationTest {
 
     protected static final PostgreSQLContainer POSTGRES =
-        new PostgreSQLContainer("postgres:16-alpine")
-            .withCommand("postgres", "-c", "max_connections=500");
+            new PostgreSQLContainer("postgres:16-alpine")
+                    .withCommand("postgres", "-c", "max_connections=500");
 
     private static final Object DATABASE_LOCK = new Object();
 
@@ -24,8 +23,7 @@ public abstract class PostgresIntegrationTest {
     }
 
     public static void configurePostgres(
-        DynamicPropertyRegistry registry, String database, String flywayTarget
-    ) {
+            DynamicPropertyRegistry registry, String database, String flywayTarget) {
         ensureDatabase(database);
         registry.add("spring.datasource.url", () -> jdbcUrlForDatabase(database));
         registry.add("spring.datasource.username", POSTGRES::getUsername);
@@ -44,10 +42,14 @@ public abstract class PostgresIntegrationTest {
             throw new IllegalArgumentException("Invalid test database: " + database);
         }
         synchronized (DATABASE_LOCK) {
-            try (Connection connection = DriverManager.getConnection(
-                POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
-                 PreparedStatement query = connection.prepareStatement(
-                     "select 1 from pg_database where datname = ?")) {
+            try (Connection connection =
+                            DriverManager.getConnection(
+                                    POSTGRES.getJdbcUrl(),
+                                    POSTGRES.getUsername(),
+                                    POSTGRES.getPassword());
+                    PreparedStatement query =
+                            connection.prepareStatement(
+                                    "select 1 from pg_database where datname = ?")) {
                 query.setString(1, database);
                 if (!query.executeQuery().next()) {
                     try (Statement statement = connection.createStatement()) {
@@ -55,7 +57,8 @@ public abstract class PostgresIntegrationTest {
                     }
                 }
             } catch (SQLException exception) {
-                throw new IllegalStateException("Could not create test database " + database, exception);
+                throw new IllegalStateException(
+                        "Could not create test database " + database, exception);
             }
         }
     }

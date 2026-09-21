@@ -1,7 +1,6 @@
 package com.tutorplatform.progress.application;
 
 import com.tutorplatform.progress.domain.*;
-
 import java.util.List;
 import java.util.UUID;
 

@@ -4,27 +4,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-public record StudentProgramEntity(UUID id, UUID studentId, UUID learningProgramId, UUID assignedByTeacherId,
-                                   StudentProgramStatus status, int reportIntervalMinutes, Instant startedAt,
-                                   Instant completedAt, Long version, Instant createdAt, Instant updatedAt) {
-
-    public static final int DEFAULT_REPORT_INTERVAL_MINUTES = 480;
-
-    public StudentProgramEntity(
-        UUID id,
-        UUID studentId,
-        UUID learningProgramId,
-        UUID assignedByTeacherId,
-        StudentProgramStatus status,
-        int reportIntervalMinutes,
-        Instant startedAt,
-        Instant completedAt
-    ) {
-        this(id, studentId, learningProgramId, assignedByTeacherId, status, reportIntervalMinutes,
-            startedAt, completedAt, null, null, null);
-    }
-
-    public StudentProgramEntity(
+public record StudentProgramEntity(
         UUID id,
         UUID studentId,
         UUID learningProgramId,
@@ -35,8 +15,45 @@ public record StudentProgramEntity(UUID id, UUID studentId, UUID learningProgram
         Instant completedAt,
         Long version,
         Instant createdAt,
-        Instant updatedAt
-    ) {
+        Instant updatedAt) {
+
+    public static final int DEFAULT_REPORT_INTERVAL_MINUTES = 480;
+
+    public StudentProgramEntity(
+            UUID id,
+            UUID studentId,
+            UUID learningProgramId,
+            UUID assignedByTeacherId,
+            StudentProgramStatus status,
+            int reportIntervalMinutes,
+            Instant startedAt,
+            Instant completedAt) {
+        this(
+                id,
+                studentId,
+                learningProgramId,
+                assignedByTeacherId,
+                status,
+                reportIntervalMinutes,
+                startedAt,
+                completedAt,
+                null,
+                null,
+                null);
+    }
+
+    public StudentProgramEntity(
+            UUID id,
+            UUID studentId,
+            UUID learningProgramId,
+            UUID assignedByTeacherId,
+            StudentProgramStatus status,
+            int reportIntervalMinutes,
+            Instant startedAt,
+            Instant completedAt,
+            Long version,
+            Instant createdAt,
+            Instant updatedAt) {
         this.id = Objects.requireNonNull(id);
         this.studentId = Objects.requireNonNull(studentId);
         this.learningProgramId = Objects.requireNonNull(learningProgramId);

@@ -1,4 +1,3 @@
 package com.tutorplatform.report.application.exception;
 
-public class InvalidReportShareExpirationException extends RuntimeException {
-}
+public class InvalidReportShareExpirationException extends RuntimeException {}

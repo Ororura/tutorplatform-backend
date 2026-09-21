@@ -3,19 +3,17 @@ package com.tutorplatform.task.infrastructure.persistence.skill;
 import com.tutorplatform.subject.infrastructure.persistence.SubjectDatabaseModel;
 import com.tutorplatform.task.domain.skill.SkillEntity;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "skills")
 public class SkillDatabaseModel {
 
-    @Id
-    private UUID id;
+    @Id private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "subject_id", nullable = false, insertable = false, updatable = false)
@@ -30,8 +28,7 @@ public class SkillDatabaseModel {
     @Column(nullable = false, length = 160)
     private String name;
 
-    @Column
-    private String description;
+    @Column private String description;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -41,8 +38,7 @@ public class SkillDatabaseModel {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    protected SkillDatabaseModel() {
-    }
+    protected SkillDatabaseModel() {}
 
     SkillDatabaseModel(SkillEntity skill) {
         id = Objects.requireNonNull(skill.id());

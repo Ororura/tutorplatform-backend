@@ -2,10 +2,9 @@ package com.tutorplatform.shared.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
 
 @Component
 public class ApiErrorWriter {

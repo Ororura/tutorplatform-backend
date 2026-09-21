@@ -22,11 +22,10 @@ public class AuthenticationSessionService {
     private final CurrentUserService currentUserService;
 
     public AuthenticationSessionService(
-        AuthenticationManager authenticationManager,
-        SessionAuthenticationStrategy sessionAuthenticationStrategy,
-        SecurityContextRepository securityContextRepository,
-        CurrentUserService currentUserService
-    ) {
+            AuthenticationManager authenticationManager,
+            SessionAuthenticationStrategy sessionAuthenticationStrategy,
+            SecurityContextRepository securityContextRepository,
+            CurrentUserService currentUserService) {
         this.authenticationManager = authenticationManager;
         this.sessionAuthenticationStrategy = sessionAuthenticationStrategy;
         this.securityContextRepository = securityContextRepository;
@@ -34,16 +33,15 @@ public class AuthenticationSessionService {
     }
 
     public CurrentUserResponse authenticate(
-        String email,
-        String password,
-        HttpServletRequest request,
-        HttpServletResponse response
-    ) {
+            String email,
+            String password,
+            HttpServletRequest request,
+            HttpServletResponse response) {
         Authentication authentication;
         try {
-            authentication = authenticationManager.authenticate(
-                UsernamePasswordAuthenticationToken.unauthenticated(email, password)
-            );
+            authentication =
+                    authenticationManager.authenticate(
+                            UsernamePasswordAuthenticationToken.unauthenticated(email, password));
         } catch (AuthenticationException exception) {
             throw new InvalidCredentialsException();
         }

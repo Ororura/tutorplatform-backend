@@ -5,17 +5,15 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.Instant;
 import java.util.UUID;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "report_shares")
 public class ReportShareDatabaseModel {
 
-    @Id
-    private UUID id;
+    @Id private UUID id;
 
     @Column(name = "report_id", nullable = false)
     private UUID reportId;
@@ -36,8 +34,7 @@ public class ReportShareDatabaseModel {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    protected ReportShareDatabaseModel() {
-    }
+    protected ReportShareDatabaseModel() {}
 
     ReportShareDatabaseModel(ReportShare share) {
         id = share.id();
@@ -51,7 +48,6 @@ public class ReportShareDatabaseModel {
 
     ReportShare toDomain() {
         return new ReportShare(
-            id, reportId, createdByTeacherId, tokenHash, expiresAt, revokedAt, createdAt
-        );
+                id, reportId, createdByTeacherId, tokenHash, expiresAt, revokedAt, createdAt);
     }
 }

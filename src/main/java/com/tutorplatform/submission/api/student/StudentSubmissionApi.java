@@ -10,67 +10,126 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.springframework.http.ResponseEntity;
-
 import java.util.UUID;
+import org.springframework.http.ResponseEntity;
 
 public interface StudentSubmissionApi {
 
-    @Operation(operationId = "submitTextAnswer", summary = "Submit a TEXT answer for a homework task")
+    @Operation(
+            operationId = "submitTextAnswer",
+            summary = "Submit a TEXT answer for a homework task")
     @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "TEXT submission created for teacher review"),
-        @ApiResponse(responseCode = "400", description = "Validation or submission context error", content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(responseCode = "403", description = "Student role or CSRF token required", content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(responseCode = "404", description = "Task or homework item not found", content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(responseCode = "409", description = "Homework does not accept submissions", content = @Content(schema = @Schema(implementation = ApiError.class)))
+        @ApiResponse(
+                responseCode = "201",
+                description = "TEXT submission created for teacher review"),
+        @ApiResponse(
+                responseCode = "400",
+                description = "Validation or submission context error",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "401",
+                description = "Authentication required",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "403",
+                description = "Student role or CSRF token required",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Task or homework item not found",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "409",
+                description = "Homework does not accept submissions",
+                content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     ResponseEntity<StudentSubmissionResponse> submitTextAnswer(
-        @Parameter(hidden = true) AuthenticatedUser principal,
-        @Parameter(schema = @Schema(format = "uuid")) UUID taskId,
-        SubmitTextAnswerRequest request
-    );
+            @Parameter(hidden = true) AuthenticatedUser principal,
+            @Parameter(schema = @Schema(format = "uuid")) UUID taskId,
+            SubmitTextAnswerRequest request);
 
-    @Operation(operationId = "submitCodeAnswer", summary = "Submit and execute a CODE solution for a homework or topic task")
+    @Operation(
+            operationId = "submitCodeAnswer",
+            summary = "Submit and execute a CODE solution for a homework or topic task")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "CODE submission created and executed"),
-        @ApiResponse(responseCode = "400", description = "Validation or submission context error", content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(responseCode = "403", description = "Student role or CSRF token required", content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(responseCode = "404", description = "Task, homework item, student program, or topic not found", content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(responseCode = "409", description = "Homework does not accept submissions", content = @Content(schema = @Schema(implementation = ApiError.class)))
+        @ApiResponse(
+                responseCode = "400",
+                description = "Validation or submission context error",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "401",
+                description = "Authentication required",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "403",
+                description = "Student role or CSRF token required",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Task, homework item, student program, or topic not found",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "409",
+                description = "Homework does not accept submissions",
+                content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     ResponseEntity<StudentSubmissionResponse> submitCodeAnswer(
-        @Parameter(hidden = true) AuthenticatedUser principal,
-        @Parameter(schema = @Schema(format = "uuid")) UUID taskId,
-        SubmitCodeAnswerRequest request
-    );
+            @Parameter(hidden = true) AuthenticatedUser principal,
+            @Parameter(schema = @Schema(format = "uuid")) UUID taskId,
+            SubmitCodeAnswerRequest request);
 
-    @Operation(operationId = "listStudentTaskSubmissions", summary = "List the current student's task submissions")
+    @Operation(
+            operationId = "listStudentTaskSubmissions",
+            summary = "List the current student's task submissions")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Student submission page"),
-        @ApiResponse(responseCode = "400", description = "Invalid pagination or context", content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(responseCode = "403", description = "Student role required", content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(responseCode = "404", description = "Task or homework item not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
+        @ApiResponse(
+                responseCode = "400",
+                description = "Invalid pagination or context",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "401",
+                description = "Authentication required",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "403",
+                description = "Student role required",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Task or homework item not found",
+                content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     StudentSubmissionPageResponse listStudentTaskSubmissions(
-        @Parameter(hidden = true) AuthenticatedUser principal,
-        @Parameter(schema = @Schema(format = "uuid")) UUID taskId,
-        @Parameter(description = "Optional homework item context", schema = @Schema(format = "uuid")) UUID homeworkItemId,
-        @Parameter(description = "Zero-based page index", example = "0") int page,
-        @Parameter(description = "Page size from 1 to 100", example = "20") int size
-    );
+            @Parameter(hidden = true) AuthenticatedUser principal,
+            @Parameter(schema = @Schema(format = "uuid")) UUID taskId,
+            @Parameter(
+                            description = "Optional homework item context",
+                            schema = @Schema(format = "uuid"))
+                    UUID homeworkItemId,
+            @Parameter(description = "Zero-based page index", example = "0") int page,
+            @Parameter(description = "Page size from 1 to 100", example = "20") int size);
 
-    @Operation(operationId = "getStudentSubmission", summary = "Get one submission owned by the current student")
+    @Operation(
+            operationId = "getStudentSubmission",
+            summary = "Get one submission owned by the current student")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Student submission"),
-        @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(responseCode = "403", description = "Student role required", content = @Content(schema = @Schema(implementation = ApiError.class))),
-        @ApiResponse(responseCode = "404", description = "Submission not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
+        @ApiResponse(
+                responseCode = "401",
+                description = "Authentication required",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "403",
+                description = "Student role required",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Submission not found",
+                content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     StudentSubmissionResponse getStudentSubmission(
-        @Parameter(hidden = true) AuthenticatedUser principal,
-        @Parameter(schema = @Schema(format = "uuid")) UUID submissionId
-    );
+            @Parameter(hidden = true) AuthenticatedUser principal,
+            @Parameter(schema = @Schema(format = "uuid")) UUID submissionId);
 }

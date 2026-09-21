@@ -1,4 +1,3 @@
 package com.tutorplatform.progress.application.exception;
 
-public class ProgressShareExpiredException extends RuntimeException {
-}
+public class ProgressShareExpiredException extends RuntimeException {}

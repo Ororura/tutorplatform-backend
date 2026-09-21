@@ -3,11 +3,10 @@ package com.tutorplatform.submission.infrastructure.persistence;
 import com.tutorplatform.submission.domain.CodeExecutionStatus;
 import com.tutorplatform.submission.domain.CodeSubmissionEntity;
 import jakarta.persistence.*;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "code_submissions")
@@ -43,8 +42,7 @@ class CodeSubmissionDatabaseModel {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    protected CodeSubmissionDatabaseModel() {
-    }
+    protected CodeSubmissionDatabaseModel() {}
 
     CodeSubmissionDatabaseModel(CodeSubmissionEntity entity) {
         submissionId = Objects.requireNonNull(entity.getSubmissionId());
@@ -60,8 +58,14 @@ class CodeSubmissionDatabaseModel {
 
     CodeSubmissionEntity toEntity() {
         return new CodeSubmissionEntity(
-            submissionId, sourceCode, executionStatus, passedTests, totalTests,
-            executionTimeMs, stdoutExcerpt, stderrExcerpt, updatedAt
-        );
+                submissionId,
+                sourceCode,
+                executionStatus,
+                passedTests,
+                totalTests,
+                executionTimeMs,
+                stdoutExcerpt,
+                stderrExcerpt,
+                updatedAt);
     }
 }

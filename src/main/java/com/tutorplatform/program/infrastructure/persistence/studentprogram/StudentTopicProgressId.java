@@ -2,7 +2,6 @@ package com.tutorplatform.program.infrastructure.persistence.studentprogram;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
@@ -16,8 +15,7 @@ public class StudentTopicProgressId implements Serializable {
     @Column(name = "topic_id", nullable = false)
     private UUID topicId;
 
-    protected StudentTopicProgressId() {
-    }
+    protected StudentTopicProgressId() {}
 
     public StudentTopicProgressId(UUID studentProgramId, UUID topicId) {
         this.studentProgramId = Objects.requireNonNull(studentProgramId);

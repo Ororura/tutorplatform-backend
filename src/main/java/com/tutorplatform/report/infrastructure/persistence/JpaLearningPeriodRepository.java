@@ -3,11 +3,10 @@ package com.tutorplatform.report.infrastructure.persistence;
 import com.tutorplatform.report.domain.LearningPeriod;
 import com.tutorplatform.report.domain.LearningPeriodRepository;
 import com.tutorplatform.report.domain.LearningPeriodStatus;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaLearningPeriodRepository implements LearningPeriodRepository {
@@ -30,28 +29,32 @@ public class JpaLearningPeriodRepository implements LearningPeriodRepository {
 
     @Override
     public Optional<LearningPeriod> findActiveByStudentProgramId(UUID studentProgramId) {
-        return databaseRepository.findByStudentProgramIdAndStatus(
-            studentProgramId, LearningPeriodStatus.ACTIVE
-        ).map(LearningPeriodDatabaseModel::toDomain);
+        return databaseRepository
+                .findByStudentProgramIdAndStatus(studentProgramId, LearningPeriodStatus.ACTIVE)
+                .map(LearningPeriodDatabaseModel::toDomain);
     }
 
     @Override
     public Optional<LearningPeriod> findActiveByStudentProgramIdForUpdate(UUID studentProgramId) {
-        return databaseRepository.findWithLockByStudentProgramIdAndStatus(
-            studentProgramId, LearningPeriodStatus.ACTIVE
-        ).map(LearningPeriodDatabaseModel::toDomain);
+        return databaseRepository
+                .findWithLockByStudentProgramIdAndStatus(
+                        studentProgramId, LearningPeriodStatus.ACTIVE)
+                .map(LearningPeriodDatabaseModel::toDomain);
     }
 
     @Override
     public Optional<LearningPeriod> findLatestByStudentProgramId(UUID studentProgramId) {
-        return databaseRepository.findTopByStudentProgramIdOrderBySequenceNoDesc(studentProgramId)
-            .map(LearningPeriodDatabaseModel::toDomain);
+        return databaseRepository
+                .findTopByStudentProgramIdOrderBySequenceNoDesc(studentProgramId)
+                .map(LearningPeriodDatabaseModel::toDomain);
     }
 
     @Override
     public List<LearningPeriod> findAllByStudentProgramIdOrderBySequenceNo(UUID studentProgramId) {
-        return databaseRepository.findAllByStudentProgramIdOrderBySequenceNo(studentProgramId).stream()
-            .map(LearningPeriodDatabaseModel::toDomain)
-            .toList();
+        return databaseRepository
+                .findAllByStudentProgramIdOrderBySequenceNo(studentProgramId)
+                .stream()
+                .map(LearningPeriodDatabaseModel::toDomain)
+                .toList();
     }
 }

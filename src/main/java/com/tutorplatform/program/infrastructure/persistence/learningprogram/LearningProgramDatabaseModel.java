@@ -5,19 +5,17 @@ import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
 import com.tutorplatform.subject.infrastructure.persistence.SubjectDatabaseModel;
 import com.tutorplatform.user.infrastructure.persistence.TeacherDatabaseModel;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "learning_programs")
 public class LearningProgramDatabaseModel {
 
-    @Id
-    private UUID id;
+    @Id private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "teacher_id", nullable = false, insertable = false, updatable = false)
@@ -36,8 +34,7 @@ public class LearningProgramDatabaseModel {
     @Column(nullable = false, length = 200)
     private String title;
 
-    @Column
-    private String description;
+    @Column private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 24)
@@ -55,8 +52,7 @@ public class LearningProgramDatabaseModel {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    protected LearningProgramDatabaseModel() {
-    }
+    protected LearningProgramDatabaseModel() {}
 
     LearningProgramDatabaseModel(LearningProgramEntity learningProgram) {
         id = Objects.requireNonNull(learningProgram.getId());
@@ -74,7 +70,14 @@ public class LearningProgramDatabaseModel {
 
     LearningProgramEntity toEntity() {
         return new LearningProgramEntity(
-            id, teacherId, subjectId, title, description, status, version, createdAt, updatedAt
-        );
+                id,
+                teacherId,
+                subjectId,
+                title,
+                description,
+                status,
+                version,
+                createdAt,
+                updatedAt);
     }
 }

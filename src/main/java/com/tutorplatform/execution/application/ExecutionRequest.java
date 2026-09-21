@@ -5,13 +5,12 @@ import java.util.Objects;
 import java.util.UUID;
 
 public record ExecutionRequest(
-    UUID executionId,
-    ExecutionLanguage language,
-    String sourceCode,
-    int timeLimitMs,
-    int memoryLimitMb,
-    List<ExecutionTestCase> testCases
-) {
+        UUID executionId,
+        ExecutionLanguage language,
+        String sourceCode,
+        int timeLimitMs,
+        int memoryLimitMb,
+        List<ExecutionTestCase> testCases) {
     public static final int MIN_TIME_LIMIT_MS = 100;
     public static final int MAX_TIME_LIMIT_MS = 30_000;
     public static final int MIN_MEMORY_LIMIT_MB = 16;

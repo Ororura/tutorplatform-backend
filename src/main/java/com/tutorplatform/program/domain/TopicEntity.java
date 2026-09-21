@@ -4,21 +4,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-public record TopicEntity(UUID id, UUID moduleId, String title, String description, int position, TopicStatus status,
-                          Long version, Instant createdAt, Instant updatedAt) {
-
-    public TopicEntity(
-        UUID id,
-        UUID moduleId,
-        String title,
-        String description,
-        int position,
-        TopicStatus status
-    ) {
-        this(id, moduleId, title, description, position, status, null, null, null);
-    }
-
-    public TopicEntity(
+public record TopicEntity(
         UUID id,
         UUID moduleId,
         String title,
@@ -27,8 +13,28 @@ public record TopicEntity(UUID id, UUID moduleId, String title, String descripti
         TopicStatus status,
         Long version,
         Instant createdAt,
-        Instant updatedAt
-    ) {
+        Instant updatedAt) {
+
+    public TopicEntity(
+            UUID id,
+            UUID moduleId,
+            String title,
+            String description,
+            int position,
+            TopicStatus status) {
+        this(id, moduleId, title, description, position, status, null, null, null);
+    }
+
+    public TopicEntity(
+            UUID id,
+            UUID moduleId,
+            String title,
+            String description,
+            int position,
+            TopicStatus status,
+            Long version,
+            Instant createdAt,
+            Instant updatedAt) {
         this.id = Objects.requireNonNull(id);
         this.moduleId = Objects.requireNonNull(moduleId);
         this.title = Objects.requireNonNull(title);

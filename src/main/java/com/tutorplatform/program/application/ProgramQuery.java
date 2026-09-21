@@ -13,25 +13,19 @@ public interface ProgramQuery {
 
     boolean topicBelongsToLearningProgram(UUID topicId, UUID learningProgramId);
 
-    record TopicContext(
-        UUID id,
-        UUID learningProgramId,
-        UUID teacherId,
-        UUID subjectId
-    ) {
+    record TopicContext(UUID id, UUID learningProgramId, UUID teacherId, UUID subjectId) {
         public boolean isOwnedBy(UUID expectedTeacherId) {
             return teacherId.equals(expectedTeacherId);
         }
     }
 
     record StudentProgramContext(
-        UUID id,
-        UUID studentId,
-        UUID learningProgramId,
-        UUID assignedByTeacherId,
-        UUID subjectId,
-        int reportIntervalMinutes
-    ) {
+            UUID id,
+            UUID studentId,
+            UUID learningProgramId,
+            UUID assignedByTeacherId,
+            UUID subjectId,
+            int reportIntervalMinutes) {
         public boolean belongsToStudent(UUID expectedStudentId) {
             return studentId.equals(expectedStudentId);
         }

@@ -4,22 +4,28 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-public record ModuleEntity(UUID id, UUID learningProgramId, String title, String description, int position,
-                           Instant createdAt, Instant updatedAt) {
-
-    public ModuleEntity(UUID id, UUID learningProgramId, String title, String description, int position) {
-        this(id, learningProgramId, title, description, position, null, null);
-    }
-
-    public ModuleEntity(
+public record ModuleEntity(
         UUID id,
         UUID learningProgramId,
         String title,
         String description,
         int position,
         Instant createdAt,
-        Instant updatedAt
-    ) {
+        Instant updatedAt) {
+
+    public ModuleEntity(
+            UUID id, UUID learningProgramId, String title, String description, int position) {
+        this(id, learningProgramId, title, description, position, null, null);
+    }
+
+    public ModuleEntity(
+            UUID id,
+            UUID learningProgramId,
+            String title,
+            String description,
+            int position,
+            Instant createdAt,
+            Instant updatedAt) {
         this.id = Objects.requireNonNull(id);
         this.learningProgramId = Objects.requireNonNull(learningProgramId);
         this.title = Objects.requireNonNull(title);

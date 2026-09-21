@@ -2,10 +2,9 @@ package com.tutorplatform.platform.infrastructure.persistence;
 
 import com.tutorplatform.platform.domain.PlatformSettings;
 import com.tutorplatform.platform.domain.RegistrationMode;
+import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
-
-import java.util.UUID;
 
 @Repository
 public class PlatformSettingsRepository {
@@ -16,22 +15,26 @@ public class PlatformSettingsRepository {
         this.jdbcClient = jdbcClient;
     }
 
-
     public RegistrationMode getRegistrationModeForRegistration() {
-        String mode = jdbcClient.sql("""
+        String mode =
+                jdbcClient
+                        .sql(
+                                """
                 SELECT registration_mode
                 FROM platform_settings
                 WHERE id = 1
                 FOR SHARE
                 """)
-            .query(String.class)
-            .single();
+                        .query(String.class)
+                        .single();
 
         return RegistrationMode.valueOf(mode);
     }
 
     public PlatformSettings getSettings() {
-        return jdbcClient.sql("""
+        return jdbcClient
+                .sql(
+                        """
                 SELECT
                     registration_mode,
                     updated_at,
@@ -39,21 +42,20 @@ public class PlatformSettingsRepository {
                 FROM platform_settings
                 WHERE id = 1
                 """)
-            .query((rs, rowNum) -> new PlatformSettings(
-                RegistrationMode.valueOf(
-                    rs.getString("registration_mode")
-                ),
-                rs.getTimestamp("updated_at").toInstant(),
-                rs.getObject("updated_by_admin_id", UUID.class)
-            ))
-            .single();
+                .query(
+                        (rs, rowNum) ->
+                                new PlatformSettings(
+                                        RegistrationMode.valueOf(rs.getString("registration_mode")),
+                                        rs.getTimestamp("updated_at").toInstant(),
+                                        rs.getObject("updated_by_admin_id", UUID.class)))
+                .single();
     }
 
-    public void updateRegistrationMode(
-        RegistrationMode mode,
-        UUID adminId
-    ) {
-        int updated = jdbcClient.sql("""
+    public void updateRegistrationMode(RegistrationMode mode, UUID adminId) {
+        int updated =
+                jdbcClient
+                        .sql(
+                                """
                 UPDATE platform_settings
                 SET
                     registration_mode = :mode,
@@ -61,14 +63,12 @@ public class PlatformSettingsRepository {
                     updated_by_admin_id = :adminId
                 WHERE id = 1
                 """)
-            .param("mode", mode.name())
-            .param("adminId", adminId)
-            .update();
+                        .param("mode", mode.name())
+                        .param("adminId", adminId)
+                        .update();
 
         if (updated != 1) {
-            throw new IllegalStateException(
-                "Platform settings row is missing"
-            );
+            throw new IllegalStateException("Platform settings row is missing");
         }
     }
 }

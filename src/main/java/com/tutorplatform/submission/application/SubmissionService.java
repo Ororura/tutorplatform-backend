@@ -2,28 +2,26 @@ package com.tutorplatform.submission.application;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.program.application.ProgramQuery;
-import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.student.application.management.StudentNotFoundException;
+import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.submission.application.exception.*;
 import com.tutorplatform.submission.domain.*;
 import com.tutorplatform.task.application.TaskQuery;
 import com.tutorplatform.task.application.exception.TaskNotFoundException;
 import com.tutorplatform.task.domain.task.TaskType;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
 public class SubmissionService {
 
-    private static final Set<String> TEACHER_SORT_FIELDS = Set.of(
-        "submittedAt", "attemptNo", "status"
-    );
+    private static final Set<String> TEACHER_SORT_FIELDS =
+            Set.of("submittedAt", "attemptNo", "status");
 
     private final StudentOwnershipQuery studentOwnershipQuery;
     private final TaskQuery taskQuery;
@@ -34,14 +32,13 @@ public class SubmissionService {
     private final ApplicationEventPublisher eventPublisher;
 
     public SubmissionService(
-        StudentOwnershipQuery studentOwnershipQuery,
-        TaskQuery taskQuery,
-        SubmissionHomeworkContextQuery homeworkContextQuery,
-        ProgramQuery programQuery,
-        SubmissionRepository submissionRepository,
-        CodeSubmissionRepository codeSubmissionRepository,
-        ApplicationEventPublisher eventPublisher
-    ) {
+            StudentOwnershipQuery studentOwnershipQuery,
+            TaskQuery taskQuery,
+            SubmissionHomeworkContextQuery homeworkContextQuery,
+            ProgramQuery programQuery,
+            SubmissionRepository submissionRepository,
+            CodeSubmissionRepository codeSubmissionRepository,
+            ApplicationEventPublisher eventPublisher) {
         this.studentOwnershipQuery = studentOwnershipQuery;
         this.taskQuery = taskQuery;
         this.homeworkContextQuery = homeworkContextQuery;
@@ -53,11 +50,7 @@ public class SubmissionService {
 
     @Transactional
     public SubmissionResult submitTextAnswer(
-        AuthenticatedUser principal,
-        UUID taskId,
-        UUID homeworkItemId,
-        String textAnswer
-    ) {
+            AuthenticatedUser principal, UUID taskId, UUID homeworkItemId, String textAnswer) {
         if (homeworkItemId == null) {
             throw new InvalidSubmissionException("homeworkItemId", "must not be null");
         }
@@ -66,106 +59,121 @@ public class SubmissionService {
         }
         UUID studentId = currentStudentId(principal);
         requireTextTask(taskId);
-        SubmissionHomeworkContextQuery.HomeworkSubmissionContext homework = requireHomeworkContext(
-            studentId, taskId, homeworkItemId
-        );
+        SubmissionHomeworkContextQuery.HomeworkSubmissionContext homework =
+                requireHomeworkContext(studentId, taskId, homeworkItemId);
         if (homework.cancelled() || homework.completed()) {
             throw new HomeworkNotSubmittableException();
         }
 
-        SubmissionAttemptContext attemptContext = new SubmissionAttemptContext(
-            studentId, homework.studentProgramId(), taskId, homeworkItemId
-        );
+        SubmissionAttemptContext attemptContext =
+                new SubmissionAttemptContext(
+                        studentId, homework.studentProgramId(), taskId, homeworkItemId);
         int attemptNo = submissionRepository.nextAttemptNo(attemptContext);
-        SubmissionEntity saved = submissionRepository.saveAndFlush(new SubmissionEntity(
-            UUID.randomUUID(), studentId, homework.studentProgramId(), taskId, homeworkItemId,
-            attemptNo, SubmissionStatus.NEEDS_REVIEW, textAnswer, Instant.now()
-        ));
+        SubmissionEntity saved =
+                submissionRepository.saveAndFlush(
+                        new SubmissionEntity(
+                                UUID.randomUUID(),
+                                studentId,
+                                homework.studentProgramId(),
+                                taskId,
+                                homeworkItemId,
+                                attemptNo,
+                                SubmissionStatus.NEEDS_REVIEW,
+                                textAnswer,
+                                Instant.now()));
         return SubmissionResult.from(saved);
     }
 
-    public SubmissionResult getStudentSubmission(
-        AuthenticatedUser principal,
-        UUID submissionId
-    ) {
+    public SubmissionResult getStudentSubmission(AuthenticatedUser principal, UUID submissionId) {
         UUID studentId = currentStudentId(principal);
-        return submissionRepository.findByIdAndStudentId(submissionId, studentId)
-            .map(submission -> enrich(SubmissionResult.from(submission), true))
-            .orElseThrow(SubmissionNotFoundException::new);
+        return submissionRepository
+                .findByIdAndStudentId(submissionId, studentId)
+                .map(submission -> enrich(SubmissionResult.from(submission), true))
+                .orElseThrow(SubmissionNotFoundException::new);
     }
 
     public SubmissionPageResult listStudentTaskSubmissions(
-        AuthenticatedUser principal,
-        UUID taskId,
-        UUID homeworkItemId,
-        int page,
-        int size
-    ) {
+            AuthenticatedUser principal, UUID taskId, UUID homeworkItemId, int page, int size) {
         validatePage(page, size);
         UUID studentId = currentStudentId(principal);
         requireTask(taskId);
         SubmissionPage submissions;
         if (homeworkItemId == null) {
-            submissions = submissionRepository.findPageByStudentIdAndTaskId(
-                studentId, taskId, page, size
-            );
+            submissions =
+                    submissionRepository.findPageByStudentIdAndTaskId(
+                            studentId, taskId, page, size);
         } else {
-            SubmissionHomeworkContextQuery.HomeworkSubmissionContext homework = requireHomeworkContext(
-                studentId, taskId, homeworkItemId
-            );
-            submissions = submissionRepository.findAttempts(new SubmissionAttemptContext(
-                studentId, homework.studentProgramId(), taskId, homeworkItemId
-            ), page, size);
+            SubmissionHomeworkContextQuery.HomeworkSubmissionContext homework =
+                    requireHomeworkContext(studentId, taskId, homeworkItemId);
+            submissions =
+                    submissionRepository.findAttempts(
+                            new SubmissionAttemptContext(
+                                    studentId, homework.studentProgramId(), taskId, homeworkItemId),
+                            page,
+                            size);
         }
-        var codeSubmissions = codeSubmissionRepository.findSummaries(
-            submissions.items().stream().map(SubmissionEntity::getId).toList()
-        );
+        var codeSubmissions =
+                codeSubmissionRepository.findSummaries(
+                        submissions.items().stream().map(SubmissionEntity::getId).toList());
         return new SubmissionPageResult(
-            submissions.items().stream().map(submission -> {
-                SubmissionResult result = SubmissionResult.from(submission);
-                CodeSubmissionRepository.Summary code = codeSubmissions.get(submission.getId());
-                return code == null ? result : result.withCodeSubmission(code);
-            }).toList(),
-            page, size, submissions.totalElements(), submissions.totalPages()
-        );
+                submissions.items().stream()
+                        .map(
+                                submission -> {
+                                    SubmissionResult result = SubmissionResult.from(submission);
+                                    CodeSubmissionRepository.Summary code =
+                                            codeSubmissions.get(submission.getId());
+                                    return code == null ? result : result.withCodeSubmission(code);
+                                })
+                        .toList(),
+                page,
+                size,
+                submissions.totalElements(),
+                submissions.totalPages());
     }
 
     public SubmissionPageResult listTeacherStudentSubmissions(
-        AuthenticatedUser principal,
-        UUID studentId,
-        SubmissionStatus status,
-        int page,
-        int size,
-        String sort
-    ) {
+            AuthenticatedUser principal,
+            UUID studentId,
+            SubmissionStatus status,
+            int page,
+            int size,
+            String sort) {
         SortParameters sortParameters = validateTeacherListParameters(page, size, sort);
         UUID teacherId = currentTeacherId(principal);
         requireOwnedStudent(teacherId, studentId);
-        SubmissionPage submissions = submissionRepository.findPageForTeacher(
-            studentId, status, page, size,
-            sortParameters.field(), sortParameters.ascending()
-        );
+        SubmissionPage submissions =
+                submissionRepository.findPageForTeacher(
+                        studentId,
+                        status,
+                        page,
+                        size,
+                        sortParameters.field(),
+                        sortParameters.ascending());
         return new SubmissionPageResult(
-            submissions.items().stream().map(SubmissionResult::from).toList(),
-            page, size, submissions.totalElements(), submissions.totalPages()
-        );
+                submissions.items().stream().map(SubmissionResult::from).toList(),
+                page,
+                size,
+                submissions.totalElements(),
+                submissions.totalPages());
     }
 
     @Transactional
     public SubmissionResult reviewTextSubmission(
-        AuthenticatedUser principal,
-        UUID studentId,
-        UUID submissionId,
-        SubmissionStatus reviewStatus
-    ) {
+            AuthenticatedUser principal,
+            UUID studentId,
+            UUID submissionId,
+            SubmissionStatus reviewStatus) {
         UUID teacherId = currentTeacherId(principal);
         requireOwnedStudent(teacherId, studentId);
-        SubmissionEntity submission = submissionRepository
-            .findByIdAndStudentId(submissionId, studentId)
-            .orElseThrow(SubmissionNotFoundException::new);
+        SubmissionEntity submission =
+                submissionRepository
+                        .findByIdAndStudentId(submissionId, studentId)
+                        .orElseThrow(SubmissionNotFoundException::new);
         requireTeacherSubmissionContext(teacherId, studentId, submission);
-        TaskQuery.TaskContext task = taskQuery.findTask(submission.getTaskId())
-            .orElseThrow(SubmissionNotFoundException::new);
+        TaskQuery.TaskContext task =
+                taskQuery
+                        .findTask(submission.getTaskId())
+                        .orElseThrow(SubmissionNotFoundException::new);
         if (task.type() != TaskType.TEXT) {
             throw new SubmissionNotReviewableException();
         }
@@ -177,22 +185,28 @@ public class SubmissionService {
         }
         submission.review(reviewStatus);
         SubmissionEntity saved = submissionRepository.saveAndFlush(submission);
-        eventPublisher.publishEvent(new SubmissionReviewedEvent(
-            saved.getId(), saved.getStudentId(), saved.getStudentProgramId(), saved.getTaskId(),
-            saved.getHomeworkItemId(), saved.getStatus()
-        ));
+        eventPublisher.publishEvent(
+                new SubmissionReviewedEvent(
+                        saved.getId(),
+                        saved.getStudentId(),
+                        saved.getStudentProgramId(),
+                        saved.getTaskId(),
+                        saved.getHomeworkItemId(),
+                        saved.getStatus()));
         return SubmissionResult.from(saved);
     }
 
     private UUID currentStudentId(AuthenticatedUser principal) {
-        return studentOwnershipQuery.findStudentIdByUserId(principal.id())
-            .orElseThrow(StudentNotFoundException::new);
+        return studentOwnershipQuery
+                .findStudentIdByUserId(principal.id())
+                .orElseThrow(StudentNotFoundException::new);
     }
 
     private SubmissionResult enrich(SubmissionResult result, boolean includeSourceCode) {
-        return codeSubmissionRepository.findBySubmissionId(result.id())
-            .map(code -> result.withCodeSubmission(code, includeSourceCode))
-            .orElse(result);
+        return codeSubmissionRepository
+                .findBySubmissionId(result.id())
+                .map(code -> result.withCodeSubmission(code, includeSourceCode))
+                .orElse(result);
     }
 
     private UUID currentTeacherId(AuthenticatedUser principal) {
@@ -206,24 +220,23 @@ public class SubmissionService {
     }
 
     private void requireTeacherSubmissionContext(
-        UUID teacherId,
-        UUID studentId,
-        SubmissionEntity submission
-    ) {
+            UUID teacherId, UUID studentId, SubmissionEntity submission) {
         if (submission.getHomeworkItemId() == null) {
             return;
         }
-        SubmissionHomeworkContextQuery.HomeworkSubmissionContext homework = homeworkContextQuery
-            .findSubmissionContext(submission.getHomeworkItemId())
-            .orElseThrow(SubmissionNotFoundException::new);
-        ProgramQuery.StudentProgramContext program = programQuery
-            .findStudentProgram(homework.studentProgramId())
-            .orElseThrow(SubmissionNotFoundException::new);
+        SubmissionHomeworkContextQuery.HomeworkSubmissionContext homework =
+                homeworkContextQuery
+                        .findSubmissionContext(submission.getHomeworkItemId())
+                        .orElseThrow(SubmissionNotFoundException::new);
+        ProgramQuery.StudentProgramContext program =
+                programQuery
+                        .findStudentProgram(homework.studentProgramId())
+                        .orElseThrow(SubmissionNotFoundException::new);
         if (!homework.studentProgramId().equals(submission.getStudentProgramId())
-            || !homework.taskId().equals(submission.getTaskId())
-            || !homework.assignedByTeacherId().equals(teacherId)
-            || !program.belongsToStudent(studentId)
-            || !program.isAssignedBy(teacherId)) {
+                || !homework.taskId().equals(submission.getTaskId())
+                || !homework.assignedByTeacherId().equals(teacherId)
+                || !program.belongsToStudent(studentId)
+                || !program.isAssignedBy(teacherId)) {
             throw new SubmissionNotFoundException();
         }
     }
@@ -239,16 +252,15 @@ public class SubmissionService {
     }
 
     private SubmissionHomeworkContextQuery.HomeworkSubmissionContext requireHomeworkContext(
-        UUID studentId,
-        UUID taskId,
-        UUID homeworkItemId
-    ) {
-        SubmissionHomeworkContextQuery.HomeworkSubmissionContext homework = homeworkContextQuery
-            .findSubmissionContext(homeworkItemId)
-            .orElseThrow(HomeworkItemNotFoundException::new);
-        ProgramQuery.StudentProgramContext studentProgram = programQuery
-            .findStudentProgram(homework.studentProgramId())
-            .orElseThrow(HomeworkItemNotFoundException::new);
+            UUID studentId, UUID taskId, UUID homeworkItemId) {
+        SubmissionHomeworkContextQuery.HomeworkSubmissionContext homework =
+                homeworkContextQuery
+                        .findSubmissionContext(homeworkItemId)
+                        .orElseThrow(HomeworkItemNotFoundException::new);
+        ProgramQuery.StudentProgramContext studentProgram =
+                programQuery
+                        .findStudentProgram(homework.studentProgramId())
+                        .orElseThrow(HomeworkItemNotFoundException::new);
         if (!studentProgram.belongsToStudent(studentId)) {
             throw new HomeworkItemNotFoundException();
         }
@@ -280,6 +292,5 @@ public class SubmissionService {
         return new SortParameters(parts[0], parts[1].equalsIgnoreCase("asc"));
     }
 
-    private record SortParameters(String field, boolean ascending) {
-    }
+    private record SortParameters(String field, boolean ascending) {}
 }

@@ -2,10 +2,9 @@ package com.tutorplatform.user.infrastructure.persistence;
 
 import com.tutorplatform.user.domain.TeacherEntity;
 import com.tutorplatform.user.domain.TeacherRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaTeacherRepository implements TeacherRepository {
@@ -26,8 +25,10 @@ public class JpaTeacherRepository implements TeacherRepository {
     }
 
     private TeacherEntity saveModel(TeacherEntity teacher, boolean flush) {
-        TeacherDatabaseModel model = databaseRepository.findById(teacher.id())
-            .orElseGet(() -> new TeacherDatabaseModel(teacher));
+        TeacherDatabaseModel model =
+                databaseRepository
+                        .findById(teacher.id())
+                        .orElseGet(() -> new TeacherDatabaseModel(teacher));
         model.updateFrom(teacher);
         model = flush ? databaseRepository.saveAndFlush(model) : databaseRepository.save(model);
         return model.toEntity();

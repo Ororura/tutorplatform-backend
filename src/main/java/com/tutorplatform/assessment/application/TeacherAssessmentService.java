@@ -10,11 +10,10 @@ import com.tutorplatform.session.application.LessonSessionContext;
 import com.tutorplatform.session.application.LessonSessionQuery;
 import com.tutorplatform.session.application.exception.LessonSessionNotFoundException;
 import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
+import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service
 public class TeacherAssessmentService {
@@ -24,10 +23,9 @@ public class TeacherAssessmentService {
     private final TeacherAssessmentRepository assessmentRepository;
 
     public TeacherAssessmentService(
-        StudentOwnershipQuery studentOwnershipQuery,
-        LessonSessionQuery lessonSessionQuery,
-        TeacherAssessmentRepository assessmentRepository
-    ) {
+            StudentOwnershipQuery studentOwnershipQuery,
+            LessonSessionQuery lessonSessionQuery,
+            TeacherAssessmentRepository assessmentRepository) {
         this.studentOwnershipQuery = studentOwnershipQuery;
         this.lessonSessionQuery = lessonSessionQuery;
         this.assessmentRepository = assessmentRepository;
@@ -35,38 +33,43 @@ public class TeacherAssessmentService {
 
     @Transactional(readOnly = true)
     public TeacherAssessmentResult getTeacherAssessment(
-        AuthenticatedUser principal,
-        UUID studentId,
-        UUID lessonSessionId
-    ) {
+            AuthenticatedUser principal, UUID studentId, UUID lessonSessionId) {
         requireOwnedSession(principal, studentId, lessonSessionId, false);
-        return assessmentRepository.findByLessonSessionId(lessonSessionId)
-            .map(TeacherAssessmentResult::from)
-            .orElseThrow(TeacherAssessmentNotFoundException::new);
+        return assessmentRepository
+                .findByLessonSessionId(lessonSessionId)
+                .map(TeacherAssessmentResult::from)
+                .orElseThrow(TeacherAssessmentNotFoundException::new);
     }
 
     @Transactional
     public SaveTeacherAssessmentResult saveTeacherAssessment(
-        AuthenticatedUser principal,
-        UUID studentId,
-        UUID lessonSessionId,
-        SaveTeacherAssessmentCommand command
-    ) {
+            AuthenticatedUser principal,
+            UUID studentId,
+            UUID lessonSessionId,
+            SaveTeacherAssessmentCommand command) {
         requireOwnedSession(principal, studentId, lessonSessionId, true);
         var existing = assessmentRepository.findByLessonSessionId(lessonSessionId);
         boolean created = existing.isEmpty();
         TeacherAssessmentEntity assessment;
         try {
-            assessment = existing.orElseGet(() -> new TeacherAssessmentEntity(
-                UUID.randomUUID(), lessonSessionId,
-                command.understandingScore(), command.independenceScore(),
-                command.practiceScore(), command.homeworkScore(), command.publicComment()
-            ));
+            assessment =
+                    existing.orElseGet(
+                            () ->
+                                    new TeacherAssessmentEntity(
+                                            UUID.randomUUID(),
+                                            lessonSessionId,
+                                            command.understandingScore(),
+                                            command.independenceScore(),
+                                            command.practiceScore(),
+                                            command.homeworkScore(),
+                                            command.publicComment()));
             if (!created) {
                 assessment.update(
-                    command.understandingScore(), command.independenceScore(),
-                    command.practiceScore(), command.homeworkScore(), command.publicComment()
-                );
+                        command.understandingScore(),
+                        command.independenceScore(),
+                        command.practiceScore(),
+                        command.homeworkScore(),
+                        command.publicComment());
             }
         } catch (IllegalArgumentException exception) {
             throw new InvalidTeacherAssessmentScoreException(exception);
@@ -74,29 +77,27 @@ public class TeacherAssessmentService {
 
         try {
             return new SaveTeacherAssessmentResult(
-                TeacherAssessmentResult.from(assessmentRepository.saveAndFlush(assessment)),
-                created
-            );
+                    TeacherAssessmentResult.from(assessmentRepository.saveAndFlush(assessment)),
+                    created);
         } catch (DataIntegrityViolationException exception) {
             throw new TeacherAssessmentConflictException(exception);
         }
     }
 
     private LessonSessionContext requireOwnedSession(
-        AuthenticatedUser principal,
-        UUID studentId,
-        UUID lessonSessionId,
-        boolean forUpdate
-    ) {
-        UUID teacherId = studentOwnershipQuery.findTeacherIdByUserId(principal.id())
-            .orElseThrow(LessonSessionNotFoundException::new);
-        LessonSessionContext context = (forUpdate
-            ? lessonSessionQuery.findContextByIdForUpdate(lessonSessionId)
-            : lessonSessionQuery.findContextById(lessonSessionId))
-            .orElseThrow(LessonSessionNotFoundException::new);
+            AuthenticatedUser principal, UUID studentId, UUID lessonSessionId, boolean forUpdate) {
+        UUID teacherId =
+                studentOwnershipQuery
+                        .findTeacherIdByUserId(principal.id())
+                        .orElseThrow(LessonSessionNotFoundException::new);
+        LessonSessionContext context =
+                (forUpdate
+                                ? lessonSessionQuery.findContextByIdForUpdate(lessonSessionId)
+                                : lessonSessionQuery.findContextById(lessonSessionId))
+                        .orElseThrow(LessonSessionNotFoundException::new);
         if (!context.teacherId().equals(teacherId)
-            || !context.studentId().equals(studentId)
-            || !studentOwnershipQuery.isActivePrimaryOwner(teacherId, studentId)) {
+                || !context.studentId().equals(studentId)
+                || !studentOwnershipQuery.isActivePrimaryOwner(teacherId, studentId)) {
             throw new LessonSessionNotFoundException();
         }
         return context;

@@ -1,15 +1,14 @@
 package com.tutorplatform.assessment.domain;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.UUID;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class TeacherAssessmentEntityTest {
 
@@ -33,8 +32,8 @@ class TeacherAssessmentEntityTest {
     @MethodSource("invalidBoundaryScores")
     void outOfRangeScoresAreRejectedForEveryCriterion(ScoreField field, int score) {
         assertThatThrownBy(() -> field.assessmentWith(score))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("between 1 and 5");
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("between 1 and 5");
     }
 
     private static Stream<Arguments> validBoundaryScores() {
@@ -47,7 +46,7 @@ class TeacherAssessmentEntityTest {
 
     private static Stream<Arguments> scoreCases(int lower, int upper) {
         return Stream.of(ScoreField.values())
-            .flatMap(field -> Stream.of(lower, upper).map(score -> Arguments.of(field, score)));
+                .flatMap(field -> Stream.of(lower, upper).map(score -> Arguments.of(field, score)));
     }
 
     private enum ScoreField {
@@ -101,15 +100,18 @@ class TeacherAssessmentEntityTest {
         abstract Integer scoreFrom(TeacherAssessmentEntity assessment);
 
         TeacherAssessmentEntity assessment(
-            Integer understandingScore,
-            Integer independenceScore,
-            Integer practiceScore,
-            Integer homeworkScore
-        ) {
+                Integer understandingScore,
+                Integer independenceScore,
+                Integer practiceScore,
+                Integer homeworkScore) {
             return new TeacherAssessmentEntity(
-                UUID.randomUUID(), UUID.randomUUID(), understandingScore, independenceScore,
-                practiceScore, homeworkScore, null
-            );
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    understandingScore,
+                    independenceScore,
+                    practiceScore,
+                    homeworkScore,
+                    null);
         }
     }
 }

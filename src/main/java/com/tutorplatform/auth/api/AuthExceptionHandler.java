@@ -16,29 +16,34 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class AuthExceptionHandler {
 
     @ExceptionHandler(EmailAlreadyRegisteredException.class)
-    ResponseEntity<ApiError> handleEmailAlreadyRegistered(EmailAlreadyRegisteredException exception) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(
-            ApiError.of("EMAIL_ALREADY_REGISTERED", "Email is already registered", MDC.get("traceId"))
-        );
+    ResponseEntity<ApiError> handleEmailAlreadyRegistered(
+            EmailAlreadyRegisteredException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(
+                        ApiError.of(
+                                "EMAIL_ALREADY_REGISTERED",
+                                "Email is already registered",
+                                MDC.get("traceId")));
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
     ResponseEntity<ApiError> handleInvalidCredentials(InvalidCredentialsException exception) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-            ApiError.of("AUTH_INVALID_CREDENTIALS", "Invalid email or password", MDC.get("traceId"))
-        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(
+                        ApiError.of(
+                                "AUTH_INVALID_CREDENTIALS",
+                                "Invalid email or password",
+                                MDC.get("traceId")));
     }
 
     @ExceptionHandler(RegistrationInviteRequiredException.class)
     ResponseEntity<ApiError> handleRegistrationInviteRequired(
-        RegistrationInviteRequiredException exception
-    ) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-            ApiError.of(
-                "REGISTRATION_INVITE_REQUIRED",
-                "Registration is available by invitation only",
-                MDC.get("traceId")
-            )
-        );
+            RegistrationInviteRequiredException exception) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(
+                        ApiError.of(
+                                "REGISTRATION_INVITE_REQUIRED",
+                                "Registration is available by invitation only",
+                                MDC.get("traceId")));
     }
 }

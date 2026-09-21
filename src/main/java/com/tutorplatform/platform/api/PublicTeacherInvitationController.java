@@ -17,37 +17,27 @@ public class PublicTeacherInvitationController {
 
     private final TeacherRegistrationInviteService invitationService;
 
-    public PublicTeacherInvitationController(
-        TeacherRegistrationInviteService invitationService
-    ) {
+    public PublicTeacherInvitationController(TeacherRegistrationInviteService invitationService) {
         this.invitationService = invitationService;
     }
 
     @Operation(
-        operationId = "getPublicTeacherInvitation",
-        summary = "Get teacher registration invitation"
-    )
+            operationId = "getPublicTeacherInvitation",
+            summary = "Get teacher registration invitation")
     @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Invitation details"),
         @ApiResponse(
-            responseCode = "200",
-            description = "Invitation details"
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Invitation not found",
-            content = @Content(
-                schema = @Schema(implementation = ApiError.class)
-            )
-        )
+                responseCode = "404",
+                description = "Invitation not found",
+                content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     @GetMapping("/{token}")
     public ResponseEntity<PublicTeacherInvitationResponse> getInvitation(
-        @PathVariable String token
-    ) {
+            @PathVariable String token) {
         var invitation = invitationService.getPublicInvitation(token);
 
         return ResponseEntity.ok()
-            .cacheControl(CacheControl.noStore())
-            .body(PublicTeacherInvitationResponse.from(invitation));
+                .cacheControl(CacheControl.noStore())
+                .body(PublicTeacherInvitationResponse.from(invitation));
     }
 }

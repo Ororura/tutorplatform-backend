@@ -7,19 +7,17 @@ import com.tutorplatform.task.domain.task.TaskStatus;
 import com.tutorplatform.task.domain.task.TaskType;
 import com.tutorplatform.user.infrastructure.persistence.TeacherDatabaseModel;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "tasks")
 public class TaskDatabaseModel {
 
-    @Id
-    private UUID id;
+    @Id private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "teacher_id", nullable = false, insertable = false, updatable = false)
@@ -65,8 +63,7 @@ public class TaskDatabaseModel {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    protected TaskDatabaseModel() {
-    }
+    protected TaskDatabaseModel() {}
 
     TaskDatabaseModel(TaskEntity task) {
         id = Objects.requireNonNull(task.getId());
@@ -78,7 +75,7 @@ public class TaskDatabaseModel {
 
     void updateFrom(TaskEntity task) {
         if (!Objects.requireNonNull(task.getTeacherId()).equals(teacherId)
-            || !Objects.requireNonNull(task.getSubjectId()).equals(subjectId)) {
+                || !Objects.requireNonNull(task.getSubjectId()).equals(subjectId)) {
             throw new IllegalArgumentException("Task ownership and subject cannot be changed");
         }
         title = Objects.requireNonNull(task.getTitle());
@@ -90,9 +87,17 @@ public class TaskDatabaseModel {
 
     TaskEntity toEntity() {
         return new TaskEntity(
-            id, teacherId, subjectId, title, descriptionMarkdown, taskType, difficulty, status,
-            version, createdAt, updatedAt
-        );
+                id,
+                teacherId,
+                subjectId,
+                title,
+                descriptionMarkdown,
+                taskType,
+                difficulty,
+                status,
+                version,
+                createdAt,
+                updatedAt);
     }
 
     public UUID getId() {

@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -e
+
+echo "[Backend] Formatting Java sources..."
+
+./gradlew spotlessApply --console=plain
+
+if ! git diff --quiet -- src/main/java src/test/java; then
+    echo "[Backend] Unstaged Java changes detected."
+    echo "Review the changes, stage the intended files and retry."
+    exit 1
+fi
+
+echo "[Backend] Pre-commit checks passed."

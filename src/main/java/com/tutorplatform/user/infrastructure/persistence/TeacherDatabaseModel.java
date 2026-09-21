@@ -2,20 +2,23 @@ package com.tutorplatform.user.infrastructure.persistence;
 
 import com.tutorplatform.user.domain.TeacherEntity;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.Instant;
 import java.util.UUID;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "teachers")
 public class TeacherDatabaseModel {
-    @Id
-    private UUID id;
+    @Id private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false, unique = true, insertable = false, updatable = false)
+    @JoinColumn(
+            name = "user_id",
+            nullable = false,
+            unique = true,
+            insertable = false,
+            updatable = false)
     private UserDatabaseModel user;
 
     @Column(name = "user_id", nullable = false)
@@ -27,12 +30,12 @@ public class TeacherDatabaseModel {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    protected TeacherDatabaseModel() {
-    }
+    protected TeacherDatabaseModel() {}
 
     TeacherDatabaseModel(TeacherEntity teacher) {
         id = teacher.id();

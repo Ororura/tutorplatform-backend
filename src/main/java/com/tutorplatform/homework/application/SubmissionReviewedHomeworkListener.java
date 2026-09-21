@@ -11,7 +11,8 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Component
 public class SubmissionReviewedHomeworkListener {
 
-    private static final Logger log = LoggerFactory.getLogger(SubmissionReviewedHomeworkListener.class);
+    private static final Logger log =
+            LoggerFactory.getLogger(SubmissionReviewedHomeworkListener.class);
 
     private final HomeworkCompletionService completionService;
 
@@ -26,11 +27,15 @@ public class SubmissionReviewedHomeworkListener {
         }
         try {
             completionService.recalculate(
-                event.homeworkItemId(), event.studentId(), event.studentProgramId(), event.taskId()
-            );
+                    event.homeworkItemId(),
+                    event.studentId(),
+                    event.studentProgramId(),
+                    event.taskId());
         } catch (RuntimeException exception) {
-            log.error("Homework completion recalculation failed after submission review {}",
-                event.submissionId(), exception);
+            log.error(
+                    "Homework completion recalculation failed after submission review {}",
+                    event.submissionId(),
+                    exception);
         }
     }
 }

@@ -6,6 +6,8 @@ import com.tutorplatform.execution.application.ExecutionResult;
 import com.tutorplatform.execution.application.ExecutionStatus;
 import com.tutorplatform.execution.application.ExecutionTestResult;
 import com.tutorplatform.shared.web.TraceIdFilter;
+import java.net.http.HttpClient;
+import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -15,10 +17,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
-import java.net.http.HttpClient;
-import java.time.Duration;
-import java.util.List;
-
 @Component
 public class HttpExecutionAdapter implements ExecutionPort {
     private static final Logger log = LoggerFactory.getLogger(HttpExecutionAdapter.class);
@@ -27,21 +25,24 @@ public class HttpExecutionAdapter implements ExecutionPort {
     private final RestClient.Builder restClientBuilder;
     private final ExecutionProperties properties;
 
-    public HttpExecutionAdapter(RestClient.Builder restClientBuilder, ExecutionProperties properties) {
+    public HttpExecutionAdapter(
+            RestClient.Builder restClientBuilder, ExecutionProperties properties) {
         this.restClientBuilder = restClientBuilder;
         this.properties = properties;
     }
 
     private RestClient restClient(ExecutionRequest request) {
-        var httpClient = HttpClient.newBuilder()
-            .connectTimeout(properties.worker().connectTimeout())
-            .build();
+        var httpClient =
+                HttpClient.newBuilder()
+                        .connectTimeout(properties.worker().connectTimeout())
+                        .build();
         var requestFactory = new JdkClientHttpRequestFactory(httpClient);
         requestFactory.setReadTimeout(properties.worker().timeoutFor(request.timeLimitMs()));
-        return restClientBuilder.clone()
-            .baseUrl(properties.worker().baseUrl().toString())
-            .requestFactory(requestFactory)
-            .build();
+        return restClientBuilder
+                .clone()
+                .baseUrl(properties.worker().baseUrl().toString())
+                .requestFactory(requestFactory)
+                .build();
     }
 
     @Override
@@ -49,38 +50,49 @@ public class HttpExecutionAdapter implements ExecutionPort {
         var startedAt = System.nanoTime();
         log.info("Worker execution request started: executionId={}", request.executionId());
         try {
-            var requestSpec = restClient(request).post()
-                .uri(EXECUTIONS_PATH)
-                .contentType(MediaType.APPLICATION_JSON);
+            var requestSpec =
+                    restClient(request)
+                            .post()
+                            .uri(EXECUTIONS_PATH)
+                            .contentType(MediaType.APPLICATION_JSON);
             var traceId = MDC.get("traceId");
             if (traceId != null && !traceId.isBlank()) {
                 requestSpec.header(TraceIdFilter.HEADER, traceId);
             }
-            var response = requestSpec
-                .body(WorkerExecutionRequest.from(request, properties.output().maxBytes()))
-                .retrieve()
-                .body(WorkerExecutionResponse.class);
+            var response =
+                    requestSpec
+                            .body(
+                                    WorkerExecutionRequest.from(
+                                            request, properties.output().maxBytes()))
+                            .retrieve()
+                            .body(WorkerExecutionResponse.class);
             var result = mapResponse(request, response);
             log.info(
-                "Worker execution request completed: executionId={}, durationMs={}, status={}",
-                request.executionId(), elapsedMillis(startedAt), result.status()
-            );
+                    "Worker execution request completed: executionId={}, durationMs={}, status={}",
+                    request.executionId(),
+                    elapsedMillis(startedAt),
+                    result.status());
             return result;
         } catch (RestClientException | IllegalArgumentException exception) {
             log.warn(
-                "Worker execution infrastructure failure: executionId={}, durationMs={}, failureType={}",
-                request.executionId(), elapsedMillis(startedAt), exception.getClass().getSimpleName()
-            );
+                    "Worker execution infrastructure failure: executionId={}, durationMs={}, failureType={}",
+                    request.executionId(),
+                    elapsedMillis(startedAt),
+                    exception.getClass().getSimpleName());
             return ExecutionResult.systemError(request.executionId(), request.testCases().size());
         }
     }
 
-    private ExecutionResult mapResponse(ExecutionRequest request, WorkerExecutionResponse response) {
+    private ExecutionResult mapResponse(
+            ExecutionRequest request, WorkerExecutionResponse response) {
         if (response == null || !request.executionId().equals(response.executionId())) {
             throw new IllegalArgumentException("Worker response has an invalid executionId");
         }
-        if (response.status() == null || response.passedTests() == null || response.totalTests() == null
-            || response.executionTimeMs() == null || response.testResults() == null) {
+        if (response.status() == null
+                || response.passedTests() == null
+                || response.totalTests() == null
+                || response.executionTimeMs() == null
+                || response.testResults() == null) {
             throw new IllegalArgumentException("Worker response is incomplete");
         }
         if (response.totalTests() != request.testCases().size()) {
@@ -90,29 +102,29 @@ public class HttpExecutionAdapter implements ExecutionPort {
         var status = ExecutionStatus.valueOf(response.status());
         var testResults = response.testResults().stream().map(this::mapTestResult).toList();
         return new ExecutionResult(
-            response.executionId(),
-            status,
-            response.passedTests(),
-            response.totalTests(),
-            response.executionTimeMs(),
-            bounded(response.stdoutExcerpt()),
-            bounded(response.stderrExcerpt()),
-            testResults
-        );
+                response.executionId(),
+                status,
+                response.passedTests(),
+                response.totalTests(),
+                response.executionTimeMs(),
+                bounded(response.stdoutExcerpt()),
+                bounded(response.stderrExcerpt()),
+                testResults);
     }
 
     private ExecutionTestResult mapTestResult(WorkerExecutionResponse.TestResult response) {
-        if (response == null || response.testCaseId() == null || response.passed() == null
-            || response.executionTimeMs() == null) {
+        if (response == null
+                || response.testCaseId() == null
+                || response.passed() == null
+                || response.executionTimeMs() == null) {
             throw new IllegalArgumentException("Worker test result is incomplete");
         }
         return new ExecutionTestResult(
-            response.testCaseId(),
-            response.passed(),
-            response.executionTimeMs(),
-            bounded(response.stdoutExcerpt()),
-            bounded(response.stderrExcerpt())
-        );
+                response.testCaseId(),
+                response.passed(),
+                response.executionTimeMs(),
+                bounded(response.stdoutExcerpt()),
+                bounded(response.stderrExcerpt()));
     }
 
     private String bounded(String output) {

@@ -26,26 +26,33 @@ public class ProgressReportPdfModelFactory {
         ProgressReportSnapshotV1.Metrics metrics = snapshot.metrics();
         ProgressReportSnapshotV1.Assessment assessment = snapshot.assessment();
         return new ProgressReportPdfModel(
-            report.periodStartedAt(),
-            report.periodEndedAt(),
-            report.learningMinutes(),
-            new ProgressReportPdfModel.Metrics(
-                metrics.learningMinutes(), metrics.sessionsCount(), metrics.attendanceRate(),
-                metrics.homeworkAssigned(), metrics.homeworkCompleted(),
-                metrics.practiceAssigned(), metrics.practiceCompleted()
-            ),
-            new ProgressReportPdfModel.Assessment(
-                assessment.understandingAverage(), assessment.independenceAverage(),
-                assessment.practiceAverage(), assessment.homeworkAverage()
-            ),
-            snapshot.topics().completed().stream()
-                .map(topic -> new ProgressReportPdfModel.Topic(topic.title())).toList(),
-            snapshot.topics().inProgress().stream()
-                .map(topic -> new ProgressReportPdfModel.Topic(topic.title())).toList(),
-            snapshot.skills().stream()
-                .map(skill -> new ProgressReportPdfModel.Skill(skill.name(), skill.progress())).toList(),
-            report.teacherSummary(),
-            report.nextPeriodPlan()
-        );
+                report.periodStartedAt(),
+                report.periodEndedAt(),
+                report.learningMinutes(),
+                new ProgressReportPdfModel.Metrics(
+                        metrics.learningMinutes(),
+                        metrics.sessionsCount(),
+                        metrics.attendanceRate(),
+                        metrics.homeworkAssigned(),
+                        metrics.homeworkCompleted(),
+                        metrics.practiceAssigned(),
+                        metrics.practiceCompleted()),
+                new ProgressReportPdfModel.Assessment(
+                        assessment.understandingAverage(), assessment.independenceAverage(),
+                        assessment.practiceAverage(), assessment.homeworkAverage()),
+                snapshot.topics().completed().stream()
+                        .map(topic -> new ProgressReportPdfModel.Topic(topic.title()))
+                        .toList(),
+                snapshot.topics().inProgress().stream()
+                        .map(topic -> new ProgressReportPdfModel.Topic(topic.title()))
+                        .toList(),
+                snapshot.skills().stream()
+                        .map(
+                                skill ->
+                                        new ProgressReportPdfModel.Skill(
+                                                skill.name(), skill.progress()))
+                        .toList(),
+                report.teacherSummary(),
+                report.nextPeriodPlan());
     }
 }

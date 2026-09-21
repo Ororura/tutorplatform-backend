@@ -5,15 +5,14 @@ import java.util.Objects;
 import java.util.UUID;
 
 public record TaskTestCase(
-    UUID id,
-    UUID taskId,
-    String inputText,
-    String expectedOutput,
-    boolean hidden,
-    ComparisonMode comparisonMode,
-    int position,
-    Instant createdAt
-) {
+        UUID id,
+        UUID taskId,
+        String inputText,
+        String expectedOutput,
+        boolean hidden,
+        ComparisonMode comparisonMode,
+        int position,
+        Instant createdAt) {
     public TaskTestCase {
         Objects.requireNonNull(id, "id is required");
         Objects.requireNonNull(taskId, "taskId is required");
@@ -25,14 +24,13 @@ public record TaskTestCase(
     }
 
     public TaskTestCase(
-        UUID id,
-        UUID taskId,
-        String inputText,
-        String expectedOutput,
-        boolean hidden,
-        ComparisonMode comparisonMode,
-        int position
-    ) {
+            UUID id,
+            UUID taskId,
+            String inputText,
+            String expectedOutput,
+            boolean hidden,
+            ComparisonMode comparisonMode,
+            int position) {
         this(id, taskId, inputText, expectedOutput, hidden, comparisonMode, position, null);
     }
 }

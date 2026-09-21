@@ -5,18 +5,17 @@ import java.util.Objects;
 import java.util.UUID;
 
 public record LearningPeriod(
-    UUID id,
-    UUID studentProgramId,
-    int sequenceNo,
-    int startCumulativeMinutes,
-    int targetDurationMinutes,
-    Integer endCumulativeMinutes,
-    LearningPeriodStatus status,
-    Instant startedAt,
-    Instant completedAt,
-    Instant createdAt,
-    Instant updatedAt
-) {
+        UUID id,
+        UUID studentProgramId,
+        int sequenceNo,
+        int startCumulativeMinutes,
+        int targetDurationMinutes,
+        Integer endCumulativeMinutes,
+        LearningPeriodStatus status,
+        Instant startedAt,
+        Instant completedAt,
+        Instant createdAt,
+        Instant updatedAt) {
     public LearningPeriod {
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(studentProgramId, "studentProgramId");
@@ -33,7 +32,7 @@ public record LearningPeriod(
             throw new IllegalArgumentException("targetDurationMinutes must be greater than 0");
         }
         if (status == LearningPeriodStatus.ACTIVE
-            && (endCumulativeMinutes != null || completedAt != null)) {
+                && (endCumulativeMinutes != null || completedAt != null)) {
             throw new IllegalArgumentException("ACTIVE period cannot have completion values");
         }
         if (status == LearningPeriodStatus.COMPLETED) {
@@ -47,17 +46,24 @@ public record LearningPeriod(
     }
 
     public static LearningPeriod active(
-        UUID id,
-        UUID studentProgramId,
-        int sequenceNo,
-        int startCumulativeMinutes,
-        int targetDurationMinutes,
-        Instant now
-    ) {
+            UUID id,
+            UUID studentProgramId,
+            int sequenceNo,
+            int startCumulativeMinutes,
+            int targetDurationMinutes,
+            Instant now) {
         return new LearningPeriod(
-            id, studentProgramId, sequenceNo, startCumulativeMinutes, targetDurationMinutes,
-            null, LearningPeriodStatus.ACTIVE, null, null, now, now
-        );
+                id,
+                studentProgramId,
+                sequenceNo,
+                startCumulativeMinutes,
+                targetDurationMinutes,
+                null,
+                LearningPeriodStatus.ACTIVE,
+                null,
+                null,
+                now,
+                now);
     }
 
     public int thresholdMinutes() {
@@ -69,9 +75,17 @@ public record LearningPeriod(
             return this;
         }
         return new LearningPeriod(
-            id, studentProgramId, sequenceNo, startCumulativeMinutes, targetDurationMinutes,
-            null, status, firstAttendedAt, null, createdAt, now
-        );
+                id,
+                studentProgramId,
+                sequenceNo,
+                startCumulativeMinutes,
+                targetDurationMinutes,
+                null,
+                status,
+                firstAttendedAt,
+                null,
+                createdAt,
+                now);
     }
 
     public LearningPeriod complete(int cumulativeMinutes, Instant crossedAt, Instant now) {
@@ -82,9 +96,16 @@ public record LearningPeriod(
             throw new IllegalArgumentException("period threshold has not been reached");
         }
         return new LearningPeriod(
-            id, studentProgramId, sequenceNo, startCumulativeMinutes, targetDurationMinutes,
-            cumulativeMinutes, LearningPeriodStatus.COMPLETED, startedAt,
-            Objects.requireNonNull(crossedAt, "crossedAt"), createdAt, now
-        );
+                id,
+                studentProgramId,
+                sequenceNo,
+                startCumulativeMinutes,
+                targetDurationMinutes,
+                cumulativeMinutes,
+                LearningPeriodStatus.COMPLETED,
+                startedAt,
+                Objects.requireNonNull(crossedAt, "crossedAt"),
+                createdAt,
+                now);
     }
 }

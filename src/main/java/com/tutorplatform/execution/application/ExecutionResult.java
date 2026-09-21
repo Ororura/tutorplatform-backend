@@ -5,15 +5,14 @@ import java.util.Objects;
 import java.util.UUID;
 
 public record ExecutionResult(
-    UUID executionId,
-    ExecutionStatus status,
-    int passedTests,
-    int totalTests,
-    long executionTimeMs,
-    String stdoutExcerpt,
-    String stderrExcerpt,
-    List<ExecutionTestResult> testResults
-) {
+        UUID executionId,
+        ExecutionStatus status,
+        int passedTests,
+        int totalTests,
+        long executionTimeMs,
+        String stdoutExcerpt,
+        String stderrExcerpt,
+        List<ExecutionTestResult> testResults) {
     public ExecutionResult {
         Objects.requireNonNull(executionId, "executionId must not be null");
         Objects.requireNonNull(status, "status must not be null");
@@ -33,14 +32,6 @@ public record ExecutionResult(
 
     public static ExecutionResult systemError(UUID executionId, int totalTests) {
         return new ExecutionResult(
-            executionId,
-            ExecutionStatus.SYSTEM_ERROR,
-            0,
-            totalTests,
-            0,
-            null,
-            null,
-            List.of()
-        );
+                executionId, ExecutionStatus.SYSTEM_ERROR, 0, totalTests, 0, null, null, List.of());
     }
 }

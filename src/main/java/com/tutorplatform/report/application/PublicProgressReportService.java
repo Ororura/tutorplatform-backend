@@ -10,10 +10,9 @@ import com.tutorplatform.report.domain.ProgressReportStatus;
 import com.tutorplatform.report.domain.ReportShare;
 import com.tutorplatform.report.domain.ReportShareRepository;
 import com.tutorplatform.student.application.invite.StudentInviteTokenService;
+import java.time.Instant;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
 
 @Service
 public class PublicProgressReportService {
@@ -23,10 +22,9 @@ public class PublicProgressReportService {
     private final ProgressReportRepository progressReportRepository;
 
     public PublicProgressReportService(
-        StudentInviteTokenService tokenService,
-        ReportShareRepository reportShareRepository,
-        ProgressReportRepository progressReportRepository
-    ) {
+            StudentInviteTokenService tokenService,
+            ReportShareRepository reportShareRepository,
+            ProgressReportRepository progressReportRepository) {
         this.tokenService = tokenService;
         this.reportShareRepository = reportShareRepository;
         this.progressReportRepository = progressReportRepository;
@@ -39,12 +37,15 @@ public class PublicProgressReportService {
 
     @Transactional(readOnly = true)
     public ProgressReport resolvePublished(String rawToken) {
-        ReportShare share = reportShareRepository.findByTokenHash(tokenService.hash(rawToken))
-            .orElseThrow(ReportShareNotFoundException::new);
+        ReportShare share =
+                reportShareRepository
+                        .findByTokenHash(tokenService.hash(rawToken))
+                        .orElseThrow(ReportShareNotFoundException::new);
         validateShare(share, Instant.now());
-        return progressReportRepository.findById(share.reportId())
-            .filter(candidate -> candidate.status() == ProgressReportStatus.PUBLISHED)
-            .orElseThrow(ReportShareNotFoundException::new);
+        return progressReportRepository
+                .findById(share.reportId())
+                .filter(candidate -> candidate.status() == ProgressReportStatus.PUBLISHED)
+                .orElseThrow(ReportShareNotFoundException::new);
     }
 
     private void validateShare(ReportShare share, Instant now) {

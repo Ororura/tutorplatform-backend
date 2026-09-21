@@ -12,23 +12,18 @@ public class PublicRegistrationController {
 
     private final PlatformSettingsService settingsService;
 
-    public PublicRegistrationController(
-        PlatformSettingsService settingsService
-    ) {
+    public PublicRegistrationController(PlatformSettingsService settingsService) {
         this.settingsService = settingsService;
     }
 
     @Operation(
-        operationId = "getPublicRegistrationSettings",
-        summary = "Get public registration settings"
-    )
+            operationId = "getPublicRegistrationSettings",
+            summary = "Get public registration settings")
     @GetMapping
     public RegistrationSettingsResponse getSettings() {
 
         var settings = settingsService.getSettings();
 
-        return new RegistrationSettingsResponse(
-            settings.registrationMode()
-        );
+        return new RegistrationSettingsResponse(settings.registrationMode());
     }
 }

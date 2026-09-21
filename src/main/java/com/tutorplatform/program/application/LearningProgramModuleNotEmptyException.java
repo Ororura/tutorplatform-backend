@@ -1,4 +1,3 @@
 package com.tutorplatform.program.application;
 
-public class LearningProgramModuleNotEmptyException extends RuntimeException {
-}
+public class LearningProgramModuleNotEmptyException extends RuntimeException {}

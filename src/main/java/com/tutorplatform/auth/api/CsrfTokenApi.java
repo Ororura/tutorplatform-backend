@@ -10,26 +10,23 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.csrf.CsrfToken;
 
-
 public interface CsrfTokenApi {
     @Operation(operationId = "getCsrfToken", summary = "Get CSRF token")
     @ApiResponses({
         @ApiResponse(
-            responseCode = "200",
-            description = "OK",
-            content = @Content(
-                mediaType = MediaType.APPLICATION_JSON_VALUE,
-                schema = @Schema(implementation = CsrfTokenResponse.class)
-            )
-        ),
+                responseCode = "200",
+                description = "OK",
+                content =
+                        @Content(
+                                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                schema = @Schema(implementation = CsrfTokenResponse.class))),
         @ApiResponse(
-            responseCode = "500",
-            description = "Unexpected server failure",
-            content = @Content(
-                mediaType = MediaType.APPLICATION_JSON_VALUE,
-                schema = @Schema(implementation = ApiError.class)
-            )
-        )
+                responseCode = "500",
+                description = "Unexpected server failure",
+                content =
+                        @Content(
+                                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                schema = @Schema(implementation = ApiError.class)))
     })
     CsrfTokenResponse getCsrfToken(@Parameter(hidden = true) CsrfToken csrfToken);
 }

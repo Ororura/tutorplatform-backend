@@ -2,10 +2,9 @@ package com.tutorplatform.content.infrastructure.persistence;
 
 import com.tutorplatform.content.domain.FileAssetEntity;
 import com.tutorplatform.content.domain.FileAssetRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaFileAssetRepository implements FileAssetRepository {

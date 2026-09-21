@@ -1,7 +1,6 @@
 package com.tutorplatform.progress.domain;
 
 import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressStatus;
-
 import java.util.Objects;
 import java.util.UUID;
 

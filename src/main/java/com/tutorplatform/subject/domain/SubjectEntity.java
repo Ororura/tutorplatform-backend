@@ -4,21 +4,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-public record SubjectEntity(UUID id, UUID ownerTeacherId, String code, String name, String description,
-                            SubjectStatus status, Instant createdAt, Instant updatedAt) {
-
-    public SubjectEntity(
-        UUID id,
-        UUID ownerTeacherId,
-        String code,
-        String name,
-        String description,
-        SubjectStatus status
-    ) {
-        this(id, ownerTeacherId, code, name, description, status, null, null);
-    }
-
-    public SubjectEntity(
+public record SubjectEntity(
         UUID id,
         UUID ownerTeacherId,
         String code,
@@ -26,8 +12,27 @@ public record SubjectEntity(UUID id, UUID ownerTeacherId, String code, String na
         String description,
         SubjectStatus status,
         Instant createdAt,
-        Instant updatedAt
-    ) {
+        Instant updatedAt) {
+
+    public SubjectEntity(
+            UUID id,
+            UUID ownerTeacherId,
+            String code,
+            String name,
+            String description,
+            SubjectStatus status) {
+        this(id, ownerTeacherId, code, name, description, status, null, null);
+    }
+
+    public SubjectEntity(
+            UUID id,
+            UUID ownerTeacherId,
+            String code,
+            String name,
+            String description,
+            SubjectStatus status,
+            Instant createdAt,
+            Instant updatedAt) {
         this.id = Objects.requireNonNull(id);
         this.ownerTeacherId = ownerTeacherId;
         this.code = code;

@@ -1,5 +1,9 @@
 package com.tutorplatform.session.infrastructure.persistence;
 
+import jakarta.persistence.LockModeType;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -7,15 +11,10 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import jakarta.persistence.LockModeType;
-
-import java.util.Optional;
-import java.util.List;
-import java.util.UUID;
-
 interface LessonSessionDatabaseRepository extends JpaRepository<LessonSessionDatabaseModel, UUID> {
 
-    @Query("""
+    @Query(
+            """
         select lessonSession
         from LessonSessionDatabaseModel lessonSession
         where lessonSession.studentProgramId = :studentProgramId
@@ -23,20 +22,21 @@ interface LessonSessionDatabaseRepository extends JpaRepository<LessonSessionDat
         order by lessonSession.startedAt, lessonSession.id
         """)
     List<LessonSessionDatabaseModel> findAttendedByStudentProgram(
-        @Param("studentProgramId") UUID studentProgramId
-    );
+            @Param("studentProgramId") UUID studentProgramId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<LessonSessionDatabaseModel> findWithLockById(UUID id);
 
-    @Query("""
+    @Query(
+            """
         select lessonSession.studentProgram.studentId
         from LessonSessionDatabaseModel lessonSession
         where lessonSession.id = :lessonSessionId
         """)
     Optional<UUID> findStudentIdById(@Param("lessonSessionId") UUID lessonSessionId);
 
-    @Query("""
+    @Query(
+            """
         select lessonSession
         from LessonSessionDatabaseModel lessonSession
         where lessonSession.id = :lessonSessionId
@@ -44,20 +44,19 @@ interface LessonSessionDatabaseRepository extends JpaRepository<LessonSessionDat
           and lessonSession.studentProgram.studentId = :studentId
         """)
     Optional<LessonSessionDatabaseModel> findOwnedById(
-        @Param("lessonSessionId") UUID lessonSessionId,
-        @Param("teacherId") UUID teacherId,
-        @Param("studentId") UUID studentId
-    );
+            @Param("lessonSessionId") UUID lessonSessionId,
+            @Param("teacherId") UUID teacherId,
+            @Param("studentId") UUID studentId);
 
-    @Query("""
+    @Query(
+            """
         select lessonSession
         from LessonSessionDatabaseModel lessonSession
         where lessonSession.teacherId = :teacherId
           and lessonSession.studentProgram.studentId = :studentId
         """)
     Page<LessonSessionDatabaseModel> findPageByTeacherAndStudent(
-        @Param("teacherId") UUID teacherId,
-        @Param("studentId") UUID studentId,
-        Pageable pageable
-    );
+            @Param("teacherId") UUID teacherId,
+            @Param("studentId") UUID studentId,
+            Pageable pageable);
 }

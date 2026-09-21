@@ -5,9 +5,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record CreateLearningProgramTopicRequest(
-    @NotBlank @Size(max = 180) @Schema(requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 180) String title,
-    @Schema(nullable = true) String description
-) {
+        @NotBlank
+                @Size(max = 180)
+                @Schema(requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 180)
+                String title,
+        @Schema(nullable = true) String description) {
     public CreateLearningProgramTopicRequest {
         title = title == null ? null : title.strip();
         description = description == null ? null : description.strip();

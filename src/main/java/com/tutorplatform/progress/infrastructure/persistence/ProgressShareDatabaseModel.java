@@ -5,17 +5,15 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.Instant;
 import java.util.UUID;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "progress_shares")
 public class ProgressShareDatabaseModel {
 
-    @Id
-    private UUID id;
+    @Id private UUID id;
 
     @Column(name = "student_program_id", nullable = false)
     private UUID studentProgramId;
@@ -36,8 +34,7 @@ public class ProgressShareDatabaseModel {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    protected ProgressShareDatabaseModel() {
-    }
+    protected ProgressShareDatabaseModel() {}
 
     ProgressShareDatabaseModel(ProgressShare share) {
         id = share.id();
@@ -51,7 +48,12 @@ public class ProgressShareDatabaseModel {
 
     ProgressShare toDomain() {
         return new ProgressShare(
-            id, studentProgramId, createdByTeacherId, tokenHash, expiresAt, revokedAt, createdAt
-        );
+                id,
+                studentProgramId,
+                createdByTeacherId,
+                tokenHash,
+                expiresAt,
+                revokedAt,
+                createdAt);
     }
 }

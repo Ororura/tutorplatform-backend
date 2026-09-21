@@ -2,10 +2,9 @@ package com.tutorplatform.task.infrastructure.persistence.skill;
 
 import com.tutorplatform.task.domain.skill.SkillEntity;
 import com.tutorplatform.task.domain.skill.SkillRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaSkillRepository implements SkillRepository {
@@ -28,6 +27,8 @@ public class JpaSkillRepository implements SkillRepository {
 
     @Override
     public Optional<SkillEntity> findBySubjectIdAndCode(UUID subjectId, String code) {
-        return databaseRepository.findBySubjectIdAndCode(subjectId, code).map(SkillDatabaseModel::toEntity);
+        return databaseRepository
+                .findBySubjectIdAndCode(subjectId, code)
+                .map(SkillDatabaseModel::toEntity);
     }
 }

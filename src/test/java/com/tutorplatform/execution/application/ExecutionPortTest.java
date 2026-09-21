@@ -1,26 +1,28 @@
 package com.tutorplatform.execution.application;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class ExecutionPortTest {
 
     @Test
     void portAcceptsTransportNeutralExecutionRequest() {
-        var request = new ExecutionRequest(
-            UUID.randomUUID(),
-            ExecutionLanguage.PYTHON,
-            "print(input())",
-            5_000,
-            128,
-            List.of(new ExecutionTestCase(
-                UUID.randomUUID(), "hello", "hello", ExecutionComparisonMode.NORMALIZED
-            ))
-        );
+        var request =
+                new ExecutionRequest(
+                        UUID.randomUUID(),
+                        ExecutionLanguage.PYTHON,
+                        "print(input())",
+                        5_000,
+                        128,
+                        List.of(
+                                new ExecutionTestCase(
+                                        UUID.randomUUID(),
+                                        "hello",
+                                        "hello",
+                                        ExecutionComparisonMode.NORMALIZED)));
         ExecutionPort port = received -> ExecutionResult.systemError(received.executionId());
 
         var result = port.execute(request);

@@ -2,10 +2,9 @@ package com.tutorplatform.user.infrastructure.persistence;
 
 import com.tutorplatform.user.domain.UserEntity;
 import com.tutorplatform.user.domain.UserRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaUserRepository implements UserRepository {
@@ -17,8 +16,8 @@ public class JpaUserRepository implements UserRepository {
 
     @Override
     public UserEntity saveAndFlush(UserEntity user) {
-        UserDatabaseModel model = databaseRepository.findById(user.id())
-            .orElseGet(() -> new UserDatabaseModel(user));
+        UserDatabaseModel model =
+                databaseRepository.findById(user.id()).orElseGet(() -> new UserDatabaseModel(user));
         model.updateFrom(user);
         return databaseRepository.saveAndFlush(model).toEntity();
     }

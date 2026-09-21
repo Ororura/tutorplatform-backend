@@ -8,11 +8,14 @@ import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
 public record UpdateLearningProgramTopicRequest(
-    @NotBlank @Size(max = 180) @Schema(requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 180) String title,
-    @Schema(nullable = true) String description,
-    @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) TopicStatus status,
-    @NotNull @PositiveOrZero @Schema(requiredMode = Schema.RequiredMode.REQUIRED, minimum = "0") Long version
-) {
+        @NotBlank
+                @Size(max = 180)
+                @Schema(requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 180)
+                String title,
+        @Schema(nullable = true) String description,
+        @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) TopicStatus status,
+        @NotNull @PositiveOrZero @Schema(requiredMode = Schema.RequiredMode.REQUIRED, minimum = "0")
+                Long version) {
     public UpdateLearningProgramTopicRequest {
         title = title == null ? null : title.strip();
         description = description == null ? null : description.strip();

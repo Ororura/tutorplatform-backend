@@ -3,19 +3,17 @@ package com.tutorplatform.program.infrastructure.persistence;
 import com.tutorplatform.program.domain.TopicEntity;
 import com.tutorplatform.program.domain.TopicStatus;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "topics")
 public class TopicDatabaseModel {
 
-    @Id
-    private UUID id;
+    @Id private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "module_id", nullable = false, insertable = false, updatable = false)
@@ -27,8 +25,7 @@ public class TopicDatabaseModel {
     @Column(nullable = false, length = 180)
     private String title;
 
-    @Column
-    private String description;
+    @Column private String description;
 
     @Column(nullable = false)
     private int position;
@@ -49,8 +46,7 @@ public class TopicDatabaseModel {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    protected TopicDatabaseModel() {
-    }
+    protected TopicDatabaseModel() {}
 
     TopicDatabaseModel(TopicEntity topic) {
         id = Objects.requireNonNull(topic.id());
@@ -71,6 +67,7 @@ public class TopicDatabaseModel {
     }
 
     TopicEntity toEntity() {
-        return new TopicEntity(id, moduleId, title, description, position, status, version, createdAt, updatedAt);
+        return new TopicEntity(
+                id, moduleId, title, description, position, status, version, createdAt, updatedAt);
     }
 }

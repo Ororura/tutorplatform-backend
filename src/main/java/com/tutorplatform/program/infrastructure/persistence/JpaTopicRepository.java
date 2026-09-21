@@ -1,13 +1,12 @@
 package com.tutorplatform.program.infrastructure.persistence;
 
 import com.tutorplatform.program.domain.TopicEntity;
-import jakarta.persistence.OptimisticLockException;
 import com.tutorplatform.program.domain.TopicRepository;
-import org.springframework.stereotype.Repository;
-
+import jakarta.persistence.OptimisticLockException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaTopicRepository implements TopicRepository {
@@ -20,14 +19,18 @@ public class JpaTopicRepository implements TopicRepository {
 
     @Override
     public TopicEntity saveAndFlush(TopicEntity topic) {
-        TopicDatabaseModel model = databaseRepository.findById(topic.id())
-            .map(existing -> {
-                if (!existing.hasVersion(topic.version())) {
-                    throw new OptimisticLockException("Topic was modified by another transaction");
-                }
-                return existing;
-            })
-            .orElseGet(() -> new TopicDatabaseModel(topic));
+        TopicDatabaseModel model =
+                databaseRepository
+                        .findById(topic.id())
+                        .map(
+                                existing -> {
+                                    if (!existing.hasVersion(topic.version())) {
+                                        throw new OptimisticLockException(
+                                                "Topic was modified by another transaction");
+                                    }
+                                    return existing;
+                                })
+                        .orElseGet(() -> new TopicDatabaseModel(topic));
         model.updateFrom(topic);
         return databaseRepository.saveAndFlush(model).toEntity();
     }
@@ -39,7 +42,9 @@ public class JpaTopicRepository implements TopicRepository {
 
     @Override
     public List<TopicEntity> findByModuleId(UUID moduleId) {
-        return databaseRepository.findByModuleId(moduleId).stream().map(TopicDatabaseModel::toEntity).toList();
+        return databaseRepository.findByModuleId(moduleId).stream()
+                .map(TopicDatabaseModel::toEntity)
+                .toList();
     }
 
     @Override

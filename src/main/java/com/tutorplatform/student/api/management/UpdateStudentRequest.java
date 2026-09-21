@@ -6,14 +6,12 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Size;
 
 public record UpdateStudentRequest(
-    @Size(min = 1, max = 100)
-    @Schema(example = "Андрей", minLength = 1, maxLength = 100, nullable = true)
-    String firstName,
-
-    @Size(min = 1, max = 100)
-    @Schema(example = "Петров", minLength = 1, maxLength = 100, nullable = true)
-    String lastName
-) {
+        @Size(min = 1, max = 100)
+                @Schema(example = "Андрей", minLength = 1, maxLength = 100, nullable = true)
+                String firstName,
+        @Size(min = 1, max = 100)
+                @Schema(example = "Петров", minLength = 1, maxLength = 100, nullable = true)
+                String lastName) {
     public UpdateStudentRequest {
         firstName = firstName == null ? null : firstName.strip();
         lastName = lastName == null ? null : lastName.strip();

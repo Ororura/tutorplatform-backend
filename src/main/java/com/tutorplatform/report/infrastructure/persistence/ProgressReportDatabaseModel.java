@@ -4,18 +4,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.tutorplatform.report.domain.ProgressReport;
 import com.tutorplatform.report.domain.ProgressReportStatus;
 import jakarta.persistence.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-
 import java.time.Instant;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "progress_reports")
 public class ProgressReportDatabaseModel {
 
-    @Id
-    private UUID id;
+    @Id private UUID id;
 
     @Column(name = "student_program_id", nullable = false, updatable = false)
     private UUID studentProgramId;
@@ -65,14 +63,10 @@ public class ProgressReportDatabaseModel {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    protected ProgressReportDatabaseModel() {
-    }
+    protected ProgressReportDatabaseModel() {}
 
     ProgressReportDatabaseModel(
-        ProgressReport report,
-        ProgressReportSnapshotJsonCodec codec,
-        boolean existing
-    ) {
+            ProgressReport report, ProgressReportSnapshotJsonCodec codec, boolean existing) {
         id = report.id();
         studentProgramId = report.studentProgramId();
         learningPeriodId = report.learningPeriodId();
@@ -93,10 +87,21 @@ public class ProgressReportDatabaseModel {
 
     ProgressReport toDomain(ProgressReportSnapshotJsonCodec codec) {
         return new ProgressReport(
-            id, studentProgramId, learningPeriodId, generatedByTeacherId, status,
-            periodStartedAt, periodEndedAt, learningMinutes, snapshotSchemaVersion,
-            codec.read(snapshotSchemaVersion, snapshotJson), teacherSummary, nextPeriodPlan,
-            publishedAt, version, createdAt, updatedAt
-        );
+                id,
+                studentProgramId,
+                learningPeriodId,
+                generatedByTeacherId,
+                status,
+                periodStartedAt,
+                periodEndedAt,
+                learningMinutes,
+                snapshotSchemaVersion,
+                codec.read(snapshotSchemaVersion, snapshotJson),
+                teacherSummary,
+                nextPeriodPlan,
+                publishedAt,
+                version,
+                createdAt,
+                updatedAt);
     }
 }

@@ -2,7 +2,6 @@ package com.tutorplatform.task.infrastructure.persistence.taskskill;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
@@ -16,8 +15,7 @@ public class TaskSkillId implements Serializable {
     @Column(name = "skill_id", nullable = false)
     private UUID skillId;
 
-    protected TaskSkillId() {
-    }
+    protected TaskSkillId() {}
 
     public TaskSkillId(UUID taskId, UUID skillId) {
         this.taskId = Objects.requireNonNull(taskId);

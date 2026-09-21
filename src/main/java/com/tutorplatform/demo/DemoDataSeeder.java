@@ -24,9 +24,18 @@ public class DemoDataSeeder implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         DemoDataSeedService.SeedResult result = seedService.seed();
         log.info("DEMO DATA {}", result.created() ? "SEEDED" : "ALREADY PRESENT");
-        log.info("DEMO teacher: {} / {}", DemoDataAccess.TEACHER_EMAIL, DemoDataAccess.TEACHER_PASSWORD);
-        log.info("DEMO student Alex: {} / {}", DemoDataAccess.ALEX_EMAIL, DemoDataAccess.STUDENT_PASSWORD);
-        log.info("DEMO student Maria: {} / {}", DemoDataAccess.MARIA_EMAIL, DemoDataAccess.STUDENT_PASSWORD);
+        log.info(
+                "DEMO teacher: {} / {}",
+                DemoDataAccess.TEACHER_EMAIL,
+                DemoDataAccess.TEACHER_PASSWORD);
+        log.info(
+                "DEMO student Alex: {} / {}",
+                DemoDataAccess.ALEX_EMAIL,
+                DemoDataAccess.STUDENT_PASSWORD);
+        log.info(
+                "DEMO student Maria: {} / {}",
+                DemoDataAccess.MARIA_EMAIL,
+                DemoDataAccess.STUDENT_PASSWORD);
         log.info("DEMO public progress: /api/v1/public/progress/{}", DemoDataAccess.PROGRESS_TOKEN);
         log.info("DEMO public report: /api/v1/public/reports/{}", DemoDataAccess.REPORT_TOKEN);
     }

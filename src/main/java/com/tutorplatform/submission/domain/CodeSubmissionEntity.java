@@ -17,21 +17,28 @@ public class CodeSubmissionEntity {
     private Instant updatedAt;
 
     public CodeSubmissionEntity(UUID submissionId, String sourceCode, int totalTests) {
-        this(submissionId, sourceCode, CodeExecutionStatus.PENDING, 0, totalTests,
-            null, null, null, null);
+        this(
+                submissionId,
+                sourceCode,
+                CodeExecutionStatus.PENDING,
+                0,
+                totalTests,
+                null,
+                null,
+                null,
+                null);
     }
 
     public CodeSubmissionEntity(
-        UUID submissionId,
-        String sourceCode,
-        CodeExecutionStatus executionStatus,
-        int passedTests,
-        int totalTests,
-        Integer executionTimeMs,
-        String stdoutExcerpt,
-        String stderrExcerpt,
-        Instant updatedAt
-    ) {
+            UUID submissionId,
+            String sourceCode,
+            CodeExecutionStatus executionStatus,
+            int passedTests,
+            int totalTests,
+            Integer executionTimeMs,
+            String stdoutExcerpt,
+            String stderrExcerpt,
+            Instant updatedAt) {
         this.submissionId = Objects.requireNonNull(submissionId);
         this.sourceCode = Objects.requireNonNull(sourceCode);
         this.executionStatus = Objects.requireNonNull(executionStatus);
@@ -48,13 +55,12 @@ public class CodeSubmissionEntity {
     }
 
     public void complete(
-        CodeExecutionStatus status,
-        int passedTests,
-        int totalTests,
-        long executionTimeMs,
-        String stdoutExcerpt,
-        String stderrExcerpt
-    ) {
+            CodeExecutionStatus status,
+            int passedTests,
+            int totalTests,
+            long executionTimeMs,
+            String stdoutExcerpt,
+            String stderrExcerpt) {
         if (status == CodeExecutionStatus.PENDING || status == CodeExecutionStatus.RUNNING) {
             throw new IllegalArgumentException("A final execution status is required");
         }
@@ -76,13 +82,39 @@ public class CodeSubmissionEntity {
         }
     }
 
-    public UUID getSubmissionId() { return submissionId; }
-    public String getSourceCode() { return sourceCode; }
-    public CodeExecutionStatus getExecutionStatus() { return executionStatus; }
-    public int getPassedTests() { return passedTests; }
-    public int getTotalTests() { return totalTests; }
-    public Integer getExecutionTimeMs() { return executionTimeMs; }
-    public String getStdoutExcerpt() { return stdoutExcerpt; }
-    public String getStderrExcerpt() { return stderrExcerpt; }
-    public Instant getUpdatedAt() { return updatedAt; }
+    public UUID getSubmissionId() {
+        return submissionId;
+    }
+
+    public String getSourceCode() {
+        return sourceCode;
+    }
+
+    public CodeExecutionStatus getExecutionStatus() {
+        return executionStatus;
+    }
+
+    public int getPassedTests() {
+        return passedTests;
+    }
+
+    public int getTotalTests() {
+        return totalTests;
+    }
+
+    public Integer getExecutionTimeMs() {
+        return executionTimeMs;
+    }
+
+    public String getStdoutExcerpt() {
+        return stdoutExcerpt;
+    }
+
+    public String getStderrExcerpt() {
+        return stderrExcerpt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
 }

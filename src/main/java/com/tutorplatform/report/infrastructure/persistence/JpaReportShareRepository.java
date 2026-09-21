@@ -2,11 +2,10 @@ package com.tutorplatform.report.infrastructure.persistence;
 
 import com.tutorplatform.report.domain.ReportShare;
 import com.tutorplatform.report.domain.ReportShareRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaReportShareRepository implements ReportShareRepository {
@@ -24,19 +23,22 @@ public class JpaReportShareRepository implements ReportShareRepository {
 
     @Override
     public Optional<ReportShare> findByTokenHash(String tokenHash) {
-        return databaseRepository.findByTokenHash(tokenHash).map(ReportShareDatabaseModel::toDomain);
+        return databaseRepository
+                .findByTokenHash(tokenHash)
+                .map(ReportShareDatabaseModel::toDomain);
     }
 
     @Override
     public Optional<ReportShare> findByIdAndReportId(UUID shareId, UUID reportId) {
-        return databaseRepository.findByIdAndReportId(shareId, reportId)
-            .map(ReportShareDatabaseModel::toDomain);
+        return databaseRepository
+                .findByIdAndReportId(shareId, reportId)
+                .map(ReportShareDatabaseModel::toDomain);
     }
 
     @Override
     public List<ReportShare> listByReportId(UUID reportId) {
         return databaseRepository.findAllByReportIdOrderByCreatedAtDesc(reportId).stream()
-            .map(ReportShareDatabaseModel::toDomain)
-            .toList();
+                .map(ReportShareDatabaseModel::toDomain)
+                .toList();
     }
 }

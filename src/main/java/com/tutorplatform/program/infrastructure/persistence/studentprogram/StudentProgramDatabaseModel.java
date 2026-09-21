@@ -6,19 +6,17 @@ import com.tutorplatform.program.infrastructure.persistence.learningprogram.Lear
 import com.tutorplatform.student.infrastructure.persistence.StudentDatabaseModel;
 import com.tutorplatform.user.infrastructure.persistence.TeacherDatabaseModel;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "student_programs")
 public class StudentProgramDatabaseModel {
 
-    @Id
-    private UUID id;
+    @Id private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "student_id", nullable = false, insertable = false, updatable = false)
@@ -28,14 +26,22 @@ public class StudentProgramDatabaseModel {
     private UUID studentId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "learning_program_id", nullable = false, insertable = false, updatable = false)
+    @JoinColumn(
+            name = "learning_program_id",
+            nullable = false,
+            insertable = false,
+            updatable = false)
     private LearningProgramDatabaseModel learningProgram;
 
     @Column(name = "learning_program_id", nullable = false)
     private UUID learningProgramId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "assigned_by_teacher_id", nullable = false, insertable = false, updatable = false)
+    @JoinColumn(
+            name = "assigned_by_teacher_id",
+            nullable = false,
+            insertable = false,
+            updatable = false)
     private TeacherDatabaseModel assignedByTeacher;
 
     @Column(name = "assigned_by_teacher_id", nullable = false)
@@ -66,8 +72,7 @@ public class StudentProgramDatabaseModel {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    protected StudentProgramDatabaseModel() {
-    }
+    protected StudentProgramDatabaseModel() {}
 
     StudentProgramDatabaseModel(StudentProgramEntity studentProgram) {
         id = Objects.requireNonNull(studentProgram.id());
@@ -87,8 +92,16 @@ public class StudentProgramDatabaseModel {
 
     StudentProgramEntity toEntity() {
         return new StudentProgramEntity(
-            id, studentId, learningProgramId, assignedByTeacherId, status, reportIntervalMinutes,
-            startedAt, completedAt, version, createdAt, updatedAt
-        );
+                id,
+                studentId,
+                learningProgramId,
+                assignedByTeacherId,
+                status,
+                reportIntervalMinutes,
+                startedAt,
+                completedAt,
+                version,
+                createdAt,
+                updatedAt);
     }
 }

@@ -3,7 +3,6 @@ package com.tutorplatform.report.infrastructure.persistence;
 import com.tutorplatform.report.domain.LearningPeriod;
 import com.tutorplatform.report.domain.LearningPeriodStatus;
 import jakarta.persistence.*;
-
 import java.time.Instant;
 import java.util.UUID;
 
@@ -11,8 +10,7 @@ import java.util.UUID;
 @Table(name = "learning_periods")
 public class LearningPeriodDatabaseModel {
 
-    @Id
-    private UUID id;
+    @Id private UUID id;
 
     @Column(name = "student_program_id", nullable = false)
     private UUID studentProgramId;
@@ -45,8 +43,7 @@ public class LearningPeriodDatabaseModel {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    protected LearningPeriodDatabaseModel() {
-    }
+    protected LearningPeriodDatabaseModel() {}
 
     LearningPeriodDatabaseModel(LearningPeriod period) {
         id = period.id();
@@ -64,8 +61,16 @@ public class LearningPeriodDatabaseModel {
 
     LearningPeriod toDomain() {
         return new LearningPeriod(
-            id, studentProgramId, sequenceNo, startCumulativeMinutes, targetDurationMinutes,
-            endCumulativeMinutes, status, startedAt, completedAt, createdAt, updatedAt
-        );
+                id,
+                studentProgramId,
+                sequenceNo,
+                startCumulativeMinutes,
+                targetDurationMinutes,
+                endCumulativeMinutes,
+                status,
+                startedAt,
+                completedAt,
+                createdAt,
+                updatedAt);
     }
 }

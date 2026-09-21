@@ -4,16 +4,14 @@ import com.tutorplatform.program.infrastructure.persistence.TopicDatabaseModel;
 import com.tutorplatform.task.domain.topic.TopicTaskEntity;
 import com.tutorplatform.task.infrastructure.persistence.task.TaskDatabaseModel;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.Instant;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "topic_tasks")
 public class TopicTaskDatabaseModel {
 
-    @EmbeddedId
-    private TopicTaskId id;
+    @EmbeddedId private TopicTaskId id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "topic_id", nullable = false, insertable = false, updatable = false)
@@ -33,8 +31,7 @@ public class TopicTaskDatabaseModel {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    protected TopicTaskDatabaseModel() {
-    }
+    protected TopicTaskDatabaseModel() {}
 
     TopicTaskDatabaseModel(TopicTaskEntity topicTask) {
         id = new TopicTaskId(topicTask.topicId(), topicTask.taskId());

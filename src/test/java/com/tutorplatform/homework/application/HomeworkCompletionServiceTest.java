@@ -1,24 +1,23 @@
 package com.tutorplatform.homework.application;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
+
 import com.tutorplatform.homework.domain.HomeworkEntity;
 import com.tutorplatform.homework.domain.HomeworkItemEntity;
 import com.tutorplatform.homework.domain.HomeworkRepository;
 import com.tutorplatform.homework.domain.HomeworkStatus;
 import com.tutorplatform.submission.application.SubmissionQuery;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class HomeworkCompletionServiceTest {
@@ -32,10 +31,8 @@ class HomeworkCompletionServiceTest {
     private static final UUID FIRST_TASK_ID = UUID.randomUUID();
     private static final UUID SECOND_TASK_ID = UUID.randomUUID();
 
-    @Mock
-    private HomeworkRepository homeworkRepository;
-    @Mock
-    private SubmissionQuery submissionQuery;
+    @Mock private HomeworkRepository homeworkRepository;
+    @Mock private SubmissionQuery submissionQuery;
     private HomeworkCompletionService service;
 
     @BeforeEach
@@ -55,11 +52,14 @@ class HomeworkCompletionServiceTest {
 
     @Test
     void twoRequiredItemsWithPassedSubmissionsCompleteHomework() {
-        HomeworkEntity homework = assigned(
-            item(FIRST_ITEM_ID, FIRST_TASK_ID, true),
-            item(SECOND_ITEM_ID, SECOND_TASK_ID, true)
-        );
-        arrange(homework, passed(FIRST_ITEM_ID, FIRST_TASK_ID), passed(SECOND_ITEM_ID, SECOND_TASK_ID));
+        HomeworkEntity homework =
+                assigned(
+                        item(FIRST_ITEM_ID, FIRST_TASK_ID, true),
+                        item(SECOND_ITEM_ID, SECOND_TASK_ID, true));
+        arrange(
+                homework,
+                passed(FIRST_ITEM_ID, FIRST_TASK_ID),
+                passed(SECOND_ITEM_ID, SECOND_TASK_ID));
 
         recalculate();
 
@@ -98,10 +98,10 @@ class HomeworkCompletionServiceTest {
 
     @Test
     void optionalItemWithoutSubmissionDoesNotBlockCompletion() {
-        HomeworkEntity homework = assigned(
-            item(FIRST_ITEM_ID, FIRST_TASK_ID, true),
-            item(SECOND_ITEM_ID, SECOND_TASK_ID, false)
-        );
+        HomeworkEntity homework =
+                assigned(
+                        item(FIRST_ITEM_ID, FIRST_TASK_ID, true),
+                        item(SECOND_ITEM_ID, SECOND_TASK_ID, false));
         arrange(homework, passed(FIRST_ITEM_ID, FIRST_TASK_ID));
 
         recalculate();
@@ -113,7 +113,7 @@ class HomeworkCompletionServiceTest {
     void homeworkWithOnlyOptionalItemsStaysAssigned() {
         HomeworkEntity homework = assigned(item(FIRST_ITEM_ID, FIRST_TASK_ID, false));
         when(homeworkRepository.findByHomeworkItemIdWithItems(FIRST_ITEM_ID))
-            .thenReturn(Optional.of(homework));
+                .thenReturn(Optional.of(homework));
 
         recalculate();
 
@@ -136,7 +136,7 @@ class HomeworkCompletionServiceTest {
     void eventForAnotherStudentProgramIsIgnored() {
         HomeworkEntity homework = assigned(item(FIRST_ITEM_ID, FIRST_TASK_ID, true));
         when(homeworkRepository.findByHomeworkItemIdWithItems(FIRST_ITEM_ID))
-            .thenReturn(Optional.of(homework));
+                .thenReturn(Optional.of(homework));
 
         service.recalculate(FIRST_ITEM_ID, STUDENT_ID, UUID.randomUUID(), FIRST_TASK_ID);
 
@@ -166,10 +166,10 @@ class HomeworkCompletionServiceTest {
 
     @Test
     void cancelledHomeworkNeverCompletes() {
-        HomeworkEntity homework = homework(HomeworkStatus.CANCELLED,
-            item(FIRST_ITEM_ID, FIRST_TASK_ID, true));
+        HomeworkEntity homework =
+                homework(HomeworkStatus.CANCELLED, item(FIRST_ITEM_ID, FIRST_TASK_ID, true));
         when(homeworkRepository.findByHomeworkItemIdWithItems(FIRST_ITEM_ID))
-            .thenReturn(Optional.of(homework));
+                .thenReturn(Optional.of(homework));
 
         recalculate();
 
@@ -180,13 +180,20 @@ class HomeworkCompletionServiceTest {
     @Test
     void alreadyCompletedHomeworkIsNotRecalculated() {
         Instant completedAt = Instant.parse("2026-09-01T10:00:00Z");
-        HomeworkEntity homework = new HomeworkEntity(
-            HOMEWORK_ID, PROGRAM_ID, TEACHER_ID, "Homework", null, Instant.now(), null,
-            HomeworkStatus.COMPLETED, completedAt,
-            List.of(item(FIRST_ITEM_ID, FIRST_TASK_ID, true))
-        );
+        HomeworkEntity homework =
+                new HomeworkEntity(
+                        HOMEWORK_ID,
+                        PROGRAM_ID,
+                        TEACHER_ID,
+                        "Homework",
+                        null,
+                        Instant.now(),
+                        null,
+                        HomeworkStatus.COMPLETED,
+                        completedAt,
+                        List.of(item(FIRST_ITEM_ID, FIRST_TASK_ID, true)));
         when(homeworkRepository.findByHomeworkItemIdWithItems(FIRST_ITEM_ID))
-            .thenReturn(Optional.of(homework));
+                .thenReturn(Optional.of(homework));
 
         recalculate();
 
@@ -222,24 +229,27 @@ class HomeworkCompletionServiceTest {
 
     @Test
     void completionUsesOneBatchSubmissionQueryForManyItems() {
-        HomeworkEntity homework = assigned(
-            item(FIRST_ITEM_ID, FIRST_TASK_ID, true),
-            item(SECOND_ITEM_ID, SECOND_TASK_ID, true)
-        );
-        arrange(homework, passed(FIRST_ITEM_ID, FIRST_TASK_ID), passed(SECOND_ITEM_ID, SECOND_TASK_ID));
+        HomeworkEntity homework =
+                assigned(
+                        item(FIRST_ITEM_ID, FIRST_TASK_ID, true),
+                        item(SECOND_ITEM_ID, SECOND_TASK_ID, true));
+        arrange(
+                homework,
+                passed(FIRST_ITEM_ID, FIRST_TASK_ID),
+                passed(SECOND_ITEM_ID, SECOND_TASK_ID));
 
         recalculate();
 
-        verify(submissionQuery, times(1)).findPassedHomeworkItems(
-            STUDENT_ID, PROGRAM_ID, Set.of(FIRST_ITEM_ID, SECOND_ITEM_ID)
-        );
+        verify(submissionQuery, times(1))
+                .findPassedHomeworkItems(
+                        STUDENT_ID, PROGRAM_ID, Set.of(FIRST_ITEM_ID, SECOND_ITEM_ID));
     }
 
     private void assertIncompleteWhenOnlyFirstItemHasPassedFact() {
-        HomeworkEntity homework = assigned(
-            item(FIRST_ITEM_ID, FIRST_TASK_ID, true),
-            item(SECOND_ITEM_ID, SECOND_TASK_ID, true)
-        );
+        HomeworkEntity homework =
+                assigned(
+                        item(FIRST_ITEM_ID, FIRST_TASK_ID, true),
+                        item(SECOND_ITEM_ID, SECOND_TASK_ID, true));
         arrange(homework, passed(FIRST_ITEM_ID, FIRST_TASK_ID));
 
         recalculate();
@@ -247,15 +257,17 @@ class HomeworkCompletionServiceTest {
         assertAssigned(homework);
     }
 
-    private void arrange(HomeworkEntity homework, SubmissionQuery.PassedHomeworkItem... passedItems) {
+    private void arrange(
+            HomeworkEntity homework, SubmissionQuery.PassedHomeworkItem... passedItems) {
         when(homeworkRepository.findByHomeworkItemIdWithItems(FIRST_ITEM_ID))
-            .thenReturn(Optional.of(homework));
-        Set<UUID> requiredIds = homework.getItems().stream()
-            .filter(HomeworkItemEntity::required)
-            .map(HomeworkItemEntity::id)
-            .collect(java.util.stream.Collectors.toSet());
+                .thenReturn(Optional.of(homework));
+        Set<UUID> requiredIds =
+                homework.getItems().stream()
+                        .filter(HomeworkItemEntity::required)
+                        .map(HomeworkItemEntity::id)
+                        .collect(java.util.stream.Collectors.toSet());
         when(submissionQuery.findPassedHomeworkItems(STUDENT_ID, PROGRAM_ID, requiredIds))
-            .thenReturn(Set.of(passedItems));
+                .thenReturn(Set.of(passedItems));
     }
 
     private void recalculate() {
@@ -280,9 +292,16 @@ class HomeworkCompletionServiceTest {
 
     private HomeworkEntity homework(HomeworkStatus status, HomeworkItemEntity... items) {
         return new HomeworkEntity(
-            HOMEWORK_ID, PROGRAM_ID, TEACHER_ID, "Homework", null, Instant.now(), null,
-            status, null, List.of(items)
-        );
+                HOMEWORK_ID,
+                PROGRAM_ID,
+                TEACHER_ID,
+                "Homework",
+                null,
+                Instant.now(),
+                null,
+                status,
+                null,
+                List.of(items));
     }
 
     private HomeworkItemEntity item(UUID itemId, UUID taskId, boolean required) {

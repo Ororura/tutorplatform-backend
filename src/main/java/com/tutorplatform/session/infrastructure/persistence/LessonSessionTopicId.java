@@ -2,7 +2,6 @@ package com.tutorplatform.session.infrastructure.persistence;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
@@ -16,8 +15,7 @@ public class LessonSessionTopicId implements Serializable {
     @Column(name = "topic_id", nullable = false)
     private UUID topicId;
 
-    protected LessonSessionTopicId() {
-    }
+    protected LessonSessionTopicId() {}
 
     public LessonSessionTopicId(UUID lessonSessionId, UUID topicId) {
         this.lessonSessionId = Objects.requireNonNull(lessonSessionId);

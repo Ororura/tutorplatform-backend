@@ -14,13 +14,11 @@ public interface CodeSubmissionRepository {
     Map<UUID, Summary> findSummaries(Collection<UUID> submissionIds);
 
     record Summary(
-        UUID submissionId,
-        CodeExecutionStatus executionStatus,
-        int passedTests,
-        int totalTests,
-        Integer executionTimeMs,
-        String stdoutExcerpt,
-        String stderrExcerpt
-    ) {
-    }
+            UUID submissionId,
+            CodeExecutionStatus executionStatus,
+            int passedTests,
+            int totalTests,
+            Integer executionTimeMs,
+            String stdoutExcerpt,
+            String stderrExcerpt) {}
 }

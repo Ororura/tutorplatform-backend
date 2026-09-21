@@ -17,53 +17,59 @@ public class TeacherAssessmentEntity {
     private String publicComment;
 
     public TeacherAssessmentEntity(
-        UUID id,
-        UUID lessonSessionId,
-        Integer understandingScore,
-        Integer independenceScore,
-        Integer practiceScore,
-        Integer homeworkScore,
-        String publicComment
-    ) {
-        this(id, lessonSessionId, understandingScore, independenceScore, practiceScore,
-            homeworkScore, publicComment, null, null);
+            UUID id,
+            UUID lessonSessionId,
+            Integer understandingScore,
+            Integer independenceScore,
+            Integer practiceScore,
+            Integer homeworkScore,
+            String publicComment) {
+        this(
+                id,
+                lessonSessionId,
+                understandingScore,
+                independenceScore,
+                practiceScore,
+                homeworkScore,
+                publicComment,
+                null,
+                null);
     }
 
     public TeacherAssessmentEntity(
-        UUID id,
-        UUID lessonSessionId,
-        Integer understandingScore,
-        Integer independenceScore,
-        Integer practiceScore,
-        Integer homeworkScore,
-        String publicComment,
-        Instant createdAt,
-        Instant updatedAt
-    ) {
+            UUID id,
+            UUID lessonSessionId,
+            Integer understandingScore,
+            Integer independenceScore,
+            Integer practiceScore,
+            Integer homeworkScore,
+            String publicComment,
+            Instant createdAt,
+            Instant updatedAt) {
         this.id = Objects.requireNonNull(id);
         this.lessonSessionId = Objects.requireNonNull(lessonSessionId);
-        applyChanges(understandingScore, independenceScore, practiceScore, homeworkScore, publicComment);
+        applyChanges(
+                understandingScore, independenceScore, practiceScore, homeworkScore, publicComment);
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
     public void update(
-        Integer understandingScore,
-        Integer independenceScore,
-        Integer practiceScore,
-        Integer homeworkScore,
-        String publicComment
-    ) {
-        applyChanges(understandingScore, independenceScore, practiceScore, homeworkScore, publicComment);
+            Integer understandingScore,
+            Integer independenceScore,
+            Integer practiceScore,
+            Integer homeworkScore,
+            String publicComment) {
+        applyChanges(
+                understandingScore, independenceScore, practiceScore, homeworkScore, publicComment);
     }
 
     private void applyChanges(
-        Integer understandingScore,
-        Integer independenceScore,
-        Integer practiceScore,
-        Integer homeworkScore,
-        String publicComment
-    ) {
+            Integer understandingScore,
+            Integer independenceScore,
+            Integer practiceScore,
+            Integer homeworkScore,
+            String publicComment) {
         validateScore("understandingScore", understandingScore);
         validateScore("independenceScore", independenceScore);
         validateScore("practiceScore", practiceScore);

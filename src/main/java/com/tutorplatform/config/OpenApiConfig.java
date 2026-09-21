@@ -5,11 +5,10 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import java.util.List;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.List;
 
 @Configuration
 public class OpenApiConfig {
@@ -17,19 +16,22 @@ public class OpenApiConfig {
     @Bean
     OpenAPI tutorPlatformOpenApi() {
         return new OpenAPI()
-            .components(new Components().addSecuritySchemes(
-                "cookieSession",
-                new SecurityScheme()
-                    .type(SecurityScheme.Type.APIKEY)
-                    .in(SecurityScheme.In.COOKIE)
-                    .name("TUTOR_SESSION")
-                    .description("Spring Security session cookie")
-            ))
-            .addSecurityItem(new SecurityRequirement().addList("cookieSession"))
-            .info(new Info()
-                .title("Tutor Learning Platform API")
-                .version("v1")
-                .description("Backend contract for the Tutor Learning Platform MVP."));
+                .components(
+                        new Components()
+                                .addSecuritySchemes(
+                                        "cookieSession",
+                                        new SecurityScheme()
+                                                .type(SecurityScheme.Type.APIKEY)
+                                                .in(SecurityScheme.In.COOKIE)
+                                                .name("TUTOR_SESSION")
+                                                .description("Spring Security session cookie")))
+                .addSecurityItem(new SecurityRequirement().addList("cookieSession"))
+                .info(
+                        new Info()
+                                .title("Tutor Learning Platform API")
+                                .version("v1")
+                                .description(
+                                        "Backend contract for the Tutor Learning Platform MVP."));
     }
 
     @Bean
@@ -57,7 +59,8 @@ public class OpenApiConfig {
     }
 
     private static void clearPostSecurity(OpenAPI openApi, String path) {
-        if (openApi.getPaths().get(path) != null && openApi.getPaths().get(path).getPost() != null) {
+        if (openApi.getPaths().get(path) != null
+                && openApi.getPaths().get(path).getPost() != null) {
             openApi.getPaths().get(path).getPost().setSecurity(List.of());
         }
     }

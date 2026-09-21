@@ -2,11 +2,10 @@ package com.tutorplatform.program.infrastructure.persistence;
 
 import com.tutorplatform.program.domain.ModuleEntity;
 import com.tutorplatform.program.domain.ModuleRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaModuleRepository implements ModuleRepository {
@@ -19,8 +18,10 @@ public class JpaModuleRepository implements ModuleRepository {
 
     @Override
     public ModuleEntity saveAndFlush(ModuleEntity module) {
-        ModuleDatabaseModel model = databaseRepository.findById(module.id())
-            .orElseGet(() -> new ModuleDatabaseModel(module));
+        ModuleDatabaseModel model =
+                databaseRepository
+                        .findById(module.id())
+                        .orElseGet(() -> new ModuleDatabaseModel(module));
         model.updateFrom(module);
         return databaseRepository.saveAndFlush(model).toEntity();
     }
@@ -33,8 +34,8 @@ public class JpaModuleRepository implements ModuleRepository {
     @Override
     public List<ModuleEntity> findByLearningProgramId(UUID learningProgramId) {
         return databaseRepository.findByLearningProgramId(learningProgramId).stream()
-            .map(ModuleDatabaseModel::toEntity)
-            .toList();
+                .map(ModuleDatabaseModel::toEntity)
+                .toList();
     }
 
     @Override

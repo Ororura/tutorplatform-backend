@@ -2,7 +2,6 @@ package com.tutorplatform.student.infrastructure.persistence;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
@@ -16,8 +15,7 @@ public class TeacherStudentLinkId implements Serializable {
     @Column(name = "student_id", nullable = false)
     private UUID studentId;
 
-    public TeacherStudentLinkId() {
-    }
+    public TeacherStudentLinkId() {}
 
     public TeacherStudentLinkId(UUID teacherId, UUID studentId) {
         this.teacherId = Objects.requireNonNull(teacherId);

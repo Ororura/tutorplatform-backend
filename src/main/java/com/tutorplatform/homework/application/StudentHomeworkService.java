@@ -6,23 +6,21 @@ import com.tutorplatform.homework.application.exception.HomeworkStudentProgramNo
 import com.tutorplatform.homework.application.exception.InvalidHomeworkException;
 import com.tutorplatform.homework.domain.HomeworkStatus;
 import com.tutorplatform.program.application.ProgramQuery;
-import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.student.application.management.StudentNotFoundException;
+import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.submission.application.SubmissionQuery;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
 public class StudentHomeworkService {
 
-    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
-        "assignedAt", "dueAt", "createdAt", "title"
-    );
+    private static final Set<String> ALLOWED_SORT_FIELDS =
+            Set.of("assignedAt", "dueAt", "createdAt", "title");
 
     private final StudentOwnershipQuery studentOwnershipQuery;
     private final ProgramQuery programQuery;
@@ -30,11 +28,10 @@ public class StudentHomeworkService {
     private final SubmissionQuery submissionQuery;
 
     public StudentHomeworkService(
-        StudentOwnershipQuery studentOwnershipQuery,
-        ProgramQuery programQuery,
-        HomeworkQuery homeworkQuery,
-        SubmissionQuery submissionQuery
-    ) {
+            StudentOwnershipQuery studentOwnershipQuery,
+            ProgramQuery programQuery,
+            HomeworkQuery homeworkQuery,
+            SubmissionQuery submissionQuery) {
         this.studentOwnershipQuery = studentOwnershipQuery;
         this.programQuery = programQuery;
         this.homeworkQuery = homeworkQuery;
@@ -42,88 +39,113 @@ public class StudentHomeworkService {
     }
 
     public StudentHomeworkPageResult listHomeworks(
-        AuthenticatedUser principal,
-        UUID studentProgramId,
-        HomeworkStatus status,
-        int page,
-        int size,
-        String sort
-    ) {
+            AuthenticatedUser principal,
+            UUID studentProgramId,
+            HomeworkStatus status,
+            int page,
+            int size,
+            String sort) {
         SortParameters sortParameters = validateListParameters(page, size, sort);
         UUID studentId = currentStudentId(principal);
         if (studentProgramId != null) {
             requireOwnedStudentProgram(studentId, studentProgramId);
         }
-        StudentHomeworkPage result = homeworkQuery.findPageByStudent(
-            studentId, studentProgramId, status, page, size,
-            sortParameters.field(), sortParameters.ascending()
-        );
+        StudentHomeworkPage result =
+                homeworkQuery.findPageByStudent(
+                        studentId,
+                        studentProgramId,
+                        status,
+                        page,
+                        size,
+                        sortParameters.field(),
+                        sortParameters.ascending());
         Instant now = Instant.now();
         return new StudentHomeworkPageResult(
-            result.items().stream().map(item -> new StudentHomeworkSummaryResult(
-                item.id(), item.studentProgramId(), item.title(), item.status(),
-                item.assignedAt(), item.dueAt(), isOverdue(
-                item.dueAt(), item.status(), item.completedAt(), now
-            ), item.completedAt(), item.itemsCount(), item.createdAt()
-            )).toList(),
-            page,
-            size,
-            result.totalElements(),
-            result.totalPages()
-        );
+                result.items().stream()
+                        .map(
+                                item ->
+                                        new StudentHomeworkSummaryResult(
+                                                item.id(),
+                                                item.studentProgramId(),
+                                                item.title(),
+                                                item.status(),
+                                                item.assignedAt(),
+                                                item.dueAt(),
+                                                isOverdue(
+                                                        item.dueAt(),
+                                                        item.status(),
+                                                        item.completedAt(),
+                                                        now),
+                                                item.completedAt(),
+                                                item.itemsCount(),
+                                                item.createdAt()))
+                        .toList(),
+                page,
+                size,
+                result.totalElements(),
+                result.totalPages());
     }
 
-    public StudentHomeworkDetailsResult getHomework(
-        AuthenticatedUser principal,
-        UUID homeworkId
-    ) {
+    public StudentHomeworkDetailsResult getHomework(AuthenticatedUser principal, UUID homeworkId) {
         UUID studentId = currentStudentId(principal);
-        StudentHomeworkDetails homework = homeworkQuery.findDetailsByStudent(studentId, homeworkId)
-            .orElseThrow(HomeworkNotFoundException::new);
-        var itemIds = homework.items().stream()
-            .map(StudentHomeworkDetails.Item::id)
-            .collect(java.util.stream.Collectors.toUnmodifiableSet());
-        var states = submissionQuery.findHomeworkItemStates(
-            studentId, homework.studentProgramId(), itemIds
-        );
-        var items = homework.items().stream().map(item -> {
-            var state = states.get(item.id());
-            return state == null
-                ? item
-                : item.withSubmissionState(state.passed(), state.latestSubmissionStatus());
-        }).toList();
+        StudentHomeworkDetails homework =
+                homeworkQuery
+                        .findDetailsByStudent(studentId, homeworkId)
+                        .orElseThrow(HomeworkNotFoundException::new);
+        var itemIds =
+                homework.items().stream()
+                        .map(StudentHomeworkDetails.Item::id)
+                        .collect(java.util.stream.Collectors.toUnmodifiableSet());
+        var states =
+                submissionQuery.findHomeworkItemStates(
+                        studentId, homework.studentProgramId(), itemIds);
+        var items =
+                homework.items().stream()
+                        .map(
+                                item -> {
+                                    var state = states.get(item.id());
+                                    return state == null
+                                            ? item
+                                            : item.withSubmissionState(
+                                                    state.passed(), state.latestSubmissionStatus());
+                                })
+                        .toList();
         return new StudentHomeworkDetailsResult(
-            homework.id(), homework.studentProgramId(), homework.title(), homework.description(),
-            homework.status(), homework.assignedAt(), homework.dueAt(), isOverdue(
-            homework.dueAt(), homework.status(), homework.completedAt(), Instant.now()
-        ), homework.completedAt(), items
-        );
+                homework.id(),
+                homework.studentProgramId(),
+                homework.title(),
+                homework.description(),
+                homework.status(),
+                homework.assignedAt(),
+                homework.dueAt(),
+                isOverdue(
+                        homework.dueAt(), homework.status(), homework.completedAt(), Instant.now()),
+                homework.completedAt(),
+                items);
     }
 
     private UUID currentStudentId(AuthenticatedUser principal) {
-        return studentOwnershipQuery.findStudentIdByUserId(principal.id())
-            .orElseThrow(StudentNotFoundException::new);
+        return studentOwnershipQuery
+                .findStudentIdByUserId(principal.id())
+                .orElseThrow(StudentNotFoundException::new);
     }
 
     private void requireOwnedStudentProgram(UUID studentId, UUID studentProgramId) {
-        ProgramQuery.StudentProgramContext studentProgram = programQuery
-            .findStudentProgram(studentProgramId)
-            .orElseThrow(HomeworkStudentProgramNotFoundException::new);
+        ProgramQuery.StudentProgramContext studentProgram =
+                programQuery
+                        .findStudentProgram(studentProgramId)
+                        .orElseThrow(HomeworkStudentProgramNotFoundException::new);
         if (!studentProgram.belongsToStudent(studentId)) {
             throw new HomeworkStudentProgramNotFoundException();
         }
     }
 
     private boolean isOverdue(
-        Instant dueAt,
-        HomeworkStatus status,
-        Instant completedAt,
-        Instant now
-    ) {
+            Instant dueAt, HomeworkStatus status, Instant completedAt, Instant now) {
         return dueAt != null
-            && dueAt.isBefore(now)
-            && status == HomeworkStatus.ASSIGNED
-            && completedAt == null;
+                && dueAt.isBefore(now)
+                && status == HomeworkStatus.ASSIGNED
+                && completedAt == null;
     }
 
     private SortParameters validateListParameters(int page, int size, String sort) {
@@ -136,8 +158,7 @@ public class StudentHomeworkService {
         String[] parts = sort.split(",", -1);
         if (parts.length != 2 || !ALLOWED_SORT_FIELDS.contains(parts[0])) {
             throw new InvalidHomeworkException(
-                "sort", "must use assignedAt, dueAt, createdAt, or title"
-            );
+                    "sort", "must use assignedAt, dueAt, createdAt, or title");
         }
         if (!parts[1].equals("asc") && !parts[1].equals("desc")) {
             throw new InvalidHomeworkException("sort", "direction must be asc or desc");
@@ -145,6 +166,5 @@ public class StudentHomeworkService {
         return new SortParameters(parts[0], parts[1].equals("asc"));
     }
 
-    private record SortParameters(String field, boolean ascending) {
-    }
+    private record SortParameters(String field, boolean ascending) {}
 }

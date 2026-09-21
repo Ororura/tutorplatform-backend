@@ -4,11 +4,10 @@ import com.tutorplatform.program.domain.ModuleRepository;
 import com.tutorplatform.program.domain.TopicRepository;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramRepository;
 import com.tutorplatform.program.domain.studentprogram.StudentProgramRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
@@ -20,11 +19,10 @@ public class ProgramQueryService implements ProgramQuery {
     private final LearningProgramRepository learningProgramRepository;
 
     public ProgramQueryService(
-        StudentProgramRepository studentProgramRepository,
-        TopicRepository topicRepository,
-        ModuleRepository moduleRepository,
-        LearningProgramRepository learningProgramRepository
-    ) {
+            StudentProgramRepository studentProgramRepository,
+            TopicRepository topicRepository,
+            ModuleRepository moduleRepository,
+            LearningProgramRepository learningProgramRepository) {
         this.studentProgramRepository = studentProgramRepository;
         this.topicRepository = topicRepository;
         this.moduleRepository = moduleRepository;
@@ -33,15 +31,17 @@ public class ProgramQueryService implements ProgramQuery {
 
     @Override
     public Optional<TopicContext> findTopic(UUID topicId) {
-        return topicRepository.findById(topicId)
-            .flatMap(topic -> moduleRepository.findById(topic.moduleId()))
-            .flatMap(module -> learningProgramRepository.findById(module.learningProgramId()))
-            .map(learningProgram -> new TopicContext(
-                topicId,
-                learningProgram.getId(),
-                learningProgram.getTeacherId(),
-                learningProgram.getSubjectId()
-            ));
+        return topicRepository
+                .findById(topicId)
+                .flatMap(topic -> moduleRepository.findById(topic.moduleId()))
+                .flatMap(module -> learningProgramRepository.findById(module.learningProgramId()))
+                .map(
+                        learningProgram ->
+                                new TopicContext(
+                                        topicId,
+                                        learningProgram.getId(),
+                                        learningProgram.getTeacherId(),
+                                        learningProgram.getSubjectId()));
     }
 
     @Override
@@ -56,26 +56,28 @@ public class ProgramQueryService implements ProgramQuery {
     }
 
     private Optional<StudentProgramContext> toContext(
-        Optional<com.tutorplatform.program.domain.studentprogram.StudentProgramEntity> result
-    ) {
-        return result
-            .flatMap(studentProgram -> learningProgramRepository
-                .findById(studentProgram.learningProgramId())
-                .map(learningProgram -> new StudentProgramContext(
-                    studentProgram.id(),
-                    studentProgram.studentId(),
-                    studentProgram.learningProgramId(),
-                    studentProgram.assignedByTeacherId(),
-                    learningProgram.getSubjectId(),
-                    studentProgram.reportIntervalMinutes()
-                )));
+            Optional<com.tutorplatform.program.domain.studentprogram.StudentProgramEntity> result) {
+        return result.flatMap(
+                studentProgram ->
+                        learningProgramRepository
+                                .findById(studentProgram.learningProgramId())
+                                .map(
+                                        learningProgram ->
+                                                new StudentProgramContext(
+                                                        studentProgram.id(),
+                                                        studentProgram.studentId(),
+                                                        studentProgram.learningProgramId(),
+                                                        studentProgram.assignedByTeacherId(),
+                                                        learningProgram.getSubjectId(),
+                                                        studentProgram.reportIntervalMinutes())));
     }
 
     @Override
     public boolean topicBelongsToLearningProgram(UUID topicId, UUID learningProgramId) {
-        return topicRepository.findById(topicId)
-            .flatMap(topic -> moduleRepository.findById(topic.moduleId()))
-            .map(module -> module.learningProgramId().equals(learningProgramId))
-            .orElse(false);
+        return topicRepository
+                .findById(topicId)
+                .flatMap(topic -> moduleRepository.findById(topic.moduleId()))
+                .map(module -> module.learningProgramId().equals(learningProgramId))
+                .orElse(false);
     }
 }
