@@ -74,6 +74,25 @@ public class TeacherStudentProgramService {
             .orElseThrow(StudentProgramNotFoundException::new);
     }
 
+    public List<StudentProgramSummaryResponse> listProgramsForStudent(
+        AuthenticatedUser principal
+    ) {
+        UUID studentId = currentStudentId(principal);
+        return programQuery.findProgramsByStudentId(studentId).stream()
+            .map(TeacherStudentProgramService::toSummaryResponse)
+            .toList();
+    }
+
+    public StudentProgramDetailsResponse getProgramForStudent(
+        AuthenticatedUser principal,
+        UUID studentProgramId
+    ) {
+        UUID studentId = currentStudentId(principal);
+        return programQuery.findProgramByStudentId(studentId, studentProgramId)
+            .map(TeacherStudentProgramService::toDetailsResponse)
+            .orElseThrow(StudentProgramNotFoundException::new);
+    }
+
     @Transactional
     public StudentProgramSummaryResponse assign(
         AuthenticatedUser principal,
@@ -120,6 +139,11 @@ public class TeacherStudentProgramService {
             throw new StudentNotFoundException();
         }
         return teacherId;
+    }
+
+    private UUID currentStudentId(AuthenticatedUser principal) {
+        return studentOwnershipQuery.findStudentIdByUserId(principal.id())
+            .orElseThrow(StudentNotFoundException::new);
     }
 
     private static StudentProgramSummaryResponse toSummaryResponse(

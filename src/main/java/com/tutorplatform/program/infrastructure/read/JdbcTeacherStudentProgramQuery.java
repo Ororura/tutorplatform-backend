@@ -47,6 +47,13 @@ public class JdbcTeacherStudentProgramQuery implements TeacherStudentProgramQuer
           AND lp.teacher_id = :teacherId
         """;
 
+    private static final String STUDENT_PROGRAM_FROM = """
+        FROM student_programs sp
+        JOIN learning_programs lp ON lp.id = sp.learning_program_id
+        JOIN subjects subject ON subject.id = lp.subject_id
+        WHERE sp.student_id = :studentId
+        """;
+
     private final JdbcClient jdbcClient;
 
     public JdbcTeacherStudentProgramQuery(JdbcClient jdbcClient) {
@@ -76,6 +83,40 @@ public class JdbcTeacherStudentProgramQuery implements TeacherStudentProgramQuer
             .param("studentProgramId", studentProgramId)
             .query(JdbcTeacherStudentProgramQuery::mapSummary)
             .optional();
+        return details(header, studentProgramId);
+    }
+
+    @Override
+    public List<StudentProgramSummary> findProgramsByStudentId(UUID studentId) {
+        String sql = "SELECT " + HEADER_COLUMNS + STUDENT_PROGRAM_FROM + """
+            ORDER BY sp.started_at DESC, sp.id ASC
+            """;
+        return jdbcClient.sql(sql)
+            .param("studentId", studentId)
+            .query(JdbcTeacherStudentProgramQuery::mapSummary)
+            .list();
+    }
+
+    @Override
+    public Optional<StudentProgramDetails> findProgramByStudentId(
+        UUID studentId,
+        UUID studentProgramId
+    ) {
+        String sql = "SELECT " + HEADER_COLUMNS + STUDENT_PROGRAM_FROM + """
+              AND sp.id = :studentProgramId
+            """;
+        Optional<StudentProgramSummary> header = jdbcClient.sql(sql)
+            .param("studentId", studentId)
+            .param("studentProgramId", studentProgramId)
+            .query(JdbcTeacherStudentProgramQuery::mapSummary)
+            .optional();
+        return details(header, studentProgramId);
+    }
+
+    private Optional<StudentProgramDetails> details(
+        Optional<StudentProgramSummary> header,
+        UUID studentProgramId
+    ) {
         if (header.isEmpty()) {
             return Optional.empty();
         }

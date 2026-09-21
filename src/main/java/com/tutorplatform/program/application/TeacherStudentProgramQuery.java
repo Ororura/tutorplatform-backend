@@ -15,6 +15,10 @@ public interface TeacherStudentProgramQuery {
 
     Optional<StudentProgramDetails> findProgram(UUID teacherId, UUID studentId, UUID studentProgramId);
 
+    List<StudentProgramSummary> findProgramsByStudentId(UUID studentId);
+
+    Optional<StudentProgramDetails> findProgramByStudentId(UUID studentId, UUID studentProgramId);
+
     record ProgramSubject(UUID id, String code, String name) {
     }
 
