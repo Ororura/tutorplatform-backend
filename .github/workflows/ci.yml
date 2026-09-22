@@ -91,14 +91,16 @@ jobs:
         run: |
           mkdir -p ~/.ssh
 
-          printf '%s\n' "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/tutorplatform_deploy
+          chmod 600 ~/.ssh/tutorplatform_deploy
+          ssh-keygen -y -f ~/.ssh/tutorplatform_deploy > /dev/null
 
           ssh-keyscan -H "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Deploy
         run: |
-          ssh "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" << 'EOF'
+          ssh -i ~/.ssh/tutorplatform_deploy \
+            "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" << 'EOF'
             set -e
 
             cd /opt/tutorplatform
