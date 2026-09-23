@@ -36,7 +36,7 @@ class S3FileStorageTest {
                 .isInstanceOf(FileStorageException.class);
         assertThatThrownBy(() -> storage.read("../backups/private", 5))
                 .isInstanceOf(FileStorageException.class);
-        storage.delete(object.key());
+        storage.delete("S3", object.key());
         verify(client).deleteObject(any(DeleteObjectRequest.class));
     }
 }

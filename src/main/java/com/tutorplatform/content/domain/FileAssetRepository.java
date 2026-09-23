@@ -9,4 +9,6 @@ public interface FileAssetRepository {
     FileAssetEntity saveAndFlush(FileAssetEntity fileAsset);
 
     Optional<FileAssetEntity> findById(UUID fileAssetId);
+
+    void deleteById(UUID fileAssetId);
 }

@@ -53,6 +53,16 @@ public interface TeacherLessonMaterialApi {
     ResponseEntity<byte[]> downloadLessonMaterial(
             AuthenticatedUser principal, UUID topicId, UUID materialId);
 
+    @Operation(operationId = "deleteLessonMaterial", summary = "Delete an owned lesson material")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Material deleted"),
+        @ApiResponse(responseCode = "401", description = "Authentication required"),
+        @ApiResponse(responseCode = "403", description = "Teacher role and CSRF required"),
+        @ApiResponse(responseCode = "404", description = "Lesson material not found")
+    })
+    ResponseEntity<Void> deleteLessonMaterial(
+            AuthenticatedUser principal, UUID topicId, UUID materialId);
+
     @Operation(operationId = "createLessonMaterial", summary = "Create a lesson material")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Lesson material created"),

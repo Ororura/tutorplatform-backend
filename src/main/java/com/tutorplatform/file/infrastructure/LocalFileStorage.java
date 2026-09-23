@@ -83,6 +83,14 @@ public class LocalFileStorage implements FileStorage {
         }
     }
 
+    @Override
+    public void delete(String provider, String key) {
+        if (!"LOCAL".equals(provider)) {
+            throw new FileStorageException(new IllegalArgumentException("Wrong storage provider"));
+        }
+        delete(key);
+    }
+
     private Path resolve(String key) {
         if (key == null
                 || !key.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")) {

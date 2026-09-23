@@ -25,6 +25,10 @@ class RoutingFileStorageTest {
         storage.delete("materials/id");
         verify(s3).delete("materials/id");
         verify(local, never()).delete("materials/id");
+        storage.delete("LOCAL", "old-key");
+        verify(local).delete("old-key");
+        storage.delete("S3", "materials/id");
+        verify(s3, times(2)).delete("materials/id");
     }
 
     @Test

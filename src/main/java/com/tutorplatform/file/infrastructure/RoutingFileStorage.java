@@ -47,4 +47,16 @@ public final class RoutingFileStorage implements FileStorage {
     public void delete(String key) {
         active.delete(key);
     }
+
+    @Override
+    public void delete(String provider, String key) {
+        if ("LOCAL".equals(provider)) {
+            local.delete(key);
+        } else if ("S3".equals(provider) && s3 != null) {
+            s3.delete(key);
+        } else {
+            throw new FileStorageException(
+                    new IllegalStateException("Stored file provider is not available"));
+        }
+    }
 }

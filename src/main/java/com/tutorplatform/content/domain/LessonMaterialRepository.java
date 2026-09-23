@@ -18,4 +18,8 @@ public interface LessonMaterialRepository {
     void updatePosition(UUID topicId, UUID lessonMaterialId, int position);
 
     boolean existsByIdAndTopicId(UUID lessonMaterialId, UUID topicId);
+
+    void deleteById(UUID lessonMaterialId);
+
+    long countByFileAssetId(UUID fileAssetId);
 }
