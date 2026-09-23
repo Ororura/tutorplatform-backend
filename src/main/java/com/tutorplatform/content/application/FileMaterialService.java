@@ -166,7 +166,8 @@ public class FileMaterialService {
                 material.materialType(),
                 asset.originalFilename(),
                 asset.mimeType(),
-                storage.read(asset.storageKey(), asset.sizeBytes()));
+                storage.read(
+                        asset.storageProvider().name(), asset.storageKey(), asset.sizeBytes()));
     }
 
     private String sha256(byte[] bytes) {

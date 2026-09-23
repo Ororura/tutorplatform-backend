@@ -11,15 +11,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
 
-@Component
-@ConditionalOnProperty(
-        prefix = "app.file-storage",
-        name = "provider",
-        havingValue = "LOCAL",
-        matchIfMissing = true)
 public class LocalFileStorage implements FileStorage {
     private static final Logger log = LoggerFactory.getLogger(LocalFileStorage.class);
     private final Path directory;
@@ -72,6 +64,14 @@ public class LocalFileStorage implements FileStorage {
         } catch (IOException exception) {
             throw new FileStorageException(exception);
         }
+    }
+
+    @Override
+    public byte[] read(String provider, String key, long expectedSize) {
+        if (!"LOCAL".equals(provider)) {
+            throw new FileStorageException(new IllegalArgumentException("Wrong storage provider"));
+        }
+        return read(key, expectedSize);
     }
 
     @Override
