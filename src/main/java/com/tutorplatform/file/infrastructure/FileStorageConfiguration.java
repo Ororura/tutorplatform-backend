@@ -27,7 +27,6 @@ public class FileStorageConfiguration {
                 .credentialsProvider(DefaultCredentialsProvider.create())
                 .serviceConfiguration(
                         S3Configuration.builder().pathStyleAccessEnabled(true).build())
-                // Useful with Yandex/S3-compatible endpoints that may not support optional CRC32.
                 .requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED)
                 .responseChecksumValidation(ResponseChecksumValidation.WHEN_REQUIRED)
                 .build();
