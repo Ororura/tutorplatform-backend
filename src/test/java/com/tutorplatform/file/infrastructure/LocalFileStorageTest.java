@@ -23,8 +23,8 @@ class LocalFileStorageTest {
                 .isInstanceOf(FileStorageException.class);
         assertThatThrownBy(() -> storage.read(object.key(), 1))
                 .isInstanceOf(FileStorageException.class);
-        storage.delete(object.key());
-        storage.delete(object.key());
+        storage.delete("LOCAL", object.key());
+        storage.delete("LOCAL", object.key());
         assertThat(Files.exists(directory.resolve(object.key()))).isFalse();
     }
 

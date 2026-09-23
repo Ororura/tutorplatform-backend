@@ -18,9 +18,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 public class FileMaterialService {
@@ -31,6 +34,7 @@ public class FileMaterialService {
     private final FileAssetRepository assets;
     private final FileStorage storage;
     private final FileMaterialPolicy policy;
+    private final TransactionTemplate cleanupTransaction;
     private final LessonMaterialService materialService;
 
     public FileMaterialService(
@@ -40,7 +44,8 @@ public class FileMaterialService {
             FileAssetRepository assets,
             FileStorage storage,
             FileMaterialPolicy policy,
-            LessonMaterialService materialService) {
+            LessonMaterialService materialService,
+            PlatformTransactionManager transactionManager) {
         this.teachers = teachers;
         this.programs = programs;
         this.materials = materials;
@@ -48,6 +53,9 @@ public class FileMaterialService {
         this.storage = storage;
         this.policy = policy;
         this.materialService = materialService;
+        this.cleanupTransaction = new TransactionTemplate(transactionManager);
+        this.cleanupTransaction.setPropagationBehavior(
+                TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
 
     @Transactional
@@ -153,6 +161,51 @@ public class FileMaterialService {
     @Transactional(readOnly = true)
     public Download downloadForAuthorizedTopic(UUID topicId, UUID materialId) {
         return download(materialService.getLessonMaterialForAuthorizedTopic(topicId, materialId));
+    }
+
+    /**
+     * Delete a teacher-owned material. Remove external bytes only after the database commits. If
+     * cleanup fails, an unreferenced file_assets row remains for reconciliation.
+     */
+    @Transactional
+    public void delete(AuthenticatedUser principal, UUID topicId, UUID materialId) {
+        LessonMaterialResult material =
+                materialService.getLessonMaterial(principal, topicId, materialId);
+        FileAssetEntity asset =
+                material.fileAssetId() == null
+                        ? null
+                        : assets.findById(material.fileAssetId())
+                                .orElseThrow(LessonMaterialNotFoundException::new);
+
+        materials.deleteById(materialId);
+        // Preserve contiguous positions and allow adding a replacement at the old last index.
+        var remaining = materials.findAllByTopicIdOrderByPosition(topicId);
+        for (int index = 0; index < remaining.size(); index++) {
+            if (remaining.get(index).getPosition() != index) {
+                materials.updatePosition(topicId, remaining.get(index).getId(), index);
+            }
+        }
+
+        if (asset != null && materials.countByFileAssetId(asset.id()) == 0) {
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            try {
+                                storage.delete(asset.storageProvider().name(), asset.storageKey());
+                                cleanupTransaction.executeWithoutResult(
+                                        status -> assets.deleteById(asset.id()));
+                            } catch (RuntimeException cleanupFailure) {
+                                log.error(
+                                        "FILE_STORAGE_CLEANUP_REQUIRED provider={} key={} assetId={}",
+                                        asset.storageProvider(),
+                                        asset.storageKey(),
+                                        asset.id(),
+                                        cleanupFailure);
+                            }
+                        }
+                    });
+        }
     }
 
     private Download download(LessonMaterialResult material) {

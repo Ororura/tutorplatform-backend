@@ -57,6 +57,17 @@ public class JpaLessonMaterialRepository implements LessonMaterialRepository {
     }
 
     @Override
+    public void deleteById(UUID lessonMaterialId) {
+        databaseRepository.deleteById(lessonMaterialId);
+        databaseRepository.flush();
+    }
+
+    @Override
+    public long countByFileAssetId(UUID fileAssetId) {
+        return databaseRepository.countByFileAssetId(fileAssetId);
+    }
+
+    @Override
     public boolean existsByIdAndTopicId(UUID lessonMaterialId, UUID topicId) {
         return databaseRepository.existsByIdAndTopicId(lessonMaterialId, topicId);
     }

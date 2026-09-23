@@ -23,4 +23,6 @@ interface LessonMaterialDatabaseRepository
     int updatePosition(UUID topicId, UUID lessonMaterialId, int position);
 
     boolean existsByIdAndTopicId(UUID lessonMaterialId, UUID topicId);
+
+    long countByFileAssetId(UUID fileAssetId);
 }

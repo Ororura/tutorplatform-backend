@@ -26,6 +26,12 @@ public class JpaFileAssetRepository implements FileAssetRepository {
     }
 
     @Override
+    public void deleteById(UUID fileAssetId) {
+        databaseRepository.deleteById(fileAssetId);
+        databaseRepository.flush();
+    }
+
+    @Override
     public Optional<FileAssetEntity> findById(UUID fileAssetId) {
         return databaseRepository.findById(fileAssetId).map(FileAssetDatabaseModel::toEntity);
     }

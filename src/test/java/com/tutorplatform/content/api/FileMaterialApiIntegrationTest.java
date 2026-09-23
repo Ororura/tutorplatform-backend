@@ -3,6 +3,7 @@ package com.tutorplatform.content.api;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -466,6 +467,94 @@ class FileMaterialApiIntegrationTest extends PostgresIntegrationTest {
                     Files.delete(path);
             }
         }
+    }
+
+    @Test
+    void deleteFileAfterCommitAndCompactPositions() throws Exception {
+        var fixture = createFixture(UUID.randomUUID() + "@example.com");
+        var first =
+                mockMvc.perform(
+                                upload(
+                                                fixture,
+                                                "FILE",
+                                                "first.txt",
+                                                "text/plain",
+                                                "hello".getBytes(),
+                                                0)
+                                        .with(user(fixture.principal()))
+                                        .with(csrf()))
+                        .andExpect(status().isCreated())
+                        .andReturn();
+        var second =
+                mockMvc.perform(
+                                upload(
+                                                fixture,
+                                                "FILE",
+                                                "second.txt",
+                                                "text/plain",
+                                                "world".getBytes(),
+                                                1)
+                                        .with(user(fixture.principal()))
+                                        .with(csrf()))
+                        .andExpect(status().isCreated())
+                        .andReturn();
+        UUID firstId = UUID.fromString(json(first).get("id").asText());
+        UUID secondId = UUID.fromString(json(second).get("id").asText());
+        UUID firstAssetId =
+                lessonMaterialService
+                        .getLessonMaterial(fixture.principal(), fixture.topic().id(), firstId)
+                        .fileAssetId();
+        String firstKey = assets.findById(firstAssetId).orElseThrow().storageKey();
+        assertThat(Files.exists(STORAGE.resolve(firstKey))).isTrue();
+
+        mockMvc.perform(
+                        delete(materialUrl(fixture.topic().id(), firstId))
+                                .with(user(fixture.principal()))
+                                .with(csrf()))
+                .andExpect(status().isNoContent());
+        assertThat(Files.exists(STORAGE.resolve(firstKey))).isFalse();
+        assertThat(assets.findById(firstAssetId)).isEmpty();
+        assertThat(
+                        lessonMaterialService
+                                .getLessonMaterial(
+                                        fixture.principal(), fixture.topic().id(), secondId)
+                                .position())
+                .isZero();
+        mockMvc.perform(
+                        get(materialUrl(fixture.topic().id(), firstId))
+                                .with(user(fixture.principal())))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteRequiresOwnedTopicAndCsrf() throws Exception {
+        var fixture = createFixture(UUID.randomUUID() + "@example.com");
+        var stranger = createFixture(UUID.randomUUID() + "@example.com");
+        var created =
+                mockMvc.perform(
+                                upload(
+                                                fixture,
+                                                "FILE",
+                                                "private.txt",
+                                                "text/plain",
+                                                "hello".getBytes(),
+                                                0)
+                                        .with(user(fixture.principal()))
+                                        .with(csrf()))
+                        .andExpect(status().isCreated())
+                        .andReturn();
+        UUID id = UUID.fromString(json(created).get("id").asText());
+        mockMvc.perform(
+                        delete(materialUrl(fixture.topic().id(), id))
+                                .with(user(stranger.principal()))
+                                .with(csrf()))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(
+                        delete(materialUrl(fixture.topic().id(), id))
+                                .with(user(fixture.principal())))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get(materialUrl(fixture.topic().id(), id)).with(user(fixture.principal())))
+                .andExpect(status().isOk());
     }
 
     private long objectCount() throws Exception {

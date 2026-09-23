@@ -76,6 +76,14 @@ public final class S3FileStorage implements FileStorage {
         }
     }
 
+    @Override
+    public void delete(String provider, String key) {
+        if (!"S3".equals(provider)) {
+            throw new FileStorageException(new IllegalArgumentException("Wrong storage provider"));
+        }
+        delete(key);
+    }
+
     private static void validateKey(String key) {
         if (key == null || !key.matches(KEY_PATTERN)) {
             throw new FileStorageException(new IllegalArgumentException("Invalid storage key"));

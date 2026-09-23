@@ -97,6 +97,16 @@ public class TeacherLessonMaterialController implements TeacherLessonMaterialApi
     }
 
     @Override
+    @DeleteMapping("/{materialId}")
+    public ResponseEntity<Void> deleteLessonMaterial(
+            @AuthenticationPrincipal AuthenticatedUser principal,
+            @PathVariable UUID topicId,
+            @PathVariable UUID materialId) {
+        fileMaterialService.delete(principal, topicId, materialId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
     @PostMapping
     public ResponseEntity<LessonMaterialResponse> createLessonMaterial(
             @AuthenticationPrincipal AuthenticatedUser principal,

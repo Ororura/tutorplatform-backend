@@ -13,5 +13,8 @@ public interface FileStorage {
     /** Compensate a failed metadata transaction; must be idempotent. */
     void delete(String key);
 
+    /** Delete a previously stored object using its recorded provider. */
+    void delete(String provider, String key);
+
     record StoredObject(String provider, String key) {}
 }
