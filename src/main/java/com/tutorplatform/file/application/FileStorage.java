@@ -1,15 +1,16 @@
 package com.tutorplatform.file.application;
 
-/**
- * Opaque keys only; callers authorize access before reading. No filesystem locations cross this
- * port.
- */
+/** Opaque object keys only. The application checks permissions before reading files. */
 public interface FileStorage {
     StoredObject store(byte[] content);
 
+    /** Read from the active write provider (retained for existing callers). */
     byte[] read(String key, long expectedSize);
 
-    /** Used to compensate a failed metadata transaction. Must be idempotent. */
+    /** Read a historical object using the provider saved with its database metadata. */
+    byte[] read(String provider, String key, long expectedSize);
+
+    /** Compensate a failed metadata transaction; must be idempotent. */
     void delete(String key);
 
     record StoredObject(String provider, String key) {}
