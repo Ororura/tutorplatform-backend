@@ -80,6 +80,14 @@ app:
       initial-delay-ms: ${FILE_CLEANUP_INITIAL_DELAY_MS:60000}
       grace-seconds: ${FILE_CLEANUP_GRACE_SECONDS:600}
       batch-size: ${FILE_CLEANUP_BATCH_SIZE:50}
+    s3-reconciliation:
+      # Read-only inventory audit. NO deletion, even if an object is older than grace-seconds.
+      enabled: ${S3_RECONCILIATION_ENABLED:false}
+      interval-ms: ${S3_RECONCILIATION_INTERVAL_MS:3600000}
+      initial-delay-ms: ${S3_RECONCILIATION_INITIAL_DELAY_MS:60000}
+      grace-seconds: ${S3_RECONCILIATION_GRACE_SECONDS:86400}
+      max-pages: ${S3_RECONCILIATION_MAX_PAGES:100}
+      max-log-entries: ${S3_RECONCILIATION_MAX_LOG_ENTRIES:20}
     s3:
       endpoint: ${S3_ENDPOINT:https://storage.yandexcloud.net}
       region: ${S3_REGION:ru-central1}
