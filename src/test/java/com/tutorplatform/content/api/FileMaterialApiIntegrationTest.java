@@ -67,6 +67,7 @@ class FileMaterialApiIntegrationTest extends PostgresIntegrationTest {
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
         PostgresIntegrationTest.configurePostgres(registry, "test_file_material_api", "008");
+        registry.add("app.file-storage.provider", () -> "LOCAL");
         registry.add("app.file-storage.directory", () -> STORAGE.toString());
         registry.add("app.material-files.max-size-bytes", () -> "1024");
     }
