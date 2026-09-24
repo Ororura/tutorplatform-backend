@@ -127,6 +127,29 @@ class LearningPeriodServiceIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
+    void consecutiveCompletedPeriodsCountEachSessionOnce() {
+        Fixture fixture = fixture(60);
+        service.ensureActivePeriod(fixture.studentProgramId());
+        SessionFact first = session(fixture, AttendanceStatus.ATTENDED, 60, BASE);
+        service.recalculateAfterSession(first.createdEvent());
+        SessionFact second =
+                session(fixture, AttendanceStatus.ATTENDED, 60, BASE.plusSeconds(3600));
+        service.recalculateAfterSession(second.createdEvent());
+
+        List<LearningPeriod> periods = periods(fixture);
+        assertThat(periods).hasSize(3);
+        assertThat(periods.get(0).endCumulativeMinutes() - periods.get(0).startCumulativeMinutes())
+                .isEqualTo(60);
+        assertThat(periods.get(1).endCumulativeMinutes() - periods.get(1).startCumulativeMinutes())
+                .isEqualTo(60);
+        assertThat(periods.get(1).startCumulativeMinutes())
+                .isEqualTo(periods.get(0).endCumulativeMinutes());
+        assertThat(periods.get(2).startCumulativeMinutes())
+                .isEqualTo(totalLearningMinutes(fixture));
+        assertThat(activeCount(fixture)).isOne();
+    }
+
+    @Test
     void sessionOvershootIsNotSplitAtNominalBoundary() {
         Fixture fixture = fixture(480);
         service.ensureActivePeriod(fixture.studentProgramId());

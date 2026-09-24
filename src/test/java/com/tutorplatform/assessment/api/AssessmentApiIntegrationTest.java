@@ -20,6 +20,7 @@ import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
 import com.tutorplatform.program.domain.studentprogram.StudentProgramEntity;
 import com.tutorplatform.program.domain.studentprogram.StudentProgramRepository;
 import com.tutorplatform.program.domain.studentprogram.StudentProgramStatus;
+import com.tutorplatform.progress.application.GetCurrentProgressService;
 import com.tutorplatform.session.domain.AttendanceStatus;
 import com.tutorplatform.session.domain.LessonSessionEntity;
 import com.tutorplatform.session.domain.LessonSessionRepository;
@@ -71,6 +72,7 @@ class AssessmentApiIntegrationTest extends PostgresIntegrationTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
     @Autowired private TeacherAssessmentService assessmentService;
+    @Autowired private GetCurrentProgressService currentProgressService;
     @Autowired private UserRepository userRepository;
     @Autowired private TeacherRepository teacherRepository;
     @Autowired private StudentRepository studentRepository;
@@ -208,6 +210,60 @@ class AssessmentApiIntegrationTest extends PostgresIntegrationTest {
         assertThat(Instant.parse(updated.required("updatedAt").textValue()))
                 .isAfterOrEqualTo(Instant.parse(created.required("updatedAt").textValue()));
         assertThat(countAssessments(fixture.sessionId())).isEqualTo(1);
+    }
+
+    @Test
+    void resavingAssessmentDoesNotDoubleCountAndChangedScoreUpdatesCurrentProgress() {
+        Fixture fixture = createFixture();
+        UUID studentProgramId =
+                jdbcTemplate.queryForObject(
+                        "select student_program_id from lesson_sessions where id = ?",
+                        UUID.class,
+                        fixture.sessionId());
+        UUID teacherId =
+                jdbcTemplate.queryForObject(
+                        "select teacher_id from lesson_sessions where id = ?",
+                        UUID.class,
+                        fixture.sessionId());
+        UUID otherSession = UUID.randomUUID();
+        jdbcTemplate.update(
+                "insert into lesson_sessions(id, student_program_id, teacher_id, started_at, duration_minutes, attendance_status) values (?, ?, ?, now(), 60, 'ATTENDED')",
+                otherSession,
+                studentProgramId,
+                teacherId);
+        assessmentService.saveTeacherAssessment(
+                fixture.principal(),
+                fixture.studentId(),
+                otherSession,
+                new SaveTeacherAssessmentCommand(5, null, null, null, null));
+        SaveTeacherAssessmentCommand firstScore =
+                new SaveTeacherAssessmentCommand(1, null, null, null, null);
+        assessmentService.saveTeacherAssessment(
+                fixture.principal(), fixture.studentId(), fixture.sessionId(), firstScore);
+        assessmentService.saveTeacherAssessment(
+                fixture.principal(), fixture.studentId(), fixture.sessionId(), firstScore);
+
+        assertThat(countAssessments(fixture.sessionId())).isOne();
+        assertThat(
+                        currentProgressService
+                                .getCurrentProgress(studentProgramId)
+                                .assessmentAverages()
+                                .understanding())
+                .isEqualByComparingTo("3.0");
+
+        assessmentService.saveTeacherAssessment(
+                fixture.principal(),
+                fixture.studentId(),
+                fixture.sessionId(),
+                new SaveTeacherAssessmentCommand(3, null, null, null, null));
+
+        assertThat(countAssessments(fixture.sessionId())).isOne();
+        assertThat(
+                        currentProgressService
+                                .getCurrentProgress(studentProgramId)
+                                .assessmentAverages()
+                                .understanding())
+                .isEqualByComparingTo("4.0");
     }
 
     @Test

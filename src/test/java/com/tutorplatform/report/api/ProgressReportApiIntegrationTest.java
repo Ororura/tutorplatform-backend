@@ -266,7 +266,16 @@ class ProgressReportApiIntegrationTest extends PostgresIntegrationTest {
     void patchHasTruePatchSemanticsPreservesSnapshotAndRejectsStaleOrPublishedChanges()
             throws Exception {
         Fixture fixture = fixture("patch");
+        Fixture foreign = fixture("patch-foreign");
         UUID reportId = report(fixture, "DRAFT", START, "Old", "Keep");
+
+        mockMvc.perform(
+                        patch(REPORTS_URL + "/" + reportId)
+                                .with(user(foreign.teacherPrincipal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"teacherSummary\":\"Foreign\",\"version\":0}"))
+                .andExpect(status().isNotFound());
 
         mockMvc.perform(
                         patch(REPORTS_URL + "/" + reportId)
@@ -331,6 +340,11 @@ class ProgressReportApiIntegrationTest extends PostgresIntegrationTest {
                 .andExpect(jsonPath("$.teacherSummary").value("Summary"))
                 .andExpect(jsonPath("$.nextPeriodPlan").value("Plan"))
                 .andExpect(jsonPath("$.snapshot.metrics.learningMinutes").value(10));
+        Timestamp firstPublishedAt =
+                jdbc.queryForObject(
+                        "select published_at from progress_reports where id = ?",
+                        Timestamp.class,
+                        reportId);
         mockMvc.perform(
                         post(REPORTS_URL + "/" + reportId + "/publish")
                                 .with(user(owner.teacherPrincipal()))
@@ -338,6 +352,18 @@ class ProgressReportApiIntegrationTest extends PostgresIntegrationTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("{\"version\":1}"))
                 .andExpect(status().isConflict());
+        assertThat(
+                        jdbc.queryForObject(
+                                "select count(*) from progress_reports where student_program_id = ?",
+                                Integer.class,
+                                owner.studentProgramId()))
+                .isOne();
+        assertThat(
+                        jdbc.queryForObject(
+                                "select published_at from progress_reports where id = ?",
+                                Timestamp.class,
+                                reportId))
+                .isEqualTo(firstPublishedAt);
         assertThat(
                         jdbc.queryForObject(
                                 "select count(*) from report_shares where report_id = ?",

@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
+import com.tutorplatform.progress.application.GetCurrentProgressService;
+import com.tutorplatform.progress.application.ProgressInterval;
 import com.tutorplatform.report.application.exception.*;
 import com.tutorplatform.report.domain.ProgressReport;
 import com.tutorplatform.report.domain.ProgressReportSnapshotV1;
@@ -35,6 +37,7 @@ class ProgressReportApplicationIntegrationTest extends PostgresIntegrationTest {
     @Autowired private EditProgressReportDraft editDraft;
     @Autowired private PublishProgressReport publishReport;
     @Autowired private ProgressReportQueryService queryService;
+    @Autowired private GetCurrentProgressService currentProgressService;
     @Autowired private JdbcTemplate jdbc;
 
     @Test
@@ -138,6 +141,18 @@ class ProgressReportApplicationIntegrationTest extends PostgresIntegrationTest {
         jdbc.update(
                 "UPDATE teacher_assessments SET understanding_score = 1 WHERE id = ?",
                 facts.assessmentId());
+        jdbc.update(
+                "UPDATE homeworks SET status = 'COMPLETED', completed_at = ? WHERE student_program_id = ? AND status = 'ASSIGNED'",
+                Timestamp.from(periodEnd.minusSeconds(30)),
+                fixture.studentProgramId());
+
+        assertThat(
+                        currentProgressService
+                                .getProgressSnapshot(
+                                        fixture.studentProgramId(),
+                                        new ProgressInterval(BASE, periodEnd))
+                                .homeworkCompleted())
+                .isEqualTo(2);
 
         ProgressReport readAgain =
                 queryService.get(
@@ -207,7 +222,7 @@ class ProgressReportApplicationIntegrationTest extends PostgresIntegrationTest {
         Instant secondEnd = BASE.plusSeconds(10800);
         UUID firstPeriod = period(fixture, 1, 0, 60, 60, "COMPLETED", BASE, firstEnd);
         UUID secondPeriod = period(fixture, 2, 60, 60, 120, "COMPLETED", secondStart, secondEnd);
-        session(fixture, BASE, 60, "ATTENDED");
+        session(fixture, firstEnd, 60, "ATTENDED");
         session(fixture, secondStart, 60, "ATTENDED");
 
         ProgressReport first =
@@ -227,6 +242,13 @@ class ProgressReportApplicationIntegrationTest extends PostgresIntegrationTest {
         assertThat(first.snapshot().metrics().learningMinutes()).isEqualTo(60);
         assertThat(second.snapshot().metrics().sessionsCount()).isOne();
         assertThat(second.snapshot().metrics().learningMinutes()).isEqualTo(60);
+        assertThat(
+                        first.snapshot().metrics().learningMinutes()
+                                + second.snapshot().metrics().learningMinutes())
+                .isEqualTo(
+                        currentProgressService
+                                .getCurrentProgress(fixture.studentProgramId())
+                                .totalLearningMinutes());
         assertThat(second.snapshot().assessment())
                 .isEqualTo(new ProgressReportSnapshotV1.Assessment(null, null, null, null));
         assertThat(
