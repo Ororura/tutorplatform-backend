@@ -29,6 +29,7 @@ import com.tutorplatform.progress.application.GetCurrentProgressService;
 import com.tutorplatform.progress.application.ProgressInterval;
 import com.tutorplatform.progress.domain.ProgressShare;
 import com.tutorplatform.progress.domain.ProgressShareRepository;
+import com.tutorplatform.report.application.LearningPeriodService;
 import com.tutorplatform.report.application.ProgressReportSnapshotV1Factory;
 import com.tutorplatform.report.domain.LearningPeriod;
 import com.tutorplatform.report.domain.LearningPeriodRepository;
@@ -39,6 +40,7 @@ import com.tutorplatform.report.domain.ProgressReportSnapshotSchemas;
 import com.tutorplatform.report.domain.ProgressReportStatus;
 import com.tutorplatform.report.domain.ReportShare;
 import com.tutorplatform.report.domain.ReportShareRepository;
+import com.tutorplatform.session.application.LessonSessionChangedEvent;
 import com.tutorplatform.session.domain.AttendanceStatus;
 import com.tutorplatform.session.domain.LessonSessionEntity;
 import com.tutorplatform.session.domain.LessonSessionRepository;
@@ -123,6 +125,7 @@ public class DemoDataSeedService {
     private final ReportShareRepository reportShareRepository;
     private final GetCurrentProgressService currentProgressService;
     private final ProgressReportSnapshotV1Factory snapshotFactory;
+    private final LearningPeriodService learningPeriodService;
     private final PasswordEncoder passwordEncoder;
     private final StudentInviteTokenService tokenService;
     private final JdbcTemplate jdbcTemplate;
@@ -157,6 +160,7 @@ public class DemoDataSeedService {
             ReportShareRepository reportShareRepository,
             GetCurrentProgressService currentProgressService,
             ProgressReportSnapshotV1Factory snapshotFactory,
+            LearningPeriodService learningPeriodService,
             PasswordEncoder passwordEncoder,
             StudentInviteTokenService tokenService,
             JdbcTemplate jdbcTemplate) {
@@ -188,6 +192,7 @@ public class DemoDataSeedService {
         this.reportShareRepository = reportShareRepository;
         this.currentProgressService = currentProgressService;
         this.snapshotFactory = snapshotFactory;
+        this.learningPeriodService = learningPeriodService;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
         this.jdbcTemplate = jdbcTemplate;
@@ -201,8 +206,10 @@ public class DemoDataSeedService {
                 throw new IllegalStateException(
                         "Demo teacher email is already used by non-demo data");
             }
+            boolean created =
+                    seedReportLifecycleIfMissing(Instant.now().truncatedTo(ChronoUnit.HOURS));
             SeedCounts counts = validateSeededDataset();
-            return new SeedResult(false, counts);
+            return new SeedResult(created, counts);
         }
 
         Instant seedNow = Instant.now().truncatedTo(ChronoUnit.HOURS);
@@ -213,7 +220,88 @@ public class DemoDataSeedService {
         List<TaskEntity> tasks = seedTasks(programs, people.teacher());
         seedHomeworkAndSubmissions(programs, people, tasks, seedNow);
         seedPeriodsReportsAndShares(programs, people.teacher(), seedNow);
+        seedReportLifecycleIfMissing(seedNow);
         return new SeedResult(true, validateSeededDataset());
+    }
+
+    private boolean seedReportLifecycleIfMissing(Instant seedNow) {
+        if (studentProgramRepository.findById(REPORT_STUDENT_PROGRAM).isPresent()) {
+            return false;
+        }
+        learningProgramRepository.saveAndFlush(
+                new LearningProgramEntity(
+                        REPORT_LEARNING_PROGRAM,
+                        TEACHER,
+                        PYTHON_SUBJECT,
+                        "Python: практический проект",
+                        "Работа с данными и подготовка итогового проекта",
+                        LearningProgramStatus.ACTIVE));
+        studentProgramRepository.saveAndFlush(
+                new StudentProgramEntity(
+                        REPORT_STUDENT_PROGRAM,
+                        ALEX,
+                        REPORT_LEARNING_PROGRAM,
+                        TEACHER,
+                        StudentProgramStatus.ACTIVE,
+                        REPORT_INTERVAL_MINUTES,
+                        seedNow.minus(14, ChronoUnit.DAYS),
+                        null));
+        moduleRepository.saveAndFlush(
+                new ModuleEntity(
+                        REPORT_MODULE, REPORT_LEARNING_PROGRAM, "Проект на Python", null, 0));
+        String[] topicTitles = {"Чтение CSV", "Очистка данных", "Итоговый анализ"};
+        for (int index = 0; index < REPORT_TOPICS.length; index++) {
+            topicRepository.saveAndFlush(
+                    new TopicEntity(
+                            REPORT_TOPICS[index],
+                            REPORT_MODULE,
+                            topicTitles[index],
+                            null,
+                            index,
+                            TopicStatus.ACTIVE));
+        }
+        learningPeriodRepository.saveAndFlush(
+                LearningPeriod.active(
+                        REPORT_COMPLETED_PERIOD,
+                        REPORT_STUDENT_PROGRAM,
+                        1,
+                        0,
+                        REPORT_INTERVAL_MINUTES,
+                        seedNow.minus(14, ChronoUnit.DAYS)));
+        int[] daysAgo = {10, 8, 6, 4, 2};
+        String[] summaries = {
+            "Прочитали CSV и разобрали структуру данных.",
+            "Обработали пустые значения и проверили типы столбцов.",
+            "Сгруппировали данные и сравнили результаты.",
+            "Построили итоговую таблицу и обсудили выводы.",
+            "Защитили проект и наметили следующий этап обучения."
+        };
+        for (int index = 0; index < REPORT_SESSIONS.length; index++) {
+            UUID topicId = REPORT_TOPICS[Math.min(index / 2, REPORT_TOPICS.length - 1)];
+            sessionRepository.saveAndFlush(
+                    new LessonSessionEntity(
+                            REPORT_SESSIONS[index],
+                            REPORT_STUDENT_PROGRAM,
+                            TEACHER,
+                            seedNow.minus(daysAgo[index], ChronoUnit.DAYS),
+                            60,
+                            AttendanceStatus.ATTENDED,
+                            summaries[index],
+                            null));
+            sessionTopicRepository.saveAndFlush(
+                    new LessonSessionTopicEntity(REPORT_SESSIONS[index], topicId, true));
+        }
+        learningPeriodService.recalculateInCurrentTransaction(
+                new LessonSessionChangedEvent(
+                        REPORT_SESSIONS[4],
+                        REPORT_STUDENT_PROGRAM,
+                        AttendanceStatus.ATTENDED,
+                        seedNow.minus(2, ChronoUnit.DAYS),
+                        60,
+                        null,
+                        null,
+                        null));
+        return true;
     }
 
     private SeedPeople seedPeople(Instant seedNow) {
@@ -1177,16 +1265,16 @@ public class DemoDataSeedService {
                         count("report_shares"));
         if (counts.teachers() < 1
                 || counts.students() < 3
-                || counts.studentPrograms() < 2
-                || counts.modules() < 4
-                || counts.topics() < 12
+                || counts.studentPrograms() < 3
+                || counts.modules() < 5
+                || counts.topics() < 15
                 || counts.materials() < 6
-                || counts.sessions() < 11
+                || counts.sessions() < 16
                 || counts.assessments() < 5
                 || counts.tasks() < 8
                 || counts.homework() < 6
                 || counts.submissions() < 15
-                || counts.learningPeriods() < 3
+                || counts.learningPeriods() < 5
                 || counts.publishedReports() < 1
                 || counts.progressShares() < 1
                 || counts.reportShares() < 2) {
@@ -1198,8 +1286,12 @@ public class DemoDataSeedService {
         for (UUID id : List.of(ALEX, MARIA, ILYA)) {
             requireFixedEntity("students", id);
         }
-        for (UUID id : List.of(ALEX_PROGRAM, MARIA_PROGRAM)) {
+        for (UUID id : List.of(ALEX_PROGRAM, MARIA_PROGRAM, REPORT_STUDENT_PROGRAM)) {
             requireFixedEntity("student_programs", id);
+        }
+        requireFixedEntity("learning_periods", REPORT_COMPLETED_PERIOD);
+        for (UUID id : REPORT_SESSIONS) {
+            requireFixedEntity("lesson_sessions", id);
         }
         for (UUID id : TASKS) {
             requireFixedEntity("tasks", id);

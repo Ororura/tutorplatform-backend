@@ -20,6 +20,12 @@ public final class DemoDataIds {
     public static final UUID ALEX_PROGRAM = id("d1000000-0000-4000-8000-000000000002");
     public static final UUID MARIA_LEARNING_PROGRAM = id("d1000000-0000-4000-8000-000000000003");
     public static final UUID MARIA_PROGRAM = id("d1000000-0000-4000-8000-000000000004");
+    public static final UUID REPORT_LEARNING_PROGRAM = id("d1000000-0000-4000-8000-000000000005");
+    public static final UUID REPORT_STUDENT_PROGRAM = id("d1000000-0000-4000-8000-000000000006");
+    public static final UUID REPORT_MODULE = id("d2000000-0000-4000-8000-000000000005");
+    public static final UUID[] REPORT_TOPICS = sequence("d3000000-0000-4000-8000-", 3, 13);
+    public static final UUID[] REPORT_SESSIONS = sequence("d5000000-0000-4000-8000-", 5, 12);
+    public static final UUID REPORT_COMPLETED_PERIOD = id("da000000-0000-4000-8000-000000000004");
 
     public static final UUID[] ALEX_MODULES = sequence("d2000000-0000-4000-8000-", 3);
     public static final UUID[] ALEX_TOPICS = sequence("d3000000-0000-4000-8000-", 9);
