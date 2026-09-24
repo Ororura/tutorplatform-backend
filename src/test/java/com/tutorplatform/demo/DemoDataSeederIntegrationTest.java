@@ -56,7 +56,7 @@ class DemoDataSeederIntegrationTest extends PostgresIntegrationTest {
         assertThat(before)
                 .isEqualTo(
                         new DemoDataSeedService.SeedCounts(
-                                1, 3, 2, 4, 12, 6, 11, 5, 8, 6, 15, 3, 1, 1, 2));
+                                1, 3, 3, 5, 15, 6, 16, 5, 8, 6, 15, 5, 1, 1, 2));
         assertThat(count("programming_task_configs")).isEqualTo(4);
         assertThat(countWhere("tasks", "task_type = 'TEXT'")).isEqualTo(4);
         assertThat(countWhere("tasks", "task_type = 'CODE'")).isEqualTo(4);
@@ -121,6 +121,78 @@ class DemoDataSeederIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
+    @Transactional
+    void completedReportPeriodIsDiscoverableAndCanBecomeDraft() throws Exception {
+        assertThat(
+                        queryInt(
+                                """
+            select count(*) from learning_periods
+            where id = '%s' and student_program_id = '%s' and status = 'COMPLETED'
+              and start_cumulative_minutes = 0 and end_cumulative_minutes = 300
+              and started_at is not null and completed_at > started_at
+            """
+                                        .formatted(
+                                                REPORT_COMPLETED_PERIOD, REPORT_STUDENT_PROGRAM)))
+                .isOne();
+        assertThat(
+                        queryInt(
+                                """
+            select coalesce(sum(duration_minutes), 0) from lesson_sessions
+            where student_program_id = '%s' and attendance_status = 'ATTENDED'
+            """
+                                        .formatted(REPORT_STUDENT_PROGRAM)))
+                .isEqualTo(300);
+        assertThat(
+                        queryInt(
+                                """
+            select count(*) from progress_reports where learning_period_id = '%s'
+            """
+                                        .formatted(REPORT_COMPLETED_PERIOD)))
+                .isZero();
+
+        Cookie teacherSession =
+                login(DemoDataAccess.TEACHER_EMAIL, DemoDataAccess.TEACHER_PASSWORD);
+        MvcResult dashboard =
+                mockMvc.perform(get("/api/v1/teacher/dashboard").cookie(teacherSession))
+                        .andExpect(status().isOk())
+                        .andReturn();
+        JsonNode attentionItems =
+                objectMapper
+                        .readTree(dashboard.getResponse().getContentAsByteArray())
+                        .required("attentionItems");
+        boolean found = false;
+        for (JsonNode item : attentionItems) {
+            if (REPORT_COMPLETED_PERIOD
+                    .toString()
+                    .equals(item.path("navigation").path("learningPeriodId").asText())) {
+                assertThat(item.path("type").asText()).isEqualTo("LEARNING_PERIOD_REPORT_MISSING");
+                assertThat(item.path("studentId").asText()).isEqualTo(ALEX.toString());
+                assertThat(item.path("navigation").path("studentProgramId").asText())
+                        .isEqualTo(REPORT_STUDENT_PROGRAM.toString());
+                assertThat(item.path("navigation").path("reportId").isNull()).isTrue();
+                found = true;
+            }
+        }
+        assertThat(found).isTrue();
+
+        CsrfExchange csrf = obtainCsrf(teacherSession);
+        mockMvc.perform(
+                        post("/api/v1/teacher/reports")
+                                .cookie(csrf.cookie())
+                                .header(csrf.headerName(), csrf.token())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                new com.tutorplatform.report.api.request
+                                                        .CreateProgressReportRequest(
+                                                        REPORT_STUDENT_PROGRAM,
+                                                        REPORT_COMPLETED_PERIOD))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("DRAFT"))
+                .andExpect(jsonPath("$.learningMinutes").value(300));
+    }
+
+    @Test
     void realAuthenticationAndCoreApiFlowsWork() throws Exception {
         Cookie teacherSession =
                 login(DemoDataAccess.TEACHER_EMAIL, DemoDataAccess.TEACHER_PASSWORD);
@@ -132,7 +204,7 @@ class DemoDataSeederIntegrationTest extends PostgresIntegrationTest {
                 .andExpect(jsonPath("$.firstName").value("Алексей"));
         mockMvc.perform(get("/api/v1/teacher/students/{id}/sessions", ALEX).cookie(teacherSession))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items.length()").value(9));
+                .andExpect(jsonPath("$.items.length()").value(14));
         mockMvc.perform(get("/api/v1/teacher/students/{id}/homeworks", ALEX).cookie(teacherSession))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items.length()").value(5));

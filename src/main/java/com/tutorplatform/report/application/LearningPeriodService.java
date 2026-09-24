@@ -44,6 +44,15 @@ public class LearningPeriodService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public LearningPeriod recalculateAfterSession(LessonSessionChangedEvent event) {
+        return recalculate(event);
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public LearningPeriod recalculateInCurrentTransaction(LessonSessionChangedEvent event) {
+        return recalculate(event);
+    }
+
+    private LearningPeriod recalculate(LessonSessionChangedEvent event) {
         ProgramQuery.StudentProgramContext studentProgram =
                 lockStudentProgram(event.studentProgramId());
         LearningPeriod active = ensureActivePeriod(studentProgram);
