@@ -82,6 +82,24 @@ class ProgressReadRepositoryIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
+    void submissionAloneDoesNotCompleteHomeworkAndCancelledHomeworkStaysExcluded() {
+        Fixture fixture = fixture();
+        UUID assigned = homework(fixture, "ASSIGNED");
+        UUID cancelled = homework(fixture, "CANCELLED");
+        UUID assignedTask = task(fixture, "Assigned submission");
+        UUID cancelledTask = task(fixture, "Cancelled submission");
+        submission(fixture, assignedTask, item(assigned, assignedTask, 0), 1, "PASSED");
+        submission(fixture, cancelledTask, item(cancelled, cancelledTask, 0), 1, "PASSED");
+
+        CurrentProgress progress = service.getCurrentProgress(fixture.studentProgramId());
+
+        assertThat(progress.homeworkAssigned()).isOne();
+        assertThat(progress.homeworkCompleted()).isZero();
+        assertThat(progress.practiceAssigned()).isOne();
+        assertThat(progress.practiceCompleted()).isOne();
+    }
+
+    @Test
     void practiceCountsDistinctAssignedTasksWithAtLeastOnePassedHomeworkSubmission() {
         Fixture fixture = fixture();
         UUID homeworkId = homework(fixture, "ASSIGNED");
@@ -203,6 +221,49 @@ class ProgressReadRepositoryIntegrationTest extends PostgresIntegrationTest {
         assertDecimal(progress.assessmentAverages().independence(), "4.0");
         assertDecimal(progress.assessmentAverages().practice(), "5.0");
         assertDecimal(progress.assessmentAverages().homework(), "4.0");
+    }
+
+    @Test
+    void currentProgressSeparatesProgramsOfSameStudentAndFactsOfAnotherStudent() {
+        Fixture first = fixture();
+        UUID secondProgram = UUID.randomUUID();
+        UUID secondLearningProgram = UUID.randomUUID();
+        jdbc.update(
+                "INSERT INTO learning_programs(id, teacher_id, subject_id, title, status) VALUES (?, ?, ?, 'Second program', 'ACTIVE')",
+                secondLearningProgram,
+                first.teacherId(),
+                first.subjectId());
+        jdbc.update(
+                "INSERT INTO student_programs(id, student_id, learning_program_id, assigned_by_teacher_id) VALUES (?, ?, ?, ?)",
+                secondProgram,
+                first.studentId(),
+                secondLearningProgram,
+                first.teacherId());
+        Fixture foreignStudent = fixture();
+        UUID firstSession = session(first, "ATTENDED", 60);
+        assessment(firstSession, 2, null, null, null);
+        homework(first, "COMPLETED");
+        UUID secondSession = UUID.randomUUID();
+        jdbc.update(
+                "INSERT INTO lesson_sessions(id, student_program_id, teacher_id, started_at, duration_minutes, attendance_status) VALUES (?, ?, ?, now(), 90, 'ATTENDED')",
+                secondSession,
+                secondProgram,
+                first.teacherId());
+        assessment(secondSession, 5, null, null, null);
+        session(foreignStudent, "ATTENDED", 120);
+        homework(foreignStudent, "COMPLETED");
+
+        CurrentProgress firstProgress = service.getCurrentProgress(first.studentProgramId());
+        CurrentProgress secondProgress = service.getCurrentProgress(secondProgram);
+
+        assertThat(firstProgress.totalLearningMinutes()).isEqualTo(60);
+        assertThat(firstProgress.sessionsCount()).isOne();
+        assertThat(firstProgress.homeworkCompleted()).isOne();
+        assertDecimal(firstProgress.assessmentAverages().understanding(), "2.0");
+        assertThat(secondProgress.totalLearningMinutes()).isEqualTo(90);
+        assertThat(secondProgress.sessionsCount()).isOne();
+        assertThat(secondProgress.homeworkCompleted()).isZero();
+        assertDecimal(secondProgress.assessmentAverages().understanding(), "5.0");
     }
 
     @Test
