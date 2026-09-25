@@ -1,0 +1,36 @@
+schemaVersion: 1
+kind: modules
+modules:
+  - title: "Условные конструкции в Python"
+    description: "Ветвление программы с помощью if, elif и else."
+    topics:
+      - title: "Условие if"
+        description: "Проверка одного условия."
+        materials:
+          - title: "Теория: if"
+            materialType: MARKDOWN
+            content: |
+              `if` выполняет блок кода, когда условие истинно.
+          - title: "Пример: if"
+            materialType: CODE_EXAMPLE
+            content: |
+              temperature = 25
+              if temperature > 20:
+                  print("Тепло")
+      - title: "Ветвление elif и else"
+        description: "Выбор одной из нескольких ветвей."
+        materials:
+          - title: "Теория: elif и else"
+            materialType: MARKDOWN
+            content: |
+              `elif` проверяет следующее условие, а `else` обрабатывает остальные случаи.
+          - title: "Пример: elif и else"
+            materialType: CODE_EXAMPLE
+            content: |
+              score = 75
+              if score >= 90:
+                  print("Отлично")
+              elif score >= 60:
+                  print("Зачёт")
+              else:
+                  print("Повторить тему")
