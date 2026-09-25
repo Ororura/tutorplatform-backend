@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.Mark;
@@ -34,6 +35,7 @@ import org.yaml.snakeyaml.nodes.SequenceNode;
 import org.yaml.snakeyaml.nodes.Tag;
 
 /** Parses untrusted package bytes as YAML nodes, without constructing Java beans. */
+@Component
 public final class SnakeYamlContentPackageParser implements ContentPackageParser {
     private static final int MAX_BYTES = 1_048_576;
     private static final int MAX_DEPTH = 7;
