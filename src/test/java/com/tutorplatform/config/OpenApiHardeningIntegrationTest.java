@@ -115,7 +115,31 @@ class OpenApiHardeningIntegrationTest extends PostgresIntegrationTest {
                 }
             }
         }
-        assertThat(operationIds).hasSize(101);
+        assertThat(operationIds).hasSize(102);
+
+        JsonNode importOperation =
+                document.required("paths")
+                        .required("/api/v1/teacher/programs/{programId}/imports")
+                        .required("post");
+        assertThat(importOperation.required("operationId").asText())
+                .isEqualTo("importTutorContentPackage");
+        assertThat(
+                        importOperation
+                                .required("requestBody")
+                                .required("content")
+                                .has("multipart/form-data"))
+                .isTrue();
+        JsonNode importSchema =
+                document.required("components")
+                        .required("schemas")
+                        .required("ContentPackageImportUpload");
+        assertThat(importSchema.required("required").toString())
+                .contains("file", "confirmationId", "digest");
+        assertThat(importSchema.required("properties").required("file").required("format").asText())
+                .isEqualTo("binary");
+        for (String code : Set.of("200", "201", "400", "401", "403", "404", "409", "413")) {
+            assertThat(importOperation.required("responses").has(code)).isTrue();
+        }
 
         JsonNode preview =
                 document.required("paths")

@@ -10,12 +10,18 @@ public record ContentPackageImportResult(
         int moduleCount,
         int topicCount,
         int materialCount,
-        List<UUID> createdModuleIds) {
+        List<UUID> createdModuleIds,
+        boolean replayed) {
     public ContentPackageImportResult {
         createdModuleIds = List.copyOf(createdModuleIds);
     }
 
     static ContentPackageImportResult fromRecord(ContentPackageImportRecord record) {
+        return fromRecord(record, false);
+    }
+
+    static ContentPackageImportResult fromRecord(
+            ContentPackageImportRecord record, boolean replayed) {
         return new ContentPackageImportResult(
                 record.learningProgramId(),
                 record.confirmationId(),
@@ -23,6 +29,7 @@ public record ContentPackageImportResult(
                 record.moduleCount(),
                 record.topicCount(),
                 record.materialCount(),
-                record.createdModuleIds());
+                record.createdModuleIds(),
+                replayed);
     }
 }
