@@ -5,8 +5,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.stereotype.Component;
 
 /** Validates the package contract after YAML has been parsed into import DTOs. */
+@Component
 public final class TutorContentPackageValidator {
     private static final int MAX_MODULES = 15;
     private static final int MAX_TOPICS = 25;
