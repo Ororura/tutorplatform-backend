@@ -11,6 +11,7 @@ import com.tutorplatform.test.PostgresIntegrationTest;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +62,9 @@ class LearningPeriodApiIntegrationTest extends PostgresIntegrationTest {
     void returnsEmptyListWithoutCreatingPeriods() throws Exception {
         Fixture fixture = fixture("empty");
 
+        mockMvc.perform(get(url(fixture)).with(user(fixture.teacherPrincipal())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
         mockMvc.perform(get(url(fixture)).with(user(fixture.teacherPrincipal())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
@@ -155,7 +159,27 @@ class LearningPeriodApiIntegrationTest extends PostgresIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id").value(first.toString()))
-                .andExpect(jsonPath("$[1].id").value(second.toString()));
+                .andExpect(jsonPath("$[0].sequenceNo").value(1))
+                .andExpect(jsonPath("$[0].status").value("COMPLETED"))
+                .andExpect(jsonPath("$[1].id").value(second.toString()))
+                .andExpect(jsonPath("$[1].sequenceNo").value(2));
+    }
+
+    @Test
+    void repeatedReadsDoNotChangePersistedPeriods() throws Exception {
+        Fixture fixture = fixture("read-only");
+        UUID periodId =
+                period(fixture.studentProgramId(), 1, 0, 480, null, "ACTIVE", STARTED_AT, null);
+        List<Map<String, Object>> before = persistedPeriods(fixture.studentProgramId());
+
+        for (int request = 0; request < 2; request++) {
+            mockMvc.perform(get(url(fixture)).with(user(fixture.teacherPrincipal())))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.length()").value(1))
+                    .andExpect(jsonPath("$[0].id").value(periodId.toString()));
+        }
+
+        assertThat(persistedPeriods(fixture.studentProgramId())).isEqualTo(before);
     }
 
     @Test
@@ -177,7 +201,7 @@ class LearningPeriodApiIntegrationTest extends PostgresIntegrationTest {
         period(other.studentProgramId(), 1, 0, 480, null, "ACTIVE", null, null);
 
         mockMvc.perform(
-                        get(url(owner.studentId(), other.studentProgramId()))
+                        get(url(other.studentId(), other.studentProgramId()))
                                 .with(user(owner.teacherPrincipal())))
                 .andExpect(status().isNotFound());
     }
@@ -284,6 +308,16 @@ class LearningPeriodApiIntegrationTest extends PostgresIntegrationTest {
 
     private Timestamp timestamp(Instant value) {
         return value == null ? null : Timestamp.from(value);
+    }
+
+    private List<Map<String, Object>> persistedPeriods(UUID studentProgramId) {
+        return jdbc.queryForList(
+                """
+                select id, sequence_no, start_cumulative_minutes, target_duration_minutes,
+                       end_cumulative_minutes, status, started_at, completed_at
+                from learning_periods where student_program_id = ? order by sequence_no
+                """,
+                studentProgramId);
     }
 
     private String url(Fixture fixture) {
