@@ -179,6 +179,16 @@ public class TeacherLearningProgramService {
                 module.id(), module.title(), module.description(), module.position());
     }
 
+    /**
+     * Locks the program and applies the same ownership and editability rules as manual creation.
+     */
+    @Transactional
+    public UUID requireEditableForImport(AuthenticatedUser principal, UUID programId) {
+        UUID teacherId = teacherId(principal);
+        requireEditableOwnedProgram(teacherId, programId);
+        return teacherId;
+    }
+
     @Transactional
     public LearningProgramTopicDetailsResponse createTopic(
             AuthenticatedUser principal,
