@@ -31,6 +31,7 @@ dependencies {
     // Temporary Jackson 2 compatibility during Spring Boot 4 migration.
     implementation("org.springframework.boot:spring-boot-jackson2")
     implementation("com.fasterxml.jackson.core:jackson-databind")
+    implementation("org.yaml:snakeyaml")
 
     implementation("org.springframework.boot:spring-boot-starter-session-jdbc")
     implementation("org.bouncycastle:bcprov-jdk18on:1.86")
