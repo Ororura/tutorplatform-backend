@@ -3,6 +3,7 @@ package com.tutorplatform.content.application.importpackage;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -13,10 +14,14 @@ import com.tutorplatform.program.api.LearningProgramDetailsResponse;
 import com.tutorplatform.program.application.InvalidLearningProgramStatusException;
 import com.tutorplatform.program.application.LearningProgramNotFoundException;
 import com.tutorplatform.program.application.TeacherLearningProgramService;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 class ContentPackagePreviewServiceTest {
     private final TeacherLearningProgramService programs =
@@ -24,6 +29,97 @@ class ContentPackagePreviewServiceTest {
     private final AuthenticatedUser teacher =
             new AuthenticatedUser(UUID.randomUUID(), "teacher", "", true, List.of());
     private final UUID programId = UUID.randomUUID();
+
+    @Test
+    void uploadedYamlBytesReachParserRegardlessOfContentType() {
+        editableProgram();
+        var parser = mock(ContentPackageParser.class);
+        byte[] bytes = "schemaVersion: 1".getBytes(StandardCharsets.UTF_8);
+        var file = new MockMultipartFile("file", "package.YML", "application/octet-stream", bytes);
+        var service =
+                new ContentPackagePreviewService(
+                        programs, parser, new TutorContentPackageValidator());
+        when(parser.parse(bytes))
+                .thenReturn(
+                        new TutorContentPackage(
+                                1,
+                                "modules",
+                                List.of(
+                                        new ModuleImport(
+                                                "Module",
+                                                null,
+                                                List.of(
+                                                        new TopicImport(
+                                                                "Topic", null, List.of()))))));
+
+        assertThat(service.preview(teacher, programId, file).moduleCount()).isEqualTo(1);
+        verify(parser).parse(bytes);
+    }
+
+    @Test
+    void uploadedFileIsRejectedBeforeAnOversizeReadEvenWhenSizeIsUnderreported() throws Exception {
+        editableProgram();
+        var parser = mock(ContentPackageParser.class);
+        var service =
+                new ContentPackagePreviewService(
+                        programs, parser, new TutorContentPackageValidator());
+        MultipartFile declaredLarge = mock(MultipartFile.class);
+        when(declaredLarge.getOriginalFilename()).thenReturn("package.yaml");
+        when(declaredLarge.getSize()).thenReturn(1_048_577L);
+        assertThatThrownBy(() -> service.preview(teacher, programId, declaredLarge))
+                .isInstanceOfSatisfying(
+                        ContentPackageParseException.class,
+                        error ->
+                                assertThat(error.code())
+                                        .isEqualTo(
+                                                ContentPackageParseException.Code.FILE_TOO_LARGE));
+        verifyNoInteractions(parser);
+
+        MultipartFile underreported = mock(MultipartFile.class);
+        when(underreported.getOriginalFilename()).thenReturn("package.yml");
+        when(underreported.getSize()).thenReturn(1L);
+        when(underreported.getInputStream())
+                .thenReturn(new ByteArrayInputStream(new byte[1_048_577]));
+        assertThatThrownBy(() -> service.preview(teacher, programId, underreported))
+                .isInstanceOfSatisfying(
+                        ContentPackageParseException.class,
+                        error ->
+                                assertThat(error.code())
+                                        .isEqualTo(
+                                                ContentPackageParseException.Code.FILE_TOO_LARGE));
+        verifyNoInteractions(parser);
+    }
+
+    @Test
+    void invalidExtensionAndReadFailureAreControlledFileErrors() throws Exception {
+        editableProgram();
+        var parser = mock(ContentPackageParser.class);
+        var service =
+                new ContentPackagePreviewService(
+                        programs, parser, new TutorContentPackageValidator());
+        var wrongExtension = new MockMultipartFile("file", "package.txt", "text/yaml", new byte[0]);
+        assertThatThrownBy(() -> service.preview(teacher, programId, wrongExtension))
+                .isInstanceOfSatisfying(
+                        ContentPackageParseException.class,
+                        error ->
+                                assertThat(error.code())
+                                        .isEqualTo(
+                                                ContentPackageParseException.Code
+                                                        .INVALID_FILE_EXTENSION));
+
+        MultipartFile unreadable = mock(MultipartFile.class);
+        when(unreadable.getOriginalFilename()).thenReturn("package.yaml");
+        when(unreadable.getInputStream()).thenThrow(new IOException("private path"));
+        assertThatThrownBy(() -> service.preview(teacher, programId, unreadable))
+                .isInstanceOfSatisfying(
+                        ContentPackageParseException.class,
+                        error -> {
+                            assertThat(error.code())
+                                    .isEqualTo(ContentPackageParseException.Code.FILE_READ_ERROR);
+                            assertThat(error.getMessage()).doesNotContain("private path");
+                        });
+        verifyNoInteractions(parser);
+    }
 
     @Test
     void previewsHierarchyCountsOrderAndNormalizedFieldsWithoutChangingMaterialContent() {
@@ -164,6 +260,10 @@ class ContentPackagePreviewServiceTest {
                         programs, parser, new TutorContentPackageValidator());
 
         assertThatThrownBy(() -> service.preview(teacher, programId, new byte[0]))
+                .isInstanceOf(LearningProgramNotFoundException.class);
+        var upload =
+                new MockMultipartFile("file", "package.yaml", "text/plain", new byte[1_048_577]);
+        assertThatThrownBy(() -> service.preview(teacher, programId, upload))
                 .isInstanceOf(LearningProgramNotFoundException.class);
         verifyNoInteractions(parser);
     }
