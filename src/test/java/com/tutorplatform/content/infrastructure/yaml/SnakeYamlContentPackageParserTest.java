@@ -5,7 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.tutorplatform.content.application.importpackage.ContentPackageParseException;
 import com.tutorplatform.content.application.importpackage.ContentPackageParseException.Code;
+import com.tutorplatform.content.application.importpackage.TutorContentPackage;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +16,137 @@ import org.junit.jupiter.api.Test;
 
 class SnakeYamlContentPackageParserTest {
     private final SnakeYamlContentPackageParser parser = new SnakeYamlContentPackageParser();
+
+    @Test
+    void parsesValidYamlIntoExactFields() {
+        var content =
+                parse(
+                        "schemaVersion: 1\nkind: modules\nmodules:\n  - title: Intro\n    topics:\n      - title: Basics\n");
+        assertThat(content.schemaVersion()).isEqualTo(1);
+        assertThat(content.kind()).isEqualTo("modules");
+        assertThat(content.modules().getFirst().title()).isEqualTo("Intro");
+        assertThat(content.modules().getFirst().topics().getFirst().title()).isEqualTo("Basics");
+    }
+
+    @Test
+    void parsesSeveralModules() {
+        var content =
+                parse(
+                        "schemaVersion: 1\nkind: modules\nmodules:\n  - title: First\n    topics: []\n  - title: Second\n    topics: []\n");
+        assertThat(content.modules()).extracting(m -> m.title()).containsExactly("First", "Second");
+    }
+
+    @Test
+    void parsesSeveralTopicsInOneModule() {
+        var content =
+                parse(
+                        "modules:\n  - title: M\n    topics:\n      - title: First\n      - title: Second\n");
+        assertThat(content.modules().getFirst().topics())
+                .extracting(t -> t.title())
+                .containsExactly("First", "Second");
+    }
+
+    @Test
+    void parsesSeveralMaterialsInOneTopic() {
+        var content =
+                parse(
+                        "modules:\n  - title: M\n    topics:\n      - title: T\n        materials:\n          - title: First\n            materialType: TEXT\n            content: one\n          - title: Second\n            materialType: LINK\n            externalUrl: https://example.org\n");
+        var materials = content.modules().getFirst().topics().getFirst().materials();
+        assertThat(materials).extracting(m -> m.title()).containsExactly("First", "Second");
+        assertThat(materials.get(0).content()).isEqualTo("one");
+        assertThat(materials.get(1).externalUrl()).isEqualTo("https://example.org");
+    }
+
+    @Test
+    void preservesOriginalInputAndMarkdownWhitespace() {
+        String yaml =
+                "modules:\n  - title: M\n    topics:\n      - title: T\n        materials:\n          - title: Notes\n            materialType: MARKDOWN\n            content: |\n              # Heading\n\n                indented **text**\n";
+        byte[] bytes = yaml.getBytes(StandardCharsets.UTF_8);
+        byte[] original = bytes.clone();
+        var content = parser.parse(bytes);
+        assertThat(
+                        content.modules()
+                                .getFirst()
+                                .topics()
+                                .getFirst()
+                                .materials()
+                                .getFirst()
+                                .content())
+                .isEqualTo("# Heading\n\n  indented **text**\n");
+        assertThat(bytes).containsExactly(original);
+    }
+
+    @Test
+    void preservesPythonIndentationAndUnicode() {
+        var content =
+                parse(
+                        "modules:\n  - title: Русский 🐍\n    topics:\n      - title: Условие\n        materials:\n          - title: Код\n            materialType: CODE_EXAMPLE\n            content: |\n              if True:\n                  print(\"Привет\")\n");
+        assertThat(content.modules().getFirst().title()).isEqualTo("Русский 🐍");
+        assertThat(
+                        content.modules()
+                                .getFirst()
+                                .topics()
+                                .getFirst()
+                                .materials()
+                                .getFirst()
+                                .content())
+                .isEqualTo("if True:\n    print(\"Привет\")\n");
+    }
+
+    @Test
+    void rejectsEmptyDocumentWithSafeDiagnostic() {
+        assertError("", Code.INVALID_YAML, "root");
+        assertThatThrownBy(() -> parse(""))
+                .isInstanceOfSatisfying(
+                        ContentPackageParseException.class,
+                        ex -> {
+                            assertThat(ex.getMessage())
+                                    .isEqualTo("Exactly one YAML document is required");
+                            assertThat(ex.getMessage()).doesNotContain("\tat ", "Exception:");
+                        });
+    }
+
+    @Test
+    void rejectsCustomTagWithoutEchoingMaterial() {
+        String secret = "PRIVATE_MATERIAL_BODY";
+        assertThatThrownBy(() -> parse("kind: !custom " + secret + "\n"))
+                .isInstanceOfSatisfying(
+                        ContentPackageParseException.class,
+                        ex -> {
+                            assertThat(ex.code()).isEqualTo(Code.UNSUPPORTED_YAML_FEATURE);
+                            assertThat(ex.location()).startsWith("line ");
+                            assertThat(ex.getMessage()).doesNotContain(secret, "\tat ");
+                        });
+    }
+
+    @Test
+    void reportsNestedTypePathWithoutLeakingContent() {
+        String secret = "PRIVATE_MATERIAL_BODY";
+        assertThatThrownBy(
+                        () ->
+                                parse(
+                                        "modules:\n  - title: M\n    topics:\n      - title: T\n        materials:\n          - title: "
+                                                + secret
+                                                + "\n            content: false\n"))
+                .isInstanceOfSatisfying(
+                        ContentPackageParseException.class,
+                        ex -> {
+                            assertThat(ex.code()).isEqualTo(Code.INVALID_FIELD_TYPE);
+                            assertThat(ex.location())
+                                    .isEqualTo("modules[0].topics[0].materials[0].content");
+                            assertThat(ex.getMessage()).isEqualTo("Expected a string");
+                            assertThat(ex.getMessage()).doesNotContain(secret);
+                        });
+    }
+
+    @Test
+    void parsingUsesOnlyInMemoryComponents() {
+        assertThat(SnakeYamlContentPackageParser.class.getDeclaredFields())
+                .allSatisfy(field -> assertThat(Modifier.isStatic(field.getModifiers())).isTrue());
+        var result = parse("schemaVersion: 1\nkind: modules\nmodules: []\n");
+        assertThat(result).isExactlyInstanceOf(TutorContentPackage.class);
+        assertThat(result.modules()).isEmpty();
+    }
 
     @Test
     void parsesDocumentedExample() throws IOException {
