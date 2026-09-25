@@ -36,13 +36,13 @@ class DatabaseBaselineMigrationIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
-    void cleanDatabaseMigratesThroughV013() throws SQLException {
+    void cleanDatabaseMigratesThroughV014() throws SQLException {
         assertThat(
                         Arrays.stream(flyway.info().applied())
                                 .map(migration -> migration.getVersion().toString()))
                 .containsExactly(
                         "001", "002", "003", "004", "005", "006", "007", "008", "009", "010", "011",
-                        "012", "013");
+                        "012", "013", "014");
 
         assertThat(
                         queryStrings(
@@ -85,7 +85,8 @@ class DatabaseBaselineMigrationIntegrationTest extends PostgresIntegrationTest {
                         "progress_shares",
                         "report_shares",
                         "platform_settings",
-                        "teacher_registration_invites");
+                        "teacher_registration_invites",
+                        "content_package_imports");
     }
 
     @Test
