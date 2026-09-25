@@ -55,7 +55,7 @@ public class ContentPackageImportService {
             if (!digest.equals(existing.get().packageDigest())) {
                 throw new ContentPackageConfirmationConflictException();
             }
-            return ContentPackageImportResult.fromRecord(existing.get());
+            return ContentPackageImportResult.fromRecord(existing.get(), true);
         }
 
         var moduleIds = new ArrayList<UUID>();

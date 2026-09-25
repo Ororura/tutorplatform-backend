@@ -214,7 +214,7 @@ class ContentPackageImportServiceTest {
         assertThat(service.importPackage(principal, programId, confirmationId, DIGEST, yamlBytes))
                 .isEqualTo(
                         ContentPackageImportResult.fromRecord(
-                                record(DIGEST, List.of(moduleId), 1, 1, 0)));
+                                record(DIGEST, List.of(moduleId), 1, 1, 0), true));
         verifyNoInteractions(materials);
     }
 
