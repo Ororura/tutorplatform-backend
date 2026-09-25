@@ -26,7 +26,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-restclient")
-    implementation("software.amazon.awssdk:s3:2.40.3")
+    implementation("software.amazon.awssdk:s3:2.55.2")
 
     // Temporary Jackson 2 compatibility during Spring Boot 4 migration.
     implementation("org.springframework.boot:spring-boot-jackson2")
