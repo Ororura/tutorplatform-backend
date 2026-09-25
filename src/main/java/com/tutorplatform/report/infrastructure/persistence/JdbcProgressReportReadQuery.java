@@ -4,9 +4,11 @@ import com.tutorplatform.report.application.ProgressReportReadQuery;
 import com.tutorplatform.report.application.ProgressReportSummary;
 import com.tutorplatform.report.application.ProgressReportSummaryPage;
 import com.tutorplatform.report.domain.ProgressReportStatus;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -27,6 +29,27 @@ public class JdbcProgressReportReadQuery implements ProgressReportReadQuery {
 
     public JdbcProgressReportReadQuery(NamedParameterJdbcTemplate jdbc) {
         this.jdbc = jdbc;
+    }
+
+    @Override
+    public Map<UUID, UUID> findIdsByLearningPeriodIds(Collection<UUID> learningPeriodIds) {
+        if (learningPeriodIds.isEmpty()) {
+            return Map.of();
+        }
+        return jdbc
+                .query(
+                        """
+                select learning_period_id, id
+                from progress_reports
+                where learning_period_id in (:learningPeriodIds)
+                """,
+                        new MapSqlParameterSource("learningPeriodIds", learningPeriodIds),
+                        (row, rowNumber) ->
+                                Map.entry(
+                                        row.getObject("learning_period_id", UUID.class),
+                                        row.getObject("id", UUID.class)))
+                .stream()
+                .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     @Override
