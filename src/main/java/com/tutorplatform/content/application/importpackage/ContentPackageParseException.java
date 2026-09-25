@@ -8,7 +8,9 @@ public final class ContentPackageParseException extends RuntimeException {
         DUPLICATE_KEY,
         UNSUPPORTED_YAML_FEATURE,
         INVALID_FIELD_TYPE,
-        UNKNOWN_FIELD
+        UNKNOWN_FIELD,
+        INVALID_FILE_EXTENSION,
+        FILE_READ_ERROR
     }
 
     private final Code code;
