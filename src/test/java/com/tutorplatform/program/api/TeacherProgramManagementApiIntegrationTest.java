@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,10 +44,14 @@ import com.tutorplatform.user.domain.UserEntity;
 import com.tutorplatform.user.domain.UserRepository;
 import com.tutorplatform.user.domain.UserRole;
 import com.tutorplatform.user.domain.UserStatus;
+import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -54,6 +59,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -81,6 +87,7 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
     @Autowired ModuleRepository moduleRepository;
     @Autowired TopicRepository topicRepository;
     @Autowired StudentTopicProgressRepository progressRepository;
+    @Autowired EntityManager entityManager;
 
     @Test
     void subjectsReturnSystemAndOwnButNotForeignAndDefaultToActive() throws Exception {
@@ -1018,6 +1025,244 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
                 .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_TOPIC_VERSION_CONFLICT"));
     }
 
+    @ParameterizedTest
+    @CsvSource({"DRAFT,DRAFT,ACTIVE", "ACTIVE,ACTIVE,DRAFT", "DRAFT,ACTIVE,ARCHIVED"})
+    void bulkUpdatesStatusesAcrossModulesAndPreservesOtherFields(
+            TopicStatus firstStatus, TopicStatus secondStatus, TopicStatus targetStatus)
+            throws Exception {
+        TeacherContext teacher = teacher("bulk-status@example.com");
+        LearningProgramEntity program =
+                program(teacher.teacher, "Bulk", LearningProgramStatus.DRAFT);
+        ModuleEntity firstModule = module(program, "First", 0);
+        ModuleEntity secondModule = module(program, "Second", 1);
+        TopicEntity first =
+                topicRepository.saveAndFlush(
+                        new TopicEntity(
+                                UUID.randomUUID(),
+                                firstModule.id(),
+                                "First topic",
+                                "Description",
+                                0,
+                                firstStatus));
+        TopicEntity second =
+                topicRepository.saveAndFlush(
+                        new TopicEntity(
+                                UUID.randomUUID(),
+                                secondModule.id(),
+                                "Second topic",
+                                null,
+                                3,
+                                secondStatus));
+        second =
+                topicRepository.saveAndFlush(
+                        new TopicEntity(
+                                second.id(),
+                                second.moduleId(),
+                                "Revised topic",
+                                "Revised description",
+                                second.position(),
+                                second.status(),
+                                second.version(),
+                                second.createdAt(),
+                                second.updatedAt()));
+        TopicEntity untouched = topic(firstModule, "Untouched", 1);
+        entityManager.clear();
+
+        bulkUpdateTopicStatus(teacher, program.getId(), targetStatus, List.of(first, second))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+
+        entityManager.clear();
+        for (TopicEntity original : List.of(first, second)) {
+            TopicEntity updated = topicRepository.findById(original.id()).orElseThrow();
+            assertThat(updated.status()).isEqualTo(targetStatus);
+            assertThat(updated.version()).isEqualTo(original.version() + 1);
+            assertThat(updated)
+                    .usingRecursiveComparison()
+                    .ignoringFields("status", "version", "updatedAt")
+                    .isEqualTo(original);
+        }
+        assertThat(topicRepository.findById(untouched.id()).orElseThrow()).isEqualTo(untouched);
+    }
+
+    @Test
+    void bulkStatusValidatesRequiredFieldsSizeAndDuplicateIds() throws Exception {
+        TeacherContext teacher = teacher("bulk-validation@example.com");
+        LearningProgramEntity program =
+                program(teacher.teacher, "Bulk", LearningProgramStatus.DRAFT);
+        TopicEntity topic = topic(module(program, "Module", 0), "Topic", 0);
+        String item =
+                objectMapper.writeValueAsString(
+                        new BulkUpdateLearningProgramTopicStatusItem(topic.id(), topic.version()));
+        for (String body :
+                List.of(
+                        "{}",
+                        "{\"status\":\"ACTIVE\"}",
+                        "{\"status\":\"ACTIVE\",\"topics\":null}",
+                        "{\"status\":\"ACTIVE\",\"topics\":[]}",
+                        "{\"status\":\"ACTIVE\",\"topics\":[null]}",
+                        "{\"status\":\"ACTIVE\",\"topics\":[{}]}",
+                        "{\"status\":\"ACTIVE\",\"topics\":[{\"version\":0}]}",
+                        "{\"status\":\"ACTIVE\",\"topics\":[{\"id\":\"" + topic.id() + "\"}]}",
+                        "{\"status\":\"ACTIVE\",\"topics\":[{\"id\":\""
+                                + topic.id()
+                                + "\",\"version\":-1}]}",
+                        "{\"topics\":[" + item + "]}",
+                        "{\"status\":\"UNKNOWN\",\"topics\":[" + item + "]}",
+                        "{\"status\":\"ACTIVE\",\"topics\":[" + item + "," + item + "]}",
+                        objectMapper.writeValueAsString(
+                                new BulkUpdateLearningProgramTopicStatusRequest(
+                                        TopicStatus.ACTIVE,
+                                        IntStream.range(0, 376)
+                                                .mapToObj(
+                                                        i ->
+                                                                new BulkUpdateLearningProgramTopicStatusItem(
+                                                                        UUID.randomUUID(), 0L))
+                                                .toList())))) {
+            bulkUpdateTopicStatus(teacher, program.getId(), body)
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+        }
+        entityManager.clear();
+        assertThat(topicRepository.findById(topic.id()).orElseThrow()).isEqualTo(topic);
+    }
+
+    @Test
+    void bulkStatusAcceptsMaximum375Topics() throws Exception {
+        TeacherContext teacher = teacher("bulk-limit@example.com");
+        LearningProgramEntity program =
+                program(teacher.teacher, "Bulk", LearningProgramStatus.DRAFT);
+        ModuleEntity module = module(program, "Module", 0);
+        List<TopicEntity> topics =
+                IntStream.range(0, 375).mapToObj(i -> topic(module, "Topic " + i, i)).toList();
+        entityManager.clear();
+
+        bulkUpdateTopicStatus(teacher, program.getId(), TopicStatus.ACTIVE, topics)
+                .andExpect(status().isNoContent());
+
+        entityManager.clear();
+        assertThat(topicRepository.findByModuleId(module.id()))
+                .hasSize(375)
+                .allSatisfy(
+                        topic -> {
+                            assertThat(topic.status()).isEqualTo(TopicStatus.ACTIVE);
+                            assertThat(topic.version()).isEqualTo(1L);
+                        });
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    void bulkStatusHidesMissingOtherProgramAndForeignTeacherTopicsAtomically() throws Exception {
+        TeacherContext owner = teacher("bulk-owner@example.com");
+        TeacherContext foreign = teacher("bulk-foreign@example.com");
+        LearningProgramEntity program =
+                program(owner.teacher, "Owned", LearningProgramStatus.DRAFT);
+        LearningProgramEntity other = program(owner.teacher, "Other", LearningProgramStatus.DRAFT);
+        LearningProgramEntity foreignProgram =
+                program(foreign.teacher, "Foreign", LearningProgramStatus.DRAFT);
+        TopicEntity own = topic(module(program, "Own", 0), "Own", 0);
+        TopicEntity otherTopic = topic(module(other, "Other", 0), "Other", 0);
+        TopicEntity foreignTopic = topic(module(foreignProgram, "Foreign", 0), "Foreign", 0);
+        TopicEntity missing =
+                new TopicEntity(
+                        UUID.randomUUID(),
+                        own.moduleId(),
+                        "Missing",
+                        null,
+                        0,
+                        TopicStatus.DRAFT,
+                        0L,
+                        null,
+                        null);
+        entityManager.clear();
+
+        for (TopicEntity inaccessible : List.of(otherTopic, foreignTopic, missing)) {
+            bulkUpdateTopicStatus(
+                            owner, program.getId(), TopicStatus.ACTIVE, List.of(own, inaccessible))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_TOPIC_NOT_FOUND"));
+            entityManager.clear();
+            for (TopicEntity original : List.of(own, otherTopic, foreignTopic)) {
+                assertThat(topicRepository.findById(original.id()).orElseThrow())
+                        .isEqualTo(original);
+            }
+        }
+        bulkUpdateTopicStatus(foreign, program.getId(), TopicStatus.ACTIVE, List.of(own))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_NOT_FOUND"));
+        entityManager.clear();
+        assertThat(topicRepository.findById(own.id()).orElseThrow()).isEqualTo(own);
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    void bulkStatusRejectsOneStaleVersionWithoutChangingAnyTopic() throws Exception {
+        TeacherContext teacher = teacher("bulk-stale@example.com");
+        LearningProgramEntity program =
+                program(teacher.teacher, "Bulk", LearningProgramStatus.DRAFT);
+        ModuleEntity module = module(program, "Module", 0);
+        TopicEntity first = topic(module, "First", 0);
+        TopicEntity second = topic(module, "Second", 1);
+        TopicEntity currentSecond =
+                topicRepository.saveAndFlush(
+                        new TopicEntity(
+                                second.id(),
+                                second.moduleId(),
+                                "Already updated",
+                                second.description(),
+                                second.position(),
+                                TopicStatus.ACTIVE,
+                                second.version(),
+                                second.createdAt(),
+                                second.updatedAt()));
+        entityManager.clear();
+
+        bulkUpdateTopicStatus(
+                        teacher, program.getId(), TopicStatus.ARCHIVED, List.of(first, second))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_TOPIC_VERSION_CONFLICT"));
+
+        entityManager.clear();
+        assertThat(topicRepository.findById(first.id()).orElseThrow()).isEqualTo(first);
+        assertThat(topicRepository.findById(second.id()).orElseThrow()).isEqualTo(currentSecond);
+    }
+
+    @Test
+    void bulkStatusRejectsArchivedAndEverAssignedPrograms() throws Exception {
+        TeacherContext teacher = teacher("bulk-noneditable@example.com");
+        LearningProgramEntity archived =
+                program(teacher.teacher, "Archived", LearningProgramStatus.ARCHIVED);
+        LearningProgramEntity assigned =
+                program(teacher.teacher, "Assigned", LearningProgramStatus.ACTIVE);
+        TopicEntity archivedTopic = topic(module(archived, "Archived", 0), "Archived", 0);
+        TopicEntity assignedTopic = topic(module(assigned, "Assigned", 0), "Assigned", 0);
+        StudentEntity student = student(teacher.teacher, "Student");
+        studentProgramRepository.saveAndFlush(
+                new StudentProgramEntity(
+                        UUID.randomUUID(),
+                        student.getId(),
+                        assigned.getId(),
+                        teacher.teacher.id(),
+                        StudentProgramStatus.ARCHIVED,
+                        480,
+                        Instant.parse("2026-09-01T00:00:00Z"),
+                        null));
+        entityManager.clear();
+
+        bulkUpdateTopicStatus(teacher, archived.getId(), TopicStatus.ACTIVE, List.of(archivedTopic))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_STATUS_CONFLICT"));
+        bulkUpdateTopicStatus(teacher, assigned.getId(), TopicStatus.ACTIVE, List.of(assignedTopic))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_STATUS_CONFLICT"));
+
+        entityManager.clear();
+        assertThat(topicRepository.findById(archivedTopic.id()).orElseThrow())
+                .isEqualTo(archivedTopic);
+        assertThat(topicRepository.findById(assignedTopic.id()).orElseThrow())
+                .isEqualTo(assignedTopic);
+    }
+
     @Test
     void updatesModuleTrimsFieldsAndPreservesPosition() throws Exception {
         TeacherContext teacher = teacher("module-update@example.com");
@@ -1331,6 +1576,10 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
                 .andExpect(
+                        jsonPath(
+                                        "$.paths['/api/v1/teacher/programs/{programId}/topics/status'].patch.operationId")
+                                .value("bulkUpdateTeacherLearningProgramTopicStatus"))
+                .andExpect(
                         jsonPath("$.paths['/api/v1/teacher/subjects'].get.operationId")
                                 .value("listTeacherSubjects"))
                 .andExpect(
@@ -1386,6 +1635,33 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
                         jsonPath(
                                         "$.paths['/api/v1/teacher/students/{studentId}/programs'].post.operationId")
                                 .value("assignTeacherStudentProgram"));
+    }
+
+    private org.springframework.test.web.servlet.ResultActions bulkUpdateTopicStatus(
+            TeacherContext teacher, UUID programId, TopicStatus status, List<TopicEntity> topics)
+            throws Exception {
+        return bulkUpdateTopicStatus(
+                teacher,
+                programId,
+                objectMapper.writeValueAsString(
+                        new BulkUpdateLearningProgramTopicStatusRequest(
+                                status,
+                                topics.stream()
+                                        .map(
+                                                topic ->
+                                                        new BulkUpdateLearningProgramTopicStatusItem(
+                                                                topic.id(), topic.version()))
+                                        .toList())));
+    }
+
+    private org.springframework.test.web.servlet.ResultActions bulkUpdateTopicStatus(
+            TeacherContext teacher, UUID programId, String body) throws Exception {
+        return mockMvc.perform(
+                patch("/api/v1/teacher/programs/{programId}/topics/status", programId)
+                        .with(user(teacher.principal))
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content(body));
     }
 
     private void expectAssign(
