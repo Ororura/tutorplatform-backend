@@ -73,6 +73,38 @@ class OpenApiHardeningIntegrationTest extends PostgresIntegrationTest {
     @Autowired private ObjectMapper objectMapper;
 
     @Test
+    void bulkTopicStatusPublishesRequestLimitsAndAllResponses() throws Exception {
+        JsonNode document =
+                objectMapper.readTree(
+                        mockMvc.perform(get("/v3/api-docs"))
+                                .andExpect(status().isOk())
+                                .andReturn()
+                                .getResponse()
+                                .getContentAsByteArray());
+        JsonNode operation =
+                document.required("paths")
+                        .required("/api/v1/teacher/programs/{programId}/topics/status")
+                        .required("patch");
+        for (String code : Set.of("204", "400", "401", "403", "404", "409")) {
+            assertThat(operation.required("responses").has(code)).isTrue();
+        }
+        assertThat(operation.required("responses").required("204").has("content")).isFalse();
+        JsonNode schemas = document.required("components").required("schemas");
+        JsonNode request = schemas.required("BulkUpdateLearningProgramTopicStatusRequest");
+        assertThat(request.required("required"))
+                .contains(objectMapper.valueToTree("status"), objectMapper.valueToTree("topics"));
+        assertThat(request.required("properties").required("topics").required("maxItems").asInt())
+                .isEqualTo(375);
+        assertThat(request.required("properties").required("topics").required("minItems").asInt())
+                .isEqualTo(1);
+        JsonNode item = schemas.required("BulkUpdateLearningProgramTopicStatusItem");
+        assertThat(item.required("required"))
+                .contains(objectMapper.valueToTree("id"), objectMapper.valueToTree("version"));
+        assertThat(item.required("properties").required("version").required("minimum").asInt())
+                .isZero();
+    }
+
+    @Test
     void generatedContractHasUniqueOperationIdsAndExactCookieSecurity() throws Exception {
         JsonNode document =
                 objectMapper.readTree(
