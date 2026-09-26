@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public record BulkUpdateLearningProgramTopicStatusRequest(
         @NotNull @Schema(requiredMode = Schema.RequiredMode.REQUIRED) TopicStatus status,
-        @NotEmpty @Size(max = 375) @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
+        @NotEmpty @Size(min = 1, max = 375) @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
                 List<@NotNull @Valid BulkUpdateLearningProgramTopicStatusItem> topics) {
 
     @AssertTrue(message = "Topic IDs must be unique")

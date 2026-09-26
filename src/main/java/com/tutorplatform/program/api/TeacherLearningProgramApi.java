@@ -25,6 +25,14 @@ public interface TeacherLearningProgramApi {
                 description = "Invalid request or duplicate topic IDs",
                 content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(
+                responseCode = "401",
+                description = "Authentication required",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "403",
+                description = "Teacher role and valid CSRF token required",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
                 responseCode = "404",
                 description = "Learning program or topic not found",
                 content = @Content(schema = @Schema(implementation = ApiError.class))),

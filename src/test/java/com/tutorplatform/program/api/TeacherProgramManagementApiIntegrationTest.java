@@ -1,6 +1,9 @@
 package com.tutorplatform.program.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.reset;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -48,6 +51,8 @@ import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -55,12 +60,17 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -85,7 +95,9 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
     @Autowired LearningProgramRepository learningProgramRepository;
     @Autowired StudentProgramRepository studentProgramRepository;
     @Autowired ModuleRepository moduleRepository;
-    @Autowired TopicRepository topicRepository;
+    @MockitoSpyBean TopicRepository topicRepository;
+    @Autowired JdbcTemplate jdbc;
+    @Autowired PlatformTransactionManager transactionManager;
     @Autowired StudentTopicProgressRepository progressRepository;
     @Autowired EntityManager entityManager;
 
@@ -1225,6 +1237,61 @@ class TeacherProgramManagementApiIntegrationTest extends PostgresIntegrationTest
         entityManager.clear();
         assertThat(topicRepository.findById(first.id()).orElseThrow()).isEqualTo(first);
         assertThat(topicRepository.findById(second.id()).orElseThrow()).isEqualTo(currentSecond);
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    void bulkStatusRollsBackFlushedTopicWhenLaterWriteHasOptimisticConflict() throws Exception {
+        TeacherContext teacher = teacher("bulk-late-conflict@example.com");
+        LearningProgramEntity program =
+                program(teacher.teacher, "Bulk", LearningProgramStatus.DRAFT);
+        ModuleEntity module = module(program, "Module", 0);
+        List<TopicEntity> topics = List.of(topic(module, "First", 0), topic(module, "Second", 1));
+        TransactionTemplate concurrent = new TransactionTemplate(transactionManager);
+        concurrent.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        AtomicInteger writes = new AtomicInteger();
+        AtomicReference<UUID> conflictedId = new AtomicReference<>();
+        doAnswer(
+                        invocation -> {
+                            TopicEntity topic = invocation.getArgument(0);
+                            if (writes.incrementAndGet() == 2) {
+                                conflictedId.set(topic.id());
+                                concurrent.executeWithoutResult(
+                                        ignored ->
+                                                jdbc.update(
+                                                        "UPDATE topics SET version = version + 1 WHERE id = ?",
+                                                        topic.id()));
+                            }
+                            TopicEntity saved = (TopicEntity) invocation.callRealMethod();
+                            assertThat(
+                                            jdbc.queryForObject(
+                                                    "SELECT status FROM topics WHERE id = ?",
+                                                    String.class,
+                                                    saved.id()))
+                                    .isEqualTo("ACTIVE");
+                            return saved;
+                        })
+                .when(topicRepository)
+                .saveAndFlush(any(TopicEntity.class));
+        try {
+            bulkUpdateTopicStatus(teacher, program.getId(), TopicStatus.ACTIVE, topics)
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.code").value("LEARNING_PROGRAM_TOPIC_VERSION_CONFLICT"));
+        } finally {
+            reset(topicRepository);
+        }
+        assertThat(writes.get()).isEqualTo(2);
+        for (TopicEntity original : topics) {
+            TopicEntity persisted = topicRepository.findById(original.id()).orElseThrow();
+            assertThat(persisted)
+                    .usingRecursiveComparison()
+                    .ignoringFields("version")
+                    .isEqualTo(original);
+            assertThat(persisted.version())
+                    .isEqualTo(
+                            original.version()
+                                    + (original.id().equals(conflictedId.get()) ? 1 : 0));
+        }
     }
 
     @Test
