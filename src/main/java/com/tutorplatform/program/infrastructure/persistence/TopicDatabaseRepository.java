@@ -9,6 +9,14 @@ import org.springframework.data.jpa.repository.Query;
 interface TopicDatabaseRepository extends JpaRepository<TopicDatabaseModel, UUID> {
     List<TopicDatabaseModel> findByModuleId(UUID moduleId);
 
+    @Query(
+            """
+        select topic from TopicDatabaseModel topic
+        join topic.module module
+        where module.learningProgramId = :programId and topic.id in :topicIds
+        """)
+    List<TopicDatabaseModel> findByLearningProgramIdAndIdIn(UUID programId, List<UUID> topicIds);
+
     boolean existsByModuleId(UUID moduleId);
 
     @Query(

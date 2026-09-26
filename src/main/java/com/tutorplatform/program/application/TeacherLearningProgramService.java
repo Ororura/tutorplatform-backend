@@ -1,6 +1,8 @@
 package com.tutorplatform.program.application;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
+import com.tutorplatform.program.api.BulkUpdateLearningProgramTopicStatusItem;
+import com.tutorplatform.program.api.BulkUpdateLearningProgramTopicStatusRequest;
 import com.tutorplatform.program.api.CreateLearningProgramModuleRequest;
 import com.tutorplatform.program.api.CreateLearningProgramRequest;
 import com.tutorplatform.program.api.CreateLearningProgramTopicRequest;
@@ -31,8 +33,10 @@ import com.tutorplatform.subject.domain.SubjectStatus;
 import jakarta.persistence.OptimisticLockException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -357,6 +361,53 @@ public class TeacherLearningProgramService {
             throw new LearningProgramModuleNotEmptyException();
         }
         moduleRepository.deleteById(moduleId);
+    }
+
+    @Transactional
+    public void bulkUpdateTopicStatus(
+            AuthenticatedUser principal,
+            UUID programId,
+            BulkUpdateLearningProgramTopicStatusRequest request) {
+        requireEditableOwnedProgram(teacherId(principal), programId);
+
+        List<UUID> topicIds =
+                request.topics().stream()
+                        .map(BulkUpdateLearningProgramTopicStatusItem::id)
+                        .toList();
+        List<TopicEntity> topics =
+                topicRepository.findByLearningProgramIdAndIdIn(programId, topicIds);
+        if (topics.size() != topicIds.size()) {
+            throw new LearningProgramTopicNotFoundException();
+        }
+        Map<UUID, Long> versions =
+                request.topics().stream()
+                        .collect(
+                                Collectors.toMap(
+                                        BulkUpdateLearningProgramTopicStatusItem::id,
+                                        BulkUpdateLearningProgramTopicStatusItem::version));
+        for (TopicEntity topic : topics) {
+            if (!topic.version().equals(versions.get(topic.id()))) {
+                throw new LearningProgramTopicVersionConflictException();
+            }
+        }
+
+        try {
+            for (TopicEntity topic : topics) {
+                topicRepository.saveAndFlush(
+                        new TopicEntity(
+                                topic.id(),
+                                topic.moduleId(),
+                                topic.title(),
+                                topic.description(),
+                                topic.position(),
+                                request.status(),
+                                topic.version(),
+                                topic.createdAt(),
+                                topic.updatedAt()));
+            }
+        } catch (ObjectOptimisticLockingFailureException | OptimisticLockException exception) {
+            throw new LearningProgramTopicVersionConflictException(exception);
+        }
     }
 
     @Transactional

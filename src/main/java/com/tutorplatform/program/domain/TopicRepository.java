@@ -11,6 +11,8 @@ public interface TopicRepository {
 
     List<TopicEntity> findByModuleId(UUID moduleId);
 
+    List<TopicEntity> findByLearningProgramIdAndIdIn(UUID programId, List<UUID> topicIds);
+
     boolean existsByModuleId(UUID moduleId);
 
     int findMaxPositionByModuleId(UUID moduleId);
