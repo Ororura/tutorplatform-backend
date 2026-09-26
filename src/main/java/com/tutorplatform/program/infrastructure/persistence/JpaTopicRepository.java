@@ -53,6 +53,13 @@ public class JpaTopicRepository implements TopicRepository {
     }
 
     @Override
+    public List<TopicEntity> findByLearningProgramIdAndIdIn(UUID programId, List<UUID> topicIds) {
+        return databaseRepository.findByLearningProgramIdAndIdIn(programId, topicIds).stream()
+                .map(TopicDatabaseModel::toEntity)
+                .toList();
+    }
+
+    @Override
     public int findMaxPositionByModuleId(UUID moduleId) {
         return databaseRepository.findMaxPositionByModuleId(moduleId);
     }

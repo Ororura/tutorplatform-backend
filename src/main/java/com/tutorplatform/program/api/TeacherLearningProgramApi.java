@@ -16,6 +16,29 @@ import org.springframework.http.ResponseEntity;
 
 public interface TeacherLearningProgramApi {
     @Operation(
+            operationId = "bulkUpdateTeacherLearningProgramTopicStatus",
+            summary = "Atomically update topic statuses in an owned editable learning program")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Topic statuses updated"),
+        @ApiResponse(
+                responseCode = "400",
+                description = "Invalid request or duplicate topic IDs",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Learning program or topic not found",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "409",
+                description = "Learning program cannot be edited or topic version is stale",
+                content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    ResponseEntity<Void> bulkUpdateTopicStatus(
+            @Parameter(hidden = true) AuthenticatedUser principal,
+            @Parameter(schema = @Schema(format = "uuid")) UUID programId,
+            @Valid BulkUpdateLearningProgramTopicStatusRequest request);
+
+    @Operation(
             operationId = "listTeacherLearningPrograms",
             summary = "List learning program templates owned by the current teacher")
     @ApiResponses({

@@ -151,6 +151,16 @@ public class TeacherLearningProgramController implements TeacherLearningProgramA
     }
 
     @Override
+    @PatchMapping("/{programId}/topics/status")
+    public ResponseEntity<Void> bulkUpdateTopicStatus(
+            @AuthenticationPrincipal AuthenticatedUser principal,
+            @PathVariable UUID programId,
+            @Valid @RequestBody BulkUpdateLearningProgramTopicStatusRequest request) {
+        service.bulkUpdateTopicStatus(principal, programId, request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
     @PatchMapping("/{programId}")
     public LearningProgramDetailsResponse updateProgram(
             @AuthenticationPrincipal AuthenticatedUser principal,
