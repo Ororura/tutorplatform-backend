@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,6 +40,17 @@ public class TeacherStudentProgramController implements TeacherStudentProgramApi
             @PathVariable UUID studentId,
             @PathVariable UUID studentProgramId) {
         return programService.getProgram(principal, studentId, studentProgramId);
+    }
+
+    @Override
+    @PatchMapping("/{studentProgramId}/topics/access")
+    public ResponseEntity<Void> bulkUpdateTopicAccess(
+            @AuthenticationPrincipal AuthenticatedUser principal,
+            @PathVariable UUID studentId,
+            @PathVariable UUID studentProgramId,
+            @Valid @RequestBody BulkUpdateStudentTopicAccessRequest request) {
+        programService.bulkUpdateTopicAccess(principal, studentId, studentProgramId, request);
+        return ResponseEntity.noContent().build();
     }
 
     @Override

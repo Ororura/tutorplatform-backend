@@ -90,4 +90,36 @@ public interface TeacherStudentProgramApi {
             @Parameter(hidden = true) AuthenticatedUser principal,
             @Parameter(schema = @Schema(format = "uuid")) UUID studentId,
             @Parameter(schema = @Schema(format = "uuid")) UUID studentProgramId);
+
+    @Operation(
+            operationId = "bulkUpdateTeacherStudentTopicAccess",
+            summary = "Open or lock selected topics in a student's assigned program")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Topic access updated"),
+        @ApiResponse(
+                responseCode = "400",
+                description = "Invalid request",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "401",
+                description = "Authentication required",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "403",
+                description = "Teacher role required",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Student, student program, or topic not found",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "409",
+                description = "Topic access transition is not allowed",
+                content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    ResponseEntity<Void> bulkUpdateTopicAccess(
+            @Parameter(hidden = true) AuthenticatedUser principal,
+            @Parameter(schema = @Schema(format = "uuid")) UUID studentId,
+            @Parameter(schema = @Schema(format = "uuid")) UUID studentProgramId,
+            @Valid BulkUpdateStudentTopicAccessRequest request);
 }

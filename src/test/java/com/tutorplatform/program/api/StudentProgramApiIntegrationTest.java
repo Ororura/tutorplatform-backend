@@ -1,5 +1,6 @@
 package com.tutorplatform.program.api;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -265,12 +266,152 @@ class StudentProgramApiIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
+    void lockedTopicCannotBeOpened() throws Exception {
+        Fixture fixture = createFixture("topic-locked");
+        StudentProgramEntity program = createProgram(fixture, "Python", Instant.now());
+
+        LearningProgramEntity learningProgram =
+                learningProgramRepository.findById(program.learningProgramId()).orElseThrow();
+
+        TopicEntity topic =
+                createTopic(createModule(learningProgram, "Основы", 0), "Закрытая тема", 0);
+
+        createProgress(program, topic, StudentTopicProgressStatus.LOCKED);
+
+        mockMvc.perform(
+                        get(
+                                        "/api/v1/student/programs/{studentProgramId}/topics/{topicId}",
+                                        program.id(),
+                                        topic.id())
+                                .with(user(fixture.principal())))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("STUDENT_TOPIC_LOCKED"));
+
+        StudentTopicProgressEntity progress =
+                progressRepository.findById(program.id(), topic.id()).orElseThrow();
+
+        assertThat(progress.status()).isEqualTo(StudentTopicProgressStatus.LOCKED);
+
+        assertThat(progress.startedAt()).isNull();
+    }
+
+    @Test
+    void availableTopicBecomesInProgressOnFirstOpenAndKeepsStartedAt() throws Exception {
+        Fixture fixture = createFixture("topic-start");
+        StudentProgramEntity program = createProgram(fixture, "Python", Instant.now());
+
+        LearningProgramEntity learningProgram =
+                learningProgramRepository.findById(program.learningProgramId()).orElseThrow();
+
+        TopicEntity topic =
+                createTopic(createModule(learningProgram, "Основы", 0), "Переменные", 0);
+
+        createProgress(program, topic, StudentTopicProgressStatus.AVAILABLE);
+
+        mockMvc.perform(
+                        get(
+                                        "/api/v1/student/programs/{studentProgramId}/topics/{topicId}",
+                                        program.id(),
+                                        topic.id())
+                                .with(user(fixture.principal())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.progressStatus").value("IN_PROGRESS"));
+
+        StudentTopicProgressEntity afterFirstOpen =
+                progressRepository.findById(program.id(), topic.id()).orElseThrow();
+
+        assertThat(afterFirstOpen.status()).isEqualTo(StudentTopicProgressStatus.IN_PROGRESS);
+
+        assertThat(afterFirstOpen.startedAt()).isNotNull();
+        assertThat(afterFirstOpen.completedAt()).isNull();
+
+        Instant startedAt = afterFirstOpen.startedAt();
+
+        mockMvc.perform(
+                        get(
+                                        "/api/v1/student/programs/{studentProgramId}/topics/{topicId}",
+                                        program.id(),
+                                        topic.id())
+                                .with(user(fixture.principal())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.progressStatus").value("IN_PROGRESS"));
+
+        StudentTopicProgressEntity afterSecondOpen =
+                progressRepository.findById(program.id(), topic.id()).orElseThrow();
+
+        assertThat(afterSecondOpen.startedAt()).isEqualTo(startedAt);
+    }
+
+    @Test
+    void completedTopicRemainsCompletedWhenOpened() throws Exception {
+        Fixture fixture = createFixture("topic-completed");
+        StudentProgramEntity program = createProgram(fixture, "Python", Instant.now());
+
+        LearningProgramEntity learningProgram =
+                learningProgramRepository.findById(program.learningProgramId()).orElseThrow();
+
+        TopicEntity topic =
+                createTopic(createModule(learningProgram, "Основы", 0), "Пройденная тема", 0);
+
+        createProgress(program, topic, StudentTopicProgressStatus.COMPLETED);
+
+        StudentTopicProgressEntity before =
+                progressRepository.findById(program.id(), topic.id()).orElseThrow();
+
+        mockMvc.perform(
+                        get(
+                                        "/api/v1/student/programs/{studentProgramId}/topics/{topicId}",
+                                        program.id(),
+                                        topic.id())
+                                .with(user(fixture.principal())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.progressStatus").value("COMPLETED"));
+
+        StudentTopicProgressEntity after =
+                progressRepository.findById(program.id(), topic.id()).orElseThrow();
+
+        assertThat(after.status()).isEqualTo(StudentTopicProgressStatus.COMPLETED);
+
+        assertThat(after.startedAt()).isEqualTo(before.startedAt());
+
+        assertThat(after.completedAt()).isEqualTo(before.completedAt());
+    }
+
+    @Test
+    void lockedTopicCannotBeAccessedThroughDirectMaterialDownload() throws Exception {
+        Fixture fixture = createFixture("download-locked");
+        StudentProgramEntity program = createProgram(fixture, "Python", Instant.now());
+
+        LearningProgramEntity learningProgram =
+                learningProgramRepository.findById(program.learningProgramId()).orElseThrow();
+
+        TopicEntity topic =
+                createTopic(createModule(learningProgram, "Файлы", 0), "Закрытый материал", 0);
+
+        createProgress(program, topic, StudentTopicProgressStatus.LOCKED);
+
+        LessonMaterialEntity material =
+                createFileMaterial(fixture, topic, "locked.txt", "secret".getBytes());
+
+        mockMvc.perform(
+                        get(
+                                        "/api/v1/student/programs/{studentProgramId}/topics/{topicId}/materials/{materialId}/download",
+                                        program.id(),
+                                        topic.id(),
+                                        material.getId())
+                                .with(user(fixture.principal())))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("STUDENT_TOPIC_LOCKED"));
+    }
+
+    @Test
     void studentDownloadsFileFromAssignedProgramTopic() throws Exception {
         Fixture fixture = createFixture("download-own");
         StudentProgramEntity program = createProgram(fixture, "Java", Instant.now());
         LearningProgramEntity learningProgram =
                 learningProgramRepository.findById(program.learningProgramId()).orElseThrow();
         TopicEntity topic = createTopic(createModule(learningProgram, "Файлы", 0), "Конспект", 0);
+        createProgress(program, topic, StudentTopicProgressStatus.AVAILABLE);
         byte[] content = "student material".getBytes(java.nio.charset.StandardCharsets.UTF_8);
         LessonMaterialEntity material = createFileMaterial(fixture, topic, "lesson.txt", content);
 
@@ -290,6 +431,12 @@ class StudentProgramApiIntegrationTest extends PostgresIntegrationTest {
                         header().string(
                                         "Content-Disposition",
                                         org.hamcrest.Matchers.startsWith("attachment;")));
+
+        StudentTopicProgressEntity progress =
+                progressRepository.findById(program.id(), topic.id()).orElseThrow();
+
+        assertThat(progress.status()).isEqualTo(StudentTopicProgressStatus.IN_PROGRESS);
+        assertThat(progress.startedAt()).isNotNull();
     }
 
     @Test
@@ -323,6 +470,7 @@ class StudentProgramApiIntegrationTest extends PostgresIntegrationTest {
         LearningProgramEntity learningProgram =
                 learningProgramRepository.findById(program.learningProgramId()).orElseThrow();
         TopicEntity topic = createTopic(createModule(learningProgram, "Модуль", 0), "Тема", 0);
+        createProgress(program, topic, StudentTopicProgressStatus.IN_PROGRESS);
         FileAssetEntity unattachedAsset =
                 createFileAsset(fixture, "private.txt", "private".getBytes());
 
@@ -473,13 +621,19 @@ class StudentProgramApiIntegrationTest extends PostgresIntegrationTest {
 
     private void createProgress(
             StudentProgramEntity program, TopicEntity topic, StudentTopicProgressStatus status) {
+        Instant now = Instant.now();
+
+        Instant startedAt =
+                status == StudentTopicProgressStatus.IN_PROGRESS
+                                || status == StudentTopicProgressStatus.COMPLETED
+                        ? now
+                        : null;
+
+        Instant completedAt = status == StudentTopicProgressStatus.COMPLETED ? now : null;
+
         progressRepository.saveAndFlush(
                 new StudentTopicProgressEntity(
-                        program.id(),
-                        topic.id(),
-                        status,
-                        status == StudentTopicProgressStatus.IN_PROGRESS ? Instant.now() : null,
-                        null));
+                        program.id(), topic.id(), status, startedAt, completedAt));
     }
 
     private LessonMaterialEntity createMaterial(

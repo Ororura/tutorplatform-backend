@@ -1,8 +1,10 @@
 package com.tutorplatform.program.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -48,6 +50,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -306,6 +309,141 @@ class TeacherStudentProgramApiIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
+    void bulkTopicAccessOpensAndLocksSelectedTopics() throws Exception {
+        TeacherContext teacher = createTeacher("topic-access@example.com");
+        StudentEntity student = createStudent(teacher.teacher(), "Алексей");
+        StudentProgramEntity program =
+                createProgram(teacher.teacher(), student, "Python", Instant.now());
+
+        LearningProgramEntity learningProgram =
+                learningProgramRepository.findById(program.learningProgramId()).orElseThrow();
+        ModuleEntity module = createModule(learningProgram, "Основы", 0);
+
+        TopicEntity first = createTopic(module, "Первая тема", 0, TopicStatus.ACTIVE);
+        TopicEntity second = createTopic(module, "Вторая тема", 1, TopicStatus.ACTIVE);
+
+        createProgress(program, first, StudentTopicProgressStatus.LOCKED);
+        createProgress(program, second, StudentTopicProgressStatus.AVAILABLE);
+
+        mockMvc.perform(
+                        patch(programUrl(student.getId(), program.id()) + "/topics/access")
+                                .with(user(teacher.principal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                new BulkUpdateStudentTopicAccessRequest(
+                                                        StudentTopicAccessStatus.AVAILABLE,
+                                                        List.of(first.id(), second.id())))))
+                .andExpect(status().isNoContent());
+
+        assertThat(progressRepository.findById(program.id(), first.id()).orElseThrow().status())
+                .isEqualTo(StudentTopicProgressStatus.AVAILABLE);
+        assertThat(progressRepository.findById(program.id(), second.id()).orElseThrow().status())
+                .isEqualTo(StudentTopicProgressStatus.AVAILABLE);
+
+        mockMvc.perform(
+                        patch(programUrl(student.getId(), program.id()) + "/topics/access")
+                                .with(user(teacher.principal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                new BulkUpdateStudentTopicAccessRequest(
+                                                        StudentTopicAccessStatus.LOCKED,
+                                                        List.of(first.id())))))
+                .andExpect(status().isNoContent());
+
+        assertThat(progressRepository.findById(program.id(), first.id()).orElseThrow().status())
+                .isEqualTo(StudentTopicProgressStatus.LOCKED);
+        assertThat(progressRepository.findById(program.id(), second.id()).orElseThrow().status())
+                .isEqualTo(StudentTopicProgressStatus.AVAILABLE);
+    }
+
+    @Test
+    void bulkTopicAccessRejectsStartedTopicAndRollsBackWholeRequest() throws Exception {
+        TeacherContext teacher = createTeacher("topic-access-atomic@example.com");
+        StudentEntity student = createStudent(teacher.teacher(), "Алексей");
+        StudentProgramEntity program =
+                createProgram(teacher.teacher(), student, "Python", Instant.now());
+
+        LearningProgramEntity learningProgram =
+                learningProgramRepository.findById(program.learningProgramId()).orElseThrow();
+        ModuleEntity module = createModule(learningProgram, "Основы", 0);
+
+        TopicEntity locked = createTopic(module, "Закрытая", 0, TopicStatus.ACTIVE);
+        TopicEntity started = createTopic(module, "Начатая", 1, TopicStatus.ACTIVE);
+
+        createProgress(program, locked, StudentTopicProgressStatus.LOCKED);
+        createProgress(program, started, StudentTopicProgressStatus.IN_PROGRESS);
+
+        mockMvc.perform(
+                        patch(programUrl(student.getId(), program.id()) + "/topics/access")
+                                .with(user(teacher.principal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                new BulkUpdateStudentTopicAccessRequest(
+                                                        StudentTopicAccessStatus.AVAILABLE,
+                                                        List.of(locked.id(), started.id())))))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("STUDENT_TOPIC_ACCESS_CONFLICT"));
+
+        assertThat(progressRepository.findById(program.id(), locked.id()).orElseThrow().status())
+                .isEqualTo(StudentTopicProgressStatus.LOCKED);
+        assertThat(progressRepository.findById(program.id(), started.id()).orElseThrow().status())
+                .isEqualTo(StudentTopicProgressStatus.IN_PROGRESS);
+    }
+
+    @Test
+    void bulkTopicAccessRejectsInactiveTopicAndDuplicateIds() throws Exception {
+        TeacherContext teacher = createTeacher("topic-access-validation@example.com");
+        StudentEntity student = createStudent(teacher.teacher(), "Алексей");
+        StudentProgramEntity program =
+                createProgram(teacher.teacher(), student, "Python", Instant.now());
+
+        LearningProgramEntity learningProgram =
+                learningProgramRepository.findById(program.learningProgramId()).orElseThrow();
+        ModuleEntity module = createModule(learningProgram, "Основы", 0);
+
+        TopicEntity draft = createTopic(module, "Черновик", 0, TopicStatus.DRAFT);
+        createProgress(program, draft, StudentTopicProgressStatus.LOCKED);
+
+        mockMvc.perform(
+                        patch(programUrl(student.getId(), program.id()) + "/topics/access")
+                                .with(user(teacher.principal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                new BulkUpdateStudentTopicAccessRequest(
+                                                        StudentTopicAccessStatus.AVAILABLE,
+                                                        List.of(draft.id())))))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("STUDENT_TOPIC_ACCESS_CONFLICT"));
+
+        mockMvc.perform(
+                        patch(programUrl(student.getId(), program.id()) + "/topics/access")
+                                .with(user(teacher.principal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        """
+                                        {
+                                          "status": "AVAILABLE",
+                                          "topicIds": ["%s", "%s"]
+                                        }
+                                        """
+                                                .formatted(draft.id(), draft.id())))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+
+        assertThat(progressRepository.findById(program.id(), draft.id()).orElseThrow().status())
+                .isEqualTo(StudentTopicProgressStatus.LOCKED);
+    }
+
+    @Test
     void openApiPublishesProgramOperationsAndSchemas() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
@@ -332,7 +470,15 @@ class TeacherStudentProgramApiIntegrationTest extends PostgresIntegrationTest {
                 .andExpect(
                         jsonPath(
                                         "$.components.schemas.ProgramTopicResponse.properties.progressStatus.enum.length()")
-                                .value(4));
+                                .value(4))
+                .andExpect(
+                        jsonPath(
+                                        "$.paths['/api/v1/teacher/students/{studentId}/programs/{studentProgramId}/topics/access'].patch.operationId")
+                                .value("bulkUpdateTeacherStudentTopicAccess"))
+                .andExpect(
+                        jsonPath(
+                                        "$.components.schemas.BulkUpdateStudentTopicAccessRequest.properties.status.enum.length()")
+                                .value(2));
     }
 
     private TeacherContext createTeacher(String email) {
