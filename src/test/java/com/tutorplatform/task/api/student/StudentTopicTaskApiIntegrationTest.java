@@ -18,6 +18,9 @@ import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
 import com.tutorplatform.program.domain.studentprogram.StudentProgramEntity;
 import com.tutorplatform.program.domain.studentprogram.StudentProgramRepository;
 import com.tutorplatform.program.domain.studentprogram.StudentProgramStatus;
+import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressEntity;
+import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressRepository;
+import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressStatus;
 import com.tutorplatform.student.domain.StudentEntity;
 import com.tutorplatform.student.domain.StudentRepository;
 import com.tutorplatform.student.domain.StudentStatus;
@@ -78,6 +81,7 @@ class StudentTopicTaskApiIntegrationTest extends PostgresIntegrationTest {
     @Autowired private SubjectRepository subjectRepository;
     @Autowired private LearningProgramRepository learningProgramRepository;
     @Autowired private StudentProgramRepository studentProgramRepository;
+    @Autowired private StudentTopicProgressRepository progressRepository;
     @Autowired private ModuleRepository moduleRepository;
     @Autowired private TopicRepository topicRepository;
     @Autowired private TaskRepository taskRepository;
@@ -114,6 +118,27 @@ class StudentTopicTaskApiIntegrationTest extends PostgresIntegrationTest {
                 .andExpect(jsonPath("$[1].position").value(3))
                 .andExpect(jsonPath("$[?(@.title == 'Черновик')]").isEmpty())
                 .andExpect(jsonPath("$[?(@.title == 'Архив')]").isEmpty());
+    }
+
+    @Test
+    void lockedTopicDoesNotExposeTasks() throws Exception {
+        Fixture fixture = createFixture("locked");
+        TaskEntity task = createTask(fixture, "Скрытая практика", TaskType.TEXT, TaskStatus.ACTIVE);
+        attach(fixture.topic(), task, 0, true);
+
+        progressRepository.saveAndFlush(
+                new StudentTopicProgressEntity(
+                        fixture.program().id(),
+                        fixture.topic().id(),
+                        StudentTopicProgressStatus.LOCKED,
+                        null,
+                        null));
+
+        mockMvc.perform(
+                        get(tasksUrl(fixture.program(), fixture.topic()))
+                                .with(user(fixture.principal())))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("STUDENT_TOPIC_LOCKED"));
     }
 
     @Test
@@ -281,6 +306,15 @@ class StudentTopicTaskApiIntegrationTest extends PostgresIntegrationTest {
                                 "Description",
                                 0,
                                 TopicStatus.ACTIVE));
+
+        progressRepository.saveAndFlush(
+                new StudentTopicProgressEntity(
+                        program.id(),
+                        topic.id(),
+                        StudentTopicProgressStatus.IN_PROGRESS,
+                        Instant.now(),
+                        null));
+
         return new Fixture(
                 fixture.teacher(),
                 fixture.student(),

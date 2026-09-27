@@ -27,7 +27,8 @@ public interface StudentRunCodeApi {
                 content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(
                 responseCode = "403",
-                description = "Student role and CSRF token required",
+                description =
+                        "Student role, CSRF token, and unlocked topic required for topic context",
                 content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(
                 responseCode = "404",

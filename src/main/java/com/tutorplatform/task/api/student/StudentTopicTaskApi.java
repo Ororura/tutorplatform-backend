@@ -24,7 +24,7 @@ public interface StudentTopicTaskApi {
                 content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(
                 responseCode = "403",
-                description = "Student role required",
+                description = "Student role required or topic is locked",
                 content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(
                 responseCode = "404",
