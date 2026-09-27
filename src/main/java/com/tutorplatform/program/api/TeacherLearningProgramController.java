@@ -1,6 +1,7 @@
 package com.tutorplatform.program.api;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
+import com.tutorplatform.program.application.LearningProgramDuplicationService;
 import com.tutorplatform.program.application.TeacherLearningProgramService;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
 import jakarta.validation.Valid;
@@ -24,9 +25,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/teacher/programs")
 public class TeacherLearningProgramController implements TeacherLearningProgramApi {
     private final TeacherLearningProgramService service;
+    private final LearningProgramDuplicationService duplicationService;
 
-    public TeacherLearningProgramController(TeacherLearningProgramService service) {
+    public TeacherLearningProgramController(
+            TeacherLearningProgramService service,
+            LearningProgramDuplicationService duplicationService) {
         this.service = service;
+        this.duplicationService = duplicationService;
     }
 
     @Override
@@ -57,6 +62,16 @@ public class TeacherLearningProgramController implements TeacherLearningProgramA
             @AuthenticationPrincipal AuthenticatedUser principal,
             @Valid @RequestBody CreateLearningProgramRequest request) {
         LearningProgramSummaryResponse response = service.create(principal, request);
+        return ResponseEntity.created(URI.create("/api/v1/teacher/programs/" + response.id()))
+                .body(response);
+    }
+
+    @Override
+    @PostMapping("/{programId}/duplicate")
+    public ResponseEntity<LearningProgramSummaryResponse> duplicateProgram(
+            @AuthenticationPrincipal AuthenticatedUser principal, @PathVariable UUID programId) {
+        LearningProgramSummaryResponse response =
+                duplicationService.duplicate(principal, programId);
         return ResponseEntity.created(URI.create("/api/v1/teacher/programs/" + response.id()))
                 .body(response);
     }

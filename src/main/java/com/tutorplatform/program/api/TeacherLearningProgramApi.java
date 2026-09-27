@@ -125,6 +125,28 @@ public interface TeacherLearningProgramApi {
             @Valid CreateLearningProgramRequest request);
 
     @Operation(
+            operationId = "duplicateTeacherLearningProgram",
+            summary = "Duplicate an owned learning program into a new editable draft")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Learning program duplicated"),
+        @ApiResponse(
+                responseCode = "401",
+                description = "Authentication required",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "403",
+                description = "Teacher role and valid CSRF token required",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Learning program or subject not found",
+                content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    ResponseEntity<LearningProgramSummaryResponse> duplicateProgram(
+            @Parameter(hidden = true) AuthenticatedUser principal,
+            @Parameter(schema = @Schema(format = "uuid")) UUID programId);
+
+    @Operation(
             operationId = "createTeacherLearningProgramModule",
             summary = "Create a module in an owned editable learning program")
     @ApiResponses({
