@@ -32,7 +32,8 @@ public interface StudentSubmissionApi {
                 content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(
                 responseCode = "403",
-                description = "Student role or CSRF token required",
+                description =
+                        "Student role or CSRF token required; topic context may also be locked",
                 content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(
                 responseCode = "404",

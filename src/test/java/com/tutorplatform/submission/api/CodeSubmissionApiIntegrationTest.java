@@ -68,6 +68,7 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
     @Autowired private SubjectRepository subjectRepository;
     @Autowired private LearningProgramRepository learningProgramRepository;
     @Autowired private StudentProgramRepository studentProgramRepository;
+    @Autowired private StudentTopicProgressRepository progressRepository;
     @Autowired private ModuleRepository moduleRepository;
     @Autowired private TopicRepository topicRepository;
     @Autowired private TaskRepository taskRepository;
@@ -287,6 +288,38 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
         assertThat(submission.getStudentProgramId()).isEqualTo(fixture.studentProgramId());
         assertThat(submission.getTaskId()).isEqualTo(fixture.taskId());
         assertThat(submission.getHomeworkItemId()).isNull();
+    }
+
+    @Test
+    void lockedTopicRejectsStandaloneRunAndSubmissionBeforeExecution() throws Exception {
+        Fixture fixture =
+                createFixture(
+                        "standalone-locked",
+                        TaskType.CODE,
+                        TaskStatus.ACTIVE,
+                        true,
+                        HomeworkStatus.ASSIGNED);
+
+        progressRepository.saveAndFlush(
+                new StudentTopicProgressEntity(
+                        fixture.studentProgramId(),
+                        fixture.topicId(),
+                        StudentTopicProgressStatus.LOCKED,
+                        null,
+                        null));
+
+        long submissionsBefore = count("submissions");
+
+        runPractice(fixture, fixture.studentProgramId(), fixture.topicId(), "print(1)")
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("STUDENT_TOPIC_LOCKED"));
+
+        submitPractice(fixture, fixture.studentProgramId(), fixture.topicId(), "print(1)")
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("STUDENT_TOPIC_LOCKED"));
+
+        assertThat(count("submissions")).isEqualTo(submissionsBefore);
+        verifyNoInteractions(executionPort);
     }
 
     @Test
@@ -716,6 +749,15 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
                                 null,
                                 0,
                                 TopicStatus.ACTIVE));
+
+        progressRepository.saveAndFlush(
+                new StudentTopicProgressEntity(
+                        studentProgram.id(),
+                        topic.id(),
+                        StudentTopicProgressStatus.IN_PROGRESS,
+                        Instant.now(),
+                        null));
+
         TaskEntity task =
                 taskRepository.saveAndFlush(
                         new TaskEntity(

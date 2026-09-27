@@ -4,6 +4,9 @@ import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.program.application.LearningProgramTopicNotFoundException;
 import com.tutorplatform.program.application.ProgramQuery;
 import com.tutorplatform.program.application.StudentProgramNotFoundException;
+import com.tutorplatform.program.application.StudentTopicLockedException;
+import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressRepository;
+import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressStatus;
 import com.tutorplatform.student.application.management.StudentNotFoundException;
 import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.task.application.exception.TaskNotFoundException;
@@ -31,6 +34,7 @@ public class StudentTopicTaskService {
 
     private final StudentOwnershipQuery studentOwnershipQuery;
     private final ProgramQuery programQuery;
+    private final StudentTopicProgressRepository progressRepository;
     private final TopicTaskRepository topicTaskRepository;
     private final TaskRepository taskRepository;
     private final ProgrammingTaskConfigRepository programmingConfigRepository;
@@ -39,12 +43,14 @@ public class StudentTopicTaskService {
     public StudentTopicTaskService(
             StudentOwnershipQuery studentOwnershipQuery,
             ProgramQuery programQuery,
+            StudentTopicProgressRepository progressRepository,
             TopicTaskRepository topicTaskRepository,
             TaskRepository taskRepository,
             ProgrammingTaskConfigRepository programmingConfigRepository,
             TaskTestCaseRepository testCaseRepository) {
         this.studentOwnershipQuery = studentOwnershipQuery;
         this.programQuery = programQuery;
+        this.progressRepository = progressRepository;
         this.topicTaskRepository = topicTaskRepository;
         this.taskRepository = taskRepository;
         this.programmingConfigRepository = programmingConfigRepository;
@@ -66,6 +72,8 @@ public class StudentTopicTaskService {
                 topicId, studentProgram.learningProgramId())) {
             throw new LearningProgramTopicNotFoundException();
         }
+
+        requireTopicAccess(studentProgramId, topicId);
 
         List<TopicTaskEntity> topicTasks =
                 topicTaskRepository.findAllByTopicIdOrderByPosition(topicId);
@@ -95,12 +103,25 @@ public class StudentTopicTaskService {
                 topicId, studentProgram.learningProgramId())) {
             throw new LearningProgramTopicNotFoundException();
         }
+
+        requireTopicAccess(studentProgramId, topicId);
         if (!topicTaskRepository.existsByTopicIdAndTaskId(topicId, task.id())
                 || !studentProgram.isAssignedBy(task.teacherId())
                 || !studentProgram.subjectId().equals(task.subjectId())) {
             throw new TaskNotFoundException();
         }
         return studentProgram;
+    }
+
+    private void requireTopicAccess(UUID studentProgramId, UUID topicId) {
+        var progress =
+                progressRepository
+                        .findById(studentProgramId, topicId)
+                        .orElseThrow(LearningProgramTopicNotFoundException::new);
+
+        if (progress.status() == StudentTopicProgressStatus.LOCKED) {
+            throw new StudentTopicLockedException();
+        }
     }
 
     private StudentTopicTaskResult toStudentResult(TopicTaskEntity topicTask, TaskEntity task) {
