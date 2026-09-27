@@ -2,11 +2,15 @@ package com.tutorplatform.program.application;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.program.api.AssignStudentProgramRequest;
+import com.tutorplatform.program.api.BulkUpdateStudentTopicAccessRequest;
 import com.tutorplatform.program.api.ProgramModuleResponse;
 import com.tutorplatform.program.api.ProgramSubjectResponse;
 import com.tutorplatform.program.api.ProgramTopicResponse;
 import com.tutorplatform.program.api.StudentProgramDetailsResponse;
 import com.tutorplatform.program.api.StudentProgramSummaryResponse;
+import com.tutorplatform.program.domain.TopicEntity;
+import com.tutorplatform.program.domain.TopicRepository;
+import com.tutorplatform.program.domain.TopicStatus;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramEntity;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramRepository;
 import com.tutorplatform.program.domain.learningprogram.LearningProgramStatus;
@@ -35,6 +39,7 @@ public class TeacherStudentProgramService {
     private final LearningProgramRepository learningProgramRepository;
     private final StudentProgramRepository studentProgramRepository;
     private final StudentTopicProgressRepository progressRepository;
+    private final TopicRepository topicRepository;
 
     public TeacherStudentProgramService(
             StudentOwnershipQuery studentOwnershipQuery,
@@ -42,13 +47,15 @@ public class TeacherStudentProgramService {
             TeacherLearningProgramQuery learningProgramQuery,
             LearningProgramRepository learningProgramRepository,
             StudentProgramRepository studentProgramRepository,
-            StudentTopicProgressRepository progressRepository) {
+            StudentTopicProgressRepository progressRepository,
+            TopicRepository topicRepository) {
         this.studentOwnershipQuery = studentOwnershipQuery;
         this.programQuery = programQuery;
         this.learningProgramQuery = learningProgramQuery;
         this.learningProgramRepository = learningProgramRepository;
         this.studentProgramRepository = studentProgramRepository;
         this.progressRepository = progressRepository;
+        this.topicRepository = topicRepository;
     }
 
     public List<StudentProgramSummaryResponse> listPrograms(
@@ -135,6 +142,76 @@ public class TeacherStudentProgramService {
                 .findProgram(teacherId, studentId, studentProgram.id())
                 .map(TeacherStudentProgramService::toSummaryResponse)
                 .orElseThrow(StudentProgramNotFoundException::new);
+    }
+
+    @Transactional
+    public void bulkUpdateTopicAccess(
+            AuthenticatedUser principal,
+            UUID studentId,
+            UUID studentProgramId,
+            BulkUpdateStudentTopicAccessRequest request) {
+        UUID teacherId = requireOwnedStudent(principal, studentId);
+
+        StudentProgramEntity studentProgram =
+                studentProgramRepository
+                        .findByIdForUpdate(studentProgramId)
+                        .filter(program -> program.studentId().equals(studentId))
+                        .filter(program -> program.assignedByTeacherId().equals(teacherId))
+                        .orElseThrow(StudentProgramNotFoundException::new);
+
+        if (studentProgram.status() == StudentProgramStatus.COMPLETED
+                || studentProgram.status() == StudentProgramStatus.ARCHIVED) {
+            throw new StudentTopicAccessConflictException(
+                    "Topic access cannot be changed for a completed or archived student program");
+        }
+
+        List<UUID> topicIds = request.topicIds();
+
+        List<TopicEntity> topics =
+                topicRepository.findByLearningProgramIdAndIdIn(
+                        studentProgram.learningProgramId(), topicIds);
+
+        if (topics.size() != topicIds.size()) {
+            throw new LearningProgramTopicNotFoundException();
+        }
+
+        if (request.status().toProgressStatus() == StudentTopicProgressStatus.AVAILABLE
+                && topics.stream().anyMatch(topic -> topic.status() != TopicStatus.ACTIVE)) {
+            throw new StudentTopicAccessConflictException(
+                    "Only active learning program topics can be made available");
+        }
+
+        List<StudentTopicProgressEntity> progressRows =
+                progressRepository.findAllForUpdate(studentProgramId, topicIds);
+
+        if (progressRows.size() != topicIds.size()) {
+            throw new LearningProgramTopicNotFoundException();
+        }
+
+        for (StudentTopicProgressEntity progress : progressRows) {
+            if (progress.status() == StudentTopicProgressStatus.IN_PROGRESS
+                    || progress.status() == StudentTopicProgressStatus.COMPLETED) {
+                throw new StudentTopicAccessConflictException(
+                        "Access cannot be changed for a topic that has already been started or completed");
+            }
+        }
+
+        StudentTopicProgressStatus targetStatus = request.status().toProgressStatus();
+
+        for (StudentTopicProgressEntity progress : progressRows) {
+            if (progress.status() == targetStatus) {
+                continue;
+            }
+
+            progressRepository.saveAndFlush(
+                    new StudentTopicProgressEntity(
+                            progress.studentProgramId(),
+                            progress.topicId(),
+                            targetStatus,
+                            null,
+                            null,
+                            progress.updatedAt()));
+        }
     }
 
     private UUID requireOwnedStudent(AuthenticatedUser principal, UUID studentId) {

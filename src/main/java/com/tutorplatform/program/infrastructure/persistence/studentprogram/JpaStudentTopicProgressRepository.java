@@ -2,6 +2,7 @@ package com.tutorplatform.program.infrastructure.persistence.studentprogram;
 
 import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressEntity;
 import com.tutorplatform.program.domain.studentprogram.StudentTopicProgressRepository;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Repository;
@@ -33,5 +34,13 @@ public class JpaStudentTopicProgressRepository implements StudentTopicProgressRe
         return databaseRepository
                 .findById(new StudentTopicProgressId(studentProgramId, topicId))
                 .map(StudentTopicProgressDatabaseModel::toEntity);
+    }
+
+    @Override
+    public List<StudentTopicProgressEntity> findAllForUpdate(
+            UUID studentProgramId, List<UUID> topicIds) {
+        return databaseRepository.findAllForUpdate(studentProgramId, topicIds).stream()
+                .map(StudentTopicProgressDatabaseModel::toEntity)
+                .toList();
     }
 }

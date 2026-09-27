@@ -147,7 +147,7 @@ class OpenApiHardeningIntegrationTest extends PostgresIntegrationTest {
                 }
             }
         }
-        assertThat(operationIds).hasSize(103);
+        assertThat(operationIds).hasSize(104);
 
         JsonNode importOperation =
                 document.required("paths")

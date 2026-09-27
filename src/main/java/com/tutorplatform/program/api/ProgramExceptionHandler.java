@@ -11,6 +11,8 @@ import com.tutorplatform.program.application.LearningProgramTopicVersionConflict
 import com.tutorplatform.program.application.LearningProgramVersionConflictException;
 import com.tutorplatform.program.application.StudentProgramAlreadyAssignedException;
 import com.tutorplatform.program.application.StudentProgramNotFoundException;
+import com.tutorplatform.program.application.StudentTopicAccessConflictException;
+import com.tutorplatform.program.application.StudentTopicLockedException;
 import com.tutorplatform.program.application.SubjectNotFoundException;
 import com.tutorplatform.shared.api.ApiError;
 import org.slf4j.MDC;
@@ -134,6 +136,23 @@ public class ProgramExceptionHandler {
                         ApiError.of(
                                 "LEARNING_PROGRAM_TOPIC_VERSION_CONFLICT",
                                 "Learning program topic was modified by another request",
+                                MDC.get("traceId")));
+    }
+
+    @ExceptionHandler(StudentTopicLockedException.class)
+    ResponseEntity<ApiError> handleStudentTopicLocked(StudentTopicLockedException exception) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiError.of("STUDENT_TOPIC_LOCKED", "Topic is locked", MDC.get("traceId")));
+    }
+
+    @ExceptionHandler(StudentTopicAccessConflictException.class)
+    ResponseEntity<ApiError> handleStudentTopicAccessConflict(
+            StudentTopicAccessConflictException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(
+                        ApiError.of(
+                                "STUDENT_TOPIC_ACCESS_CONFLICT",
+                                exception.getMessage(),
                                 MDC.get("traceId")));
     }
 

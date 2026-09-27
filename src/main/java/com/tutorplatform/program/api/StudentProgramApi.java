@@ -64,7 +64,7 @@ public interface StudentProgramApi {
                 content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(
                 responseCode = "403",
-                description = "Student role required",
+                description = "Student role required or topic is locked",
                 content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(
                 responseCode = "404",
@@ -82,7 +82,9 @@ public interface StudentProgramApi {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Material content"),
         @ApiResponse(responseCode = "401", description = "Authentication required"),
-        @ApiResponse(responseCode = "403", description = "Student role required"),
+        @ApiResponse(
+                responseCode = "403",
+                description = "Student role required or topic is locked"),
         @ApiResponse(
                 responseCode = "404",
                 description = "Student program, topic, or material not found")
