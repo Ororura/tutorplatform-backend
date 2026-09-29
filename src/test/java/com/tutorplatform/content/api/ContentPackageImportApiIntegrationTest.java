@@ -14,6 +14,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.test.PostgresIntegrationTest;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -417,6 +419,192 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
+    void documentedV2ExamplePreviewsAndImportsItsCompleteTaskGraph() throws Exception {
+        String yaml = Files.readString(Path.of("docs/examples/python-conditions-v2.yaml"));
+        JsonNode packagePreview = preview(teacher, programId, yaml);
+        assertThat(packagePreview.path("schemaVersion").asInt()).isEqualTo(2);
+        assertThat(packagePreview.path("moduleCount").asInt()).isEqualTo(1);
+        assertThat(packagePreview.path("topicCount").asInt()).isEqualTo(2);
+        assertThat(packagePreview.path("materialCount").asInt()).isEqualTo(1);
+        assertThat(packagePreview.path("taskCount").asInt()).isEqualTo(2);
+
+        JsonNode result =
+                importPackage(
+                        teacher,
+                        programId,
+                        UUID.randomUUID(),
+                        packagePreview.path("digest").asText(),
+                        yaml,
+                        201);
+        assertThat(result.path("createdModuleIds")).hasSize(1);
+        assertThat(result.path("taskCount").asInt()).isEqualTo(2);
+        assertThat(counts(programId)).containsExactly(1, 2, 1, 1);
+        assertThat(taskGraphCounts(programId)).containsExactly(2, 1, 2, 2);
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT m.title FROM modules m WHERE m.learning_program_id = ? ORDER BY m.position",
+                                String.class,
+                                programId))
+                .containsExactly("Основы Python");
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT t.title FROM topics t JOIN modules m ON m.id = t.module_id WHERE m.learning_program_id = ? ORDER BY m.position, t.position",
+                                String.class,
+                                programId))
+                .containsExactly("Условие if", "Ветвление if и else");
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT lm.title, lm.material_type, lm.content, lm.position FROM lesson_materials lm JOIN topics t ON t.id = lm.topic_id JOIN modules m ON m.id = t.module_id WHERE m.learning_program_id = ? ORDER BY m.position, t.position, lm.position",
+                                programId))
+                .singleElement()
+                .satisfies(
+                        material ->
+                                assertThat(material)
+                                        .containsEntry("title", "Теория")
+                                        .containsEntry("material_type", "MARKDOWN")
+                                        .containsEntry(
+                                                "content",
+                                                "`if` выполняет блок кода, когда условие истинно.\n")
+                                        .containsEntry("position", 0));
+        UUID subjectId =
+                jdbc.queryForObject(
+                        "SELECT subject_id FROM learning_programs WHERE id = ?",
+                        UUID.class,
+                        programId);
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT t.position AS topic_position, tt.position AS task_position, tt.required, tk.title, tk.description_markdown, tk.task_type, tk.difficulty, tk.subject_id FROM topic_tasks tt JOIN tasks tk ON tk.id = tt.task_id JOIN topics t ON t.id = tt.topic_id JOIN modules m ON m.id = t.module_id WHERE m.learning_program_id = ? ORDER BY t.position, tt.position",
+                                programId))
+                .satisfies(
+                        rows -> {
+                            assertThat(rows).hasSize(2);
+                            assertThat(rows.get(0))
+                                    .containsEntry("topic_position", 0)
+                                    .containsEntry("task_position", 0)
+                                    .containsEntry("required", true)
+                                    .containsEntry("title", "Объясните условие")
+                                    .containsEntry(
+                                            "description_markdown",
+                                            "Объясните, когда выполняется блок `if`.")
+                                    .containsEntry("task_type", "TEXT")
+                                    .containsEntry("difficulty", "MEDIUM")
+                                    .containsEntry("subject_id", subjectId);
+                            assertThat(rows.get(1))
+                                    .containsEntry("topic_position", 1)
+                                    .containsEntry("task_position", 0)
+                                    .containsEntry("required", true)
+                                    .containsEntry("title", "Проверка числа")
+                                    .containsEntry(
+                                            "description_markdown",
+                                            "Напишите программу, которая печатает positive для положительного\nчисла и negative для отрицательного.\n")
+                                    .containsEntry("task_type", "CODE")
+                                    .containsEntry("difficulty", "EASY")
+                                    .containsEntry("subject_id", subjectId);
+                        });
+        assertThat(
+                        jdbc.queryForMap(
+                                "SELECT pc.language, pc.starter_code, pc.execution_enabled, pc.time_limit_ms, pc.memory_limit_mb FROM programming_task_configs pc JOIN tasks tk ON tk.id = pc.task_id WHERE tk.subject_id = ?",
+                                subjectId))
+                .containsEntry("language", "PYTHON")
+                .containsEntry("starter_code", "value = int(input())\n")
+                .containsEntry("execution_enabled", true)
+                .containsEntry("time_limit_ms", 2000)
+                .containsEntry("memory_limit_mb", 128);
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT tc.position, tc.input_text, tc.expected_output, tc.hidden, tc.comparison_mode FROM task_test_cases tc JOIN tasks tk ON tk.id = tc.task_id WHERE tk.subject_id = ? ORDER BY tc.position",
+                                subjectId))
+                .satisfies(
+                        rows -> {
+                            assertThat(rows).hasSize(2);
+                            assertThat(rows.get(0))
+                                    .containsEntry("position", 0)
+                                    .containsEntry("input_text", "10")
+                                    .containsEntry("expected_output", "positive")
+                                    .containsEntry("hidden", false)
+                                    .containsEntry("comparison_mode", "NORMALIZED");
+                            assertThat(rows.get(1))
+                                    .containsEntry("position", 1)
+                                    .containsEntry("input_text", "-10")
+                                    .containsEntry("expected_output", "negative")
+                                    .containsEntry("hidden", true)
+                                    .containsEntry("comparison_mode", "NORMALIZED");
+                        });
+    }
+
+    @Test
+    void documentedV1ExampleStillPreviewsAndImports() throws Exception {
+        String yaml = Files.readString(Path.of("docs/examples/python-conditions.yaml"));
+        JsonNode packagePreview = preview(teacher, programId, yaml);
+        assertThat(packagePreview.path("schemaVersion").asInt()).isEqualTo(1);
+        assertThat(packagePreview.path("moduleCount").asInt()).isEqualTo(1);
+        assertThat(packagePreview.path("topicCount").asInt()).isEqualTo(2);
+        assertThat(packagePreview.path("materialCount").asInt()).isEqualTo(4);
+        assertThat(packagePreview.path("taskCount").asInt()).isZero();
+
+        JsonNode result =
+                importPackage(
+                        teacher,
+                        programId,
+                        UUID.randomUUID(),
+                        packagePreview.path("digest").asText(),
+                        yaml,
+                        201);
+        assertThat(result.path("taskCount").asInt()).isZero();
+        assertThat(counts(programId)).containsExactly(1, 2, 4, 1);
+        assertThat(taskGraphCounts(programId)).containsExactly(0, 0, 0, 0);
+    }
+
+    @Test
+    void hiddenTestSentinelsNeverAppearInPreviewImportOrApiErrorBodies() throws Exception {
+        String yaml =
+                V2_YAML.replace("hidden input secret", "PRIVATE_HIDDEN_INPUT_M15")
+                        .replace("hidden output secret", "PRIVATE_HIDDEN_OUTPUT_M15");
+        String previewBody =
+                mvc.perform(
+                                multipart(PREVIEW, programId)
+                                        .file(file(yaml))
+                                        .with(user(teacher))
+                                        .with(csrf()))
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+        assertNoHiddenSentinels(previewBody);
+        String digest = mapper.readTree(previewBody).path("digest").asText();
+
+        String importBody =
+                mvc.perform(
+                                multipart(IMPORT, programId)
+                                        .file(file(yaml))
+                                        .param("confirmationId", UUID.randomUUID().toString())
+                                        .param("digest", digest)
+                                        .with(user(teacher))
+                                        .with(csrf()))
+                        .andExpect(status().isCreated())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+        assertNoHiddenSentinels(importBody);
+
+        String invalidYaml = yaml.replace("comparisonMode: NORMALIZED", "comparisonMode: INVALID");
+        String errorBody =
+                mvc.perform(
+                                multipart(IMPORT, programId)
+                                        .file(file(invalidYaml))
+                                        .param("confirmationId", UUID.randomUUID().toString())
+                                        .param("digest", digest)
+                                        .with(user(teacher))
+                                        .with(csrf()))
+                        .andExpect(status().isBadRequest())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+        assertThat(mapper.readTree(errorBody).path("code").asText()).isEqualTo("VALIDATION_ERROR");
+        assertNoHiddenSentinels(errorBody);
+    }
+
+    @Test
     void appendPreservesOldPositions() throws Exception {
         for (int i = 0; i < 2; i++) {
             mvc.perform(
@@ -561,6 +749,33 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
         assertThat(results.get(0).path("taskCount").asInt()).isEqualTo(2);
         assertThat(counts(programId)).containsExactly(1, 1, 1, 1);
         assertThat(taskGraphCounts(programId)).containsExactly(2, 1, 2, 2);
+    }
+
+    @Test
+    void concurrentDistinctV2ConfirmationsAppendWithoutPositionCollisions() throws Exception {
+        String digest = preview(teacher, programId, V2_YAML).path("digest").asText();
+        List<JsonNode> results =
+                concurrentImports(UUID.randomUUID(), UUID.randomUUID(), digest, V2_YAML);
+        assertThat(results).hasSize(2);
+        assertThat(results.get(0).path("createdModuleIds"))
+                .isNotEqualTo(results.get(1).path("createdModuleIds"));
+        assertThat(results)
+                .allSatisfy(result -> assertThat(result.path("taskCount").asInt()).isEqualTo(2));
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT position FROM modules WHERE learning_program_id = ? ORDER BY position",
+                                Integer.class,
+                                programId))
+                .containsExactly(0, 1);
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT tt.position FROM topic_tasks tt JOIN topics t ON t.id = tt.topic_id JOIN modules m ON m.id = t.module_id WHERE m.learning_program_id = ? ORDER BY m.position, tt.position",
+                                Integer.class,
+                                programId))
+                .containsExactly(0, 1, 0, 1);
+        assertThat(taskIds(programId)).hasSize(4).doesNotHaveDuplicates();
+        assertThat(counts(programId)).containsExactly(2, 2, 2, 2);
+        assertThat(taskGraphCounts(programId)).containsExactly(4, 2, 4, 4);
     }
 
     @Test
@@ -776,6 +991,11 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
     private static MockMultipartFile file(String yaml) {
         return new MockMultipartFile(
                 "file", "package.yaml", "application/yaml", yaml.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static void assertNoHiddenSentinels(String responseBody) {
+        assertThat(responseBody)
+                .doesNotContain("PRIVATE_HIDDEN_INPUT_M15", "PRIVATE_HIDDEN_OUTPUT_M15");
     }
 
     private List<Integer> counts(UUID id) {
