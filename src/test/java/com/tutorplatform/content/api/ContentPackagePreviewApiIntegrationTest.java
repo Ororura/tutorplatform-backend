@@ -143,9 +143,11 @@ class ContentPackagePreviewApiIntegrationTest extends PostgresIntegrationTest {
         JsonNode result = preview(bytes);
         assertThat(result.required("valid").asBoolean()).isTrue();
         assertThat(result.required("programId").asText()).isEqualTo(programId.toString());
+        assertThat(result.required("schemaVersion").asInt()).isEqualTo(1);
         assertThat(result.required("moduleCount").asInt()).isEqualTo(2);
         assertThat(result.required("topicCount").asInt()).isEqualTo(3);
         assertThat(result.required("materialCount").asInt()).isEqualTo(3);
+        assertThat(result.required("taskCount").asInt()).isZero();
         assertThat(result.required("digest").asText())
                 .isEqualTo(
                         HexFormat.of()
@@ -161,6 +163,39 @@ class ContentPackagePreviewApiIntegrationTest extends PostgresIntegrationTest {
                                 .required("externalUrl")
                                 .asText())
                 .isEqualTo("https://example.org/reference");
+    }
+
+    @Test
+    void v2PreviewReturnsNestedTaskSummariesAndCounts() throws Exception {
+        JsonNode result = preview(V2_YAML.getBytes(StandardCharsets.UTF_8));
+
+        assertThat(result.required("schemaVersion").asInt()).isEqualTo(2);
+        assertThat(result.required("moduleCount").asInt()).isEqualTo(1);
+        assertThat(result.required("topicCount").asInt()).isEqualTo(1);
+        assertThat(result.required("materialCount").asInt()).isZero();
+        assertThat(result.required("taskCount").asInt()).isEqualTo(2);
+        JsonNode topic = result.required("modules").get(0).required("topics").get(0);
+        assertThat(topic.required("materials")).isEmpty();
+        JsonNode tasks = topic.required("tasks");
+        assertThat(tasks).hasSize(2);
+        assertThat(tasks.get(0).required("title").asText()).isEqualTo("Explain the result");
+        assertThat(tasks.get(0).required("taskType").asText()).isEqualTo("TEXT");
+        assertThat(tasks.get(0).required("required").asBoolean()).isFalse();
+        assertThat(tasks.get(1).required("title").asText()).isEqualTo("Print the result");
+        assertThat(tasks.get(1).required("taskType").asText()).isEqualTo("CODE");
+        assertThat(tasks.get(1).required("descriptionMarkdown").asText())
+                .isEqualTo("Print the answer.");
+        assertThat(tasks.get(1).required("difficulty").asText()).isEqualTo("EASY");
+        assertThat(tasks.get(1).required("required").asBoolean()).isTrue();
+        JsonNode config = tasks.get(1).required("programmingConfig");
+        assertThat(config.required("language").asText()).isEqualTo("PYTHON");
+        assertThat(config.required("starterCode").asText())
+                .isEqualTo("value = int(input())\nprint(value)\n");
+        assertThat(config.required("executionEnabled").asBoolean()).isTrue();
+        assertThat(config.required("timeLimitMs").asInt()).isEqualTo(2000);
+        assertThat(config.required("memoryLimitMb").asInt()).isEqualTo(128);
+        assertThat(tasks.get(1).required("testCaseCount").asInt()).isEqualTo(2);
+        assertThat(tasks.get(1).required("hiddenTestCaseCount").asInt()).isEqualTo(1);
     }
 
     @Test

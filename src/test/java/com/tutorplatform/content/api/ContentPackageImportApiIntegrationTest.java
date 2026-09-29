@@ -65,6 +65,25 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
                         materialType: LINK
                         externalUrl: https://example.org/reference
             """;
+    private static final String V2_YAML =
+            """
+            schemaVersion: 2
+            kind: modules
+            modules:
+              - title: V2 module
+                topics:
+                  - title: V2 topic
+                    materials:
+                      - title: Notes
+                        materialType: MARKDOWN
+                        content: Keep me
+                    tasks:
+                      - title: V2 task
+                        descriptionMarkdown: Write an explanation.
+                        taskType: TEXT
+                        difficulty: EASY
+                        required: true
+            """;
 
     @DynamicPropertySource
     static void postgres(DynamicPropertyRegistry registry) {
@@ -212,6 +231,30 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
                                 String.class,
                                 materialId))
                 .isEqualTo("# Updated");
+    }
+
+    @Test
+    void v2PreviewSucceedsButImportReturnsConflictWithoutAnyWrites() throws Exception {
+        JsonNode preview = preview(teacher, programId, V2_YAML);
+        assertThat(preview.path("schemaVersion").asInt()).isEqualTo(2);
+        assertThat(preview.path("taskCount").asInt()).isEqualTo(1);
+        assertThat(preview.path("modules").get(0).path("topics").get(0).path("tasks")).hasSize(1);
+        List<Integer> before = counts(programId);
+
+        JsonNode error =
+                importPackage(
+                        teacher,
+                        programId,
+                        UUID.randomUUID(),
+                        preview.path("digest").asText(),
+                        V2_YAML,
+                        409);
+
+        assertThat(error.path("code").asText())
+                .isEqualTo("CONTENT_PACKAGE_IMPORT_SCHEMA_UNSUPPORTED");
+        assertThat(error.path("message").asText())
+                .isEqualTo("Content package schema version is not supported for import");
+        assertThat(counts(programId)).isEqualTo(before).containsExactly(0, 0, 0, 0);
     }
 
     @Test

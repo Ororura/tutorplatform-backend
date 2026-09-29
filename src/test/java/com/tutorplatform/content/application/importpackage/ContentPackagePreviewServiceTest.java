@@ -163,9 +163,11 @@ class ContentPackagePreviewServiceTest {
         var result = service.preview(teacher, programId, yaml);
 
         assertThat(result.programId()).isEqualTo(programId);
+        assertThat(result.schemaVersion()).isEqualTo(1);
         assertThat(result.moduleCount()).isEqualTo(2);
         assertThat(result.topicCount()).isEqualTo(3);
         assertThat(result.materialCount()).isEqualTo(3);
+        assertThat(result.taskCount()).isZero();
         assertThat(result.modules())
                 .extracting(ContentPackagePreviewResult.Module::title)
                 .containsExactly("First module", "Second module");
@@ -175,6 +177,7 @@ class ContentPackagePreviewServiceTest {
                 .extracting(ContentPackagePreviewResult.Topic::title)
                 .containsExactly("First topic", "Second topic");
         assertThat(first.topics().getFirst().description()).isEqualTo("Topic description");
+        assertThat(first.topics().getFirst().tasks()).isEmpty();
         var materials = first.topics().getFirst().materials();
         assertThat(materials)
                 .extracting(ContentPackagePreviewResult.Material::title)
@@ -184,6 +187,98 @@ class ContentPackagePreviewServiceTest {
         assertThat(materials.get(1).content()).isEqualTo("if True:\n    print('yes')\n");
         assertThat(result.modules().get(1).topics().getFirst().materials().getFirst().externalUrl())
                 .isEqualTo("https://example.org/reference");
+    }
+
+    @Test
+    void v2PreviewPreservesTaskOrderAndSafeCodeConfiguration() {
+        editableProgram();
+        var service =
+                new ContentPackagePreviewService(
+                        programs,
+                        new SnakeYamlContentPackageParser(),
+                        new TutorContentPackageValidator());
+        byte[] yaml =
+                """
+                schemaVersion: 2
+                kind: modules
+                modules:
+                  - title: Module
+                    topics:
+                      - title: Topic
+                        tasks:
+                          - title: ' First text '
+                            descriptionMarkdown: |
+                              ## Explanation
+
+                                Keep this indentation.
+                            taskType: TEXT
+                            difficulty: MEDIUM
+                            required: false
+                          - title: ' Code task '
+                            descriptionMarkdown: |
+                              Write `print(value)`.
+                            taskType: CODE
+                            difficulty: EASY
+                            required: true
+                            programmingConfig:
+                              language: PYTHON
+                              starterCode: |
+                                value = int(input())
+                                if value > 0:
+                                    print(value)
+                              executionEnabled: true
+                              timeLimitMs: 2000
+                              memoryLimitMb: 128
+                            testCases:
+                              - inputText: visible
+                                expectedOutput: one
+                                hidden: false
+                                comparisonMode: EXACT
+                              - inputText: hidden
+                                expectedOutput: two
+                                hidden: true
+                                comparisonMode: NORMALIZED
+                          - title: Last text
+                            descriptionMarkdown: Last description
+                            taskType: TEXT
+                            difficulty: HARD
+                            required: true
+                """
+                        .getBytes(StandardCharsets.UTF_8);
+
+        var result = service.preview(teacher, programId, yaml);
+
+        assertThat(result.schemaVersion()).isEqualTo(2);
+        assertThat(result.moduleCount()).isEqualTo(1);
+        assertThat(result.topicCount()).isEqualTo(1);
+        assertThat(result.materialCount()).isZero();
+        assertThat(result.taskCount()).isEqualTo(3);
+        var tasks = result.modules().getFirst().topics().getFirst().tasks();
+        assertThat(tasks)
+                .extracting(ContentPackagePreviewResult.Task::title)
+                .containsExactly("First text", "Code task", "Last text");
+        var text = tasks.getFirst();
+        assertThat(text.taskType()).isEqualTo("TEXT");
+        assertThat(text.difficulty()).isEqualTo("MEDIUM");
+        assertThat(text.required()).isFalse();
+        assertThat(text.descriptionMarkdown())
+                .isEqualTo("## Explanation\n\n  Keep this indentation.\n");
+        assertThat(text.programmingConfig()).isNull();
+        assertThat(text.testCaseCount()).isZero();
+        assertThat(text.hiddenTestCaseCount()).isZero();
+        var code = tasks.get(1);
+        assertThat(code.taskType()).isEqualTo("CODE");
+        assertThat(code.difficulty()).isEqualTo("EASY");
+        assertThat(code.required()).isTrue();
+        assertThat(code.descriptionMarkdown()).isEqualTo("Write `print(value)`.\n");
+        assertThat(code.programmingConfig().language()).isEqualTo("PYTHON");
+        assertThat(code.programmingConfig().starterCode())
+                .isEqualTo("value = int(input())\nif value > 0:\n    print(value)\n");
+        assertThat(code.programmingConfig().executionEnabled()).isTrue();
+        assertThat(code.programmingConfig().timeLimitMs()).isEqualTo(2000);
+        assertThat(code.programmingConfig().memoryLimitMb()).isEqualTo(128);
+        assertThat(code.testCaseCount()).isEqualTo(2);
+        assertThat(code.hiddenTestCaseCount()).isEqualTo(1);
     }
 
     @Test
