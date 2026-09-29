@@ -248,6 +248,24 @@ class SnakeYamlContentPackageParserTest {
     }
 
     @Test
+    void distinguishesOmittedAndExplicitEmptyTestCases() {
+        var omitted = parse(taskYaml("taskType: TEXT\n"));
+        assertThat(omitted.modules().getFirst().topics().getFirst().tasks().getFirst().testCases())
+                .isNull();
+        var provided = parse(taskYaml("taskType: TEXT\ntestCases: []\n"));
+        assertThat(provided.modules().getFirst().topics().getFirst().tasks().getFirst().testCases())
+                .isEmpty();
+    }
+
+    @Test
+    void rejectsExplicitTestCasePosition() {
+        assertError(
+                taskYaml("testCases:\n  - position: 1\n"),
+                Code.UNKNOWN_FIELD,
+                "modules[0].topics[0].tasks[0].testCases[0].position");
+    }
+
+    @Test
     void doesNotChangeMissingOrFutureSchemaVersions() {
         assertThat(parse("kind: modules\nmodules: []\n").schemaVersion()).isNull();
         assertThat(parse("schemaVersion: 3\nkind: modules\nmodules: []\n").schemaVersion())

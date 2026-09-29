@@ -9,6 +9,7 @@ import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -28,6 +29,286 @@ class TutorContentPackageValidatorTest {
                 new TutorContentPackage(3, "modules", validModules()),
                 UNSUPPORTED_SCHEMA_VERSION,
                 "schemaVersion");
+    }
+
+    @Test
+    void acceptsDocumentedV2Example() throws IOException {
+        var example =
+                new SnakeYamlContentPackageParser()
+                        .parse(
+                                Files.readAllBytes(
+                                        Path.of("docs/examples/python-conditions-v2.yaml")));
+        assertThat(validator.validate(example).errors()).isEmpty();
+    }
+
+    @Test
+    void rejectsTasksInV1WithoutTreatingThemAsV2() {
+        assertOnlyError(v1WithTask(textTask()), FORBIDDEN_FIELD, "modules[0].topics[0].tasks");
+        assertThat(
+                        validator
+                                .validate(
+                                        packageWith(
+                                                new TopicImport("T", null, List.of(), List.of())))
+                                .valid())
+                .isTrue();
+    }
+
+    @Test
+    void acceptsValidTextAndCodeTasks() {
+        assertThat(validator.validate(v2WithTask(textTask())).errors()).isEmpty();
+        assertThat(validator.validate(v2WithTask(codeTask())).errors()).isEmpty();
+    }
+
+    @Test
+    void rejectsCodeOnlyFieldsOnTextIncludingEmptyTestCases() {
+        var text = textTask();
+        assertOnlyError(
+                v2WithTask(
+                        new TaskImport(
+                                text.title(),
+                                text.descriptionMarkdown(),
+                                "TEXT",
+                                "EASY",
+                                true,
+                                config(),
+                                null)),
+                FORBIDDEN_FIELD,
+                "modules[0].topics[0].tasks[0].programmingConfig");
+        assertOnlyError(
+                v2WithTask(
+                        new TaskImport(
+                                text.title(),
+                                text.descriptionMarkdown(),
+                                "TEXT",
+                                "EASY",
+                                true,
+                                null,
+                                List.of())),
+                FORBIDDEN_FIELD,
+                "modules[0].topics[0].tasks[0].testCases");
+    }
+
+    @Test
+    void requiresCodeConfigAndNonemptyTestCases() {
+        var code = codeTask();
+        assertOnlyError(
+                v2WithTask(
+                        new TaskImport(
+                                code.title(),
+                                code.descriptionMarkdown(),
+                                "CODE",
+                                "EASY",
+                                true,
+                                null,
+                                code.testCases())),
+                REQUIRED_FIELD,
+                "modules[0].topics[0].tasks[0].programmingConfig");
+        assertOnlyError(
+                v2WithTask(
+                        new TaskImport(
+                                code.title(),
+                                code.descriptionMarkdown(),
+                                "CODE",
+                                "EASY",
+                                true,
+                                config(),
+                                null)),
+                REQUIRED_FIELD,
+                "modules[0].topics[0].tasks[0].testCases");
+        assertOnlyError(
+                v2WithTask(
+                        new TaskImport(
+                                code.title(),
+                                code.descriptionMarkdown(),
+                                "CODE",
+                                "EASY",
+                                true,
+                                config(),
+                                List.of())),
+                REQUIRED_FIELD,
+                "modules[0].topics[0].tasks[0].testCases");
+    }
+
+    @Test
+    void rejectsUnsupportedTaskTypesAndDifficulty() {
+        for (String type : List.of("SINGLE_CHOICE", "MULTIPLE_CHOICE", "FILE_UPLOAD", "FUTURE")) {
+            assertOnlyError(
+                    v2WithTask(new TaskImport("T", "", type, "EASY", true, null, null)),
+                    INVALID_FIELD_VALUE,
+                    "modules[0].topics[0].tasks[0].taskType");
+        }
+        assertOnlyError(
+                v2WithTask(new TaskImport("T", "", "TEXT", "IMPOSSIBLE", true, null, null)),
+                INVALID_FIELD_VALUE,
+                "modules[0].topics[0].tasks[0].difficulty");
+    }
+
+    @Test
+    void requiresCommonTaskFieldsAndLimitsTitleTo220Characters() {
+        var missing =
+                validator.validate(
+                        v2WithTask(new TaskImport(null, null, null, null, null, null, null)));
+        for (String field :
+                List.of("title", "descriptionMarkdown", "taskType", "difficulty", "required")) {
+            assertError(missing, REQUIRED_FIELD, "modules[0].topics[0].tasks[0]." + field);
+        }
+        assertThat(missing.errors()).hasSize(5);
+        assertOnlyError(
+                v2WithTask(new TaskImport("T".repeat(221), "", "TEXT", "EASY", true, null, null)),
+                LIMIT_EXCEEDED,
+                "modules[0].topics[0].tasks[0].title");
+        assertThat(
+                        validator
+                                .validate(
+                                        v2WithTask(
+                                                new TaskImport(
+                                                        "T".repeat(220),
+                                                        "",
+                                                        "TEXT",
+                                                        "HARD",
+                                                        false,
+                                                        null,
+                                                        null)))
+                                .valid())
+                .isTrue();
+    }
+
+    @Test
+    void validatesProgrammingConfigFieldsAndDomainBounds() {
+        for (String field :
+                List.of("language", "executionEnabled", "timeLimitMs", "memoryLimitMb")) {
+            var config =
+                    new ProgrammingConfigImport(
+                            field.equals("language") ? null : "PYTHON",
+                            null,
+                            field.equals("executionEnabled") ? null : true,
+                            field.equals("timeLimitMs") ? null : 100,
+                            field.equals("memoryLimitMb") ? null : 16);
+            assertOnlyError(
+                    codeWith(config, List.of(testCase("EXACT"))),
+                    REQUIRED_FIELD,
+                    "modules[0].topics[0].tasks[0].programmingConfig." + field);
+        }
+        assertOnlyError(
+                codeWith(
+                        new ProgrammingConfigImport("JAVA", null, true, 100, 16),
+                        List.of(testCase("EXACT"))),
+                INVALID_FIELD_VALUE,
+                "modules[0].topics[0].tasks[0].programmingConfig.language");
+        for (int time : List.of(99, 30_001)) {
+            assertOnlyError(
+                    codeWith(
+                            new ProgrammingConfigImport("PYTHON", null, true, time, 16),
+                            List.of(testCase("EXACT"))),
+                    INVALID_FIELD_VALUE,
+                    "modules[0].topics[0].tasks[0].programmingConfig.timeLimitMs");
+        }
+        for (int memory : List.of(15, 1_025)) {
+            assertOnlyError(
+                    codeWith(
+                            new ProgrammingConfigImport("PYTHON", null, true, 100, memory),
+                            List.of(testCase("EXACT"))),
+                    INVALID_FIELD_VALUE,
+                    "modules[0].topics[0].tasks[0].programmingConfig.memoryLimitMb");
+        }
+        assertThat(
+                        validator
+                                .validate(
+                                        codeWith(
+                                                new ProgrammingConfigImport(
+                                                        "PYTHON", null, false, 30_000, 1_024),
+                                                List.of(testCase("EXACT"))))
+                                .valid())
+                .isTrue();
+    }
+
+    @Test
+    void validatesTestCaseFieldsAndComparisonModes() {
+        for (String mode : List.of("EXACT", "NORMALIZED")) {
+            assertThat(validator.validate(codeWith(config(), List.of(testCase(mode)))).valid())
+                    .isTrue();
+        }
+        assertOnlyError(
+                codeWith(config(), List.of(testCase("OTHER"))),
+                INVALID_FIELD_VALUE,
+                "modules[0].topics[0].tasks[0].testCases[0].comparisonMode");
+        var missing =
+                validator.validate(
+                        codeWith(config(), List.of(new TestCaseImport(null, null, null, null))));
+        for (String field : List.of("expectedOutput", "hidden", "comparisonMode")) {
+            assertError(
+                    missing, REQUIRED_FIELD, "modules[0].topics[0].tasks[0].testCases[0]." + field);
+        }
+        assertThat(missing.errors()).hasSize(3);
+        assertThat(
+                        validator
+                                .validate(
+                                        codeWith(
+                                                config(),
+                                                List.of(
+                                                        new TestCaseImport(
+                                                                null, "", false, "EXACT"))))
+                                .valid())
+                .isTrue();
+    }
+
+    @Test
+    void enforcesTaskAndTestCaseLimitsWithNestedPaths() {
+        var tasks = Collections.nCopies(251, textTask());
+        var manyTasks = v2WithTasks(tasks);
+        assertOnlyError(manyTasks, LIMIT_EXCEEDED, "modules[0].topics[0].tasks");
+        assertThat(validator.validate(v2WithTasks(Collections.nCopies(250, textTask()))).valid())
+                .isTrue();
+        assertOnlyError(
+                codeWith(config(), Collections.nCopies(101, testCase("EXACT"))),
+                LIMIT_EXCEEDED,
+                "modules[0].topics[0].tasks[0].testCases");
+        assertThat(
+                        validator
+                                .validate(
+                                        codeWith(
+                                                config(),
+                                                Collections.nCopies(100, testCase("EXACT"))))
+                                .valid())
+                .isTrue();
+    }
+
+    @Test
+    void reportsDeepPathsWithoutLeakingTaskOrTestContent() {
+        String secret = "PRIVATE_TASK_AND_TEST_INPUT_123";
+        var bad =
+                new TaskImport(
+                        secret,
+                        secret,
+                        "CODE",
+                        "MEDIUM",
+                        true,
+                        config(),
+                        List.of(
+                                testCase("EXACT"),
+                                new TestCaseImport(secret, secret, false, "UNKNOWN")));
+        var content =
+                new TutorContentPackage(
+                        2,
+                        "modules",
+                        List.of(
+                                new ModuleImport(
+                                        "M",
+                                        null,
+                                        List.of(
+                                                new TopicImport("First", null, List.of()),
+                                                new TopicImport(
+                                                        "Second",
+                                                        null,
+                                                        List.of(),
+                                                        List.of(textTask(), bad))))));
+        var result = validator.validate(content);
+        assertOnlyError(
+                content,
+                INVALID_FIELD_VALUE,
+                "modules[0].topics[1].tasks[1].testCases[1].comparisonMode");
+        assertThat(result.errors())
+                .allSatisfy(error -> assertThat(error.message()).doesNotContain(secret));
     }
 
     @Test
@@ -207,6 +488,52 @@ class TutorContentPackageValidatorTest {
 
     private static List<ModuleImport> validModules() {
         return List.of(new ModuleImport("M", null, validTopics()));
+    }
+
+    private static TutorContentPackage v1WithTask(TaskImport task) {
+        return new TutorContentPackage(
+                1,
+                "modules",
+                List.of(
+                        new ModuleImport(
+                                "M",
+                                null,
+                                List.of(new TopicImport("T", null, List.of(), List.of(task))))));
+    }
+
+    private static TutorContentPackage v2WithTask(TaskImport task) {
+        return v2WithTasks(List.of(task));
+    }
+
+    private static TutorContentPackage v2WithTasks(List<TaskImport> tasks) {
+        return new TutorContentPackage(
+                2,
+                "modules",
+                List.of(
+                        new ModuleImport(
+                                "M", null, List.of(new TopicImport("T", null, List.of(), tasks)))));
+    }
+
+    private static TaskImport textTask() {
+        return new TaskImport("Text", "", "TEXT", "EASY", true, null, null);
+    }
+
+    private static TaskImport codeTask() {
+        return new TaskImport(
+                "Code", "", "CODE", "EASY", true, config(), List.of(testCase("EXACT")));
+    }
+
+    private static TutorContentPackage codeWith(
+            ProgrammingConfigImport config, List<TestCaseImport> testCases) {
+        return v2WithTask(new TaskImport("Code", "", "CODE", "EASY", true, config, testCases));
+    }
+
+    private static ProgrammingConfigImport config() {
+        return new ProgrammingConfigImport("PYTHON", null, true, 2_000, 128);
+    }
+
+    private static TestCaseImport testCase(String comparisonMode) {
+        return new TestCaseImport(null, "", false, comparisonMode);
     }
 
     private static List<TopicImport> validTopics() {
