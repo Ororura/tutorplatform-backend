@@ -157,6 +157,150 @@ class SnakeYamlContentPackageParserTest {
         assertThat(content.modules()).hasSize(1);
         assertThat(content.modules().getFirst().topics()).hasSize(2);
         assertThat(content.modules().getFirst().topics().getFirst().materials()).hasSize(2);
+        assertThat(content.modules().getFirst().topics().getFirst().tasks()).isEmpty();
+    }
+
+    @Test
+    void parsesV2TextAndCodeTasksWithExactTypesAndOrder() {
+        var content =
+                parse(
+                        """
+                schemaVersion: 2
+                kind: modules
+                modules:
+                  - title: Python
+                    topics:
+                      - title: Conditions
+                        tasks:
+                          - title: Explain
+                            descriptionMarkdown: "Explain **if**."
+                            taskType: TEXT
+                            difficulty: MEDIUM
+                            required: false
+                          - title: Check number
+                            descriptionMarkdown: |
+                              Print the sign.
+                            taskType: CODE
+                            difficulty: EASY
+                            required: true
+                            programmingConfig:
+                              language: PYTHON
+                              starterCode: |
+                                value = int(input())
+                              executionEnabled: true
+                              timeLimitMs: 2000
+                              memoryLimitMb: 128
+                            testCases:
+                              - inputText: "10"
+                                expectedOutput: positive
+                                hidden: false
+                                comparisonMode: NORMALIZED
+                              - inputText: "-10"
+                                expectedOutput: negative
+                                hidden: true
+                                comparisonMode: EXACT
+                """);
+        assertThat(content.schemaVersion()).isEqualTo(2);
+        var tasks = content.modules().getFirst().topics().getFirst().tasks();
+        assertThat(tasks).extracting(t -> t.title()).containsExactly("Explain", "Check number");
+        assertThat(tasks.getFirst().descriptionMarkdown()).isEqualTo("Explain **if**.");
+        assertThat(tasks.getFirst().taskType()).isEqualTo("TEXT");
+        assertThat(tasks.getFirst().difficulty()).isEqualTo("MEDIUM");
+        assertThat(tasks.getFirst().required()).isFalse();
+        assertThat(tasks.getFirst().programmingConfig()).isNull();
+        assertThat(tasks.getFirst().testCases()).isEmpty();
+
+        var code = tasks.get(1);
+        assertThat(code.descriptionMarkdown()).isEqualTo("Print the sign.\n");
+        assertThat(code.taskType()).isEqualTo("CODE");
+        assertThat(code.difficulty()).isEqualTo("EASY");
+        assertThat(code.required()).isTrue();
+        assertThat(code.programmingConfig().language()).isEqualTo("PYTHON");
+        assertThat(code.programmingConfig().starterCode()).isEqualTo("value = int(input())\n");
+        assertThat(code.programmingConfig().executionEnabled()).isTrue();
+        assertThat(code.programmingConfig().timeLimitMs()).isEqualTo(2000);
+        assertThat(code.programmingConfig().memoryLimitMb()).isEqualTo(128);
+        assertThat(code.testCases())
+                .extracting(testCase -> testCase.inputText())
+                .containsExactly("10", "-10");
+        assertThat(code.testCases())
+                .extracting(testCase -> testCase.expectedOutput())
+                .containsExactly("positive", "negative");
+        assertThat(code.testCases().getFirst().hidden()).isFalse();
+        assertThat(code.testCases().getFirst().comparisonMode()).isEqualTo("NORMALIZED");
+        assertThat(code.testCases().get(1).hidden()).isTrue();
+        assertThat(code.testCases().get(1).comparisonMode()).isEqualTo("EXACT");
+    }
+
+    @Test
+    void doesNotChangeMissingOrFutureSchemaVersions() {
+        assertThat(parse("kind: modules\nmodules: []\n").schemaVersion()).isNull();
+        assertThat(parse("schemaVersion: 3\nkind: modules\nmodules: []\n").schemaVersion())
+                .isEqualTo(3);
+    }
+
+    @Test
+    void rejectsQuotedAndNonCanonicalBooleans() {
+        assertError(
+                taskYaml("required: \"true\"\n"),
+                Code.INVALID_FIELD_TYPE,
+                "modules[0].topics[0].tasks[0].required");
+        assertError(
+                taskYaml("required: yes\n"),
+                Code.INVALID_FIELD_TYPE,
+                "modules[0].topics[0].tasks[0].required");
+        assertError(
+                taskYaml("programmingConfig:\n  executionEnabled: \"true\"\n"),
+                Code.INVALID_FIELD_TYPE,
+                "modules[0].topics[0].tasks[0].programmingConfig.executionEnabled");
+        assertError(
+                taskYaml("testCases:\n  - hidden: \"false\"\n"),
+                Code.INVALID_FIELD_TYPE,
+                "modules[0].topics[0].tasks[0].testCases[0].hidden");
+    }
+
+    @Test
+    void rejectsQuotedIntegersAndOutOfRangeLimits() {
+        assertError(
+                taskYaml("programmingConfig:\n  timeLimitMs: \"2000\"\n"),
+                Code.INVALID_FIELD_TYPE,
+                "modules[0].topics[0].tasks[0].programmingConfig.timeLimitMs");
+        assertError(
+                taskYaml("programmingConfig:\n  memoryLimitMb: \"128\"\n"),
+                Code.INVALID_FIELD_TYPE,
+                "modules[0].topics[0].tasks[0].programmingConfig.memoryLimitMb");
+        assertError(
+                taskYaml("programmingConfig:\n  timeLimitMs: 2147483648\n"),
+                Code.INVALID_FIELD_TYPE,
+                "modules[0].topics[0].tasks[0].programmingConfig.timeLimitMs");
+    }
+
+    @Test
+    void rejectsUnknownV2FieldsAtEveryLevel() {
+        assertError(
+                "modules:\n  - topics:\n      - unexpected: value\n",
+                Code.UNKNOWN_FIELD,
+                "modules[0].topics[0].unexpected");
+        assertError(
+                taskYaml("unexpected: value\n"),
+                Code.UNKNOWN_FIELD,
+                "modules[0].topics[0].tasks[0].unexpected");
+        assertError(
+                taskYaml("programmingConfig:\n  unexpected: value\n"),
+                Code.UNKNOWN_FIELD,
+                "modules[0].topics[0].tasks[0].programmingConfig.unexpected");
+        assertError(
+                taskYaml("testCases:\n  - unexpected: value\n"),
+                Code.UNKNOWN_FIELD,
+                "modules[0].topics[0].tasks[0].testCases[0].unexpected");
+    }
+
+    @Test
+    void rejectsDuplicateV2Fields() {
+        assertError(
+                taskYaml("required: true\nrequired: false\n"),
+                Code.DUPLICATE_KEY,
+                "modules[0].topics[0].tasks[0].required");
     }
 
     @Test
@@ -325,6 +469,20 @@ class SnakeYamlContentPackageParserTest {
                 .isInstanceOfSatisfying(
                         ContentPackageParseException.class,
                         ex -> assertThat(ex.code()).isEqualTo(Code.UNSUPPORTED_YAML_FEATURE));
+    }
+
+    private String taskYaml(String fields) {
+        return """
+                schemaVersion: 2
+                kind: modules
+                modules:
+                  - title: M
+                    topics:
+                      - title: T
+                        tasks:
+                          - title: Task
+                """
+                + fields.indent(12);
     }
 
     private void assertError(String yaml, Code code, String path) {
