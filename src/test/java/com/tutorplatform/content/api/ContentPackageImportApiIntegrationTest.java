@@ -371,6 +371,13 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
                         });
         assertThat(taskGraphCounts(programId)).containsExactly(2, 1, 2, 2);
         assertThat(
+                        jdbc.queryForList(
+                                "SELECT id FROM task_test_cases WHERE task_id = ?",
+                                UUID.class,
+                                codeTaskId))
+                .hasSize(2)
+                .doesNotHaveDuplicates();
+        assertThat(
                         jdbc.queryForObject(
                                 "SELECT count(*) FROM programming_task_configs pc JOIN tasks tk ON tk.id = pc.task_id WHERE tk.subject_id = ? AND tk.task_type = 'TEXT'",
                                 Integer.class,
@@ -489,6 +496,12 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
             "ALTER TABLE task_test_cases ADD CONSTRAINT test_import_testcase_failure CHECK (expected_output <> 'hidden output secret') NOT VALID",
             "ALTER TABLE topic_tasks ADD CONSTRAINT test_import_attachment_failure CHECK (position <> 1) NOT VALID"
         };
+        String[] constraintNames = {
+            "test_import_task_failure",
+            "test_import_config_failure",
+            "test_import_testcase_failure",
+            "test_import_attachment_failure"
+        };
         String[] drops = {
             "ALTER TABLE tasks DROP CONSTRAINT test_import_task_failure",
             "ALTER TABLE programming_task_configs DROP CONSTRAINT test_import_config_failure",
@@ -498,7 +511,7 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
         for (int index = 0; index < constraints.length; index++) {
             jdbc.execute(constraints[index]);
             try {
-                assertFailedV2Import(digest);
+                assertFailedV2Import(digest, constraintNames[index]);
             } finally {
                 jdbc.execute(drops[index]);
             }
@@ -784,9 +797,9 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
                         id));
     }
 
-    private void assertFailedV2Import(String digest) throws Exception {
+    private void assertFailedV2Import(String digest, String constraintName) throws Exception {
         try {
-            int status =
+            var response =
                     mvc.perform(
                                     multipart(IMPORT, programId)
                                             .file(file(V2_YAML))
@@ -795,11 +808,13 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
                                             .with(user(teacher))
                                             .with(csrf()))
                             .andReturn()
-                            .getResponse()
-                            .getStatus();
-            assertThat(status).isBetween(400, 599);
+                            .getResponse();
+            assertThat(response.getStatus()).isBetween(400, 599);
+            assertThat(response.getContentAsString())
+                    .doesNotContain("hidden input secret", "hidden output secret");
         } catch (jakarta.servlet.ServletException exception) {
             // Some database failures propagate through MockMvc rather than an API handler.
+            assertThat(exception).hasMessageContaining(constraintName);
         }
     }
 
