@@ -118,6 +118,13 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
                         preview.path("digest").asText(),
                         YAML,
                         201);
+        assertThat(result.path("taskCount").asInt()).isZero();
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT task_count FROM content_package_imports WHERE confirmation_id = ?",
+                                Integer.class,
+                                UUID.fromString(result.path("confirmationId").asText())))
+                .isZero();
         assertThat(result.path("createdModuleIds")).hasSize(2);
         assertThat(counts(programId)).containsExactly(2, 3, 3, 1);
         assertThat(
@@ -310,6 +317,7 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
         JsonNode first = importPackage(teacher, programId, confirmation, digest, YAML, 201);
         JsonNode replay = importPackage(teacher, programId, confirmation, digest, YAML, 200);
         assertThat(replay).isEqualTo(first);
+        assertThat(replay.path("taskCount").asInt()).isZero();
         assertThat(counts(programId)).containsExactly(2, 3, 3, 1);
         String changed = YAML.replace("First module", "Changed module");
         importPackage(
@@ -456,6 +464,15 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
                 .isEqualTo("uuid");
         assertThat(body.path("properties").path("digest").path("type").asText())
                 .isEqualTo("string");
+        assertThat(
+                        document.path("components")
+                                .path("schemas")
+                                .path("ContentPackageImportResponse")
+                                .path("properties")
+                                .path("taskCount")
+                                .path("type")
+                                .asText())
+                .isEqualTo("integer");
     }
 
     private List<JsonNode> concurrentImports(UUID firstId, UUID secondId, String digest)

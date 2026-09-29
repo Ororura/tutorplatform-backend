@@ -114,6 +114,7 @@ class ContentPackageImportServiceTest {
                         2,
                         2,
                         3,
+                        0,
                         List.of(firstModule, secondModule)))
                 .thenReturn(record(DIGEST, List.of(firstModule, secondModule), 2, 2, 3));
 
@@ -123,6 +124,7 @@ class ContentPackageImportServiceTest {
         assertThat(result.moduleCount()).isEqualTo(2);
         assertThat(result.topicCount()).isEqualTo(2);
         assertThat(result.materialCount()).isEqualTo(3);
+        assertThat(result.taskCount()).isZero();
         var order = inOrder(programs, preview, imports, materials);
         order.verify(programs).requireEditableForImport(principal, programId);
         order.verify(preview).preview(principal, programId, yamlBytes);
@@ -191,6 +193,7 @@ class ContentPackageImportServiceTest {
                         2,
                         2,
                         3,
+                        0,
                         List.of(firstModule, secondModule));
     }
 
@@ -213,12 +216,12 @@ class ContentPackageImportServiceTest {
     void replaysExistingConfirmationWithoutCreatingContent() {
         ready(packagePreview());
         UUID moduleId = UUID.randomUUID();
+        ContentPackageImportRecord stored = record(DIGEST, List.of(moduleId), 1, 1, 0);
         when(imports.registerConfirmation(teacherId, programId, confirmationId))
-                .thenReturn(Optional.of(record(DIGEST, List.of(moduleId), 1, 1, 0)));
-        assertThat(service.importPackage(principal, programId, confirmationId, DIGEST, yamlBytes))
-                .isEqualTo(
-                        ContentPackageImportResult.fromRecord(
-                                record(DIGEST, List.of(moduleId), 1, 1, 0), true));
+                .thenReturn(Optional.of(stored));
+        var result = service.importPackage(principal, programId, confirmationId, DIGEST, yamlBytes);
+        assertThat(result).isEqualTo(ContentPackageImportResult.fromRecord(stored, true));
+        assertThat(result.taskCount()).isZero();
         verifyNoInteractions(materials);
     }
 
@@ -288,6 +291,7 @@ class ContentPackageImportServiceTest {
                 moduleCount,
                 topicCount,
                 materialCount,
+                0,
                 ids,
                 Instant.now());
     }
