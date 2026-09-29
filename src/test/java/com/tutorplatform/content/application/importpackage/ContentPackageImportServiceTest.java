@@ -20,6 +20,7 @@ import com.tutorplatform.program.api.LearningProgramTopicDetailsResponse;
 import com.tutorplatform.program.application.InvalidLearningProgramStatusException;
 import com.tutorplatform.program.application.LearningProgramNotFoundException;
 import com.tutorplatform.program.application.TeacherLearningProgramService;
+import com.tutorplatform.task.application.TaskService;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -38,10 +39,12 @@ class ContentPackageImportServiceTest {
             mock(TeacherLearningProgramService.class);
     private final ContentPackagePreviewService preview = mock(ContentPackagePreviewService.class);
     private final LessonMaterialService materials = mock(LessonMaterialService.class);
+    private final TaskService tasks = mock(TaskService.class);
+    private final ContentPackageParser parser = mock(ContentPackageParser.class);
     private final ContentPackageImportRepository imports =
             mock(ContentPackageImportRepository.class);
     private final ContentPackageImportService service =
-            new ContentPackageImportService(programs, preview, materials, imports);
+            new ContentPackageImportService(programs, preview, materials, tasks, parser, imports);
 
     @Test
     void importsInYamlOrderWithNormalizedTitlesAndUntouchedPayloads() {
