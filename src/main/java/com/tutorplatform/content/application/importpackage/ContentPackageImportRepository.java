@@ -26,5 +26,6 @@ public interface ContentPackageImportRepository {
             int moduleCount,
             int topicCount,
             int materialCount,
+            int taskCount,
             List<UUID> createdModuleIds);
 }

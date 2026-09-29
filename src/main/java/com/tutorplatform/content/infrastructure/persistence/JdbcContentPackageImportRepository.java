@@ -29,7 +29,7 @@ public class JdbcContentPackageImportRepository implements ContentPackageImportR
                 .query(
                         """
                         SELECT id, teacher_id, learning_program_id, confirmation_id,
-                               package_digest, module_count, topic_count, material_count,
+                               package_digest, module_count, topic_count, material_count, task_count,
                                created_module_ids, created_at
                         FROM content_package_imports
                         WHERE teacher_id = ? AND learning_program_id = ? AND confirmation_id = ?
@@ -64,6 +64,7 @@ public class JdbcContentPackageImportRepository implements ContentPackageImportR
             int moduleCount,
             int topicCount,
             int materialCount,
+            int taskCount,
             List<UUID> createdModuleIds) {
         UUID id = UUID.randomUUID();
         return jdbc.query(
@@ -74,11 +75,11 @@ public class JdbcContentPackageImportRepository implements ContentPackageImportR
                                             INSERT INTO content_package_imports
                                                 (id, teacher_id, learning_program_id,
                                                  confirmation_id, package_digest, module_count,
-                                                 topic_count, material_count, created_module_ids)
-                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                                 topic_count, material_count, task_count, created_module_ids)
+                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                                             RETURNING id, teacher_id, learning_program_id,
                                                       confirmation_id, package_digest, module_count,
-                                                      topic_count, material_count, created_module_ids,
+                                                      topic_count, material_count, task_count, created_module_ids,
                                                       created_at
                                             """);
                             statement.setObject(1, id);
@@ -89,8 +90,9 @@ public class JdbcContentPackageImportRepository implements ContentPackageImportR
                             statement.setInt(6, moduleCount);
                             statement.setInt(7, topicCount);
                             statement.setInt(8, materialCount);
+                            statement.setInt(9, taskCount);
                             statement.setArray(
-                                    9,
+                                    10,
                                     connection.createArrayOf(
                                             "uuid", createdModuleIds.toArray(UUID[]::new)));
                             return statement;
@@ -110,6 +112,7 @@ public class JdbcContentPackageImportRepository implements ContentPackageImportR
                 row.getInt("module_count"),
                 row.getInt("topic_count"),
                 row.getInt("material_count"),
+                row.getInt("task_count"),
                 Arrays.asList((UUID[]) row.getArray("created_module_ids").getArray()),
                 row.getTimestamp("created_at").toInstant());
     }

@@ -11,6 +11,7 @@ public record ContentPackageImportResponse(
         int moduleCount,
         int topicCount,
         int materialCount,
+        int taskCount,
         List<UUID> createdModuleIds) {
     public static ContentPackageImportResponse from(ContentPackageImportResult result) {
         return new ContentPackageImportResponse(
@@ -20,6 +21,7 @@ public record ContentPackageImportResponse(
                 result.moduleCount(),
                 result.topicCount(),
                 result.materialCount(),
+                result.taskCount(),
                 result.createdModuleIds());
     }
 }
