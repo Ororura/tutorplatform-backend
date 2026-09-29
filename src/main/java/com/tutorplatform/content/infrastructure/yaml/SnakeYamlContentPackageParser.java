@@ -5,6 +5,9 @@ import com.tutorplatform.content.application.importpackage.ContentPackageParseEx
 import com.tutorplatform.content.application.importpackage.ContentPackageParser;
 import com.tutorplatform.content.application.importpackage.MaterialImport;
 import com.tutorplatform.content.application.importpackage.ModuleImport;
+import com.tutorplatform.content.application.importpackage.ProgrammingConfigImport;
+import com.tutorplatform.content.application.importpackage.TaskImport;
+import com.tutorplatform.content.application.importpackage.TestCaseImport;
 import com.tutorplatform.content.application.importpackage.TopicImport;
 import com.tutorplatform.content.application.importpackage.TutorContentPackage;
 import java.io.StringReader;
@@ -38,7 +41,7 @@ import org.yaml.snakeyaml.nodes.Tag;
 @Component
 public final class SnakeYamlContentPackageParser implements ContentPackageParser {
     private static final int MAX_BYTES = 1_048_576;
-    private static final int MAX_DEPTH = 7;
+    private static final int MAX_DEPTH = 9;
 
     @Override
     public TutorContentPackage parse(byte[] yamlBytes) {
@@ -154,12 +157,13 @@ public final class SnakeYamlContentPackageParser implements ContentPackageParser
         for (Node item : sequence(node, path)) {
             String itemPath = path + "[" + index++ + "]";
             Map<String, Node> fields =
-                    fields(item, itemPath, Set.of("title", "description", "materials"));
+                    fields(item, itemPath, Set.of("title", "description", "materials", "tasks"));
             result.add(
                     new TopicImport(
                             string(fields.get("title"), itemPath + ".title"),
                             string(fields.get("description"), itemPath + ".description"),
-                            materials(fields.get("materials"), itemPath + ".materials")));
+                            materials(fields.get("materials"), itemPath + ".materials"),
+                            tasks(fields.get("tasks"), itemPath + ".tasks")));
         }
         return result;
     }
@@ -181,6 +185,82 @@ public final class SnakeYamlContentPackageParser implements ContentPackageParser
                             string(fields.get("materialType"), itemPath + ".materialType"),
                             string(fields.get("content"), itemPath + ".content"),
                             string(fields.get("externalUrl"), itemPath + ".externalUrl")));
+        }
+        return result;
+    }
+
+    private List<TaskImport> tasks(Node node, String path) {
+        if (node == null) return List.of();
+        List<TaskImport> result = new ArrayList<>();
+        int index = 0;
+        for (Node item : sequence(node, path)) {
+            String itemPath = path + "[" + index++ + "]";
+            Map<String, Node> fields =
+                    fields(
+                            item,
+                            itemPath,
+                            Set.of(
+                                    "title",
+                                    "descriptionMarkdown",
+                                    "taskType",
+                                    "difficulty",
+                                    "required",
+                                    "programmingConfig",
+                                    "testCases"));
+            result.add(
+                    new TaskImport(
+                            string(fields.get("title"), itemPath + ".title"),
+                            string(
+                                    fields.get("descriptionMarkdown"),
+                                    itemPath + ".descriptionMarkdown"),
+                            string(fields.get("taskType"), itemPath + ".taskType"),
+                            string(fields.get("difficulty"), itemPath + ".difficulty"),
+                            bool(fields.get("required"), itemPath + ".required"),
+                            programmingConfig(
+                                    fields.get("programmingConfig"),
+                                    itemPath + ".programmingConfig"),
+                            testCases(fields.get("testCases"), itemPath + ".testCases")));
+        }
+        return result;
+    }
+
+    private ProgrammingConfigImport programmingConfig(Node node, String path) {
+        if (node == null) return null;
+        Map<String, Node> fields =
+                fields(
+                        node,
+                        path,
+                        Set.of(
+                                "language",
+                                "starterCode",
+                                "executionEnabled",
+                                "timeLimitMs",
+                                "memoryLimitMb"));
+        return new ProgrammingConfigImport(
+                string(fields.get("language"), path + ".language"),
+                string(fields.get("starterCode"), path + ".starterCode"),
+                bool(fields.get("executionEnabled"), path + ".executionEnabled"),
+                integer(fields.get("timeLimitMs"), path + ".timeLimitMs"),
+                integer(fields.get("memoryLimitMb"), path + ".memoryLimitMb"));
+    }
+
+    private List<TestCaseImport> testCases(Node node, String path) {
+        if (node == null) return List.of();
+        List<TestCaseImport> result = new ArrayList<>();
+        int index = 0;
+        for (Node item : sequence(node, path)) {
+            String itemPath = path + "[" + index++ + "]";
+            Map<String, Node> fields =
+                    fields(
+                            item,
+                            itemPath,
+                            Set.of("inputText", "expectedOutput", "hidden", "comparisonMode"));
+            result.add(
+                    new TestCaseImport(
+                            string(fields.get("inputText"), itemPath + ".inputText"),
+                            string(fields.get("expectedOutput"), itemPath + ".expectedOutput"),
+                            bool(fields.get("hidden"), itemPath + ".hidden"),
+                            string(fields.get("comparisonMode"), itemPath + ".comparisonMode")));
         }
         return result;
     }
@@ -232,6 +312,16 @@ public final class SnakeYamlContentPackageParser implements ContentPackageParser
         } catch (NumberFormatException ex) {
             throw error(Code.INVALID_FIELD_TYPE, path, "Expected a 32-bit decimal integer");
         }
+    }
+
+    private Boolean bool(Node node, String path) {
+        if (node == null) return null;
+        if (!(node instanceof ScalarNode scalar)
+                || !Tag.BOOL.equals(scalar.getTag())
+                || !("true".equals(scalar.getValue()) || "false".equals(scalar.getValue()))) {
+            throw error(Code.INVALID_FIELD_TYPE, path, "Expected a boolean");
+        }
+        return Boolean.valueOf(scalar.getValue());
     }
 
     private static String location(Mark mark) {

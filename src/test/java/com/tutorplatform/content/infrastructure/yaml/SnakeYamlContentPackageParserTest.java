@@ -309,7 +309,7 @@ class SnakeYamlContentPackageParserTest {
 
     @Test
     void rejectsExcessiveNesting() {
-        assertThatThrownBy(() -> parse("modules: [[[[[[[[x]]]]]]]]"))
+        assertThatThrownBy(() -> parse("modules: [[[[[[[[[[x]]]]]]]]]]"))
                 .isInstanceOfSatisfying(
                         ContentPackageParseException.class,
                         ex -> assertThat(ex.code()).isEqualTo(Code.UNSUPPORTED_YAML_FEATURE));
