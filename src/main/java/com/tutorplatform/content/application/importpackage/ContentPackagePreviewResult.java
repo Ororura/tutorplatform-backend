@@ -7,9 +7,11 @@ import java.util.UUID;
 public record ContentPackagePreviewResult(
         UUID programId,
         String sha256Digest,
+        int schemaVersion,
         int moduleCount,
         int topicCount,
         int materialCount,
+        int taskCount,
         List<Module> modules) {
     public ContentPackagePreviewResult {
         modules = List.copyOf(modules);
@@ -21,12 +23,31 @@ public record ContentPackagePreviewResult(
         }
     }
 
-    public record Topic(String title, String description, List<Material> materials) {
+    public record Topic(
+            String title, String description, List<Material> materials, List<Task> tasks) {
         public Topic {
             materials = List.copyOf(materials);
+            tasks = List.copyOf(tasks);
         }
     }
 
     public record Material(
             String title, LessonMaterialType materialType, String content, String externalUrl) {}
+
+    public record Task(
+            String title,
+            String descriptionMarkdown,
+            String taskType,
+            String difficulty,
+            boolean required,
+            ProgrammingConfig programmingConfig,
+            int testCaseCount,
+            int hiddenTestCaseCount) {}
+
+    public record ProgrammingConfig(
+            String language,
+            String starterCode,
+            boolean executionEnabled,
+            int timeLimitMs,
+            int memoryLimitMb) {}
 }

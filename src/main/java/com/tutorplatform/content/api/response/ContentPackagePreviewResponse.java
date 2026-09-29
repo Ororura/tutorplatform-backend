@@ -9,9 +9,11 @@ public record ContentPackagePreviewResponse(
         boolean valid,
         UUID programId,
         String digest,
+        int schemaVersion,
         int moduleCount,
         int topicCount,
         int materialCount,
+        int taskCount,
         List<ContentPackagePreviewResult.Module> modules,
         List<ContentPackagePreviewError> errors) {
     public static ContentPackagePreviewResponse from(ContentPackagePreviewResult result) {
@@ -19,9 +21,11 @@ public record ContentPackagePreviewResponse(
                 true,
                 result.programId(),
                 result.sha256Digest(),
+                result.schemaVersion(),
                 result.moduleCount(),
                 result.topicCount(),
                 result.materialCount(),
+                result.taskCount(),
                 result.modules(),
                 List.of());
     }

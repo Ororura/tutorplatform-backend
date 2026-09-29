@@ -3,6 +3,8 @@ package com.tutorplatform.content.application.importpackage;
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.content.application.importpackage.ContentPackagePreviewResult.Material;
 import com.tutorplatform.content.application.importpackage.ContentPackagePreviewResult.Module;
+import com.tutorplatform.content.application.importpackage.ContentPackagePreviewResult.ProgrammingConfig;
+import com.tutorplatform.content.application.importpackage.ContentPackagePreviewResult.Task;
 import com.tutorplatform.content.application.importpackage.ContentPackagePreviewResult.Topic;
 import com.tutorplatform.content.domain.LessonMaterialType;
 import com.tutorplatform.program.application.InvalidLearningProgramStatusException;
@@ -65,8 +67,20 @@ public class ContentPackagePreviewService {
                         .flatMap(module -> module.topics().stream())
                         .mapToInt(topic -> topic.materials().size())
                         .sum();
+        int taskCount =
+                modules.stream()
+                        .flatMap(module -> module.topics().stream())
+                        .mapToInt(topic -> topic.tasks().size())
+                        .sum();
         return new ContentPackagePreviewResult(
-                programId, sha256(yamlBytes), modules.size(), topicCount, materialCount, modules);
+                programId,
+                sha256(yamlBytes),
+                contentPackage.schemaVersion(),
+                modules.size(),
+                topicCount,
+                materialCount,
+                taskCount,
+                modules);
     }
 
     public ContentPackagePreviewResult preview(
@@ -114,7 +128,8 @@ public class ContentPackagePreviewService {
         return new Topic(
                 topic.title().strip(),
                 stripNullable(topic.description()),
-                topic.materials().stream().map(this::toMaterial).toList());
+                topic.materials().stream().map(this::toMaterial).toList(),
+                topic.tasks().stream().map(this::toTask).toList());
     }
 
     private Material toMaterial(MaterialImport material) {
@@ -123,6 +138,36 @@ public class ContentPackagePreviewService {
                 LessonMaterialType.valueOf(material.materialType()),
                 material.content(),
                 material.externalUrl());
+    }
+
+    private Task toTask(TaskImport task) {
+        ProgrammingConfigImport source = task.programmingConfig();
+        ProgrammingConfig config =
+                source == null
+                        ? null
+                        : new ProgrammingConfig(
+                                source.language(),
+                                source.starterCode(),
+                                source.executionEnabled(),
+                                source.timeLimitMs(),
+                                source.memoryLimitMb());
+        int testCaseCount = task.testCases() == null ? 0 : task.testCases().size();
+        int hiddenTestCaseCount =
+                task.testCases() == null
+                        ? 0
+                        : (int)
+                                task.testCases().stream()
+                                        .filter(testCase -> testCase.hidden())
+                                        .count();
+        return new Task(
+                task.title().strip(),
+                task.descriptionMarkdown(),
+                task.taskType(),
+                task.difficulty(),
+                task.required(),
+                config,
+                testCaseCount,
+                hiddenTestCaseCount);
     }
 
     private static String stripNullable(String value) {
