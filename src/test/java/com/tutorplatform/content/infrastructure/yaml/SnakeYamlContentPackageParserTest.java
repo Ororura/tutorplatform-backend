@@ -223,7 +223,7 @@ class SnakeYamlContentPackageParserTest {
         assertThat(tasks.getFirst().difficulty()).isEqualTo("MEDIUM");
         assertThat(tasks.getFirst().required()).isFalse();
         assertThat(tasks.getFirst().programmingConfig()).isNull();
-        assertThat(tasks.getFirst().testCases()).isEmpty();
+        assertThat(tasks.getFirst().testCases()).isNull();
 
         var code = tasks.get(1);
         assertThat(code.descriptionMarkdown()).isEqualTo("Print the sign.\n");

@@ -245,7 +245,7 @@ public final class SnakeYamlContentPackageParser implements ContentPackageParser
     }
 
     private List<TestCaseImport> testCases(Node node, String path) {
-        if (node == null) return List.of();
+        if (node == null) return null;
         List<TestCaseImport> result = new ArrayList<>();
         int index = 0;
         for (Node item : sequence(node, path)) {

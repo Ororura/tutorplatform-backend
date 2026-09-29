@@ -25,7 +25,7 @@ class TutorContentPackageValidatorTest {
     @Test
     void rejectsUnsupportedSchemaVersion() {
         assertOnlyError(
-                new TutorContentPackage(2, "modules", validModules()),
+                new TutorContentPackage(3, "modules", validModules()),
                 UNSUPPORTED_SCHEMA_VERSION,
                 "schemaVersion");
     }
@@ -248,7 +248,7 @@ class TutorContentPackageValidatorTest {
     void reportsIndependentErrorsWithPrecisePaths() {
         var content =
                 new TutorContentPackage(
-                        2,
+                        3,
                         "other",
                         List.of(
                                 new ModuleImport(
