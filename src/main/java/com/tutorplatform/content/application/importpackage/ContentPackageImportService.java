@@ -45,6 +45,9 @@ public class ContentPackageImportService {
         // requests must store. It hashes the original bytes, not a serialized package model.
         ContentPackagePreviewResult packagePreview =
                 preview.preview(principal, programId, yamlBytes);
+        if (packagePreview.schemaVersion() == 2) {
+            throw new ContentPackageImportSchemaUnsupportedException();
+        }
         String digest = packagePreview.sha256Digest();
         if (!digest.equals(expectedDigest)) {
             throw new ContentPackageDigestMismatchException();
