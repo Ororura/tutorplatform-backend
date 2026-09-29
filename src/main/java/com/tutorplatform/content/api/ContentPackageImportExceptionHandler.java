@@ -2,7 +2,6 @@ package com.tutorplatform.content.api;
 
 import com.tutorplatform.content.application.importpackage.ContentPackageConfirmationConflictException;
 import com.tutorplatform.content.application.importpackage.ContentPackageDigestMismatchException;
-import com.tutorplatform.content.application.importpackage.ContentPackageImportSchemaUnsupportedException;
 import com.tutorplatform.content.application.importpackage.ContentPackageParseException;
 import com.tutorplatform.content.application.importpackage.ContentPackageValidationException;
 import com.tutorplatform.shared.api.ApiError;
@@ -50,17 +49,6 @@ public class ContentPackageImportExceptionHandler {
     ResponseEntity<ApiError> handleDigestMismatch(ContentPackageDigestMismatchException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ApiError.of("DIGEST_MISMATCH", exception.getMessage(), MDC.get("traceId")));
-    }
-
-    @ExceptionHandler(ContentPackageImportSchemaUnsupportedException.class)
-    ResponseEntity<ApiError> handleUnsupportedSchema(
-            ContentPackageImportSchemaUnsupportedException exception) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(
-                        ApiError.of(
-                                "CONTENT_PACKAGE_IMPORT_SCHEMA_UNSUPPORTED",
-                                exception.getMessage(),
-                                MDC.get("traceId")));
     }
 
     @ExceptionHandler(ContentPackageConfirmationConflictException.class)

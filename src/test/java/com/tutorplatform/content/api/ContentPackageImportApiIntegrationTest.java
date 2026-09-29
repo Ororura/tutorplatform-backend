@@ -78,11 +78,33 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
                         materialType: MARKDOWN
                         content: Keep me
                     tasks:
-                      - title: V2 task
+                      - title: Text task
                         descriptionMarkdown: Write an explanation.
                         taskType: TEXT
                         difficulty: EASY
+                        required: false
+                      - title: Code task
+                        descriptionMarkdown: Write Python.
+                        taskType: CODE
+                        difficulty: HARD
                         required: true
+                        programmingConfig:
+                          language: PYTHON
+                          starterCode: |
+                            def solve():
+                                pass
+                          executionEnabled: false
+                          timeLimitMs: 2300
+                          memoryLimitMb: 192
+                        testCases:
+                          - inputText: visible input
+                            expectedOutput: visible output
+                            hidden: false
+                            comparisonMode: EXACT
+                          - inputText: hidden input secret
+                            expectedOutput: hidden output secret
+                            hidden: true
+                            comparisonMode: NORMALIZED
             """;
 
     @DynamicPropertySource
@@ -241,27 +263,119 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
-    void v2PreviewSucceedsButImportReturnsConflictWithoutAnyWrites() throws Exception {
+    void v2ImportsTextAndCodeTasksWithConfigTestsAndAttachments() throws Exception {
         JsonNode preview = preview(teacher, programId, V2_YAML);
         assertThat(preview.path("schemaVersion").asInt()).isEqualTo(2);
-        assertThat(preview.path("taskCount").asInt()).isEqualTo(1);
-        assertThat(preview.path("modules").get(0).path("topics").get(0).path("tasks")).hasSize(1);
-        List<Integer> before = counts(programId);
+        assertThat(preview.path("taskCount").asInt()).isEqualTo(2);
+        assertThat(preview.path("modules").get(0).path("topics").get(0).path("tasks")).hasSize(2);
 
-        JsonNode error =
+        UUID confirmation = UUID.randomUUID();
+        JsonNode result =
                 importPackage(
                         teacher,
                         programId,
-                        UUID.randomUUID(),
+                        confirmation,
                         preview.path("digest").asText(),
                         V2_YAML,
-                        409);
+                        201);
 
-        assertThat(error.path("code").asText())
-                .isEqualTo("CONTENT_PACKAGE_IMPORT_SCHEMA_UNSUPPORTED");
-        assertThat(error.path("message").asText())
-                .isEqualTo("Content package schema version is not supported for import");
-        assertThat(counts(programId)).isEqualTo(before).containsExactly(0, 0, 0, 0);
+        assertThat(result.path("taskCount").asInt()).isEqualTo(2);
+        assertThat(result.toString()).doesNotContain("hidden input secret", "hidden output secret");
+        assertThat(result.has("createdTaskIds")).isFalse();
+        assertThat(counts(programId)).containsExactly(1, 1, 1, 1);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT task_count FROM content_package_imports WHERE confirmation_id = ?",
+                                Integer.class,
+                                confirmation))
+                .isEqualTo(2);
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT title, description_markdown, task_type, difficulty, status, teacher_id, subject_id FROM tasks WHERE id IN (SELECT tt.task_id FROM topic_tasks tt JOIN topics t ON t.id = tt.topic_id JOIN modules m ON m.id = t.module_id WHERE m.learning_program_id = ?) ORDER BY title",
+                                programId))
+                .hasSize(2)
+                .extracting(row -> row.get("status"))
+                .containsExactly("DRAFT", "DRAFT");
+        UUID subjectId =
+                jdbc.queryForObject(
+                        "SELECT subject_id FROM learning_programs WHERE id = ?",
+                        UUID.class,
+                        programId);
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT title, description_markdown, task_type, difficulty, teacher_id, subject_id FROM tasks WHERE subject_id = ? ORDER BY title",
+                                subjectId))
+                .satisfies(
+                        rows -> {
+                            assertThat(rows.get(0))
+                                    .containsEntry("title", "Code task")
+                                    .containsEntry("description_markdown", "Write Python.")
+                                    .containsEntry("task_type", "CODE")
+                                    .containsEntry("difficulty", "HARD")
+                                    .containsEntry("teacher_id", teacherId)
+                                    .containsEntry("subject_id", subjectId);
+                            assertThat(rows.get(1))
+                                    .containsEntry("title", "Text task")
+                                    .containsEntry("task_type", "TEXT")
+                                    .containsEntry("difficulty", "EASY");
+                        });
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT tt.position, tt.required, tk.title FROM topic_tasks tt JOIN tasks tk ON tk.id = tt.task_id JOIN topics t ON t.id = tt.topic_id JOIN modules m ON m.id = t.module_id WHERE m.learning_program_id = ? ORDER BY tt.position",
+                                programId))
+                .satisfies(
+                        rows -> {
+                            assertThat(rows).hasSize(2);
+                            assertThat(rows.get(0))
+                                    .containsEntry("position", 0)
+                                    .containsEntry("required", false)
+                                    .containsEntry("title", "Text task");
+                            assertThat(rows.get(1))
+                                    .containsEntry("position", 1)
+                                    .containsEntry("required", true)
+                                    .containsEntry("title", "Code task");
+                        });
+        UUID codeTaskId =
+                jdbc.queryForObject(
+                        "SELECT id FROM tasks WHERE title = 'Code task' AND subject_id = ?",
+                        UUID.class,
+                        subjectId);
+        assertThat(
+                        jdbc.queryForMap(
+                                "SELECT language, starter_code, execution_enabled, time_limit_ms, memory_limit_mb FROM programming_task_configs WHERE task_id = ?",
+                                codeTaskId))
+                .containsEntry("language", "PYTHON")
+                .containsEntry("starter_code", "def solve():\n    pass\n")
+                .containsEntry("execution_enabled", false)
+                .containsEntry("time_limit_ms", 2300)
+                .containsEntry("memory_limit_mb", 192);
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT position, input_text, expected_output, hidden, comparison_mode FROM task_test_cases WHERE task_id = ? ORDER BY position",
+                                codeTaskId))
+                .satisfies(
+                        rows -> {
+                            assertThat(rows).hasSize(2);
+                            assertThat(rows.get(0))
+                                    .containsEntry("position", 0)
+                                    .containsEntry("input_text", "visible input")
+                                    .containsEntry("expected_output", "visible output")
+                                    .containsEntry("hidden", false)
+                                    .containsEntry("comparison_mode", "EXACT");
+                            assertThat(rows.get(1))
+                                    .containsEntry("position", 1)
+                                    .containsEntry("input_text", "hidden input secret")
+                                    .containsEntry("expected_output", "hidden output secret")
+                                    .containsEntry("hidden", true)
+                                    .containsEntry("comparison_mode", "NORMALIZED");
+                        });
+        assertThat(taskGraphCounts(programId)).containsExactly(2, 1, 2, 2);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM programming_task_configs pc JOIN tasks tk ON tk.id = pc.task_id WHERE tk.subject_id = ? AND tk.task_type = 'TEXT'",
+                                Integer.class,
+                                subjectId))
+                .isZero();
     }
 
     @Test
@@ -334,19 +448,91 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
+    void v2ReplayAndDistinctConfirmationsKeepIndependentTaskIds() throws Exception {
+        String digest = preview(teacher, programId, V2_YAML).path("digest").asText();
+        UUID confirmation = UUID.randomUUID();
+        JsonNode first = importPackage(teacher, programId, confirmation, digest, V2_YAML, 201);
+        List<UUID> firstIds = taskIds(programId);
+        assertThat(firstIds).hasSize(2);
+
+        JsonNode replay = importPackage(teacher, programId, confirmation, digest, V2_YAML, 200);
+        assertThat(replay).isEqualTo(first);
+        assertThat(taskIds(programId)).containsExactlyInAnyOrderElementsOf(firstIds);
+        assertThat(taskGraphCounts(programId)).containsExactly(2, 1, 2, 2);
+
+        String changed = V2_YAML.replace("V2 module", "Changed module");
+        importPackage(
+                teacher,
+                programId,
+                confirmation,
+                preview(teacher, programId, changed).path("digest").asText(),
+                changed,
+                409);
+        assertThat(taskIds(programId)).containsExactlyInAnyOrderElementsOf(firstIds);
+
+        JsonNode second =
+                importPackage(teacher, programId, UUID.randomUUID(), digest, V2_YAML, 201);
+        assertThat(second.path("taskCount").asInt()).isEqualTo(2);
+        assertThat(second.path("createdModuleIds")).isNotEqualTo(first.path("createdModuleIds"));
+        assertThat(taskIds(programId)).hasSize(4).containsAll(firstIds);
+        assertThat(taskIds(programId).stream().filter(id -> !firstIds.contains(id)).toList())
+                .hasSize(2);
+        assertThat(taskGraphCounts(programId)).containsExactly(4, 2, 4, 4);
+    }
+
+    @Test
+    void lateV2TaskConfigTestcaseAndAttachmentFailuresRollBackEntireImport() throws Exception {
+        String digest = preview(teacher, programId, V2_YAML).path("digest").asText();
+        String[] constraints = {
+            "ALTER TABLE tasks ADD CONSTRAINT test_import_task_failure CHECK (title <> 'Code task') NOT VALID",
+            "ALTER TABLE programming_task_configs ADD CONSTRAINT test_import_config_failure CHECK (time_limit_ms <> 2300) NOT VALID",
+            "ALTER TABLE task_test_cases ADD CONSTRAINT test_import_testcase_failure CHECK (expected_output <> 'hidden output secret') NOT VALID",
+            "ALTER TABLE topic_tasks ADD CONSTRAINT test_import_attachment_failure CHECK (position <> 1) NOT VALID"
+        };
+        String[] drops = {
+            "ALTER TABLE tasks DROP CONSTRAINT test_import_task_failure",
+            "ALTER TABLE programming_task_configs DROP CONSTRAINT test_import_config_failure",
+            "ALTER TABLE task_test_cases DROP CONSTRAINT test_import_testcase_failure",
+            "ALTER TABLE topic_tasks DROP CONSTRAINT test_import_attachment_failure"
+        };
+        for (int index = 0; index < constraints.length; index++) {
+            jdbc.execute(constraints[index]);
+            try {
+                assertFailedV2Import(digest);
+            } finally {
+                jdbc.execute(drops[index]);
+            }
+            assertThat(counts(programId)).containsExactly(0, 0, 0, 0);
+            assertThat(taskGraphCounts(programId)).containsExactly(0, 0, 0, 0);
+        }
+    }
+
+    @Test
+    void concurrentV2RetryCreatesOneTaskGraph() throws Exception {
+        UUID confirmation = UUID.randomUUID();
+        String digest = preview(teacher, programId, V2_YAML).path("digest").asText();
+        List<JsonNode> results = concurrentImports(confirmation, confirmation, digest, V2_YAML);
+        assertThat(results).hasSize(2);
+        assertThat(results.get(0)).isEqualTo(results.get(1));
+        assertThat(results.get(0).path("taskCount").asInt()).isEqualTo(2);
+        assertThat(counts(programId)).containsExactly(1, 1, 1, 1);
+        assertThat(taskGraphCounts(programId)).containsExactly(2, 1, 2, 2);
+    }
+
+    @Test
     void ownershipEditabilityAndSecurityAreEnforced() throws Exception {
-        String digest = preview(teacher, programId, YAML).path("digest").asText();
+        String digest = preview(teacher, programId, V2_YAML).path("digest").asText();
         UUID confirmation = UUID.randomUUID();
         mvc.perform(
                         multipart(IMPORT, programId)
-                                .file(file(YAML))
+                                .file(file(V2_YAML))
                                 .param("confirmationId", confirmation.toString())
                                 .param("digest", digest)
                                 .with(csrf()))
                 .andExpect(status().isUnauthorized());
         mvc.perform(
                         multipart(IMPORT, programId)
-                                .file(file(YAML))
+                                .file(file(V2_YAML))
                                 .param("confirmationId", confirmation.toString())
                                 .param("digest", digest)
                                 .with(user("student").roles("STUDENT"))
@@ -354,16 +540,16 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
                 .andExpect(status().isForbidden());
         mvc.perform(
                         multipart(IMPORT, programId)
-                                .file(file(YAML))
+                                .file(file(V2_YAML))
                                 .param("confirmationId", confirmation.toString())
                                 .param("digest", digest)
                                 .with(user(teacher)))
                 .andExpect(status().isForbidden());
         UUID ownerId = teacherId;
         AuthenticatedUser other = teacher();
-        importPackage(other, programId, confirmation, digest, YAML, 404);
+        importPackage(other, programId, confirmation, digest, V2_YAML, 404);
         jdbc.update("UPDATE learning_programs SET status = 'ARCHIVED' WHERE id = ?", programId);
-        importPackage(teacher, programId, confirmation, digest, YAML, 409);
+        importPackage(teacher, programId, confirmation, digest, V2_YAML, 409);
         jdbc.update("UPDATE learning_programs SET status = 'DRAFT' WHERE id = ?", programId);
         UUID studentId = UUID.randomUUID();
         UUID studentUser = UUID.randomUUID();
@@ -381,8 +567,9 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
                 studentId,
                 programId,
                 ownerId);
-        importPackage(teacher, programId, confirmation, digest, YAML, 409);
+        importPackage(teacher, programId, confirmation, digest, V2_YAML, 409);
         assertThat(counts(programId)).containsExactly(0, 0, 0, 0);
+        assertThat(taskGraphCounts(programId)).containsExactly(0, 0, 0, 0);
     }
 
     @Test
@@ -477,6 +664,11 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
 
     private List<JsonNode> concurrentImports(UUID firstId, UUID secondId, String digest)
             throws Exception {
+        return concurrentImports(firstId, secondId, digest, YAML);
+    }
+
+    private List<JsonNode> concurrentImports(
+            UUID firstId, UUID secondId, String digest, String yaml) throws Exception {
         CountDownLatch ready = new CountDownLatch(2);
         CountDownLatch start = new CountDownLatch(1);
         try (var executor = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().factory())) {
@@ -485,7 +677,7 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
                             () -> {
                                 ready.countDown();
                                 start.await();
-                                return importPackage(teacher, programId, firstId, digest, YAML, -1);
+                                return importPackage(teacher, programId, firstId, digest, yaml, -1);
                             });
             var second =
                     executor.submit(
@@ -493,7 +685,7 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
                                 ready.countDown();
                                 start.await();
                                 return importPackage(
-                                        teacher, programId, secondId, digest, YAML, -1);
+                                        teacher, programId, secondId, digest, yaml, -1);
                             });
             assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue();
             start.countDown();
@@ -560,6 +752,55 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
                         "SELECT count(*) FROM content_package_imports WHERE learning_program_id = ?",
                         Integer.class,
                         id));
+    }
+
+    private List<UUID> taskIds(UUID id) {
+        return jdbc.queryForList(
+                "SELECT tk.id FROM tasks tk JOIN topic_tasks tt ON tt.task_id = tk.id JOIN topics t ON t.id = tt.topic_id JOIN modules m ON m.id = t.module_id WHERE m.learning_program_id = ? ORDER BY tk.id",
+                UUID.class,
+                id);
+    }
+
+    private List<Integer> taskGraphCounts(UUID id) {
+        UUID subjectId =
+                jdbc.queryForObject(
+                        "SELECT subject_id FROM learning_programs WHERE id = ?", UUID.class, id);
+        return List.of(
+                jdbc.queryForObject(
+                        "SELECT count(*) FROM tasks WHERE subject_id = ?",
+                        Integer.class,
+                        subjectId),
+                jdbc.queryForObject(
+                        "SELECT count(*) FROM programming_task_configs pc JOIN tasks tk ON tk.id = pc.task_id WHERE tk.subject_id = ?",
+                        Integer.class,
+                        subjectId),
+                jdbc.queryForObject(
+                        "SELECT count(*) FROM task_test_cases tc JOIN tasks tk ON tk.id = tc.task_id WHERE tk.subject_id = ?",
+                        Integer.class,
+                        subjectId),
+                jdbc.queryForObject(
+                        "SELECT count(*) FROM topic_tasks tt JOIN topics t ON t.id = tt.topic_id JOIN modules m ON m.id = t.module_id WHERE m.learning_program_id = ?",
+                        Integer.class,
+                        id));
+    }
+
+    private void assertFailedV2Import(String digest) throws Exception {
+        try {
+            int status =
+                    mvc.perform(
+                                    multipart(IMPORT, programId)
+                                            .file(file(V2_YAML))
+                                            .param("confirmationId", UUID.randomUUID().toString())
+                                            .param("digest", digest)
+                                            .with(user(teacher))
+                                            .with(csrf()))
+                            .andReturn()
+                            .getResponse()
+                            .getStatus();
+            assertThat(status).isBetween(400, 599);
+        } catch (jakarta.servlet.ServletException exception) {
+            // Some database failures propagate through MockMvc rather than an API handler.
+        }
     }
 
     private AuthenticatedUser teacher() {
