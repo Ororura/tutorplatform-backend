@@ -11,6 +11,6 @@ public record TaskImport(
         ProgrammingConfigImport programmingConfig,
         List<TestCaseImport> testCases) {
     public TaskImport {
-        testCases = testCases == null ? List.of() : List.copyOf(testCases);
+        testCases = testCases == null ? null : List.copyOf(testCases);
     }
 }

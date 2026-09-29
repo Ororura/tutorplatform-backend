@@ -6,6 +6,7 @@ public record ContentPackageValidationError(Code code, String path, String messa
         INVALID_PACKAGE_KIND,
         REQUIRED_FIELD,
         INVALID_MATERIAL_TYPE,
+        INVALID_FIELD_VALUE,
         INVALID_EXTERNAL_URL,
         LIMIT_EXCEEDED,
         FORBIDDEN_FIELD

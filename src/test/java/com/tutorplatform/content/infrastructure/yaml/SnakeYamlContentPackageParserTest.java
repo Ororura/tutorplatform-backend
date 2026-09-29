@@ -223,7 +223,7 @@ class SnakeYamlContentPackageParserTest {
         assertThat(tasks.getFirst().difficulty()).isEqualTo("MEDIUM");
         assertThat(tasks.getFirst().required()).isFalse();
         assertThat(tasks.getFirst().programmingConfig()).isNull();
-        assertThat(tasks.getFirst().testCases()).isEmpty();
+        assertThat(tasks.getFirst().testCases()).isNull();
 
         var code = tasks.get(1);
         assertThat(code.descriptionMarkdown()).isEqualTo("Print the sign.\n");
@@ -245,6 +245,24 @@ class SnakeYamlContentPackageParserTest {
         assertThat(code.testCases().getFirst().comparisonMode()).isEqualTo("NORMALIZED");
         assertThat(code.testCases().get(1).hidden()).isTrue();
         assertThat(code.testCases().get(1).comparisonMode()).isEqualTo("EXACT");
+    }
+
+    @Test
+    void distinguishesOmittedAndExplicitEmptyTestCases() {
+        var omitted = parse(taskYaml("taskType: TEXT\n"));
+        assertThat(omitted.modules().getFirst().topics().getFirst().tasks().getFirst().testCases())
+                .isNull();
+        var provided = parse(taskYaml("taskType: TEXT\ntestCases: []\n"));
+        assertThat(provided.modules().getFirst().topics().getFirst().tasks().getFirst().testCases())
+                .isEmpty();
+    }
+
+    @Test
+    void rejectsExplicitTestCasePosition() {
+        assertError(
+                taskYaml("testCases:\n  - position: 1\n"),
+                Code.UNKNOWN_FIELD,
+                "modules[0].topics[0].tasks[0].testCases[0].position");
     }
 
     @Test
