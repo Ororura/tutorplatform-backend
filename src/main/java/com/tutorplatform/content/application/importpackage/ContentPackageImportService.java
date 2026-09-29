@@ -172,7 +172,7 @@ public class ContentPackageImportService {
                                 .toList();
         return new CreateTaskCommand(
                 subjectId,
-                task.title(),
+                task.title().strip(),
                 task.descriptionMarkdown(),
                 TaskDifficulty.valueOf(task.difficulty()),
                 TaskType.valueOf(task.taskType()),
