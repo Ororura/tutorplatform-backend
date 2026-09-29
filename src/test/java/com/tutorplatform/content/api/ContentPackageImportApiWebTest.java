@@ -77,6 +77,7 @@ class ContentPackageImportApiWebTest {
                                 1,
                                 2,
                                 3,
+                                0,
                                 List.of(MODULE_ID),
                                 false))
                 .thenReturn(
@@ -87,6 +88,7 @@ class ContentPackageImportApiWebTest {
                                 1,
                                 2,
                                 3,
+                                0,
                                 List.of(MODULE_ID),
                                 true));
         var request =
@@ -105,6 +107,7 @@ class ContentPackageImportApiWebTest {
                         .andExpect(jsonPath("$.moduleCount").value(1))
                         .andExpect(jsonPath("$.topicCount").value(2))
                         .andExpect(jsonPath("$.materialCount").value(3))
+                        .andExpect(jsonPath("$.taskCount").value(0))
                         .andExpect(jsonPath("$.createdModuleIds[0]").value(MODULE_ID.toString()))
                         .andExpect(jsonPath("$.replayed").doesNotExist())
                         .andReturn()

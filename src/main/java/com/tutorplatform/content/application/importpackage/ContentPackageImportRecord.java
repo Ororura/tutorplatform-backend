@@ -13,6 +13,7 @@ public record ContentPackageImportRecord(
         int moduleCount,
         int topicCount,
         int materialCount,
+        int taskCount,
         List<UUID> createdModuleIds,
         Instant createdAt) {
 

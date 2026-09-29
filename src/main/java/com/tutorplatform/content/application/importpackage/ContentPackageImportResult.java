@@ -10,6 +10,7 @@ public record ContentPackageImportResult(
         int moduleCount,
         int topicCount,
         int materialCount,
+        int taskCount,
         List<UUID> createdModuleIds,
         boolean replayed) {
     public ContentPackageImportResult {
@@ -29,6 +30,7 @@ public record ContentPackageImportResult(
                 record.moduleCount(),
                 record.topicCount(),
                 record.materialCount(),
+                record.taskCount(),
                 record.createdModuleIds(),
                 replayed);
     }

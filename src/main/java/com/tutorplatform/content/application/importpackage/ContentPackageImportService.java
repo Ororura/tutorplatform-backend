@@ -105,6 +105,7 @@ public class ContentPackageImportService {
                         packagePreview.moduleCount(),
                         packagePreview.topicCount(),
                         packagePreview.materialCount(),
+                        0,
                         moduleIds));
     }
 }

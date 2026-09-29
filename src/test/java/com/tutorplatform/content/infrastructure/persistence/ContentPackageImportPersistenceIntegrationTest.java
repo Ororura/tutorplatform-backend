@@ -72,12 +72,20 @@ class ContentPackageImportPersistenceIntegrationTest extends PostgresIntegration
                                     2,
                                     3,
                                     4,
+                                    0,
                                     moduleIds);
                         });
 
         assertThat(saved.id()).isNotNull();
         assertThat(saved.createdAt()).isNotNull();
         assertThat(saved.packageDigest()).isEqualTo(DIGEST);
+        assertThat(saved.taskCount()).isZero();
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT task_count FROM content_package_imports WHERE id = ?",
+                                Integer.class,
+                                saved.id()))
+                .isZero();
         assertThat(saved.createdModuleIds()).containsExactlyElementsOf(moduleIds);
         assertThat(repository.findByConfirmation(teacherId, programId, confirmationId))
                 .contains(saved);
@@ -86,6 +94,28 @@ class ContentPackageImportPersistenceIntegrationTest extends PostgresIntegration
                                 () ->
                                         repository.registerConfirmation(
                                                 teacherId, programId, confirmationId)))
+                .contains(saved);
+    }
+
+    @Test
+    void readsStoredTaskCount() {
+        UUID confirmationId = UUID.randomUUID();
+        ContentPackageImportRecord saved =
+                transaction(
+                        () ->
+                                repository.saveSuccessfulImport(
+                                        teacherId,
+                                        programId,
+                                        confirmationId,
+                                        DIGEST,
+                                        1,
+                                        1,
+                                        0,
+                                        2,
+                                        List.of(UUID.randomUUID())));
+
+        assertThat(saved.taskCount()).isEqualTo(2);
+        assertThat(repository.findByConfirmation(teacherId, programId, confirmationId))
                 .contains(saved);
     }
 
@@ -104,6 +134,7 @@ class ContentPackageImportPersistenceIntegrationTest extends PostgresIntegration
                                 DIGEST,
                                 1,
                                 1,
+                                0,
                                 0,
                                 List.of(UUID.randomUUID())));
 
@@ -135,6 +166,7 @@ class ContentPackageImportPersistenceIntegrationTest extends PostgresIntegration
                                 1,
                                 1,
                                 0,
+                                0,
                                 List.of(UUID.randomUUID())));
         transaction(
                 () ->
@@ -145,6 +177,7 @@ class ContentPackageImportPersistenceIntegrationTest extends PostgresIntegration
                                 DIGEST,
                                 1,
                                 1,
+                                0,
                                 0,
                                 List.of(UUID.randomUUID())));
     }
@@ -188,6 +221,7 @@ class ContentPackageImportPersistenceIntegrationTest extends PostgresIntegration
                                                     1,
                                                     1,
                                                     0,
+                                                    0,
                                                     List.of(UUID.randomUUID()));
                                             throw new IllegalStateException(
                                                     "simulate failed import");
@@ -223,6 +257,7 @@ class ContentPackageImportPersistenceIntegrationTest extends PostgresIntegration
                                                         1,
                                                         1,
                                                         0,
+                                                        0,
                                                         List.of(UUID.randomUUID()));
                                             }));
             assertThat(firstRegistered.await(5, TimeUnit.SECONDS)).isTrue();
@@ -251,6 +286,7 @@ class ContentPackageImportPersistenceIntegrationTest extends PostgresIntegration
                                 DIGEST,
                                 1,
                                 1,
+                                0,
                                 0,
                                 List.of(UUID.randomUUID())));
     }
