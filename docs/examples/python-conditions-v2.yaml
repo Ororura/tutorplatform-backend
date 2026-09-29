@@ -1,0 +1,45 @@
+schemaVersion: 2
+kind: modules
+modules:
+  - title: "Основы Python"
+    description: "Условные конструкции и ветвление."
+    topics:
+      - title: "Условие if"
+        description: "Проверка одного условия."
+        materials:
+          - title: "Теория"
+            materialType: MARKDOWN
+            content: |
+              `if` выполняет блок кода, когда условие истинно.
+        tasks:
+          - title: "Объясните условие"
+            descriptionMarkdown: "Объясните, когда выполняется блок `if`."
+            taskType: TEXT
+            difficulty: MEDIUM
+            required: true
+      - title: "Ветвление if и else"
+        description: "Выбор одной из двух ветвей."
+        tasks:
+          - title: "Проверка числа"
+            descriptionMarkdown: |
+              Напишите программу, которая печатает positive для положительного
+              числа и negative для отрицательного.
+            taskType: CODE
+            difficulty: EASY
+            required: true
+            programmingConfig:
+              language: PYTHON
+              starterCode: |
+                value = int(input())
+              executionEnabled: true
+              timeLimitMs: 2000
+              memoryLimitMb: 128
+            testCases:
+              - inputText: "10"
+                expectedOutput: "positive"
+                hidden: false
+                comparisonMode: NORMALIZED
+              - inputText: "-10"
+                expectedOutput: "negative"
+                hidden: true
+                comparisonMode: NORMALIZED

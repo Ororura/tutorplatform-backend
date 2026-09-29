@@ -161,6 +161,21 @@ class SnakeYamlContentPackageParserTest {
     }
 
     @Test
+    void parsesDocumentedV2Example() throws IOException {
+        var content =
+                parser.parse(
+                        Files.readAllBytes(Path.of("docs/examples/python-conditions-v2.yaml")));
+        assertThat(content.schemaVersion()).isEqualTo(2);
+        assertThat(content.modules()).hasSize(1);
+        var topics = content.modules().getFirst().topics();
+        assertThat(topics).hasSize(2);
+        assertThat(topics.getFirst().materials()).hasSize(1);
+        assertThat(topics.getFirst().tasks().getFirst().taskType()).isEqualTo("TEXT");
+        assertThat(topics.get(1).tasks().getFirst().taskType()).isEqualTo("CODE");
+        assertThat(topics.get(1).tasks().getFirst().testCases()).hasSize(2);
+    }
+
+    @Test
     void parsesV2TextAndCodeTasksWithExactTypesAndOrder() {
         var content =
                 parse(
