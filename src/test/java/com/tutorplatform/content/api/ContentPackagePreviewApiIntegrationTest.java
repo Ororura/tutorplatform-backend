@@ -75,6 +75,43 @@ class ContentPackagePreviewApiIntegrationTest extends PostgresIntegrationTest {
                         materialType: LINK
                         externalUrl: https://example.org/reference
             """;
+    private static final String V2_YAML =
+            """
+            schemaVersion: 2
+            kind: modules
+            modules:
+              - title: Tasks module
+                topics:
+                  - title: Tasks topic
+                    tasks:
+                      - title: Explain the result
+                        descriptionMarkdown: "Explain the answer."
+                        taskType: TEXT
+                        difficulty: MEDIUM
+                        required: false
+                      - title: Print the result
+                        descriptionMarkdown: "Print the answer."
+                        taskType: CODE
+                        difficulty: EASY
+                        required: true
+                        programmingConfig:
+                          language: PYTHON
+                          starterCode: |
+                            value = int(input())
+                            print(value)
+                          executionEnabled: true
+                          timeLimitMs: 2000
+                          memoryLimitMb: 128
+                        testCases:
+                          - inputText: PRIVATE_VISIBLE_INPUT_81ab
+                            expectedOutput: PRIVATE_VISIBLE_EXPECTED_31de
+                            hidden: false
+                            comparisonMode: EXACT
+                          - inputText: PRIVATE_HIDDEN_INPUT_9fdc
+                            expectedOutput: PRIVATE_HIDDEN_EXPECTED_72ac
+                            hidden: true
+                            comparisonMode: EXACT
+            """;
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
@@ -124,6 +161,30 @@ class ContentPackagePreviewApiIntegrationTest extends PostgresIntegrationTest {
                                 .required("externalUrl")
                                 .asText())
                 .isEqualTo("https://example.org/reference");
+    }
+
+    @Test
+    void v2PreviewNeverSerializesVisibleOrHiddenTestBodies() throws Exception {
+        String response =
+                mvc.perform(
+                                multipart(URL, programId)
+                                        .file(file(V2_YAML))
+                                        .with(user(teacher))
+                                        .with(csrf()))
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+
+        assertThat(response)
+                .doesNotContain(
+                        "testCases",
+                        "inputText",
+                        "expectedOutput",
+                        "PRIVATE_VISIBLE_INPUT_81ab",
+                        "PRIVATE_VISIBLE_EXPECTED_31de",
+                        "PRIVATE_HIDDEN_INPUT_9fdc",
+                        "PRIVATE_HIDDEN_EXPECTED_72ac");
     }
 
     @Test
