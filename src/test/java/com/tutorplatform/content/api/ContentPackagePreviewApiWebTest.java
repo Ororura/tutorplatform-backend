@@ -69,6 +69,8 @@ class ContentPackagePreviewApiWebTest {
                         1,
                         1,
                         1,
+                        1,
+                        0,
                         List.of(
                                 new ContentPackagePreviewResult.Module(
                                         "Module",
@@ -86,7 +88,8 @@ class ContentPackagePreviewApiWebTest {
                                                                                 .LessonMaterialType
                                                                                 .MARKDOWN,
                                                                         "Hello",
-                                                                        null)))))));
+                                                                        null)),
+                                                        List.of())))));
         when(service.preview(
                         eq(TEACHER),
                         eq(PROGRAM_ID),

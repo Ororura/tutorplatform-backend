@@ -53,9 +53,11 @@ class ContentPackageImportServiceTest {
                 new ContentPackagePreviewResult(
                         programId,
                         DIGEST,
+                        1,
                         2,
                         2,
                         3,
+                        0,
                         List.of(
                                 new ContentPackagePreviewResult.Module(
                                         "First",
@@ -77,7 +79,8 @@ class ContentPackageImportServiceTest {
                                                                         LessonMaterialType
                                                                                 .CODE_EXAMPLE,
                                                                         "if True:\n    print('yes')\n",
-                                                                        null))))),
+                                                                        null)),
+                                                        List.of()))),
                                 new ContentPackagePreviewResult.Module(
                                         "Second",
                                         null,
@@ -91,7 +94,8 @@ class ContentPackageImportServiceTest {
                                                                         "Link",
                                                                         LessonMaterialType.LINK,
                                                                         null,
-                                                                        "https://example.org/a"))))))));
+                                                                        "https://example.org/a")),
+                                                        List.of()))))));
         when(programs.createModule(eq(principal), eq(programId), any()))
                 .thenReturn(
                         new LearningProgramModuleResponse(firstModule, "First", "Description", 4),
@@ -261,6 +265,8 @@ class ContentPackageImportServiceTest {
                 DIGEST,
                 1,
                 1,
+                1,
+                0,
                 0,
                 List.of(
                         new ContentPackagePreviewResult.Module(
@@ -268,7 +274,7 @@ class ContentPackageImportServiceTest {
                                 null,
                                 List.of(
                                         new ContentPackagePreviewResult.Topic(
-                                                "Topic", null, List.of())))));
+                                                "Topic", null, List.of(), List.of())))));
     }
 
     private ContentPackageImportRecord record(
