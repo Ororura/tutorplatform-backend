@@ -13,6 +13,8 @@ public final class TutorContentPackageValidator {
     private static final int MAX_MODULES = 15;
     private static final int MAX_TOPICS = 25;
     private static final int MAX_MATERIALS = 250;
+    private static final int MAX_TASKS = 250;
+    private static final int MAX_TEST_CASES_PER_TASK = 100;
 
     public ContentPackageValidationResult validate(TutorContentPackage contentPackage) {
         List<ContentPackageValidationError> errors = new ArrayList<>();
@@ -43,6 +45,8 @@ public final class TutorContentPackageValidator {
             add(errors, Code.LIMIT_EXCEEDED, "modules", "A package supports at most 15 modules");
         }
         int materialCount = 0;
+        int validatedTaskCount = 0;
+        boolean taskLimitReported = false;
         for (int moduleIndex = 0; moduleIndex < modules.size(); moduleIndex++) {
             String modulePath = "modules[" + moduleIndex + "]";
             ModuleImport module = modules.get(moduleIndex);
@@ -98,7 +102,17 @@ public final class TutorContentPackageValidator {
                             tasksPath,
                             "Tasks are not allowed in schema version 1");
                 } else if (contentPackage.schemaVersion() == 2) {
-                    for (int taskIndex = 0; taskIndex < tasks.size(); taskIndex++) {
+                    int remaining = MAX_TASKS - validatedTaskCount;
+                    if (tasks.size() > remaining && !taskLimitReported) {
+                        add(
+                                errors,
+                                Code.LIMIT_EXCEEDED,
+                                tasksPath,
+                                "A package supports at most 250 tasks");
+                        taskLimitReported = true;
+                    }
+                    int taskCount = Math.min(tasks.size(), remaining);
+                    for (int taskIndex = 0; taskIndex < taskCount; taskIndex++) {
                         String taskPath = tasksPath + "[" + taskIndex + "]";
                         TaskImport task = tasks.get(taskIndex);
                         if (task == null) {
@@ -107,6 +121,7 @@ public final class TutorContentPackageValidator {
                         }
                         validateTask(errors, task, taskPath);
                     }
+                    validatedTaskCount += taskCount;
                 }
             }
         }
@@ -195,7 +210,16 @@ public final class TutorContentPackageValidator {
             add(errors, Code.REQUIRED_FIELD, testCasesPath, "At least one test case is required");
             return;
         }
-        for (int testCaseIndex = 0; testCaseIndex < testCases.size(); testCaseIndex++) {
+        if (testCases.size() > MAX_TEST_CASES_PER_TASK) {
+            add(
+                    errors,
+                    Code.LIMIT_EXCEEDED,
+                    testCasesPath,
+                    "A CODE task supports at most 100 test cases");
+        }
+        for (int testCaseIndex = 0;
+                testCaseIndex < Math.min(testCases.size(), MAX_TEST_CASES_PER_TASK);
+                testCaseIndex++) {
             String testCasePath = testCasesPath + "[" + testCaseIndex + "]";
             TestCaseImport testCase = testCases.get(testCaseIndex);
             if (testCase == null) {
