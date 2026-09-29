@@ -386,6 +386,37 @@ class ContentPackageImportApiIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
+    void v2ImportPersistsTheTaskTitleShownInPreview() throws Exception {
+        String yaml = V2_YAML.replace("title: Text task", "title: \u2003Text task\u2003");
+        JsonNode packagePreview = preview(teacher, programId, yaml);
+        assertThat(
+                        packagePreview
+                                .path("modules")
+                                .get(0)
+                                .path("topics")
+                                .get(0)
+                                .path("tasks")
+                                .get(0)
+                                .path("title")
+                                .asText())
+                .isEqualTo("Text task");
+
+        importPackage(
+                teacher,
+                programId,
+                UUID.randomUUID(),
+                packagePreview.path("digest").asText(),
+                yaml,
+                201);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT tk.title FROM tasks tk JOIN topic_tasks tt ON tt.task_id = tk.id JOIN topics t ON t.id = tt.topic_id JOIN modules m ON m.id = t.module_id WHERE m.learning_program_id = ? AND tt.position = 0",
+                                String.class,
+                                programId))
+                .isEqualTo("Text task");
+    }
+
+    @Test
     void appendPreservesOldPositions() throws Exception {
         for (int i = 0; i < 2; i++) {
             mvc.perform(
