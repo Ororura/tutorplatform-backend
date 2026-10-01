@@ -39,4 +39,22 @@ class S3FileStorageTest {
         storage.delete("S3", object.key());
         verify(client).deleteObject(any(DeleteObjectRequest.class));
     }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.NullAndEmptySource
+    @org.junit.jupiter.params.provider.ValueSource(
+            strings = {
+                "../../notes.txt",
+                "..\\notes.txt",
+                "/tmp/notes.txt",
+                "materials/../../notes.txt",
+                "notes\r\nX-Injected: yes"
+            })
+    void maliciousKeysNeverReachStorage(String key) throws Exception {
+        S3Client client = mock(S3Client.class);
+        var storage = new S3FileStorage(client, "test-materials");
+        assertThatThrownBy(() -> storage.read(key, 1)).isInstanceOf(FileStorageException.class);
+        assertThatThrownBy(() -> storage.delete(key)).isInstanceOf(FileStorageException.class);
+        verifyNoInteractions(client);
+    }
 }

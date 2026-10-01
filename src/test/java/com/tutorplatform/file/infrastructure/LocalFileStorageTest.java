@@ -40,4 +40,23 @@ class LocalFileStorageTest {
         assertThatThrownBy(() -> new LocalFileStorage(outside.toString()).store(new byte[] {1}))
                 .isInstanceOf(FileStorageException.class);
     }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.NullAndEmptySource
+    @org.junit.jupiter.params.provider.ValueSource(
+            strings = {
+                "../../notes.txt",
+                "..\\notes.txt",
+                "/tmp/notes.txt",
+                "materials/../../notes.txt",
+                "notes\r\nX-Injected: yes"
+            })
+    void maliciousKeysNeverReachStorage(String key) throws Exception {
+        var storage = new LocalFileStorage(directory.toString());
+        assertThatThrownBy(() -> storage.read(key, 1)).isInstanceOf(FileStorageException.class);
+        assertThatThrownBy(() -> storage.delete(key)).isInstanceOf(FileStorageException.class);
+        try (var paths = Files.list(directory)) {
+            assertThat(paths.findAny()).isEmpty();
+        }
+    }
 }
