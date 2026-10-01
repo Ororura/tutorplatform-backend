@@ -40,6 +40,12 @@ is introduced.
 
 Uploads/downloads use bounded in-memory byte arrays for this small-file MVP.
 Original names are metadata only; physical objects have server-generated UUID keys.
+Upload rejects empty names, names over 255 characters, path separators (including
+Windows paths), control characters and empty files before calling storage. Invalid
+names, empty files and unsupported/mismatched MIME return `400 VALIDATION_ERROR`;
+size violations return `413 FILE_TOO_LARGE` at both multipart and application
+boundaries. Storage failures return `500 FILE_STORAGE_ERROR` with an opaque message;
+filesystem locations and S3 bucket/key details are confined to internal logs.
 
 ## Compensation and operational limits
 

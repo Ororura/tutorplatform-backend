@@ -71,6 +71,21 @@ public class FileMaterialPolicy {
             String filename,
             String mimeType,
             LessonMaterialType type) {
+        // Original names are display metadata, never paths. Enforce this at the application
+        // boundary so every storage provider and caller receives the same validation.
+        if (filename == null
+                || filename.isBlank()
+                || filename.length() > 255
+                || filename.equals(".")
+                || filename.equals("..")
+                || filename.indexOf('/') >= 0
+                || filename.indexOf('\\') >= 0
+                || filename.codePoints().anyMatch(Character::isISOControl)) {
+            throw new InvalidLessonMaterialException("file", "invalid original filename");
+        }
+        if (declaredSize < 0) {
+            throw new InvalidLessonMaterialException("file", "invalid file size");
+        }
         if (declaredSize > maxBytes) {
             throw new FileTooLargeException();
         }

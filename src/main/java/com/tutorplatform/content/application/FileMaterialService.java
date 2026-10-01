@@ -84,12 +84,6 @@ public class FileMaterialService {
         }
         if (position < 0)
             throw new InvalidLessonMaterialException("position", "must be nonnegative");
-        if (filename == null
-                || filename.isBlank()
-                || filename.length() > 255
-                || filename.codePoints().anyMatch(Character::isISOControl)) {
-            throw new InvalidLessonMaterialException("file", "invalid original filename");
-        }
         String effectiveMimeType =
                 mimeType == null || mimeType.isBlank() ? "application/octet-stream" : mimeType;
         byte[] content = policy.readAndValidate(input, size, filename, effectiveMimeType, type);
