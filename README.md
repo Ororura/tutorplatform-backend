@@ -830,3 +830,5 @@ MVP развивается вертикальными срезами:
 - **Architecture Design v1**
 - **ER Model v1 + PostgreSQL Physical Schema**
 - **API Design v1 — Authentication + Students**
+
+Student Run/Submit quotas: [Execution abuse protection](docs/execution-abuse-protection.md).

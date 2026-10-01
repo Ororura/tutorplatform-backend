@@ -71,6 +71,14 @@ public interface StudentSubmissionApi {
                 description = "Task, homework item, student program, or topic not found",
                 content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(
+                responseCode = "413",
+                description = "Source code exceeds configured UTF-8 size (SOURCE_CODE_TOO_LARGE)",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "429",
+                description = "Student execution quota exceeded (EXECUTION_RATE_LIMIT_EXCEEDED)",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
                 responseCode = "409",
                 description = "Homework does not accept submissions",
                 content = @Content(schema = @Schema(implementation = ApiError.class)))
