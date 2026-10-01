@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -57,6 +58,9 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
         PostgresIntegrationTest.configurePostgres(registry, "test_code_submission_api", "008");
+        registry.add("execution.abuse-protection.limit", () -> "3");
+        registry.add("execution.abuse-protection.window", () -> "1h");
+        registry.add("execution.abuse-protection.max-source-code-bytes", () -> "64");
     }
 
     @Autowired private MockMvc mockMvc;
@@ -609,6 +613,154 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
         verifyNoInteractions(executionPort);
+    }
+
+    @Test
+    void runAndSubmitShareStudentQuotaAcrossContextsAndIpsWithoutRejectedSideEffects()
+            throws Exception {
+        Fixture first =
+                createFixture(
+                        "quota-first",
+                        TaskType.CODE,
+                        TaskStatus.ACTIVE,
+                        true,
+                        HomeworkStatus.ASSIGNED);
+        Fixture second =
+                createFixture(
+                        "quota-second",
+                        TaskType.CODE,
+                        TaskStatus.ACTIVE,
+                        true,
+                        HomeworkStatus.ASSIGNED);
+        stubFailedExecution();
+
+        executionRequest(first, false, true, "pass", "192.0.2.1")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("FAILED"));
+        executionRequest(first, true, false, "pass", "192.0.2.1").andExpect(status().isCreated());
+        executionRequest(first, false, false, "pass", "192.0.2.2").andExpect(status().isOk());
+        verify(executionPort, times(3)).execute(any());
+        clearInvocations(executionPort);
+        long submissionsBefore = count("submissions");
+        long codeSubmissionsBefore = count("code_submissions");
+        long progressBefore = count("student_topic_progress");
+
+        for (boolean submit : List.of(false, true)) {
+            for (boolean homework : List.of(false, true)) {
+                executionRequest(first, submit, homework, "pass", "192.0.2.3")
+                        .andExpect(status().isTooManyRequests())
+                        .andExpect(jsonPath("$.code").value("EXECUTION_RATE_LIMIT_EXCEEDED"))
+                        .andExpect(jsonPath("$.traceId").isNotEmpty())
+                        .andExpect(jsonPath("$.timestamp").isNotEmpty())
+                        .andExpect(header().string("Cache-Control", "no-store"))
+                        .andExpect(
+                                header().string(
+                                                "Retry-After",
+                                                org.hamcrest.Matchers.matchesPattern(
+                                                        "[1-9][0-9]*")));
+            }
+        }
+        verifyNoInteractions(executionPort);
+        assertThat(count("submissions")).isEqualTo(submissionsBefore);
+        assertThat(count("code_submissions")).isEqualTo(codeSubmissionsBefore);
+        assertThat(count("student_topic_progress")).isEqualTo(progressBefore);
+        assertThat(homeworkRepository.findById(first.homeworkId()).orElseThrow().getStatus())
+                .isEqualTo(HomeworkStatus.ASSIGNED);
+
+        // Same peer as the blocked student; identity, rather than IP, owns the quota.
+        executionRequest(second, false, true, "pass", "192.0.2.3").andExpect(status().isOk());
+        executionRequest(second, true, true, "pass", "192.0.2.3").andExpect(status().isCreated());
+        verify(executionPort, times(2)).execute(any());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"false,true", "false,false", "true,true", "true,false"})
+    void sourceSizeBoundaryAppliesToRunAndSubmitInHomeworkAndPractice(
+            boolean submit, boolean homework) throws Exception {
+        Fixture fixture =
+                createFixture(
+                        "size-" + submit + "-" + homework,
+                        TaskType.CODE,
+                        TaskStatus.ACTIVE,
+                        true,
+                        HomeworkStatus.ASSIGNED);
+        stubFailedExecution();
+        long submissionsBefore = count("submissions");
+        long codeSubmissionsBefore = count("code_submissions");
+        // One byte above the configurable 64-byte boundary must not consume quota.
+        executionRequest(fixture, submit, homework, "я".repeat(32) + "a", "192.0.2.1")
+                .andExpect(status().isPayloadTooLarge())
+                .andExpect(jsonPath("$.code").value("SOURCE_CODE_TOO_LARGE"))
+                .andExpect(jsonPath("$.details[0].field").value("sourceCode"));
+        executionRequest(fixture, submit, homework, "a".repeat(65), "192.0.2.1")
+                .andExpect(status().isPayloadTooLarge());
+        verifyNoInteractions(executionPort);
+        assertThat(count("submissions")).isEqualTo(submissionsBefore);
+        assertThat(count("code_submissions")).isEqualTo(codeSubmissionsBefore);
+
+        for (String boundary : List.of("a".repeat(64), "я".repeat(32), "😀".repeat(16))) {
+            executionRequest(fixture, submit, homework, boundary, "192.0.2.1")
+                    .andExpect(status().is(submit ? 201 : 200));
+        }
+        verify(executionPort, times(3)).execute(any());
+        clearInvocations(executionPort);
+        long submissionsAtLimit = count("submissions");
+        // Validation still applies before quota handling, and never persists oversized source.
+        executionRequest(fixture, submit, homework, "😀".repeat(16) + "a", "192.0.2.1")
+                .andExpect(status().isPayloadTooLarge())
+                .andExpect(jsonPath("$.code").value("SOURCE_CODE_TOO_LARGE"));
+        verifyNoInteractions(executionPort);
+        assertThat(count("submissions")).isEqualTo(submissionsAtLimit);
+    }
+
+    private void stubFailedExecution() {
+        when(executionPort.execute(any()))
+                .thenAnswer(
+                        invocation -> {
+                            ExecutionRequest request = invocation.getArgument(0);
+                            return new ExecutionResult(
+                                    request.executionId(),
+                                    ExecutionStatus.FAILED,
+                                    0,
+                                    request.testCases().size(),
+                                    1,
+                                    null,
+                                    null,
+                                    List.of());
+                        });
+    }
+
+    private org.springframework.test.web.servlet.ResultActions executionRequest(
+            Fixture fixture, boolean submit, boolean homework, String sourceCode, String peer)
+            throws Exception {
+        Map<String, Object> body =
+                homework
+                        ? Map.of(
+                                "homeworkItemId",
+                                fixture.homeworkItemId(),
+                                "sourceCode",
+                                sourceCode)
+                        : Map.of(
+                                "studentProgramId",
+                                fixture.studentProgramId(),
+                                "topicId",
+                                fixture.topicId(),
+                                "sourceCode",
+                                sourceCode);
+        return mockMvc.perform(
+                post(
+                                "/api/v1/student/tasks/{taskId}/"
+                                        + (submit ? "code-submissions" : "run"),
+                                fixture.taskId())
+                        .with(user(fixture.principal()))
+                        .with(csrf())
+                        .with(
+                                request -> {
+                                    request.setRemoteAddr(peer);
+                                    return request;
+                                })
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)));
     }
 
     private org.springframework.test.web.servlet.ResultActions submit(
