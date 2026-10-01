@@ -4,11 +4,16 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
+import com.tutorplatform.auth.infrastructure.ratelimit.AuthRateLimitConfiguration;
+import com.tutorplatform.auth.infrastructure.ratelimit.AuthRateLimitFilter;
+import com.tutorplatform.auth.infrastructure.ratelimit.AuthRateLimiter;
+import com.tutorplatform.shared.api.ApiErrorWriter;
 import com.tutorplatform.shared.api.RestAccessDeniedHandler;
 import com.tutorplatform.shared.api.RestAuthenticationEntryPoint;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -25,6 +30,7 @@ import org.springframework.security.web.authentication.session.ChangeSessionIdAu
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.session.web.http.CookieSerializer;
@@ -32,6 +38,7 @@ import org.springframework.session.web.http.DefaultCookieSerializer;
 
 @Configuration
 @EnableWebSecurity
+@Import(AuthRateLimitConfiguration.class)
 public class SecurityConfig {
 
     @Bean
@@ -40,8 +47,12 @@ public class SecurityConfig {
             CsrfTokenRepository csrfTokenRepository,
             SecurityContextRepository securityContextRepository,
             RestAuthenticationEntryPoint authenticationEntryPoint,
-            RestAccessDeniedHandler accessDeniedHandler)
+            RestAccessDeniedHandler accessDeniedHandler,
+            AuthRateLimiter authRateLimiter,
+            ApiErrorWriter apiErrorWriter)
             throws Exception {
+        http.addFilterAfter(
+                new AuthRateLimitFilter(authRateLimiter, apiErrorWriter), CsrfFilter.class);
         http.csrf(csrf -> csrf.csrfTokenRepository(csrfTokenRepository))
                 .securityContext(
                         context ->

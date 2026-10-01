@@ -24,6 +24,13 @@ public abstract class PostgresIntegrationTest {
 
     public static void configurePostgres(
             DynamicPropertyRegistry registry, String database, String flywayTarget) {
+        // Business suites reuse MockMvc's single peer across many independent scenarios.
+        // Keep limiting active with generous quotas; AuthRateLimitIntegrationTest exercises low
+        // quotas.
+        registry.add("app.security.auth-rate-limit.login-limit", () -> "1000");
+        registry.add("app.security.auth-rate-limit.registration-limit", () -> "1000");
+        registry.add("app.security.auth-rate-limit.student-invitation-limit", () -> "1000");
+        registry.add("app.security.auth-rate-limit.teacher-invitation-limit", () -> "1000");
         ensureDatabase(database);
         registry.add("spring.datasource.url", () -> jdbcUrlForDatabase(database));
         registry.add("spring.datasource.username", POSTGRES::getUsername);

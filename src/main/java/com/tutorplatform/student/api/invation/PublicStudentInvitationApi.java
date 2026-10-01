@@ -55,6 +55,10 @@ public interface PublicStudentInvitationApi {
         @ApiResponse(
                 responseCode = "410",
                 description = "Invitation is expired, revoked, or accepted",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "429",
+                description = "Authentication rate limit exceeded; Retry-After contains seconds",
                 content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     CurrentUserResponse acceptStudentInvitation(

@@ -409,6 +409,7 @@ The MVP is implemented incrementally through vertical slices:
 
 ## Documentation
 
+- [Authentication rate limiting](docs/auth-rate-limiting.md): quotas, environment settings, client address trust, and 429 responses.
 - [Backend health probes](docs/backend-health-probes.md): liveness/readiness URLs, dependency semantics, and container health.
 - [PostgreSQL restore drill](docs/postgres-restore-drill.md): verify an existing backup in an isolated disposable PostgreSQL instance.
 
@@ -821,6 +822,7 @@ MVP развивается вертикальными срезами:
 
 ## Документация
 
+- [Authentication rate limiting](docs/auth-rate-limiting.md): лимиты, environment settings, доверенные proxy и ответы 429.
 - [PostgreSQL restore drill](docs/postgres-restore-drill.md): проверка восстановления существующего backup в отдельной временной PostgreSQL instance.
 
 Архитектура проекта зафиксирована в трёх основных документах:

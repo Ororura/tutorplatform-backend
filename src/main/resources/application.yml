@@ -1,6 +1,8 @@
 server:
   port: 8080
   shutdown: graceful
+  # Forwarded headers are ignored unless an operator configures a trusted proxy.
+  forward-headers-strategy: ${SERVER_FORWARD_HEADERS_STRATEGY:NONE}
   servlet:
     session:
       timeout: 12h
@@ -106,6 +108,16 @@ app:
     allowed-mime-types: ${MATERIAL_FILES_ALLOWED_MIME_TYPES:application/pdf,image/png,image/jpeg,text/plain,application/octet-stream,application/zip,application/x-zip-compressed,text/markdown,text/csv,application/json,text/json,text/x-python,application/x-python-code,application/x-sh,text/x-shellscript,application/javascript,text/javascript,application/typescript,text/typescript,text/tsx,video/mp2t,text/x-java-source}
   security:
     session-cookie-secure: ${SESSION_COOKIE_SECURE:false}
+    auth-rate-limit:
+      login-limit: ${AUTH_RATE_LIMIT_LOGIN_LIMIT:10}
+      login-window: ${AUTH_RATE_LIMIT_LOGIN_WINDOW:1m}
+      registration-limit: ${AUTH_RATE_LIMIT_REGISTRATION_LIMIT:5}
+      registration-window: ${AUTH_RATE_LIMIT_REGISTRATION_WINDOW:10m}
+      student-invitation-limit: ${AUTH_RATE_LIMIT_STUDENT_INVITATION_LIMIT:10}
+      teacher-invitation-limit: ${AUTH_RATE_LIMIT_TEACHER_INVITATION_LIMIT:10}
+      invitation-window: ${AUTH_RATE_LIMIT_INVITATION_WINDOW:10m}
+      max-buckets: ${AUTH_RATE_LIMIT_MAX_BUCKETS:10000}
+      cleanup-interval: ${AUTH_RATE_LIMIT_CLEANUP_INTERVAL:30s}
   student-invites:
     ttl: ${STUDENT_INVITE_TTL:P7D}
     public-frontend-base-url: ${PUBLIC_FRONTEND_BASE_URL:http://localhost:3000}
