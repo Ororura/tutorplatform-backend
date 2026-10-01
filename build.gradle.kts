@@ -9,6 +9,11 @@ plugins {
 group = "com.tutorplatform"
 version = "0.1.0-SNAPSHOT"
 
+// Security patches until Spring Boot's BOM includes these maintenance releases.
+extra["tomcat.version"] = "11.0.25"
+extra["jackson-2-bom.version"] = "2.21.7"
+extra["jackson-bom.version"] = "3.1.7"
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(25)
