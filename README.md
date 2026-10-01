@@ -409,6 +409,8 @@ The MVP is implemented incrementally through vertical slices:
 
 ## Documentation
 
+- [PostgreSQL restore drill](docs/postgres-restore-drill.md): verify an existing backup in an isolated disposable PostgreSQL instance.
+
 The project architecture is defined by three main design artifacts:
 
 - **Architecture Design v1**
@@ -817,6 +819,8 @@ MVP развивается вертикальными срезами:
 - Для сложных read-heavy запросов использовать отдельные query repositories / SQL projections, если JPA entity graph становится неудобным.
 
 ## Документация
+
+- [PostgreSQL restore drill](docs/postgres-restore-drill.md): проверка восстановления существующего backup в отдельной временной PostgreSQL instance.
 
 Архитектура проекта зафиксирована в трёх основных документах:
 
