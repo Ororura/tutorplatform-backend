@@ -132,6 +132,7 @@ app:
 
 execution:
   abuse-protection:
+    max-source-code-bytes: ${EXECUTION_MAX_SOURCE_CODE_BYTES:65536}
     limit: ${EXECUTION_RATE_LIMIT:10}
     window: ${EXECUTION_RATE_WINDOW:1m}
     max-buckets: ${EXECUTION_RATE_MAX_BUCKETS:10000}

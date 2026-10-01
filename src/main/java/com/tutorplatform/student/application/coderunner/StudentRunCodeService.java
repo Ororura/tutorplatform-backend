@@ -34,6 +34,7 @@ public class StudentRunCodeService {
     private final StudentTopicTaskService studentTopicTaskService;
     private final ExecutionPort executionPort;
     private final StudentExecutionRateLimiter executionRateLimiter;
+    private final SourceCodeValidator sourceCodeValidator;
 
     public StudentRunCodeService(
             StudentOwnershipQuery studentOwnershipQuery,
@@ -42,7 +43,8 @@ public class StudentRunCodeService {
             TaskQuery taskQuery,
             StudentTopicTaskService studentTopicTaskService,
             ExecutionPort executionPort,
-            StudentExecutionRateLimiter executionRateLimiter) {
+            StudentExecutionRateLimiter executionRateLimiter,
+            SourceCodeValidator sourceCodeValidator) {
         this.studentOwnershipQuery = studentOwnershipQuery;
         this.programQuery = programQuery;
         this.homeworkQuery = homeworkQuery;
@@ -50,6 +52,7 @@ public class StudentRunCodeService {
         this.studentTopicTaskService = studentTopicTaskService;
         this.executionPort = executionPort;
         this.executionRateLimiter = executionRateLimiter;
+        this.sourceCodeValidator = sourceCodeValidator;
     }
 
     public RunCodeResult run(
@@ -59,6 +62,7 @@ public class StudentRunCodeService {
             UUID studentProgramId,
             UUID topicId,
             String sourceCode) {
+        sourceCodeValidator.validate(sourceCode);
         if (taskId == null) {
             throw new RunCodeException(Reason.TASK_NOT_FOUND);
         }

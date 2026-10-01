@@ -14,6 +14,7 @@ creates a pending submission. Worker failures still consume quota.
 
 | Property | Environment variable | Default |
 | --- | --- | --- |
+| `execution.abuse-protection.max-source-code-bytes` | `EXECUTION_MAX_SOURCE_CODE_BYTES` | 65536 (64 KiB) |
 | `execution.abuse-protection.limit` | `EXECUTION_RATE_LIMIT` | 10 |
 | `execution.abuse-protection.window` | `EXECUTION_RATE_WINDOW` | 1m |
 | `execution.abuse-protection.max-buckets` | `EXECUTION_RATE_MAX_BUCKETS` | 10000 |
@@ -32,3 +33,14 @@ State is local to one backend process and resets on restart. With multiple
 replicas, each replica has its own quota. Fixed windows permit bursts on either
 side of a window boundary. This protection does not change worker architecture
 or task-specific CPU, memory, and time limits.
+
+Source size is measured on the decoded `sourceCode` string in UTF-8 bytes, not
+Java characters or JSON escape bytes. Both services validate it before database
+queries, quota acquisition, persistence, and execution. Exactly the configured
+size is accepted; a larger source returns HTTP 413 with `SOURCE_CODE_TOO_LARGE`
+and a `sourceCode` error detail. The configurable range is 1 byte to 1 MiB.
+Existing blank-source validation still applies.
+
+This application validation runs after JSON deserialization. The ingress proxy
+should also cap the total HTTP body to bound JSON parsing, whitespace, and other
+request fields. The source boundary does not change task execution limits.

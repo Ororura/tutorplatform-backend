@@ -33,6 +33,7 @@ public class CodeSubmissionService {
     private final CodeSubmissionTransactions transactions;
     private final ExecutionPort executionPort;
     private final StudentExecutionRateLimiter executionRateLimiter;
+    private final SourceCodeValidator sourceCodeValidator;
 
     public CodeSubmissionService(
             StudentOwnershipQuery studentOwnershipQuery,
@@ -42,7 +43,8 @@ public class CodeSubmissionService {
             StudentTopicTaskService studentTopicTaskService,
             CodeSubmissionTransactions transactions,
             ExecutionPort executionPort,
-            StudentExecutionRateLimiter executionRateLimiter) {
+            StudentExecutionRateLimiter executionRateLimiter,
+            SourceCodeValidator sourceCodeValidator) {
         this.studentOwnershipQuery = studentOwnershipQuery;
         this.taskQuery = taskQuery;
         this.homeworkContextQuery = homeworkContextQuery;
@@ -51,6 +53,7 @@ public class CodeSubmissionService {
         this.transactions = transactions;
         this.executionPort = executionPort;
         this.executionRateLimiter = executionRateLimiter;
+        this.sourceCodeValidator = sourceCodeValidator;
     }
 
     /** Orchestrates execution deliberately without a surrounding database transaction. */
@@ -61,6 +64,7 @@ public class CodeSubmissionService {
             UUID studentProgramId,
             UUID topicId,
             String sourceCode) {
+        sourceCodeValidator.validate(sourceCode);
         validateRequest(homeworkItemId, studentProgramId, topicId, sourceCode);
         UUID studentId =
                 studentOwnershipQuery
