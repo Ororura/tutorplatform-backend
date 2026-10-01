@@ -43,4 +43,32 @@ class RoutingFileStorageTest {
         assertThatThrownBy(() -> new RoutingFileStorage(local, null, "S3"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void providerRoutingPreservesBytesAndFailsClosedForUnknownProvider() throws Exception {
+        var directory = java.nio.file.Files.createTempDirectory("routing-materials-");
+        try {
+            FileStorage remote = mock(FileStorage.class);
+            FileStorage storage =
+                    new RoutingFileStorage(
+                            new LocalFileStorage(directory.toString()), remote, "LOCAL");
+            byte[] content = "lesson".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            var object = storage.store(content);
+            assertThat(object.provider()).isEqualTo("LOCAL");
+            assertThat(object.key()).matches("[0-9a-f-]{36}");
+            assertThat(storage.read(object.provider(), object.key(), content.length))
+                    .containsExactly(content);
+            assertThatThrownBy(() -> storage.read("UNKNOWN", object.key(), content.length))
+                    .isInstanceOf(FileStorageException.class);
+            assertThatThrownBy(() -> storage.delete("UNKNOWN", object.key()))
+                    .isInstanceOf(FileStorageException.class);
+            verifyNoInteractions(remote);
+            storage.delete(object.provider(), object.key());
+        } finally {
+            try (var paths = java.nio.file.Files.walk(directory)) {
+                for (var path : paths.sorted(java.util.Comparator.reverseOrder()).toList())
+                    java.nio.file.Files.delete(path);
+            }
+        }
+    }
 }

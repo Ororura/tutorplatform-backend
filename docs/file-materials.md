@@ -40,6 +40,12 @@ is introduced.
 
 Uploads/downloads use bounded in-memory byte arrays for this small-file MVP.
 Original names are metadata only; physical objects have server-generated UUID keys.
+Upload rejects empty names, names over 255 characters, path separators (including
+Windows paths), control characters and empty files before calling storage. Invalid
+names, empty files and unsupported/mismatched MIME return `400 VALIDATION_ERROR`;
+size violations return `413 FILE_TOO_LARGE` at both multipart and application
+boundaries. Storage failures return `500 FILE_STORAGE_ERROR` with an opaque message;
+filesystem locations and S3 bucket/key details are confined to internal logs.
 
 ## Compensation and operational limits
 
@@ -58,3 +64,14 @@ This synchronous compensation does not provide atomicity across a process crash
 between object creation and DB commit. After an abnormal stop, reconcile unreferenced
 objects while uploads are stopped. Durable staging/reconciliation is a later step
 if crash-safe automatic cleanup becomes a requirement.
+
+## Download metadata hardening
+
+Teacher and student download endpoints use the same response builder. Historical
+filenames are reduced to a basename, control/format characters are replaced, and
+missing or dot-only names fall back to `file`. UTF-8 Content-Disposition encoding
+preserves Unicode and safely quotes filenames. Malformed, wildcard or control-bearing
+MIME metadata falls back to `application/octet-stream`; inline rendering is limited
+to PNG/JPEG image materials. Metadata sanitization does not change stored assets,
+provider routing, rollback compensation, scheduled orphan cleanup or the read-only
+S3 reconciliation audit.

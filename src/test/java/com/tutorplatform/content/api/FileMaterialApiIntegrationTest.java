@@ -117,7 +117,7 @@ class FileMaterialApiIntegrationTest extends PostgresIntegrationTest {
                                 .decode(
                                         "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aE0sAAAAASUVORK5CYII=");
         String mime = type == LessonMaterialType.FILE ? "application/pdf" : "image/png";
-        String name = "../../duplicate." + (type == LessonMaterialType.FILE ? "pdf" : "png");
+        String name = "duplicate." + (type == LessonMaterialType.FILE ? "pdf" : "png");
         var result =
                 mockMvc.perform(
                                 upload(fixture, type.name(), name, mime, bytes, 0)
@@ -296,17 +296,20 @@ class FileMaterialApiIntegrationTest extends PostgresIntegrationTest {
                                         0)
                                 .with(user(fixture.principal()))
                                 .with(csrf()))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
         mockMvc.perform(
                         upload(fixture, "IMAGE", "fake.png", "image/png", "not a PNG".getBytes(), 0)
                                 .with(user(fixture.principal()))
                                 .with(csrf()))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
         mockMvc.perform(
                         upload(fixture, "IMAGE", "text.txt", "text/plain", "hello".getBytes(), 0)
                                 .with(user(fixture.principal()))
                                 .with(csrf()))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
         assertThat(objectCount()).isEqualTo(count);
         assertThat(
                         jdbc.queryForObject(
@@ -314,6 +317,99 @@ class FileMaterialApiIntegrationTest extends PostgresIntegrationTest {
                                 Long.class,
                                 fixture.teacher().id()))
                 .isZero();
+    }
+
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(
+            strings = {
+                "../../notes.txt",
+                "..\\..\\notes.txt",
+                "/tmp/notes.txt",
+                "C:\\notes.txt",
+                "notes\r\nX-Injected: yes.txt",
+                "notes\u0000.txt",
+                " "
+            })
+    void rejectsMaliciousFilenameWithoutMetadataOrObjects(String filename) throws Exception {
+        var fixture = createFixture(UUID.randomUUID() + "@example.com");
+        long count = objectCount();
+        mockMvc.perform(
+                        upload(fixture, "FILE", filename, "text/plain", "hello".getBytes(), 0)
+                                .with(user(fixture.principal()))
+                                .with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.details[0].field").value("file"))
+                .andExpect(
+                        content()
+                                .string(
+                                        org.hamcrest.Matchers.not(
+                                                org.hamcrest.Matchers.containsString(
+                                                        STORAGE.toString()))));
+        assertThat(objectCount()).isEqualTo(count);
+        assertThat(
+                        lessonMaterialService.listLessonMaterials(
+                                fixture.principal(), fixture.topic().id()))
+                .isEmpty();
+        assertThat(
+                        jdbc.queryForObject(
+                                "select count(*) from file_assets where uploaded_by_teacher_id = ?",
+                                Long.class,
+                                fixture.teacher().id()))
+                .isZero();
+    }
+
+    @Test
+    void rejectsEmptyFileWithoutWriting() throws Exception {
+        var fixture = createFixture(UUID.randomUUID() + "@example.com");
+        long count = objectCount();
+        mockMvc.perform(
+                        upload(fixture, "FILE", "notes.txt", "text/plain", new byte[0], 0)
+                                .with(user(fixture.principal()))
+                                .with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+        assertThat(objectCount()).isEqualTo(count);
+    }
+
+    @Test
+    void downloadSanitizesHistoricalMetadata() throws Exception {
+        var fixture = createFixture(UUID.randomUUID() + "@example.com");
+        var result =
+                mockMvc.perform(
+                                upload(
+                                                fixture,
+                                                "FILE",
+                                                "notes.txt",
+                                                "text/plain",
+                                                "hello".getBytes(),
+                                                0)
+                                        .with(user(fixture.principal()))
+                                        .with(csrf()))
+                        .andExpect(status().isCreated())
+                        .andReturn();
+        UUID materialId = UUID.fromString(json(result).get("id").asText());
+        var material =
+                lessonMaterialService.getLessonMaterial(
+                        fixture.principal(), fixture.topic().id(), materialId);
+        jdbc.update(
+                "update file_assets set original_filename = ?, mime_type = ? where id = ?",
+                "../../Конспект\r\nX-Injected: yes.txt",
+                "text/plain\r\nX-Injected: yes",
+                material.fileAssetId());
+        var download =
+                mockMvc.perform(
+                                get(materialUrl(fixture.topic().id(), materialId) + "/download")
+                                        .with(user(fixture.principal())))
+                        .andExpect(status().isOk())
+                        .andExpect(content().bytes("hello".getBytes()))
+                        .andExpect(content().contentType("application/octet-stream"))
+                        .andExpect(header().doesNotExist("X-Injected"))
+                        .andReturn();
+        String header = download.getResponse().getHeader("Content-Disposition");
+        assertThat(header).doesNotContain("\r", "\n", "../");
+        assertThat(org.springframework.http.ContentDisposition.parse(header).getFilename())
+                .isEqualTo("Конспект__X-Injected: yes.txt");
     }
 
     @Test
@@ -374,7 +470,8 @@ class FileMaterialApiIntegrationTest extends PostgresIntegrationTest {
         var fixture = createFixture(UUID.randomUUID() + "@example.com");
         org.mockito.Mockito.doThrow(
                         new com.tutorplatform.file.application.FileStorageException(
-                                new java.io.IOException("disk details")))
+                                new java.io.IOException(
+                                        "/private/storage/files S3 bucket=private-bucket key=materials/private")))
                 .when(storage)
                 .store(org.mockito.ArgumentMatchers.any());
         try {
@@ -384,7 +481,13 @@ class FileMaterialApiIntegrationTest extends PostgresIntegrationTest {
                                     .with(csrf()))
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.code").value("FILE_STORAGE_ERROR"))
-                    .andExpect(jsonPath("$.message").value("File storage operation failed"));
+                    .andExpect(jsonPath("$.message").value("File storage operation failed"))
+                    .andExpect(
+                            content()
+                                    .string(
+                                            org.hamcrest.Matchers.not(
+                                                    org.hamcrest.Matchers.containsString(
+                                                            "private"))));
         } finally {
             org.mockito.Mockito.reset(storage);
         }

@@ -413,7 +413,9 @@ class StudentProgramApiIntegrationTest extends PostgresIntegrationTest {
         TopicEntity topic = createTopic(createModule(learningProgram, "Файлы", 0), "Конспект", 0);
         createProgress(program, topic, StudentTopicProgressStatus.AVAILABLE);
         byte[] content = "student material".getBytes(java.nio.charset.StandardCharsets.UTF_8);
-        LessonMaterialEntity material = createFileMaterial(fixture, topic, "lesson.txt", content);
+        LessonMaterialEntity material =
+                createFileMaterial(
+                        fixture, topic, "../../Конспект\r\nX-Injected: yes.txt", content);
 
         mockMvc.perform(
                         get(
@@ -430,7 +432,17 @@ class StudentProgramApiIntegrationTest extends PostgresIntegrationTest {
                 .andExpect(
                         header().string(
                                         "Content-Disposition",
-                                        org.hamcrest.Matchers.startsWith("attachment;")));
+                                        org.hamcrest.Matchers.startsWith("attachment;")))
+                .andExpect(header().doesNotExist("X-Injected"))
+                .andExpect(
+                        result ->
+                                assertThat(
+                                                org.springframework.http.ContentDisposition.parse(
+                                                                result.getResponse()
+                                                                        .getHeader(
+                                                                                "Content-Disposition"))
+                                                        .getFilename())
+                                        .isEqualTo("Конспект__X-Injected: yes.txt"));
 
         StudentTopicProgressEntity progress =
                 progressRepository.findById(program.id(), topic.id()).orElseThrow();
