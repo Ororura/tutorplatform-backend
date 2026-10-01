@@ -37,3 +37,17 @@ installed/fixed versions, upstream link, and why an upgrade must be separate.
 Any proposed exception must be scoped to that CVE and package path, include an
 owner and expiry, and retain visibility in a separate unfiltered report.
 Do not add a global severity bypass or blanket unfixed-vulnerability suppression.
+
+## Initial baseline (2026-10-01)
+
+The original production image had three CRITICAL and six HIGH findings. Patch
+overrides retain the existing Spring Boot 4.1.1 and Jackson maintenance lines:
+
+| Runtime package | Original | Patched | Findings |
+| --- | --- | --- | --- |
+| `org.apache.tomcat.embed:tomcat-embed-core` | 11.0.24 | 11.0.25 | CVE-2026-65182, CVE-2026-65905, CVE-2026-68525 (CRITICAL) |
+| `com.fasterxml.jackson.core:jackson-databind` | 2.21.5 | 2.21.7 | CVE-2026-68497, CVE-2026-91776, CVE-2026-91777 (HIGH) |
+| `tools.jackson.core:jackson-databind` | 3.1.5 | 3.1.7 | CVE-2026-68497, CVE-2026-91776, CVE-2026-91777 (HIGH) |
+
+The Jackson BOMs align their related modules. Remove overrides when the Spring
+Boot BOM supplies at least these patched versions. No allow-list is needed.
