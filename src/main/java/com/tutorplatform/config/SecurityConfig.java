@@ -63,13 +63,17 @@ public class SecurityConfig {
                                         .requestMatchers(
                                                 GET,
                                                 "/actuator/prometheus",
-                                                "/actuator/health/**",
+                                                "/actuator/health",
+                                                "/actuator/health/liveness",
+                                                "/actuator/health/readiness",
                                                 "/v3/api-docs/**",
                                                 "/swagger-ui.html",
                                                 "/swagger-ui/**",
                                                 "/api/v1/auth/csrf",
                                                 "/api/v1/public/student-invitations/*")
                                         .permitAll()
+                                        .requestMatchers("/actuator", "/actuator/**")
+                                        .denyAll()
                                         .requestMatchers(
                                                 POST,
                                                 "/api/v1/auth/login",

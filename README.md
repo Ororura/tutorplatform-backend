@@ -409,6 +409,7 @@ The MVP is implemented incrementally through vertical slices:
 
 ## Documentation
 
+- [Backend health probes](docs/backend-health-probes.md): liveness/readiness URLs, dependency semantics, and container health.
 - [PostgreSQL restore drill](docs/postgres-restore-drill.md): verify an existing backup in an isolated disposable PostgreSQL instance.
 
 The project architecture is defined by three main design artifacts:
