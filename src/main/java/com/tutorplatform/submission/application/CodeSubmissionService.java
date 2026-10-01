@@ -32,6 +32,7 @@ public class CodeSubmissionService {
     private final StudentTopicTaskService studentTopicTaskService;
     private final CodeSubmissionTransactions transactions;
     private final ExecutionPort executionPort;
+    private final StudentExecutionRateLimiter executionRateLimiter;
 
     public CodeSubmissionService(
             StudentOwnershipQuery studentOwnershipQuery,
@@ -40,7 +41,8 @@ public class CodeSubmissionService {
             ProgramQuery programQuery,
             StudentTopicTaskService studentTopicTaskService,
             CodeSubmissionTransactions transactions,
-            ExecutionPort executionPort) {
+            ExecutionPort executionPort,
+            StudentExecutionRateLimiter executionRateLimiter) {
         this.studentOwnershipQuery = studentOwnershipQuery;
         this.taskQuery = taskQuery;
         this.homeworkContextQuery = homeworkContextQuery;
@@ -48,6 +50,7 @@ public class CodeSubmissionService {
         this.studentTopicTaskService = studentTopicTaskService;
         this.transactions = transactions;
         this.executionPort = executionPort;
+        this.executionRateLimiter = executionRateLimiter;
     }
 
     /** Orchestrates execution deliberately without a surrounding database transaction. */
@@ -71,6 +74,7 @@ public class CodeSubmissionService {
         TaskQuery.CodeTaskConfiguration codeTask =
                 taskQuery.findCodeTaskConfiguration(taskId).orElseThrow(TaskNotFoundException::new);
         requireExecutable(codeTask);
+        executionRateLimiter.acquire(studentId);
 
         int configuredTestCount = codeTask.testCases().size();
         SubmissionResult pending =

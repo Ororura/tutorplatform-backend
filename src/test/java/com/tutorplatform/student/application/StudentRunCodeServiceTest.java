@@ -65,7 +65,8 @@ class StudentRunCodeServiceTest {
                         homeworkQuery,
                         taskQuery,
                         studentTopicTaskService,
-                        executionPort);
+                        executionPort,
+                        mock(StudentExecutionRateLimiter.class));
         userId = UUID.randomUUID();
         studentId = UUID.randomUUID();
         taskId = UUID.randomUUID();

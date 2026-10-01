@@ -131,6 +131,11 @@ app:
       max-output-bytes: ${REPORT_PDF_MAX_OUTPUT_BYTES:5242880}
 
 execution:
+  abuse-protection:
+    limit: ${EXECUTION_RATE_LIMIT:10}
+    window: ${EXECUTION_RATE_WINDOW:1m}
+    max-buckets: ${EXECUTION_RATE_MAX_BUCKETS:10000}
+    cleanup-interval: ${EXECUTION_RATE_CLEANUP_INTERVAL:30s}
   worker:
     base-url: ${EXECUTION_WORKER_BASE_URL:http://localhost:8090}
     connect-timeout: ${EXECUTION_WORKER_CONNECT_TIMEOUT:2s}

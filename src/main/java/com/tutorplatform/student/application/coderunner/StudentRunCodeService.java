@@ -33,6 +33,7 @@ public class StudentRunCodeService {
     private final TaskQuery taskQuery;
     private final StudentTopicTaskService studentTopicTaskService;
     private final ExecutionPort executionPort;
+    private final StudentExecutionRateLimiter executionRateLimiter;
 
     public StudentRunCodeService(
             StudentOwnershipQuery studentOwnershipQuery,
@@ -40,13 +41,15 @@ public class StudentRunCodeService {
             HomeworkQuery homeworkQuery,
             TaskQuery taskQuery,
             StudentTopicTaskService studentTopicTaskService,
-            ExecutionPort executionPort) {
+            ExecutionPort executionPort,
+            StudentExecutionRateLimiter executionRateLimiter) {
         this.studentOwnershipQuery = studentOwnershipQuery;
         this.programQuery = programQuery;
         this.homeworkQuery = homeworkQuery;
         this.taskQuery = taskQuery;
         this.studentTopicTaskService = studentTopicTaskService;
         this.executionPort = executionPort;
+        this.executionRateLimiter = executionRateLimiter;
     }
 
     public RunCodeResult run(
@@ -84,6 +87,7 @@ public class StudentRunCodeService {
                         .findCodeTaskConfiguration(taskId)
                         .orElseThrow(() -> new RunCodeException(Reason.TASK_NOT_FOUND));
         requireExecutableTask(task);
+        executionRateLimiter.acquire(studentId);
 
         var config = task.programmingConfig();
         UUID executionId = UUID.randomUUID();

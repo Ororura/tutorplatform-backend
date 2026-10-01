@@ -44,7 +44,8 @@ class CodeSubmissionServiceTest {
                     programs,
                     studentTopicTasks,
                     transactions,
-                    execution);
+                    execution,
+                    mock(StudentExecutionRateLimiter.class));
 
     private final UUID userId = UUID.randomUUID();
     private final UUID studentId = UUID.randomUUID();

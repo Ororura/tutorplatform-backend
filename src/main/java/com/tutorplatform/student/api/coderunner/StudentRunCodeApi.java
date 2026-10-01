@@ -35,6 +35,10 @@ public interface StudentRunCodeApi {
                 description = "Task or execution context not found",
                 content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(
+                responseCode = "429",
+                description = "Student execution quota exceeded (EXECUTION_RATE_LIMIT_EXCEEDED)",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
                 responseCode = "409",
                 description = "Task cannot be executed",
                 content = @Content(schema = @Schema(implementation = ApiError.class)))
