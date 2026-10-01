@@ -2,13 +2,11 @@ package com.tutorplatform.program.api;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.content.domain.LessonMaterialType;
+import com.tutorplatform.file.api.FileDownloadResponse;
 import com.tutorplatform.program.application.StudentProgramTopicService;
 import com.tutorplatform.program.application.TeacherStudentProgramService;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,20 +60,10 @@ public class StudentProgramController implements StudentProgramApi {
             @PathVariable UUID materialId) {
         var download =
                 topicService.downloadMaterial(principal, studentProgramId, topicId, materialId);
-        String filename = download.filename().replace('\\', '/');
-        filename = filename.substring(filename.lastIndexOf('/') + 1);
-        ContentDisposition.Builder disposition =
-                download.materialType() == LessonMaterialType.IMAGE
-                        ? ContentDisposition.inline()
-                        : ContentDisposition.attachment();
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(download.mimeType()))
-                .contentLength(download.content().length)
-                .header(
-                        "Content-Disposition",
-                        disposition.filename(filename, StandardCharsets.UTF_8).build().toString())
-                .header("X-Content-Type-Options", "nosniff")
-                .header("Cache-Control", "no-store")
-                .body(download.content());
+        return FileDownloadResponse.create(
+                download.filename(),
+                download.mimeType(),
+                download.materialType() == LessonMaterialType.IMAGE,
+                download.content());
     }
 }

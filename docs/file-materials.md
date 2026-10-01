@@ -64,3 +64,14 @@ This synchronous compensation does not provide atomicity across a process crash
 between object creation and DB commit. After an abnormal stop, reconcile unreferenced
 objects while uploads are stopped. Durable staging/reconciliation is a later step
 if crash-safe automatic cleanup becomes a requirement.
+
+## Download metadata hardening
+
+Teacher and student download endpoints use the same response builder. Historical
+filenames are reduced to a basename, control/format characters are replaced, and
+missing or dot-only names fall back to `file`. UTF-8 Content-Disposition encoding
+preserves Unicode and safely quotes filenames. Malformed, wildcard or control-bearing
+MIME metadata falls back to `application/octet-stream`; inline rendering is limited
+to PNG/JPEG image materials. Metadata sanitization does not change stored assets,
+provider routing, rollback compensation, scheduled orphan cleanup or the read-only
+S3 reconciliation audit.
