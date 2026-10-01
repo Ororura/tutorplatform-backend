@@ -43,12 +43,37 @@ jobs:
       - name: Test and build
         run: ./gradlew clean build --no-daemon
 
+  restore-drill:
+    name: PostgreSQL restore drill
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Shell syntax checks
+        run: bash -n scripts/verify-postgres-backup.sh scripts/test-postgres-restore-drill.sh
+
+      - name: ShellCheck
+        run: |
+          docker run --rm --network none \
+            --mount "type=bind,source=$PWD/scripts,target=/scripts,readonly" \
+            koalaman/shellcheck:v0.10.0 \
+            /scripts/verify-postgres-backup.sh /scripts/test-postgres-restore-drill.sh
+
+      - name: Disposable PostgreSQL restore integration tests
+        run: ./scripts/test-postgres-restore-drill.sh
+
   docker:
     name: Build and push Docker image
     runs-on: ubuntu-latest
 
     needs:
       - checks
+      - restore-drill
 
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
