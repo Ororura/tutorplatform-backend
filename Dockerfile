@@ -15,4 +15,6 @@ WORKDIR /app
 COPY --from=build --chown=app:app /workspace/build/libs/*.jar app.jar
 USER app
 EXPOSE 8080
+HEALTHCHECK --interval=10s --timeout=5s --start-period=60s --retries=3 \
+    CMD wget -q -T 4 -O /dev/null http://127.0.0.1:8080/actuator/health/readiness || exit 1
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
