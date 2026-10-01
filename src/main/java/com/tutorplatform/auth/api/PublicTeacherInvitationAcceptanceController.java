@@ -50,6 +50,10 @@ public class PublicTeacherInvitationAcceptanceController {
         @ApiResponse(
                 responseCode = "409",
                 description = "Invitation unavailable or email registered",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "429",
+                description = "Authentication rate limit exceeded; Retry-After contains seconds",
                 content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     @PostMapping(
