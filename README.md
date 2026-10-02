@@ -832,3 +832,8 @@ MVP развивается вертикальными срезами:
 - **API Design v1 — Authentication + Students**
 
 Student Run/Submit quotas: [Execution abuse protection](docs/execution-abuse-protection.md).
+
+## Immutable production delivery
+
+See [production delivery](docs/production-delivery.md) for exact image selection,
+smoke verification, deployed SHA inspection and manual rollback.
