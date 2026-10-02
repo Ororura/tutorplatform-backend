@@ -21,6 +21,23 @@ env:
   IMAGE_NAME: ghcr.io/ororura/tutorplatform-backend
 
 jobs:
+  delivery-checks:
+    name: Deployment verification tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Compile operational scripts
+        run: python3 -m compileall -q scripts tests/ops
+      - name: Smoke, deployment and Compose regression tests
+        run: python3 -m unittest discover -s tests/ops -v
+      - name: Validate GitHub Actions and embedded shell
+        run: |
+          docker run --rm --network none --workdir /repo \
+            --mount "type=bind,source=$PWD,target=/repo,readonly" \
+            rhysd/actionlint:1.7.12 .github/workflows/ci.yml
+
   checks:
     name: Backend checks
     runs-on: ubuntu-latest
@@ -77,6 +94,7 @@ jobs:
 
     needs:
       - checks
+      - delivery-checks
       - restore-drill
 
     steps:
