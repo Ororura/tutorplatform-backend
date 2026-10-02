@@ -9,3 +9,6 @@ graphify-out/
 .graphify/
 
 requests.http
+
+# Operational Python checks
+__pycache__/
