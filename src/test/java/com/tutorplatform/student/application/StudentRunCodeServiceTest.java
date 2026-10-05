@@ -97,8 +97,20 @@ class StudentRunCodeServiceTest {
         allowValidContext();
     }
 
-    @Test
-    void mapsOnlyServerTaskConfigurationAndGeneratesExecutionId() {
+    @ParameterizedTest
+    @EnumSource(ProgrammingLanguage.class)
+    void mapsOnlyServerTaskConfigurationAndGeneratesExecutionId(ProgrammingLanguage language) {
+        var configured = task(TaskType.CODE, TaskStatus.ACTIVE, true);
+        when(taskQuery.findCodeTaskConfiguration(taskId))
+                .thenReturn(
+                        Optional.of(
+                                new TaskQuery.CodeTaskConfiguration(
+                                        taskId,
+                                        TaskType.CODE,
+                                        TaskStatus.ACTIVE,
+                                        new ProgrammingTaskConfig(
+                                                taskId, language, "starter", true, 750, 96),
+                                        configured.testCases())));
         when(executionPort.execute(any()))
                 .thenAnswer(
                         invocation -> {
@@ -129,7 +141,7 @@ class StudentRunCodeServiceTest {
         verify(executionPort).execute(captor.capture());
         ExecutionRequest request = captor.getValue();
         assertThat(request.executionId()).isNotNull().isEqualTo(result.executionId());
-        assertThat(request.language()).isEqualTo(ExecutionLanguage.PYTHON);
+        assertThat(request.language()).isEqualTo(ExecutionLanguage.valueOf(language.name()));
         assertThat(request.sourceCode()).isEqualTo("print(input())");
         assertThat(request.timeLimitMs()).isEqualTo(750);
         assertThat(request.memoryLimitMb()).isEqualTo(96);

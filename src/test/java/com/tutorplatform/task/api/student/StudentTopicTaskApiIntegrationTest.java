@@ -141,10 +141,15 @@ class StudentTopicTaskApiIntegrationTest extends PostgresIntegrationTest {
                 .andExpect(jsonPath("$.code").value("STUDENT_TOPIC_LOCKED"));
     }
 
-    @Test
-    void codeTaskExposesPublicConfigurationAndTestsWithoutHiddenTestData() throws Exception {
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.EnumSource(ProgrammingLanguage.class)
+    void codeTaskExposesPublicConfigurationAndTestsWithoutHiddenTestData(
+            ProgrammingLanguage language) throws Exception {
         Fixture fixture = createFixture("hidden");
         TaskEntity codeTask = createCodeTask(fixture, "Сумма чисел");
+        programmingConfigRepository.saveAndFlush(
+                new ProgrammingTaskConfig(
+                        codeTask.getId(), language, "print('starter')", true, 5000, 128));
         UUID publicTestId = UUID.randomUUID();
         UUID hiddenTestId = UUID.randomUUID();
         testCaseRepository.saveAllAndFlush(
@@ -172,7 +177,8 @@ class StudentTopicTaskApiIntegrationTest extends PostgresIntegrationTest {
                                 get(tasksUrl(fixture.program(), fixture.topic()))
                                         .with(user(fixture.principal())))
                         .andExpect(status().isOk())
-                        .andExpect(jsonPath("$[0].programmingConfig.language").value("PYTHON"))
+                        .andExpect(
+                                jsonPath("$[0].programmingConfig.language").value(language.name()))
                         .andExpect(
                                 jsonPath("$[0].programmingConfig.starterCode")
                                         .value("print('starter')"))

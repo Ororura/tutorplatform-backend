@@ -140,7 +140,7 @@ execution:
   worker:
     base-url: ${EXECUTION_WORKER_BASE_URL:http://localhost:8090}
     connect-timeout: ${EXECUTION_WORKER_CONNECT_TIMEOUT:2s}
-    # Safety margin added to the task time limit; total wait is capped at 60s.
-    read-timeout: ${EXECUTION_WORKER_READ_TIMEOUT:5s}
+    # Preparation and container-startup margin added to the task limit; total wait is capped at 60s.
+    read-timeout: ${EXECUTION_WORKER_READ_TIMEOUT:15s}
   output:
     max-bytes: ${EXECUTION_OUTPUT_MAX_BYTES:16384}

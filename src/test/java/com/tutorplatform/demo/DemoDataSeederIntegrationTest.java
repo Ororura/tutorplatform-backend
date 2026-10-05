@@ -56,10 +56,13 @@ class DemoDataSeederIntegrationTest extends PostgresIntegrationTest {
         assertThat(before)
                 .isEqualTo(
                         new DemoDataSeedService.SeedCounts(
-                                1, 3, 3, 5, 15, 6, 16, 5, 8, 6, 15, 5, 1, 1, 2));
-        assertThat(count("programming_task_configs")).isEqualTo(4);
+                                1, 3, 3, 5, 15, 6, 16, 5, 9, 6, 15, 5, 1, 1, 2));
+        assertThat(count("programming_task_configs")).isEqualTo(5);
         assertThat(countWhere("tasks", "task_type = 'TEXT'")).isEqualTo(4);
-        assertThat(countWhere("tasks", "task_type = 'CODE'")).isEqualTo(4);
+        assertThat(countWhere("tasks", "task_type = 'CODE'")).isEqualTo(5);
+        assertThat(countWhere("programming_task_configs", "language = 'JAVA'")).isEqualTo(1);
+        assertThat(countWhere("subjects", "code = 'JAVA' and owner_teacher_id is null"))
+                .isEqualTo(1);
         assertThat(countWhere("students", "user_id is not null")).isEqualTo(2);
         assertThat(countWhere("student_topic_progress", "status = 'COMPLETED'")).isEqualTo(6);
         assertThat(countWhere("student_topic_progress", "status = 'IN_PROGRESS'")).isEqualTo(3);

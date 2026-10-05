@@ -28,6 +28,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 class CodeSubmissionServiceTest {
 
+    private ProgrammingLanguage testLanguage = ProgrammingLanguage.PYTHON;
+
     private final StudentOwnershipQuery ownership = mock(StudentOwnershipQuery.class);
     private final TaskQuery tasks = mock(TaskQuery.class);
     private final SubmissionHomeworkContextQuery homework =
@@ -156,7 +158,8 @@ class CodeSubmissionServiceTest {
                         eq(expectedTime),
                         isNull(),
                         isNull());
-        assertThat(request.getValue().language()).isEqualTo(ExecutionLanguage.PYTHON);
+        assertThat(request.getValue().language())
+                .isEqualTo(ExecutionLanguage.valueOf(testLanguage.name()));
         assertThat(request.getValue().timeLimitMs()).isEqualTo(900);
         assertThat(request.getValue().memoryLimitMb()).isEqualTo(128);
         assertThat(request.getValue().testCases())
@@ -167,6 +170,14 @@ class CodeSubmissionServiceTest {
                             assertThat(test.inputText()).isEqualTo("hidden input");
                             assertThat(test.expectedOutput()).isEqualTo("hidden output");
                         });
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = ExecutionStatus.class)
+    void javaPersistsEveryOutcomeThroughTheSameSubmissionFlow(ExecutionStatus status) {
+        testLanguage = ProgrammingLanguage.JAVA;
+        when(tasks.findCodeTaskConfiguration(taskId)).thenReturn(Optional.of(configuration(true)));
+        persistsEveryExecutionOutcomeAndUsesServerConfiguration(status);
     }
 
     @Test
@@ -210,8 +221,7 @@ class CodeSubmissionServiceTest {
                 taskId,
                 TaskType.CODE,
                 TaskStatus.ACTIVE,
-                new ProgrammingTaskConfig(
-                        taskId, ProgrammingLanguage.PYTHON, null, executionEnabled, 900, 128),
+                new ProgrammingTaskConfig(taskId, testLanguage, null, executionEnabled, 900, 128),
                 List.of(
                         new TaskTestCase(
                                 testId,

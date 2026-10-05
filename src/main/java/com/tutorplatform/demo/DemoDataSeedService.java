@@ -683,7 +683,8 @@ public class DemoDataSeedService {
             "Выведи Hello, World!",
             "Сумма двух чисел",
             "Проверка чётности",
-            "Максимальное число в списке"
+            "Максимальное число в списке",
+            "Квадрат числа (Java)"
         };
         String[] descriptions = {
             "Объясни своими словами разницу между операторами `=` и `==`.",
@@ -693,10 +694,11 @@ public class DemoDataSeedService {
             "Напиши программу, которая выводит строку `Hello, World!`.",
             "Прочитай два целых числа из одной строки и выведи их сумму.",
             "Прочитай целое число и выведи `YES`, если оно чётное, иначе `NO`.",
-            "Прочитай целые числа из одной строки и выведи максимальное из них."
+            "Прочитай целые числа из одной строки и выведи максимальное из них.",
+            "Прочитай целое число через System.in и выведи его квадрат через System.out.println."
         };
         List<TaskEntity> result = new ArrayList<>();
-        for (int index = 0; index < 8; index++) {
+        for (int index = 0; index < titles.length; index++) {
             TaskType type = index < 4 ? TaskType.TEXT : TaskType.CODE;
             TaskDifficulty difficulty = index < 5 ? TaskDifficulty.EASY : TaskDifficulty.MEDIUM;
             TaskEntity task =
@@ -743,6 +745,22 @@ public class DemoDataSeedService {
                         test("1 9 3\n", "9\n", false),
                         test("-8 -2 -10\n", "-2\n", true),
                         test("42\n", "42\n", true)));
+        seedProgrammingTask(
+                8,
+                ProgrammingLanguage.JAVA,
+                """
+                import java.util.Scanner;
+
+                public class Main {
+                    public static void main(String[] args) {
+                        Scanner scanner = new Scanner(System.in);
+                        int n = scanner.nextInt();
+
+                        // Выведите квадрат числа
+                    }
+                }
+                """,
+                List.of(test("5\n", "25\n", false), test("-3\n", "9\n", true)));
         return result;
     }
 
@@ -751,10 +769,14 @@ public class DemoDataSeedService {
     }
 
     private void seedProgrammingTask(int taskIndex, String starterCode, List<TestData> tests) {
+        seedProgrammingTask(taskIndex, ProgrammingLanguage.PYTHON, starterCode, tests);
+    }
+
+    private void seedProgrammingTask(
+            int taskIndex, ProgrammingLanguage language, String starterCode, List<TestData> tests) {
         UUID taskId = TASKS[taskIndex];
         programmingConfigRepository.saveAndFlush(
-                new ProgrammingTaskConfig(
-                        taskId, ProgrammingLanguage.PYTHON, starterCode, true, 5_000, 128));
+                new ProgrammingTaskConfig(taskId, language, starterCode, true, 5_000, 128));
         List<TaskTestCase> cases = new ArrayList<>();
         for (int index = 0; index < tests.size(); index++) {
             TestData test = tests.get(index);

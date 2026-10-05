@@ -256,6 +256,45 @@ class TaskApiIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
+    void teacherCreatesReadsAndEditsJavaConfiguration() throws Exception {
+        TaskFixture fixture = createFixture();
+        String body =
+                codeCreateRequest(fixture.subject().id(), 5000, 128).replace("PYTHON", "JAVA");
+        MvcResult created =
+                mockMvc.perform(
+                                post(tasksUrl())
+                                        .with(user(fixture.principal()))
+                                        .with(csrf())
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(body))
+                        .andExpect(status().isCreated())
+                        .andExpect(jsonPath("$.programmingConfig.language").value("JAVA"))
+                        .andReturn();
+        UUID id = UUID.fromString(json(created).required("id").asText());
+        mockMvc.perform(get(taskUrl(id)).with(user(fixture.principal())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.programmingConfig.language").value("JAVA"));
+        mockMvc.perform(
+                        put(taskUrl(id) + "/programming-config")
+                                .with(user(fixture.principal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(configUpdateRequest(5000, 128)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.language").value("JAVA"));
+        mockMvc.perform(
+                        put(taskUrl(id) + "/programming-config")
+                                .with(user(fixture.principal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        configUpdateRequest(5000, 128)
+                                                .replace("{", "{\"language\":\"PYTHON\",")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.language").value("PYTHON"));
+    }
+
+    @Test
     void codeConfigurationAcceptsBoundaryLimitsAndRejectsOutsideValues() throws Exception {
         TaskFixture fixture = createFixture();
         UUID taskId = createCodeViaApi(fixture, 100, 16);
