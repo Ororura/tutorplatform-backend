@@ -86,11 +86,15 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
     @Autowired private EntityManager entityManager;
     @MockitoBean private ExecutionPort executionPort;
 
-    @Test
-    void submitPersistsServerOwnedCodeResultAndCompletesHomework() throws Exception {
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.EnumSource(ProgrammingLanguage.class)
+    void submitPersistsServerOwnedCodeResultAndCompletesHomework(ProgrammingLanguage language)
+            throws Exception {
         Fixture fixture =
                 createFixture(
                         "passed", TaskType.CODE, TaskStatus.ACTIVE, true, HomeworkStatus.ASSIGNED);
+        programmingConfigRepository.saveAndFlush(
+                new ProgrammingTaskConfig(fixture.taskId(), language, null, true, 900, 128));
         when(executionPort.execute(any()))
                 .thenAnswer(
                         invocation -> {
@@ -100,6 +104,10 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
                                                     .TransactionSynchronizationManager
                                                     .isActualTransactionActive())
                                     .isFalse();
+                            assertThat(request.language())
+                                    .isEqualTo(
+                                            com.tutorplatform.execution.application
+                                                    .ExecutionLanguage.valueOf(language.name()));
                             assertThat(request.timeLimitMs()).isEqualTo(900);
                             assertThat(request.memoryLimitMb()).isEqualTo(128);
                             assertThat(request.testCases()).hasSize(2);
@@ -250,6 +258,16 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
                 .isEqualTo(CodeExecutionStatus.valueOf(executionStatus.name()));
         assertThat(homeworkRepository.findById(fixture.homeworkId()).orElseThrow().getStatus())
                 .isEqualTo(HomeworkStatus.ASSIGNED);
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.EnumSource(
+            value = ExecutionStatus.class,
+            names = {"FAILED", "TIMEOUT", "RUNTIME_ERROR"})
+    void javaFailuresArePersistedAsFailedSubmissions(ExecutionStatus executionStatus)
+            throws Exception {
+        fixtureLanguage = ProgrammingLanguage.JAVA;
+        userCodeFailureStatusesMapToFailedSubmission(executionStatus);
     }
 
     @Test
@@ -824,6 +842,8 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
                 .longValue();
     }
 
+    private ProgrammingLanguage fixtureLanguage = ProgrammingLanguage.PYTHON;
+
     private Fixture createFixture(
             String label,
             TaskType taskType,
@@ -924,12 +944,7 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
         if (taskType == TaskType.CODE) {
             programmingConfigRepository.saveAndFlush(
                     new ProgrammingTaskConfig(
-                            task.getId(),
-                            ProgrammingLanguage.PYTHON,
-                            null,
-                            executionEnabled,
-                            900,
-                            128));
+                            task.getId(), fixtureLanguage, null, executionEnabled, 900, 128));
             testCaseRepository.saveAllAndFlush(
                     List.of(
                             new TaskTestCase(

@@ -34,7 +34,7 @@ public final class DemoDataIds {
     public static final UUID[] MATERIALS = sequence("d4000000-0000-4000-8000-", 6);
     public static final UUID[] SESSIONS = sequence("d5000000-0000-4000-8000-", 11);
     public static final UUID[] ASSESSMENTS = sequence("d6000000-0000-4000-8000-", 5);
-    public static final UUID[] TASKS = sequence("d7000000-0000-4000-8000-", 8);
+    public static final UUID[] TASKS = sequence("d7000000-0000-4000-8000-", 9);
     public static final UUID[] HOMEWORK = sequence("d8000000-0000-4000-8000-", 6);
     public static final UUID[] HOMEWORK_ITEMS = sequence("d8100000-0000-4000-8000-", 14);
     public static final UUID[] SUBMISSIONS = sequence("d9000000-0000-4000-8000-", 16);

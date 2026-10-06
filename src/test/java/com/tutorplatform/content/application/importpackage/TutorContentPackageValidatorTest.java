@@ -191,7 +191,7 @@ class TutorContentPackageValidatorTest {
         }
         assertOnlyError(
                 codeWith(
-                        new ProgrammingConfigImport("JAVA", null, true, 100, 16),
+                        new ProgrammingConfigImport("RUBY", null, true, 100, 16),
                         List.of(testCase("EXACT"))),
                 INVALID_FIELD_VALUE,
                 "modules[0].topics[0].tasks[0].programmingConfig.language");
@@ -218,6 +218,19 @@ class TutorContentPackageValidatorTest {
                                                 new ProgrammingConfigImport(
                                                         "PYTHON", null, false, 30_000, 1_024),
                                                 List.of(testCase("EXACT"))))
+                                .valid())
+                .isTrue();
+    }
+
+    @Test
+    void acceptsJavaProgrammingConfig() {
+        assertThat(
+                        validator
+                                .validate(
+                                        codeWith(
+                                                new ProgrammingConfigImport(
+                                                        "JAVA", "class Main {}", true, 5000, 128),
+                                                List.of(testCase("NORMALIZED"))))
                                 .valid())
                 .isTrue();
     }
