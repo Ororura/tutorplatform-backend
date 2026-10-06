@@ -208,6 +208,10 @@ public class DemoDataSeedService {
             }
             boolean created =
                     seedReportLifecycleIfMissing(Instant.now().truncatedTo(ChronoUnit.HOURS));
+            if (taskRepository.findById(TASKS[8]).isEmpty()) {
+                seedJavaTask();
+                created = true;
+            }
             SeedCounts counts = validateSeededDataset();
             return new SeedResult(created, counts);
         }
@@ -683,8 +687,7 @@ public class DemoDataSeedService {
             "Выведи Hello, World!",
             "Сумма двух чисел",
             "Проверка чётности",
-            "Максимальное число в списке",
-            "Квадрат числа (Java)"
+            "Максимальное число в списке"
         };
         String[] descriptions = {
             "Объясни своими словами разницу между операторами `=` и `==`.",
@@ -694,8 +697,7 @@ public class DemoDataSeedService {
             "Напиши программу, которая выводит строку `Hello, World!`.",
             "Прочитай два целых числа из одной строки и выведи их сумму.",
             "Прочитай целое число и выведи `YES`, если оно чётное, иначе `NO`.",
-            "Прочитай целые числа из одной строки и выведи максимальное из них.",
-            "Прочитай целое число через System.in и выведи его квадрат через System.out.println."
+            "Прочитай целые числа из одной строки и выведи максимальное из них."
         };
         List<TaskEntity> result = new ArrayList<>();
         for (int index = 0; index < titles.length; index++) {
@@ -745,6 +747,24 @@ public class DemoDataSeedService {
                         test("1 9 3\n", "9\n", false),
                         test("-8 -2 -10\n", "-2\n", true),
                         test("42\n", "42\n", true)));
+        result.add(seedJavaTask());
+        return result;
+    }
+
+    private TaskEntity seedJavaTask() {
+        TaskEntity task =
+                taskRepository.saveAndFlush(
+                        new TaskEntity(
+                                TASKS[8],
+                                TEACHER,
+                                PYTHON_SUBJECT,
+                                "Квадрат числа (Java)",
+                                "Прочитай целое число через System.in и выведи его квадрат через System.out.println.",
+                                TaskType.CODE,
+                                TaskDifficulty.MEDIUM,
+                                TaskStatus.ACTIVE));
+        topicTaskRepository.saveAndFlush(
+                new TopicTaskEntity(ALEX_TOPICS[8], task.getId(), 0, true));
         seedProgrammingTask(
                 8,
                 ProgrammingLanguage.JAVA,
@@ -761,7 +781,7 @@ public class DemoDataSeedService {
                 }
                 """,
                 List.of(test("5\n", "25\n", false), test("-3\n", "9\n", true)));
-        return result;
+        return task;
     }
 
     private TestData test(String input, String output, boolean hidden) {
