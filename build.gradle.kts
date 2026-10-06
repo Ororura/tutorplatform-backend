@@ -3,7 +3,7 @@ plugins {
     id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
 
-    id("com.diffplug.spotless") version "8.10.2"
+    id("com.diffplug.spotless") version "8.10.3"
 }
 
 group = "com.tutorplatform"
@@ -31,7 +31,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-restclient")
-    implementation("software.amazon.awssdk:s3:2.55.2")
+    implementation("software.amazon.awssdk:s3:2.55.7")
 
     // Temporary Jackson 2 compatibility during Spring Boot 4 migration.
     implementation("org.springframework.boot:spring-boot-jackson2")
