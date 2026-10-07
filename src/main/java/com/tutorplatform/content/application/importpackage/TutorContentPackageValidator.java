@@ -1,9 +1,11 @@
 package com.tutorplatform.content.application.importpackage;
 
 import com.tutorplatform.content.application.importpackage.ContentPackageValidationError.Code;
+import com.tutorplatform.task.domain.programming.ProgrammingLanguage;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
@@ -187,7 +189,8 @@ public final class TutorContentPackageValidator {
             String language = config.language();
             if (language == null || language.isBlank()) {
                 add(errors, Code.REQUIRED_FIELD, configPath + ".language", "Language is required");
-            } else if (!language.equals("PYTHON")) {
+            } else if (!Arrays.stream(ProgrammingLanguage.values())
+                    .anyMatch(value -> value.name().equals(language))) {
                 add(
                         errors,
                         Code.INVALID_FIELD_VALUE,

@@ -183,7 +183,7 @@ public class TaskService {
             return programmingConfigRepository.saveAndFlush(
                     new ProgrammingTaskConfig(
                             taskId,
-                            current.language(),
+                            command.language() == null ? current.language() : command.language(),
                             command.starterCode(),
                             command.executionEnabled(),
                             command.timeLimitMs(),

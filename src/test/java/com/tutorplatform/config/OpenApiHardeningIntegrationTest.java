@@ -73,6 +73,24 @@ class OpenApiHardeningIntegrationTest extends PostgresIntegrationTest {
     @Autowired private ObjectMapper objectMapper;
 
     @Test
+    void programmingLanguageIncludesJavaAndStudentsCannotChooseRuntime() throws Exception {
+        JsonNode schemas =
+                objectMapper
+                        .readTree(
+                                mockMvc.perform(get("/v3/api-docs"))
+                                        .andExpect(status().isOk())
+                                        .andReturn()
+                                        .getResponse()
+                                        .getContentAsString())
+                        .path("components")
+                        .path("schemas");
+        assertThat(schemas.path("ProgrammingLanguage").path("enum").toString())
+                .isEqualTo("[\"PYTHON\",\"JAVA\"]");
+        assertThat(schemas.path("RunCodeRequest").path("properties").has("language")).isFalse();
+        assertThat(schemas.path("SubmitCodeRequest").path("properties").has("language")).isFalse();
+    }
+
+    @Test
     void bulkTopicStatusPublishesRequestLimitsAndAllResponses() throws Exception {
         JsonNode document =
                 objectMapper.readTree(

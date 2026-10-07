@@ -12,8 +12,10 @@ import com.tutorplatform.auth.api.LoginRequest;
 import com.tutorplatform.student.application.invite.StudentInviteTokenService;
 import com.tutorplatform.test.PostgresIntegrationTest;
 import com.tutorplatform.user.domain.UserRepository;
+import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.Cookie;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -45,6 +47,7 @@ class DemoDataSeederIntegrationTest extends PostgresIntegrationTest {
     @Autowired private StudentInviteTokenService tokenService;
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
+    @Autowired private EntityManager entityManager;
 
     @Test
     void cleanDatabaseIsFullySeededAndSecondRunIsIdempotent() {
@@ -56,13 +59,87 @@ class DemoDataSeederIntegrationTest extends PostgresIntegrationTest {
         assertThat(before)
                 .isEqualTo(
                         new DemoDataSeedService.SeedCounts(
-                                1, 3, 3, 5, 15, 6, 16, 5, 8, 6, 15, 5, 1, 1, 2));
-        assertThat(count("programming_task_configs")).isEqualTo(4);
+                                1, 3, 3, 5, 15, 6, 16, 5, 9, 6, 15, 5, 1, 1, 2));
+        assertThat(count("programming_task_configs")).isEqualTo(5);
         assertThat(countWhere("tasks", "task_type = 'TEXT'")).isEqualTo(4);
-        assertThat(countWhere("tasks", "task_type = 'CODE'")).isEqualTo(4);
+        assertThat(countWhere("tasks", "task_type = 'CODE'")).isEqualTo(5);
+        assertThat(countWhere("programming_task_configs", "language = 'JAVA'")).isEqualTo(1);
+        assertThat(countWhere("subjects", "code = 'JAVA' and owner_teacher_id is null"))
+                .isEqualTo(1);
         assertThat(countWhere("students", "user_id is not null")).isEqualTo(2);
         assertThat(countWhere("student_topic_progress", "status = 'COMPLETED'")).isEqualTo(6);
         assertThat(countWhere("student_topic_progress", "status = 'IN_PROGRESS'")).isEqualTo(3);
+    }
+
+    @Test
+    @Transactional
+    void existingDemoDatabaseGainsJavaTaskWithoutResettingData() {
+        DemoDataSeedService.SeedCounts before = seedService.seed().counts();
+        jdbcTemplate.update("delete from tasks where id = ?", TASKS[8]);
+        jdbcTemplate.update(
+                "update programming_task_configs set starter_code = ? where task_id = ?",
+                "print('Teacher edited Python starter')",
+                TASKS[4]);
+        entityManager.clear();
+
+        DemoDataSeedService.SeedResult upgraded = seedService.seed();
+
+        assertThat(upgraded.created()).isTrue();
+        assertThat(upgraded.counts()).isEqualTo(before);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "select language from programming_task_configs where task_id = ?",
+                                String.class,
+                                TASKS[8]))
+                .isEqualTo("JAVA");
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "select starter_code from programming_task_configs where task_id = ?",
+                                String.class,
+                                TASKS[8]))
+                .contains("public class Main", "Scanner", "System.in");
+        assertThat(
+                        jdbcTemplate.queryForList(
+                                "select input_text, expected_output, hidden, comparison_mode from task_test_cases where task_id = ? order by position",
+                                TASKS[8]))
+                .containsExactly(
+                        Map.of(
+                                "input_text", "5\n",
+                                "expected_output", "25\n",
+                                "hidden", false,
+                                "comparison_mode", "NORMALIZED"),
+                        Map.of(
+                                "input_text", "-3\n",
+                                "expected_output", "9\n",
+                                "hidden", true,
+                                "comparison_mode", "NORMALIZED"));
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "select count(*) from topic_tasks where task_id = ? and topic_id = ? and required",
+                                Integer.class,
+                                TASKS[8],
+                                ALEX_TOPICS[8]))
+                .isOne();
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "select starter_code from programming_task_configs where task_id = ?",
+                                String.class,
+                                TASKS[4]))
+                .isEqualTo("print('Teacher edited Python starter')");
+
+        jdbcTemplate.update(
+                "update programming_task_configs set starter_code = ? where task_id = ?",
+                "// Teacher edited Java starter",
+                TASKS[8]);
+        DemoDataSeedService.SeedResult repeated = seedService.seed();
+        assertThat(repeated.created()).isFalse();
+        assertThat(repeated.counts()).isEqualTo(before);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "select starter_code from programming_task_configs where task_id = ?",
+                                String.class,
+                                TASKS[8]))
+                .isEqualTo("// Teacher edited Java starter");
     }
 
     @Test

@@ -85,6 +85,7 @@ public class TeacherTaskController implements TeacherTaskApi {
                         principal,
                         taskId,
                         new UpdateProgrammingTaskConfigCommand(
+                                request.language(),
                                 request.starterCode(),
                                 request.executionEnabled(),
                                 request.timeLimitMs(),
