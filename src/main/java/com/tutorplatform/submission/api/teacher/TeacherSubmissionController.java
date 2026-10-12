@@ -34,6 +34,16 @@ public class TeacherSubmissionController implements TeacherSubmissionApi {
     }
 
     @Override
+    @GetMapping("/{submissionId}")
+    public TeacherSubmissionResponse getTeacherStudentSubmission(
+            @AuthenticationPrincipal AuthenticatedUser principal,
+            @PathVariable UUID studentId,
+            @PathVariable UUID submissionId) {
+        return TeacherSubmissionResponse.from(
+                submissionService.getTeacherStudentSubmission(principal, studentId, submissionId));
+    }
+
+    @Override
     @PatchMapping("/{submissionId}/review")
     public TeacherSubmissionResponse reviewTextSubmission(
             @AuthenticationPrincipal AuthenticatedUser principal,

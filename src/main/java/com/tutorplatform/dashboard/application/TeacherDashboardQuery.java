@@ -9,9 +9,18 @@ public interface TeacherDashboardQuery {
 
     List<TeacherDashboardResult.AttentionItem> findAttentionItems(UUID teacherUserId, int limit);
 
+    AttentionPage findAttentionItems(
+            UUID teacherUserId,
+            TeacherDashboardAttentionType type,
+            UUID studentId,
+            int page,
+            int size);
+
     record Summary(
             long activeStudentsCount,
             long needsReviewSubmissionsCount,
             long overdueHomeworksCount,
             long completedLearningPeriodsWithoutPublishedReportCount) {}
+
+    record AttentionPage(List<TeacherDashboardResult.AttentionItem> items, long totalElements) {}
 }

@@ -17,6 +17,8 @@ public record TeacherDashboardResult(
             String displayName,
             UUID resourceId,
             Instant eventAt,
+            String homeworkTitle,
+            String taskTitle,
             Navigation navigation) {}
 
     public record Navigation(

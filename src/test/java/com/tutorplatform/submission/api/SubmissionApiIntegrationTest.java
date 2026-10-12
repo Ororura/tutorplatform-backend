@@ -645,6 +645,38 @@ class SubmissionApiIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
+    void teacherReadsOwnedSubmissionByIdWithoutListingPages() throws Exception {
+        Fixture fixture = createFixture("teacher-submission-detail");
+        HomeworkEntity homework =
+                createHomework(
+                        fixture,
+                        fixture.studentProgram(),
+                        HomeworkStatus.ASSIGNED,
+                        List.of(fixture.textTask()));
+        SubmissionEntity submission =
+                saveSubmission(
+                        fixture,
+                        fixture.textTask(),
+                        homework.getItems().getFirst().id(),
+                        3,
+                        SubmissionStatus.NEEDS_REVIEW,
+                        "Detailed answer",
+                        Instant.parse("2026-09-21T12:30:00Z"));
+
+        mockMvc.perform(
+                        get(
+                                        "/api/v1/teacher/students/{studentId}/submissions/{submissionId}",
+                                        fixture.student().getId(),
+                                        submission.getId())
+                                .with(user(fixture.teacherPrincipal())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(submission.getId().toString()))
+                .andExpect(jsonPath("$.attemptNo").value(3))
+                .andExpect(jsonPath("$.textAnswer").value("Detailed answer"))
+                .andExpect(jsonPath("$.status").value("NEEDS_REVIEW"));
+    }
+
+    @Test
     void failedReviewDoesNotCompleteHomeworkAndChangesOnlySubmissionStatus() throws Exception {
         Fixture fixture = createFixture("teacher-review");
         HomeworkEntity homework =
@@ -870,6 +902,10 @@ class SubmissionApiIntegrationTest extends PostgresIntegrationTest {
                         jsonPath(
                                         "$.paths['/api/v1/teacher/students/{studentId}/submissions'].get.operationId")
                                 .value("listTeacherStudentSubmissions"))
+                .andExpect(
+                        jsonPath(
+                                        "$.paths['/api/v1/teacher/students/{studentId}/submissions/{submissionId}'].get.operationId")
+                                .value("getTeacherStudentSubmission"))
                 .andExpect(
                         jsonPath(
                                         "$.paths['/api/v1/teacher/students/{studentId}/submissions/{submissionId}/review'].patch.operationId")

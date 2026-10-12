@@ -200,6 +200,54 @@ class TeacherDashboardApiIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
+    void attentionPageFiltersPaginatesAndUsesWorkQueueOrder() throws Exception {
+        TeacherFixture teacher = createTeacher("attention-page");
+        StudentFixture first = createStudent(teacher, "Анна", "Иванова");
+        StudentFixture second = createStudent(teacher, "Борис", "Петров");
+        UUID firstSubmission =
+                createNeedsReviewSubmission(first, 1, Instant.parse("2026-09-22T12:00:00Z"));
+        UUID secondSubmission =
+                createNeedsReviewSubmission(second, 2, Instant.parse("2026-09-21T12:00:00Z"));
+        createHomework(first, "Просроченное ДЗ", Instant.parse("2020-01-01T10:00:00Z"), "ASSIGNED");
+        createCompletedLearningPeriod(first, 1, 480);
+
+        mockMvc.perform(
+                        get(DASHBOARD_URL + "/attention")
+                                .with(user(teacher.principal()))
+                                .param("page", "0")
+                                .param("size", "2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(4))
+                .andExpect(jsonPath("$.totalPages").value(2))
+                .andExpect(jsonPath("$.items.length()").value(2))
+                .andExpect(jsonPath("$.items[0].resourceId").value(secondSubmission.toString()))
+                .andExpect(jsonPath("$.items[1].resourceId").value(firstSubmission.toString()));
+
+        mockMvc.perform(
+                        get(DASHBOARD_URL + "/attention")
+                                .with(user(teacher.principal()))
+                                .param("type", "HOMEWORK_OVERDUE")
+                                .param("studentId", first.id().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.items[0].type").value("HOMEWORK_OVERDUE"))
+                .andExpect(jsonPath("$.items[0].homeworkTitle").value("Просроченное ДЗ"));
+    }
+
+    @Test
+    void attentionPageRejectsForeignStudentFilter() throws Exception {
+        TeacherFixture currentTeacher = createTeacher("attention-owner");
+        TeacherFixture anotherTeacher = createTeacher("attention-foreign");
+        StudentFixture foreignStudent = createStudent(anotherTeacher, "Чужой", "Ученик");
+
+        mockMvc.perform(
+                        get(DASHBOARD_URL + "/attention")
+                                .with(user(currentTeacher.principal()))
+                                .param("studentId", foreignStudent.id().toString()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void openApiPublishesStableOperationId() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
