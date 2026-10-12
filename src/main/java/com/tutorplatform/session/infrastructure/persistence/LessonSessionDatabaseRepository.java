@@ -1,6 +1,8 @@
 package com.tutorplatform.session.infrastructure.persistence;
 
+import com.tutorplatform.session.domain.AttendanceStatus;
 import jakarta.persistence.LockModeType;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -59,4 +61,49 @@ interface LessonSessionDatabaseRepository extends JpaRepository<LessonSessionDat
             @Param("teacherId") UUID teacherId,
             @Param("studentId") UUID studentId,
             Pageable pageable);
+
+    @Query(
+            """
+        select lessonSession
+        from LessonSessionDatabaseModel lessonSession
+        where lessonSession.teacherId = :teacherId
+          and lessonSession.studentProgram.studentId = :studentId
+          and lessonSession.attendanceStatus = :attendanceStatus
+        """)
+    Page<LessonSessionDatabaseModel> findPageByTeacherAndStudentAndAttendanceStatus(
+            @Param("teacherId") UUID teacherId,
+            @Param("studentId") UUID studentId,
+            @Param("attendanceStatus") AttendanceStatus attendanceStatus,
+            Pageable pageable);
+
+    @Query(
+            """
+        select lessonSession
+        from LessonSessionDatabaseModel lessonSession
+        where lessonSession.teacherId = :teacherId
+          and lessonSession.studentProgram.studentId = :studentId
+          and lessonSession.startedAt <= :startedBefore
+        """)
+    Page<LessonSessionDatabaseModel> findPageByTeacherAndStudentAndStartedAtLessThanEqual(
+            @Param("teacherId") UUID teacherId,
+            @Param("studentId") UUID studentId,
+            @Param("startedBefore") Instant startedBefore,
+            Pageable pageable);
+
+    @Query(
+            """
+        select lessonSession
+        from LessonSessionDatabaseModel lessonSession
+        where lessonSession.teacherId = :teacherId
+          and lessonSession.studentProgram.studentId = :studentId
+          and lessonSession.attendanceStatus = :attendanceStatus
+          and lessonSession.startedAt <= :startedBefore
+        """)
+    Page<LessonSessionDatabaseModel>
+            findPageByTeacherAndStudentAndAttendanceStatusAndStartedAtLessThanEqual(
+                    @Param("teacherId") UUID teacherId,
+                    @Param("studentId") UUID studentId,
+                    @Param("attendanceStatus") AttendanceStatus attendanceStatus,
+                    @Param("startedBefore") Instant startedBefore,
+                    Pageable pageable);
 }

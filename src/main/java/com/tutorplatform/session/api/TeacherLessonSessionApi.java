@@ -5,6 +5,7 @@ import com.tutorplatform.session.api.request.CreateLessonSessionRequest;
 import com.tutorplatform.session.api.request.UpdateLessonSessionRequest;
 import com.tutorplatform.session.api.response.LessonSessionDetailsResponse;
 import com.tutorplatform.session.api.response.LessonSessionPageResponse;
+import com.tutorplatform.session.domain.AttendanceStatus;
 import com.tutorplatform.shared.api.ApiError;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import java.time.Instant;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 
@@ -66,7 +68,9 @@ public interface TeacherLessonSessionApi {
             @Parameter(description = "Zero-based page index", example = "0") int page,
             @Parameter(description = "Page size from 1 to 100", example = "20") int size,
             @Parameter(description = "Sort as field,direction", example = "startedAt,desc")
-                    String sort);
+                    String sort,
+            AttendanceStatus attendanceStatus,
+            @Parameter(schema = @Schema(format = "date-time")) Instant startedBefore);
 
     @Operation(operationId = "getLessonSession", summary = "Get a lesson session")
     @ApiResponses({

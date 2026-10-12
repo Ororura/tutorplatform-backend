@@ -207,6 +207,51 @@ class SessionApiIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
+    void getFiltersAttendanceAndFutureSessionsBeforePagination() throws Exception {
+        SessionFixture fixture = createFixture("api-filter-session@example.com");
+        LessonSessionResult older =
+                createSession(
+                        fixture,
+                        45,
+                        AttendanceStatus.ATTENDED,
+                        Instant.parse("2026-09-08T10:00:00Z"));
+        LessonSessionResult latestPast =
+                createSession(
+                        fixture,
+                        60,
+                        AttendanceStatus.ATTENDED,
+                        Instant.parse("2026-09-09T10:00:00Z"));
+        createSession(fixture, 90, AttendanceStatus.MISSED, Instant.parse("2026-09-10T10:00:00Z"));
+        createSession(
+                fixture, 120, AttendanceStatus.ATTENDED, Instant.parse("2099-01-01T10:00:00Z"));
+
+        mockMvc.perform(
+                        get(sessionsUrl(fixture.student().getId()))
+                                .with(user(fixture.principal()))
+                                .param("attendanceStatus", "ATTENDED")
+                                .param("startedBefore", "2026-10-01T00:00:00Z")
+                                .param("page", "0")
+                                .param("size", "1")
+                                .param("sort", "startedAt,desc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()").value(1))
+                .andExpect(jsonPath("$.items[0].id").value(latestPast.id().toString()))
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.totalPages").value(2));
+
+        mockMvc.perform(
+                        get(sessionsUrl(fixture.student().getId()))
+                                .with(user(fixture.principal()))
+                                .param("attendanceStatus", "ATTENDED")
+                                .param("startedBefore", "2026-10-01T00:00:00Z")
+                                .param("page", "1")
+                                .param("size", "1")
+                                .param("sort", "startedAt,desc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].id").value(older.id().toString()));
+    }
+
+    @Test
     void getReturnsLessonSessionDetails() throws Exception {
         SessionFixture fixture = createFixture("api-detail-session@example.com");
         LessonSessionResult session = createSession(fixture, 60, AttendanceStatus.ATTENDED);
@@ -513,12 +558,20 @@ class SessionApiIntegrationTest extends PostgresIntegrationTest {
 
     private LessonSessionResult createSession(
             SessionFixture fixture, int durationMinutes, AttendanceStatus status) {
+        return createSession(fixture, durationMinutes, status, Instant.now());
+    }
+
+    private LessonSessionResult createSession(
+            SessionFixture fixture,
+            int durationMinutes,
+            AttendanceStatus status,
+            Instant startedAt) {
         return lessonSessionService.createLessonSession(
                 fixture.principal(),
                 new CreateLessonSessionCommand(
                         fixture.student().getId(),
                         fixture.studentProgram().id(),
-                        Instant.now(),
+                        startedAt,
                         durationMinutes,
                         status,
                         "Итог",

@@ -10,8 +10,10 @@ import com.tutorplatform.session.application.CreateLessonSessionCommand;
 import com.tutorplatform.session.application.LessonSessionService;
 import com.tutorplatform.session.application.LessonSessionTopicInput;
 import com.tutorplatform.session.application.UpdateLessonSessionCommand;
+import com.tutorplatform.session.domain.AttendanceStatus;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -62,9 +64,12 @@ public class TeacherLessonSessionController implements TeacherLessonSessionApi {
             @PathVariable UUID studentId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "startedAt,desc") String sort) {
+            @RequestParam(defaultValue = "startedAt,desc") String sort,
+            @RequestParam(required = false) AttendanceStatus attendanceStatus,
+            @RequestParam(required = false) Instant startedBefore) {
         return LessonSessionPageResponse.from(
-                lessonSessionService.listLessonSessions(principal, studentId, page, size, sort));
+                lessonSessionService.listLessonSessions(
+                        principal, studentId, page, size, sort, attendanceStatus, startedBefore));
     }
 
     @Override
