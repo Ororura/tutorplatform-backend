@@ -622,6 +622,21 @@ class SubmissionApiIntegrationTest extends PostgresIntegrationTest {
                                 .with(user(owner.teacherPrincipal())))
                 .andExpect(status().isNotFound());
 
+        mockMvc.perform(
+                        get(
+                                        "/api/v1/teacher/students/{studentId}/submissions/{submissionId}",
+                                        foreign.student().getId(),
+                                        foreignSubmission.getId())
+                                .with(user(owner.teacherPrincipal())))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(
+                        get(
+                                        "/api/v1/teacher/students/{studentId}/submissions/{submissionId}",
+                                        owner.student().getId(),
+                                        foreignSubmission.getId())
+                                .with(user(owner.teacherPrincipal())))
+                .andExpect(status().isNotFound());
+
         review(
                         owner.teacherPrincipal(),
                         owner.student().getId(),
