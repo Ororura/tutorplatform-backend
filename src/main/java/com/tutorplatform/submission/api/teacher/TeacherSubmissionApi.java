@@ -47,6 +47,29 @@ public interface TeacherSubmissionApi {
                             example = "submittedAt,desc")
                     String sort);
 
+    @Operation(
+            operationId = "getTeacherStudentSubmission",
+            summary = "Get a teacher's student's submission")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Submission"),
+        @ApiResponse(
+                responseCode = "401",
+                description = "Authentication required",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "403",
+                description = "Teacher role required",
+                content = @Content(schema = @Schema(implementation = ApiError.class))),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Student or submission not found",
+                content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    TeacherSubmissionResponse getTeacherStudentSubmission(
+            @Parameter(hidden = true) AuthenticatedUser principal,
+            @Parameter(schema = @Schema(format = "uuid")) UUID studentId,
+            @Parameter(schema = @Schema(format = "uuid")) UUID submissionId);
+
     @Operation(operationId = "reviewTextSubmission", summary = "Review a text submission")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Submission reviewed"),

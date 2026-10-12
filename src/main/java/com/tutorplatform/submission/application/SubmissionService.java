@@ -157,6 +157,15 @@ public class SubmissionService {
                 submissions.totalPages());
     }
 
+    @Transactional(readOnly = true)
+    public SubmissionResult getTeacherStudentSubmission(
+            AuthenticatedUser principal, UUID studentId, UUID submissionId) {
+        UUID teacherId = currentTeacherId(principal);
+        SubmissionEntity submission =
+                requireTeacherStudentSubmission(teacherId, studentId, submissionId);
+        return SubmissionResult.from(submission);
+    }
+
     @Transactional
     public SubmissionResult reviewTextSubmission(
             AuthenticatedUser principal,
@@ -164,12 +173,8 @@ public class SubmissionService {
             UUID submissionId,
             SubmissionStatus reviewStatus) {
         UUID teacherId = currentTeacherId(principal);
-        requireOwnedStudent(teacherId, studentId);
         SubmissionEntity submission =
-                submissionRepository
-                        .findByIdAndStudentId(submissionId, studentId)
-                        .orElseThrow(SubmissionNotFoundException::new);
-        requireTeacherSubmissionContext(teacherId, studentId, submission);
+                requireTeacherStudentSubmission(teacherId, studentId, submissionId);
         TaskQuery.TaskContext task =
                 taskQuery
                         .findTask(submission.getTaskId())
@@ -194,6 +199,17 @@ public class SubmissionService {
                         saved.getHomeworkItemId(),
                         saved.getStatus()));
         return SubmissionResult.from(saved);
+    }
+
+    private SubmissionEntity requireTeacherStudentSubmission(
+            UUID teacherId, UUID studentId, UUID submissionId) {
+        requireOwnedStudent(teacherId, studentId);
+        SubmissionEntity submission =
+                submissionRepository
+                        .findByIdAndStudentId(submissionId, studentId)
+                        .orElseThrow(SubmissionNotFoundException::new);
+        requireTeacherSubmissionContext(teacherId, studentId, submission);
+        return submission;
     }
 
     private UUID currentStudentId(AuthenticatedUser principal) {

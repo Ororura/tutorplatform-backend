@@ -200,6 +200,134 @@ class TeacherDashboardApiIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
+    void attentionPageFiltersPaginatesAndUsesWorkQueueOrder() throws Exception {
+        TeacherFixture teacher = createTeacher("attention-page");
+        StudentFixture first = createStudent(teacher, "Анна", "Иванова");
+        StudentFixture second = createStudent(teacher, "Борис", "Петров");
+        UUID firstSubmission =
+                createNeedsReviewSubmission(first, 1, Instant.parse("2026-09-22T12:00:00Z"));
+        UUID secondSubmission =
+                createNeedsReviewSubmission(second, 2, Instant.parse("2026-09-21T12:00:00Z"));
+        createHomework(first, "Просроченное ДЗ", Instant.parse("2020-01-01T10:00:00Z"), "ASSIGNED");
+        createCompletedLearningPeriod(first, 1, 480);
+
+        mockMvc.perform(
+                        get(DASHBOARD_URL + "/attention")
+                                .with(user(teacher.principal()))
+                                .param("page", "0")
+                                .param("size", "2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(4))
+                .andExpect(jsonPath("$.totalPages").value(2))
+                .andExpect(jsonPath("$.items.length()").value(2))
+                .andExpect(jsonPath("$.items[0].resourceId").value(secondSubmission.toString()))
+                .andExpect(jsonPath("$.items[1].resourceId").value(firstSubmission.toString()));
+
+        mockMvc.perform(
+                        get(DASHBOARD_URL + "/attention")
+                                .with(user(teacher.principal()))
+                                .param("type", "HOMEWORK_OVERDUE")
+                                .param("studentId", first.id().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.items[0].type").value("HOMEWORK_OVERDUE"))
+                .andExpect(jsonPath("$.items[0].homeworkTitle").value("Просроченное ДЗ"));
+    }
+
+    @Test
+    void attentionPageRejectsForeignStudentFilter() throws Exception {
+        TeacherFixture currentTeacher = createTeacher("attention-owner");
+        TeacherFixture anotherTeacher = createTeacher("attention-foreign");
+        StudentFixture foreignStudent = createStudent(anotherTeacher, "Чужой", "Ученик");
+
+        mockMvc.perform(
+                        get(DASHBOARD_URL + "/attention")
+                                .with(user(currentTeacher.principal()))
+                                .param("studentId", foreignStudent.id().toString()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void attentionPageRequiresAuthenticatedTeacherRole() throws Exception {
+        TeacherFixture teacher = createTeacher("attention-security");
+        AuthenticatedUser studentPrincipal =
+                new AuthenticatedUser(
+                        UUID.randomUUID(),
+                        "student@example.com",
+                        "password-hash",
+                        true,
+                        List.of(new SimpleGrantedAuthority("ROLE_STUDENT")));
+
+        mockMvc.perform(get(DASHBOARD_URL + "/attention")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get(DASHBOARD_URL + "/attention").with(user(studentPrincipal)))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get(DASHBOARD_URL + "/attention").with(user(teacher.principal())))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void attentionPageValidatesParametersAndReturnsEmptyPageBeyondLast() throws Exception {
+        TeacherFixture teacher = createTeacher("attention-validation");
+        StudentFixture student = createStudent(teacher, "Пустая", "Страница");
+        createNeedsReviewSubmission(student, 1, Instant.parse("2026-09-21T12:30:00Z"));
+
+        mockMvc.perform(
+                        get(DASHBOARD_URL + "/attention")
+                                .with(user(teacher.principal()))
+                                .param("type", "UNKNOWN"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(
+                        get(DASHBOARD_URL + "/attention")
+                                .with(user(teacher.principal()))
+                                .param("studentId", "not-a-uuid"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(
+                        get(DASHBOARD_URL + "/attention")
+                                .with(user(teacher.principal()))
+                                .param("page", "-1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.details[0].field").value("page"));
+        mockMvc.perform(
+                        get(DASHBOARD_URL + "/attention")
+                                .with(user(teacher.principal()))
+                                .param("size", "101"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.details[0].field").value("size"));
+        mockMvc.perform(
+                        get(DASHBOARD_URL + "/attention")
+                                .with(user(teacher.principal()))
+                                .param("page", "2")
+                                .param("size", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items").isEmpty())
+                .andExpect(jsonPath("$.page").value(2))
+                .andExpect(jsonPath("$.size").value(1))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1));
+    }
+
+    @Test
+    void attentionDoesNotExposeAssistantLinkedStudent() throws Exception {
+        TeacherFixture teacher = createTeacher("attention-assistant");
+        StudentFixture student = createStudent(teacher, "Ассистент", "Ученик");
+        createNeedsReviewSubmission(student, 1, Instant.parse("2026-09-21T12:30:00Z"));
+        jdbc.update(
+                "UPDATE teacher_student_links SET relation_type = 'ASSISTANT' WHERE teacher_id = ? AND student_id = ?",
+                teacher.id(),
+                student.id());
+
+        mockMvc.perform(get(DASHBOARD_URL).with(user(teacher.principal())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.activeStudentsCount").value(0))
+                .andExpect(jsonPath("$.attentionItems").isEmpty());
+        mockMvc.perform(
+                        get(DASHBOARD_URL + "/attention")
+                                .with(user(teacher.principal()))
+                                .param("studentId", student.id().toString()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void openApiPublishesStableOperationId() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())

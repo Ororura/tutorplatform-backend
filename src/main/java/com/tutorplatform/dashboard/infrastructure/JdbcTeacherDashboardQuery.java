@@ -25,7 +25,8 @@ public class JdbcTeacherDashboardQuery implements TeacherDashboardQuery {
             FROM current_teacher teacher
             JOIN teacher_student_links link ON link.teacher_id = teacher.id
             JOIN students student ON student.id = link.student_id
-            WHERE link.ended_at IS NULL
+            WHERE link.relation_type = 'PRIMARY'
+              AND link.ended_at IS NULL
               AND student.status = 'ACTIVE'
         )
         """;
@@ -65,7 +66,7 @@ public class JdbcTeacherDashboardQuery implements TeacherDashboardQuery {
                ) AS completed_periods_without_published_report_count
         """;
 
-    private static final String ATTENTION_SQL =
+    private static final String ATTENTION_ROWS_SQL =
             "WITH "
                     + TEACHER_SCOPE
                     + """
@@ -80,7 +81,9 @@ public class JdbcTeacherDashboardQuery implements TeacherDashboardQuery {
                task_id,
                submission_id,
                learning_period_id,
-               report_id
+               report_id,
+               homework_title,
+               task_title
         FROM (
             SELECT 'SUBMISSION_NEEDS_REVIEW' AS event_type,
                    student.id AS student_id,
@@ -94,12 +97,15 @@ public class JdbcTeacherDashboardQuery implements TeacherDashboardQuery {
                    submission.task_id,
                    submission.id AS submission_id,
                    NULL::uuid AS learning_period_id,
-                   NULL::uuid AS report_id
+                   NULL::uuid AS report_id,
+                   homework.title AS homework_title,
+                   task.title AS task_title
             FROM submissions submission
             JOIN owned_students owned ON owned.student_id = submission.student_id
             JOIN students student ON student.id = submission.student_id
             LEFT JOIN homework_items item ON item.id = submission.homework_item_id
             LEFT JOIN homeworks homework ON homework.id = item.homework_id
+            LEFT JOIN tasks task ON task.id = submission.task_id
             WHERE submission.status = 'NEEDS_REVIEW'
 
             UNION ALL
@@ -116,7 +122,9 @@ public class JdbcTeacherDashboardQuery implements TeacherDashboardQuery {
                    NULL::uuid AS task_id,
                    NULL::uuid AS submission_id,
                    NULL::uuid AS learning_period_id,
-                   NULL::uuid AS report_id
+                   NULL::uuid AS report_id,
+                   homework.title AS homework_title,
+                   NULL::text AS task_title
             FROM homeworks homework
             JOIN student_programs program ON program.id = homework.student_program_id
             JOIN owned_students owned ON owned.student_id = program.student_id
@@ -139,7 +147,9 @@ public class JdbcTeacherDashboardQuery implements TeacherDashboardQuery {
                    NULL::uuid AS task_id,
                    NULL::uuid AS submission_id,
                    period.id AS learning_period_id,
-                   report.id AS report_id
+                   report.id AS report_id,
+                   NULL::text AS homework_title,
+                   NULL::text AS task_title
             FROM learning_periods period
             JOIN student_programs program ON program.id = period.student_program_id
             JOIN owned_students owned ON owned.student_id = program.student_id
@@ -153,9 +163,29 @@ public class JdbcTeacherDashboardQuery implements TeacherDashboardQuery {
                     AND published_report.status = 'PUBLISHED'
               )
         ) attention
-        ORDER BY event_at DESC, event_type ASC, resource_id ASC
-        LIMIT :limit
+        WHERE (CAST(:attentionType AS text) IS NULL OR event_type = :attentionType)
+          AND (CAST(:studentId AS uuid) IS NULL OR student_id = :studentId)
         """;
+
+    private static final String ATTENTION_ORDER =
+            """
+        ORDER BY CASE event_type
+                     WHEN 'SUBMISSION_NEEDS_REVIEW' THEN 1
+                     WHEN 'HOMEWORK_OVERDUE' THEN 2
+                     WHEN 'LEARNING_PERIOD_REPORT_MISSING' THEN 3
+                 END,
+                 event_at ASC,
+                 resource_id ASC
+        """;
+
+    private static final String ATTENTION_SQL =
+            ATTENTION_ROWS_SQL + ATTENTION_ORDER + "LIMIT :limit";
+
+    private static final String ATTENTION_PAGE_SQL =
+            ATTENTION_ROWS_SQL + ATTENTION_ORDER + "LIMIT :size OFFSET :offset";
+
+    private static final String ATTENTION_COUNT_SQL =
+            "SELECT count(*) FROM (" + ATTENTION_ROWS_SQL + ") attention_page";
 
     private final JdbcClient jdbcClient;
 
@@ -178,9 +208,40 @@ public class JdbcTeacherDashboardQuery implements TeacherDashboardQuery {
         return jdbcClient
                 .sql(ATTENTION_SQL)
                 .param("teacherUserId", teacherUserId)
+                .param("attentionType", null)
+                .param("studentId", null)
                 .param("limit", limit)
                 .query(JdbcTeacherDashboardQuery::mapAttentionItem)
                 .list();
+    }
+
+    @Override
+    public AttentionPage findAttentionItems(
+            UUID teacherUserId,
+            TeacherDashboardAttentionType type,
+            UUID studentId,
+            int page,
+            int size) {
+        String attentionType = type == null ? null : type.name();
+        long totalElements =
+                jdbcClient
+                        .sql(ATTENTION_COUNT_SQL)
+                        .param("teacherUserId", teacherUserId)
+                        .param("attentionType", attentionType)
+                        .param("studentId", studentId)
+                        .query(Long.class)
+                        .single();
+        List<TeacherDashboardResult.AttentionItem> items =
+                jdbcClient
+                        .sql(ATTENTION_PAGE_SQL)
+                        .param("teacherUserId", teacherUserId)
+                        .param("attentionType", attentionType)
+                        .param("studentId", studentId)
+                        .param("size", size)
+                        .param("offset", (long) page * size)
+                        .query(JdbcTeacherDashboardQuery::mapAttentionItem)
+                        .list();
+        return new AttentionPage(items, totalElements);
     }
 
     private static Summary mapSummary(ResultSet resultSet, int rowNumber) throws SQLException {
@@ -199,6 +260,8 @@ public class JdbcTeacherDashboardQuery implements TeacherDashboardQuery {
                 resultSet.getString("display_name"),
                 resultSet.getObject("resource_id", UUID.class),
                 resultSet.getTimestamp("event_at").toInstant(),
+                resultSet.getString("homework_title"),
+                resultSet.getString("task_title"),
                 new TeacherDashboardResult.Navigation(
                         resultSet.getObject("student_program_id", UUID.class),
                         resultSet.getObject("homework_id", UUID.class),

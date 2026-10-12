@@ -3,6 +3,7 @@ package com.tutorplatform.session.application;
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
 import com.tutorplatform.program.application.ProgramQuery;
 import com.tutorplatform.session.application.exception.*;
+import com.tutorplatform.session.domain.AttendanceStatus;
 import com.tutorplatform.session.domain.LessonSessionEntity;
 import com.tutorplatform.session.domain.LessonSessionRepository;
 import com.tutorplatform.session.domain.LessonSessionTopicEntity;
@@ -10,6 +11,7 @@ import com.tutorplatform.session.domain.LessonSessionTopicRepository;
 import com.tutorplatform.shared.time.InstantPrecision;
 import com.tutorplatform.student.application.management.StudentNotFoundException;
 import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
+import java.time.Instant;
 import java.util.*;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -86,12 +88,24 @@ public class LessonSessionService {
     @Transactional(readOnly = true)
     public LessonSessionPageResult listLessonSessions(
             AuthenticatedUser principal, UUID studentId, int page, int size) {
-        return listLessonSessions(principal, studentId, page, size, "startedAt,desc");
+        return listLessonSessions(principal, studentId, page, size, "startedAt,desc", null, null);
     }
 
     @Transactional(readOnly = true)
     public LessonSessionPageResult listLessonSessions(
             AuthenticatedUser principal, UUID studentId, int page, int size, String sort) {
+        return listLessonSessions(principal, studentId, page, size, sort, null, null);
+    }
+
+    @Transactional(readOnly = true)
+    public LessonSessionPageResult listLessonSessions(
+            AuthenticatedUser principal,
+            UUID studentId,
+            int page,
+            int size,
+            String sort,
+            AttendanceStatus attendanceStatus,
+            Instant startedBefore) {
         SortParameters sortParameters = validateListParameters(page, size, sort);
         UUID teacherId = currentTeacherId(principal);
         requireOwnedStudent(teacherId, studentId);
@@ -102,7 +116,9 @@ public class LessonSessionService {
                         page,
                         size,
                         sortParameters.field(),
-                        sortParameters.ascending());
+                        sortParameters.ascending(),
+                        attendanceStatus,
+                        startedBefore);
         Set<UUID> sessionIds =
                 sessions.items().stream()
                         .map(LessonSessionEntity::id)

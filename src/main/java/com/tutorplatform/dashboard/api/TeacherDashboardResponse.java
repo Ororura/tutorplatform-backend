@@ -34,15 +34,19 @@ public record TeacherDashboardResponse(
             @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "uuid") UUID resourceId,
             @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "date-time")
                     Instant eventAt,
+            @Schema(nullable = true) String homeworkTitle,
+            @Schema(nullable = true) String taskTitle,
             @Schema(requiredMode = Schema.RequiredMode.REQUIRED) Navigation navigation) {
 
-        private static AttentionItem from(TeacherDashboardResult.AttentionItem item) {
+        static AttentionItem from(TeacherDashboardResult.AttentionItem item) {
             return new AttentionItem(
                     item.type(),
                     item.studentId(),
                     item.displayName(),
                     item.resourceId(),
                     item.eventAt(),
+                    item.homeworkTitle(),
+                    item.taskTitle(),
                     Navigation.from(item.navigation()));
         }
     }
