@@ -71,7 +71,7 @@ class SubmissionApiIntegrationTest extends PostgresIntegrationTest {
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
-        PostgresIntegrationTest.configurePostgres(registry, "test_submission_api", "008");
+        PostgresIntegrationTest.configurePostgres(registry, "test_submission_api", "017");
         registry.add("spring.jpa.properties.hibernate.generate_statistics", () -> "true");
     }
 
@@ -577,7 +577,8 @@ class SubmissionApiIntegrationTest extends PostgresIntegrationTest {
                                 .value(fixture.student().getId().toString()))
                 .andExpect(jsonPath("$.totalElements").value(2))
                 .andExpect(jsonPath("$.totalPages").value(2));
-        assertThat(statistics.getPrepareStatementCount()).isLessThanOrEqualTo(4);
+        // One bounded query fetches code summaries for the entire page.
+        assertThat(statistics.getPrepareStatementCount()).isLessThanOrEqualTo(5);
 
         mockMvc.perform(
                         get(teacherSubmissionsUrl(fixture.student().getId()))

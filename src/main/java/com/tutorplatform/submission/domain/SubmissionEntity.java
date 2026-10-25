@@ -16,6 +16,7 @@ public class SubmissionEntity {
     private final Instant submittedAt;
     private final Instant createdAt;
     private SubmissionStatus status;
+    private String reviewComment;
 
     public SubmissionEntity(
             UUID id,
@@ -106,6 +107,21 @@ public class SubmissionEntity {
         return createdAt;
     }
 
+    public String getReviewComment() {
+        return reviewComment;
+    }
+
+    public void restoreReviewComment(String comment) {
+        this.reviewComment = comment;
+    }
+
+    public void review(SubmissionStatus reviewStatus, String comment) {
+        if (comment != null && comment.length() > 4000)
+            throw new IllegalArgumentException("Comment is too long");
+        review(reviewStatus);
+        reviewComment = comment == null || comment.isBlank() ? null : comment.strip();
+    }
+
     public void review(SubmissionStatus reviewStatus) {
         if (status != SubmissionStatus.NEEDS_REVIEW) {
             throw new IllegalStateException("Submission is not awaiting review");
@@ -114,6 +130,12 @@ public class SubmissionEntity {
             throw new IllegalArgumentException("Review status must be PASSED or FAILED");
         }
         status = reviewStatus;
+    }
+
+    public void awaitReview() {
+        if (status != SubmissionStatus.SUBMITTED)
+            throw new IllegalStateException("Submission is not awaiting execution");
+        status = SubmissionStatus.NEEDS_REVIEW;
     }
 
     public void finishCodeExecution(SubmissionStatus finalStatus) {

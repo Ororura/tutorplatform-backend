@@ -71,7 +71,7 @@ class SubmissionPersistenceIntegrationTest extends PostgresIntegrationTest {
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
-        PostgresIntegrationTest.configurePostgres(registry, "test_submission_persistence", "008");
+        PostgresIntegrationTest.configurePostgres(registry, "test_submission_persistence", "017");
     }
 
     @Autowired private UserRepository userRepository;

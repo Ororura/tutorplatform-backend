@@ -1,6 +1,7 @@
 package com.tutorplatform.submission.domain;
 
 public enum CodeExecutionStatus {
+    SKIPPED,
     PENDING,
     RUNNING,
     PASSED,

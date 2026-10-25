@@ -70,7 +70,9 @@ public interface TeacherSubmissionApi {
             @Parameter(schema = @Schema(format = "uuid")) UUID studentId,
             @Parameter(schema = @Schema(format = "uuid")) UUID submissionId);
 
-    @Operation(operationId = "reviewTextSubmission", summary = "Review a text submission")
+    @Operation(
+            operationId = "reviewTextSubmission",
+            summary = "Review a text or web exercise submission")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Submission reviewed"),
         @ApiResponse(

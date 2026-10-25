@@ -7,7 +7,8 @@ COPY src ./src
 RUN ./gradlew clean build -x test --no-daemon
 
 FROM eclipse-temurin:25-jre-alpine
-RUN addgroup -S app \
+RUN apk add --no-cache 'brotli-libs>=1.2.1-r0' \
+    && addgroup -S app \
     && adduser -S app -G app \
     && mkdir -p /var/lib/tutor/files \
     && chown -R app:app /var/lib/tutor

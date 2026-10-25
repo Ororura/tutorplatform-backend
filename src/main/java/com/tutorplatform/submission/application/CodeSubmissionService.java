@@ -10,6 +10,7 @@ import com.tutorplatform.submission.domain.CodeExecutionStatus;
 import com.tutorplatform.task.application.StudentTopicTaskService;
 import com.tutorplatform.task.application.TaskQuery;
 import com.tutorplatform.task.application.exception.TaskNotFoundException;
+import com.tutorplatform.task.domain.programming.ProgrammingLanguage;
 import com.tutorplatform.task.domain.programming.TaskTestCase;
 import com.tutorplatform.task.domain.task.TaskStatus;
 import com.tutorplatform.task.domain.task.TaskType;
@@ -78,9 +79,22 @@ public class CodeSubmissionService {
         TaskQuery.CodeTaskConfiguration codeTask =
                 taskQuery.findCodeTaskConfiguration(taskId).orElseThrow(TaskNotFoundException::new);
         requireExecutable(codeTask);
+        var reviewMode = WebExerciseSource.ReviewMode.AUTO;
+        if (codeTask.programmingConfig().language() == ProgrammingLanguage.WEB) {
+            try {
+                sourceCode =
+                        WebExerciseSource.normalize(
+                                codeTask.programmingConfig().starterCode(), sourceCode);
+                reviewMode =
+                        WebExerciseSource.reviewMode(codeTask.programmingConfig().starterCode());
+            } catch (IllegalArgumentException exception) {
+                throw new InvalidSubmissionException("sourceCode", exception.getMessage());
+            }
+        }
         executionRateLimiter.acquire(studentId);
 
-        int configuredTestCount = codeTask.testCases().size();
+        int configuredTestCount =
+                reviewMode == WebExerciseSource.ReviewMode.MANUAL ? 0 : codeTask.testCases().size();
         SubmissionResult pending =
                 transactions.createPending(
                         studentId,
@@ -90,6 +104,10 @@ public class CodeSubmissionService {
                         sourceCode,
                         configuredTestCount);
 
+        if (reviewMode == WebExerciseSource.ReviewMode.MANUAL) {
+            return transactions.finishForReview(
+                    pending.id(), CodeExecutionStatus.SKIPPED, 0, 0, 0, null, null);
+        }
         UUID executionId = UUID.randomUUID();
         ExecutionResult executionResult;
         try {
@@ -108,6 +126,16 @@ public class CodeSubmissionService {
 
         boolean systemError = executionResult.status() == ExecutionStatus.SYSTEM_ERROR;
         boolean hasHiddenTests = codeTask.testCases().stream().anyMatch(TaskTestCase::hidden);
+        if (!systemError && reviewMode == WebExerciseSource.ReviewMode.HYBRID) {
+            return transactions.finishForReview(
+                    pending.id(),
+                    CodeExecutionStatus.valueOf(executionResult.status().name()),
+                    executionResult.passedTests(),
+                    configuredTestCount,
+                    executionResult.executionTimeMs(),
+                    hasHiddenTests ? null : bounded(executionResult.stdoutExcerpt()),
+                    hasHiddenTests ? null : bounded(executionResult.stderrExcerpt()));
+        }
         return transactions.finish(
                 pending.id(),
                 CodeExecutionStatus.valueOf(executionResult.status().name()),

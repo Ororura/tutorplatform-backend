@@ -63,6 +63,46 @@ public class CodeSubmissionTransactions {
             long executionTimeMs,
             String stdoutExcerpt,
             String stderrExcerpt) {
+        return finishInternal(
+                submissionId,
+                executionStatus,
+                passedTests,
+                totalTests,
+                executionTimeMs,
+                stdoutExcerpt,
+                stderrExcerpt,
+                false);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public SubmissionResult finishForReview(
+            UUID submissionId,
+            CodeExecutionStatus executionStatus,
+            int passedTests,
+            int totalTests,
+            long executionTimeMs,
+            String stdoutExcerpt,
+            String stderrExcerpt) {
+        return finishInternal(
+                submissionId,
+                executionStatus,
+                passedTests,
+                totalTests,
+                executionTimeMs,
+                stdoutExcerpt,
+                stderrExcerpt,
+                true);
+    }
+
+    private SubmissionResult finishInternal(
+            UUID submissionId,
+            CodeExecutionStatus executionStatus,
+            int passedTests,
+            int totalTests,
+            long executionTimeMs,
+            String stdoutExcerpt,
+            String stderrExcerpt,
+            boolean reviewRequired) {
         SubmissionEntity submission =
                 submissionRepository
                         .findById(submissionId)
@@ -72,15 +112,18 @@ public class CodeSubmissionTransactions {
                         .findBySubmissionId(submissionId)
                         .orElseThrow(SubmissionNotFoundException::new);
         SubmissionStatus submissionStatus =
-                switch (executionStatus) {
-                    case PASSED -> SubmissionStatus.PASSED;
-                    case SYSTEM_ERROR -> SubmissionStatus.SYSTEM_ERROR;
-                    case FAILED, TIMEOUT, RUNTIME_ERROR -> SubmissionStatus.FAILED;
-                    case PENDING, RUNNING ->
-                            throw new IllegalArgumentException(
-                                    "A final execution status is required");
-                };
-        submission.finishCodeExecution(submissionStatus);
+                reviewRequired
+                        ? SubmissionStatus.NEEDS_REVIEW
+                        : switch (executionStatus) {
+                            case PASSED -> SubmissionStatus.PASSED;
+                            case SYSTEM_ERROR -> SubmissionStatus.SYSTEM_ERROR;
+                            case FAILED, TIMEOUT, RUNTIME_ERROR -> SubmissionStatus.FAILED;
+                            case SKIPPED, PENDING, RUNNING ->
+                                    throw new IllegalArgumentException(
+                                            "A final execution status is required");
+                        };
+        if (reviewRequired) submission.awaitReview();
+        else submission.finishCodeExecution(submissionStatus);
         code.complete(
                 executionStatus,
                 passedTests,

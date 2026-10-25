@@ -1,6 +1,7 @@
 package com.tutorplatform.task.application;
 
 import com.tutorplatform.auth.infrastructure.security.AuthenticatedUser;
+import com.tutorplatform.execution.application.WebExerciseSource;
 import com.tutorplatform.program.application.ProgramQuery;
 import com.tutorplatform.subject.domain.SubjectEntity;
 import com.tutorplatform.subject.domain.SubjectRepository;
@@ -179,6 +180,14 @@ public class TaskService {
         if (command.memoryLimitMb() == null) {
             throw new InvalidProgrammingTaskConfigException("memoryLimitMb", "is required");
         }
+        var language = command.language() == null ? current.language() : command.language();
+        if ((language == ProgrammingLanguage.WEB)
+                != (current.language() == ProgrammingLanguage.WEB)) {
+            throw new InvalidProgrammingTaskConfigException(
+                    "language",
+                    "Create a separate task when switching between web and console execution");
+        }
+        validateWebStarter(language, command.starterCode());
         try {
             return programmingConfigRepository.saveAndFlush(
                     new ProgrammingTaskConfig(
@@ -355,6 +364,7 @@ public class TaskService {
             throw new InvalidProgrammingTaskConfigException(
                     "programmingConfig", "all limits and executionEnabled are required");
         }
+        validateWebStarter(input.language(), input.starterCode());
         try {
             return new ProgrammingTaskConfig(
                     taskId,
@@ -365,6 +375,17 @@ public class TaskService {
                     input.memoryLimitMb());
         } catch (IllegalArgumentException exception) {
             throw invalidConfig(exception);
+        }
+    }
+
+    private void validateWebStarter(ProgrammingLanguage language, String starter) {
+        if (language == ProgrammingLanguage.WEB) {
+            try {
+                WebExerciseSource.manifest(starter);
+            } catch (IllegalArgumentException exception) {
+                throw new InvalidProgrammingTaskConfigException(
+                        "starterCode", exception.getMessage());
+            }
         }
     }
 

@@ -59,7 +59,7 @@ class S3FileMaterialApiIntegrationTest extends PostgresIntegrationTest {
 
     @DynamicPropertySource
     static void configure(DynamicPropertyRegistry registry) {
-        PostgresIntegrationTest.configurePostgres(registry, "test_s3_file_material_api", "008");
+        PostgresIntegrationTest.configurePostgres(registry, "test_s3_file_material_api", "017");
         registry.add("app.file-storage.provider", () -> "S3");
         registry.add("app.file-storage.s3.endpoint", () -> "http://localhost:9000");
         registry.add("app.file-storage.s3.region", () -> "us-east-1");

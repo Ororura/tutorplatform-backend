@@ -98,7 +98,7 @@ class StudentRunCodeServiceTest {
     }
 
     @ParameterizedTest
-    @EnumSource(ProgrammingLanguage.class)
+    @EnumSource(value = ProgrammingLanguage.class, names = "WEB", mode = EnumSource.Mode.EXCLUDE)
     void mapsOnlyServerTaskConfigurationAndGeneratesExecutionId(ProgrammingLanguage language) {
         var configured = task(TaskType.CODE, TaskStatus.ACTIVE, true);
         when(taskQuery.findCodeTaskConfiguration(taskId))

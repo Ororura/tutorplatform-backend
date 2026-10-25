@@ -52,7 +52,7 @@ class TaskApiIntegrationTest extends PostgresIntegrationTest {
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
-        PostgresIntegrationTest.configurePostgres(registry, "test_task_api", "008");
+        PostgresIntegrationTest.configurePostgres(registry, "test_task_api", "017");
         registry.add("spring.jpa.properties.hibernate.generate_statistics", () -> "true");
     }
 
@@ -253,6 +253,77 @@ class TaskApiIntegrationTest extends PostgresIntegrationTest {
                                 .class);
 
         assertThat(taskRepository.findAllByTeacherId(fixture.teacher().id())).hasSize(before);
+    }
+
+    @Test
+    void teacherCreatesAndActivatesWebExerciseAndCannotReplaceItsRuntimeOrBreakManifest()
+            throws Exception {
+        TaskFixture fixture = createFixture();
+        var body =
+                (com.fasterxml.jackson.databind.node.ObjectNode)
+                        objectMapper.readTree(
+                                codeCreateRequest(fixture.subject().id(), 10000, 512));
+        String starter =
+                "{\"html\":\"<p>Practice</p>\",\"css\":\"\",\"javascript\":\"\",\"editableFiles\":[\"javascript\"],\"reviewMode\":\"HYBRID\"}";
+        var config =
+                (com.fasterxml.jackson.databind.node.ObjectNode) body.path("programmingConfig");
+        config.put("language", "WEB").put("starterCode", starter);
+        for (var test : body.path("testCases")) {
+            ((com.fasterxml.jackson.databind.node.ObjectNode) test)
+                    .put(
+                            "inputText",
+                            "{\"label\":\"Paragraph\",\"script\":\"assert.equal(await page.locator('p').count(),1);\"}")
+                    .put("expectedOutput", "PASS");
+        }
+        var created =
+                mockMvc.perform(
+                                post(tasksUrl())
+                                        .with(user(fixture.principal()))
+                                        .with(csrf())
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(body.toString()))
+                        .andExpect(status().isCreated())
+                        .andExpect(jsonPath("$.programmingConfig.language").value("WEB"))
+                        .andReturn();
+        UUID id = UUID.fromString(json(created).path("id").asText());
+        mockMvc.perform(
+                        patch(taskUrl(id))
+                                .with(user(fixture.principal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        updateRequest(
+                                                "Web exercise",
+                                                "Practice",
+                                                "EASY",
+                                                "ACTIVE",
+                                                json(created).path("version").asLong())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("ACTIVE"));
+        config.put("starterCode", "{}");
+        mockMvc.perform(
+                        put(taskUrl(id) + "/programming-config")
+                                .with(user(fixture.principal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(config.toString()))
+                .andExpect(status().isBadRequest());
+        config.put("starterCode", starter).put("language", "PYTHON");
+        mockMvc.perform(
+                        put(taskUrl(id) + "/programming-config")
+                                .with(user(fixture.principal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(config.toString()))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(get(taskUrl(id)).with(user(fixture.principal())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.programmingConfig.starterCode").value(starter));
+        mockMvc.perform(get("/api/v1/teacher/subjects").with(user(fixture.principal())))
+                .andExpect(status().isOk())
+                .andExpect(
+                        jsonPath("$[?(@.code == 'WEB')].name")
+                                .value(org.hamcrest.Matchers.hasItem("Веб-разработка")));
     }
 
     @Test

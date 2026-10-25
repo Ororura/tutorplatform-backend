@@ -52,6 +52,9 @@ public class SubmissionDatabaseModel {
     @Column(nullable = false, length = 24)
     private SubmissionStatus status;
 
+    @Column(name = "review_comment")
+    private String reviewComment;
+
     @Column(name = "text_answer")
     private String textAnswer;
 
@@ -72,21 +75,25 @@ public class SubmissionDatabaseModel {
         homeworkItemId = submission.getHomeworkItemId();
         attemptNo = submission.getAttemptNo();
         status = Objects.requireNonNull(submission.getStatus());
+        reviewComment = submission.getReviewComment();
         textAnswer = submission.getTextAnswer();
         submittedAt = Objects.requireNonNull(submission.getSubmittedAt());
     }
 
     SubmissionEntity toEntity() {
-        return new SubmissionEntity(
-                id,
-                studentId,
-                studentProgramId,
-                taskId,
-                homeworkItemId,
-                attemptNo,
-                status,
-                textAnswer,
-                submittedAt,
-                createdAt);
+        var submission =
+                new SubmissionEntity(
+                        id,
+                        studentId,
+                        studentProgramId,
+                        taskId,
+                        homeworkItemId,
+                        attemptNo,
+                        status,
+                        textAnswer,
+                        submittedAt,
+                        createdAt);
+        submission.restoreReviewComment(reviewComment);
+        return submission;
     }
 }

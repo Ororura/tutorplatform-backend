@@ -57,7 +57,7 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
-        PostgresIntegrationTest.configurePostgres(registry, "test_code_submission_api", "008");
+        PostgresIntegrationTest.configurePostgres(registry, "test_code_submission_api", "017");
         registry.add("execution.abuse-protection.limit", () -> "3");
         registry.add("execution.abuse-protection.window", () -> "1h");
         registry.add("execution.abuse-protection.max-source-code-bytes", () -> "64");
@@ -87,7 +87,10 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
     @MockitoBean private ExecutionPort executionPort;
 
     @org.junit.jupiter.params.ParameterizedTest
-    @org.junit.jupiter.params.provider.EnumSource(ProgrammingLanguage.class)
+    @org.junit.jupiter.params.provider.EnumSource(
+            value = ProgrammingLanguage.class,
+            names = "WEB",
+            mode = EnumSource.Mode.EXCLUDE)
     void submitPersistsServerOwnedCodeResultAndCompletesHomework(ProgrammingLanguage language)
             throws Exception {
         Fixture fixture =
@@ -731,6 +734,154 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
         assertThat(count("submissions")).isEqualTo(submissionsAtLimit);
     }
 
+    @ParameterizedTest
+    @CsvSource({
+        "AUTO,false,PASSED",
+        "MANUAL,false,NEEDS_REVIEW",
+        "HYBRID,false,NEEDS_REVIEW",
+        "MANUAL,true,NEEDS_REVIEW",
+        "HYBRID,true,NEEDS_REVIEW"
+    })
+    void webModesPreserveSourceAndRequireTeacherDecision(
+            String mode, boolean practice, String expected) throws Exception {
+        Fixture fixture =
+                createFixture(
+                        "web-" + mode,
+                        TaskType.CODE,
+                        TaskStatus.ACTIVE,
+                        true,
+                        HomeworkStatus.ASSIGNED);
+        String starter =
+                "{\"html\":\"\",\"css\":\"\",\"javascript\":\"\",\"editableFiles\":[\"javascript\"],\"reviewMode\":\""
+                        + mode
+                        + "\"}";
+        String source = "{\"html\":\"\",\"css\":\"\",\"javascript\":\"\"}";
+        programmingConfigRepository.saveAndFlush(
+                new ProgrammingTaskConfig(
+                        fixture.taskId(), ProgrammingLanguage.WEB, starter, true, 10000, 512));
+        when(executionPort.execute(any()))
+                .thenAnswer(
+                        invocation -> {
+                            ExecutionRequest request = invocation.getArgument(0);
+                            assertThat(request.language()).isEqualTo(ExecutionLanguage.WEB);
+                            return new ExecutionResult(
+                                    request.executionId(),
+                                    ExecutionStatus.PASSED,
+                                    2,
+                                    2,
+                                    10,
+                                    "PASS",
+                                    null,
+                                    List.of());
+                        });
+        String response =
+                (practice ? submitPractice(fixture, source) : submit(fixture, source))
+                        .andExpect(status().isCreated())
+                        .andExpect(jsonPath("$.status").value(expected))
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+        UUID id = UUID.fromString(objectMapper.readTree(response).path("id").asText());
+        if (mode.equals("MANUAL")) {
+            verifyNoInteractions(executionPort);
+            assertThat(
+                            codeSubmissionRepository
+                                    .findBySubmissionId(id)
+                                    .orElseThrow()
+                                    .getExecutionStatus())
+                    .isEqualTo(CodeExecutionStatus.SKIPPED);
+        }
+        assertThat(homeworkRepository.findById(fixture.homeworkId()).orElseThrow().getStatus())
+                .isEqualTo(
+                        mode.equals("AUTO") && !practice
+                                ? HomeworkStatus.COMPLETED
+                                : HomeworkStatus.ASSIGNED);
+        mockMvc.perform(
+                        get(
+                                        "/api/v1/teacher/students/{studentId}/submissions/{id}",
+                                        fixture.studentId(),
+                                        id)
+                                .with(user(fixture.teacherPrincipal())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sourceCode").isString());
+        mockMvc.perform(
+                        get(
+                                        "/api/v1/teacher/students/{studentId}/submissions/{id}",
+                                        fixture.studentId(),
+                                        id)
+                                .with(user(fixture.principal())))
+                .andExpect(status().isForbidden());
+        Fixture foreign =
+                createFixture(
+                        "foreign-web",
+                        TaskType.CODE,
+                        TaskStatus.ACTIVE,
+                        true,
+                        HomeworkStatus.ASSIGNED);
+        mockMvc.perform(
+                        get(
+                                        "/api/v1/teacher/students/{studentId}/submissions/{id}",
+                                        fixture.studentId(),
+                                        id)
+                                .with(user(foreign.teacherPrincipal())))
+                .andExpect(status().isNotFound());
+        if (!mode.equals("AUTO")) {
+            mockMvc.perform(
+                            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                                    .patch(
+                                            "/api/v1/teacher/students/{studentId}/submissions/{id}/review",
+                                            fixture.studentId(),
+                                            id)
+                                    .with(user(fixture.teacherPrincipal()))
+                                    .with(csrf())
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(
+                                            "{\"status\":\"PASSED\",\"comment\":\"Хорошая работа\"}"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.reviewComment").value("Хорошая работа"));
+            mockMvc.perform(
+                            get("/api/v1/student/submissions/{id}", id)
+                                    .with(user(fixture.principal())))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.reviewComment").value("Хорошая работа"));
+            assertThat(homeworkRepository.findById(fixture.homeworkId()).orElseThrow().getStatus())
+                    .isEqualTo(practice ? HomeworkStatus.ASSIGNED : HomeworkStatus.COMPLETED);
+        }
+        assertThat(
+                        objectMapper.readTree(
+                                codeSubmissionRepository
+                                        .findBySubmissionId(id)
+                                        .orElseThrow()
+                                        .getSourceCode()))
+                .isEqualTo(objectMapper.readTree(source));
+    }
+
+    @Test
+    void webLockedFilesAreRejectedBeforeExecutionOrPersistence() throws Exception {
+        Fixture fixture =
+                createFixture(
+                        "web-locked",
+                        TaskType.CODE,
+                        TaskStatus.ACTIVE,
+                        true,
+                        HomeworkStatus.ASSIGNED);
+        programmingConfigRepository.saveAndFlush(
+                new ProgrammingTaskConfig(
+                        fixture.taskId(),
+                        ProgrammingLanguage.WEB,
+                        "{\"html\":\"\",\"css\":\"\",\"javascript\":\"\",\"editableFiles\":[\"javascript\"]}",
+                        true,
+                        10000,
+                        512));
+        long before = count("submissions");
+        String invalid = "{\"html\":\"changed\",\"css\":\"\",\"javascript\":\"\"}";
+        submit(fixture, invalid).andExpect(status().isBadRequest());
+        runPractice(fixture, fixture.studentProgramId(), fixture.topicId(), invalid)
+                .andExpect(status().isBadRequest());
+        assertThat(count("submissions")).isEqualTo(before);
+        verifyNoInteractions(executionPort);
+    }
+
     private void stubFailedExecution() {
         when(executionPort.execute(any()))
                 .thenAnswer(
@@ -988,6 +1139,12 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
                         "hash",
                         true,
                         List.of(new SimpleGrantedAuthority("ROLE_STUDENT"))),
+                new AuthenticatedUser(
+                        teacherUser.id(),
+                        teacherUser.email(),
+                        "hash",
+                        true,
+                        List.of(new SimpleGrantedAuthority("ROLE_TEACHER"))),
                 student.getId(),
                 studentProgram.id(),
                 topic.id(),
@@ -998,6 +1155,7 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
 
     private record Fixture(
             AuthenticatedUser principal,
+            AuthenticatedUser teacherPrincipal,
             UUID studentId,
             UUID studentProgramId,
             UUID topicId,

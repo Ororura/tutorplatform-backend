@@ -23,7 +23,7 @@ class IdentityRepositoryIntegrationTest extends PostgresIntegrationTest {
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
-        PostgresIntegrationTest.configurePostgres(registry, "test_identity_repository", "008");
+        PostgresIntegrationTest.configurePostgres(registry, "test_identity_repository", "017");
     }
 
     @Autowired private UserRepository userRepository;

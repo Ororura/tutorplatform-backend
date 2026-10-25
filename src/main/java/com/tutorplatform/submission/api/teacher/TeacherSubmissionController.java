@@ -52,6 +52,6 @@ public class TeacherSubmissionController implements TeacherSubmissionApi {
             @Valid @RequestBody ReviewTextSubmissionRequest request) {
         return TeacherSubmissionResponse.from(
                 submissionService.reviewTextSubmission(
-                        principal, studentId, submissionId, request.status()));
+                        principal, studentId, submissionId, request.status(), request.comment()));
     }
 }

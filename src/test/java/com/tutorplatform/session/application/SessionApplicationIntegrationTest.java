@@ -47,7 +47,7 @@ class SessionApplicationIntegrationTest extends PostgresIntegrationTest {
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
-        PostgresIntegrationTest.configurePostgres(registry, "test_session_application", "008");
+        PostgresIntegrationTest.configurePostgres(registry, "test_session_application", "017");
     }
 
     @Autowired private LessonSessionService lessonSessionService;
