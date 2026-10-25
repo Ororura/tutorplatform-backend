@@ -42,7 +42,7 @@ class HomeworkApplicationIntegrationTest extends PostgresIntegrationTest {
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
-        PostgresIntegrationTest.configurePostgres(registry, "test_homework_application", "008");
+        PostgresIntegrationTest.configurePostgres(registry, "test_homework_application", "017");
     }
 
     @Autowired private HomeworkService homeworkService;

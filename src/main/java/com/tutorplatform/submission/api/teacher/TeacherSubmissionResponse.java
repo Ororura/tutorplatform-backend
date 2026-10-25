@@ -1,5 +1,6 @@
 package com.tutorplatform.submission.api.teacher;
 
+import com.tutorplatform.submission.api.CodeSubmissionExecutionResponse;
 import com.tutorplatform.submission.application.SubmissionResult;
 import com.tutorplatform.submission.domain.SubmissionStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -15,7 +16,10 @@ public record TeacherSubmissionResponse(
         @Schema(requiredMode = Schema.RequiredMode.REQUIRED) SubmissionStatus status,
         @Schema(nullable = true) String textAnswer,
         @Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "date-time")
-                Instant submittedAt) {
+                Instant submittedAt,
+        @Schema(nullable = true) String sourceCode,
+        @Schema(nullable = true) CodeSubmissionExecutionResponse execution,
+        @Schema(nullable = true) String reviewComment) {
     public static TeacherSubmissionResponse from(SubmissionResult result) {
         return new TeacherSubmissionResponse(
                 result.id(),
@@ -25,6 +29,11 @@ public record TeacherSubmissionResponse(
                 result.attemptNo(),
                 result.status(),
                 result.textAnswer(),
-                result.submittedAt());
+                result.submittedAt(),
+                result.execution() == null ? null : result.execution().sourceCode(),
+                result.execution() == null
+                        ? null
+                        : CodeSubmissionExecutionResponse.from(result.execution()),
+                result.reviewComment());
     }
 }

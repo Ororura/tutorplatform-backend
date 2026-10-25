@@ -34,7 +34,7 @@ class ProgressReportApiIntegrationTest extends PostgresIntegrationTest {
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
-        PostgresIntegrationTest.configurePostgres(registry, "test_progress_report_api", "008");
+        PostgresIntegrationTest.configurePostgres(registry, "test_progress_report_api", "017");
     }
 
     private static final String REPORTS_URL = "/api/v1/teacher/reports";

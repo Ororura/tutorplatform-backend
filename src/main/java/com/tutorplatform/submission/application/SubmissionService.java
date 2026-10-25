@@ -8,6 +8,7 @@ import com.tutorplatform.submission.application.exception.*;
 import com.tutorplatform.submission.domain.*;
 import com.tutorplatform.task.application.TaskQuery;
 import com.tutorplatform.task.application.exception.TaskNotFoundException;
+import com.tutorplatform.task.domain.programming.ProgrammingLanguage;
 import com.tutorplatform.task.domain.task.TaskType;
 import java.time.Instant;
 import java.util.Set;
@@ -149,8 +150,18 @@ public class SubmissionService {
                         size,
                         sortParameters.field(),
                         sortParameters.ascending());
+        var codeSummaries =
+                codeSubmissionRepository.findSummaries(
+                        submissions.items().stream().map(SubmissionEntity::getId).toList());
         return new SubmissionPageResult(
-                submissions.items().stream().map(SubmissionResult::from).toList(),
+                submissions.items().stream()
+                        .map(
+                                item -> {
+                                    var result = SubmissionResult.from(item);
+                                    var code = codeSummaries.get(item.getId());
+                                    return code == null ? result : result.withCodeSubmission(code);
+                                })
+                        .toList(),
                 page,
                 size,
                 submissions.totalElements(),
@@ -163,7 +174,7 @@ public class SubmissionService {
         UUID teacherId = currentTeacherId(principal);
         SubmissionEntity submission =
                 requireTeacherStudentSubmission(teacherId, studentId, submissionId);
-        return SubmissionResult.from(submission);
+        return enrich(SubmissionResult.from(submission), true);
     }
 
     @Transactional
@@ -172,6 +183,16 @@ public class SubmissionService {
             UUID studentId,
             UUID submissionId,
             SubmissionStatus reviewStatus) {
+        return reviewTextSubmission(principal, studentId, submissionId, reviewStatus, null);
+    }
+
+    @Transactional
+    public SubmissionResult reviewTextSubmission(
+            AuthenticatedUser principal,
+            UUID studentId,
+            UUID submissionId,
+            SubmissionStatus reviewStatus,
+            String comment) {
         UUID teacherId = currentTeacherId(principal);
         SubmissionEntity submission =
                 requireTeacherStudentSubmission(teacherId, studentId, submissionId);
@@ -179,16 +200,24 @@ public class SubmissionService {
                 taskQuery
                         .findTask(submission.getTaskId())
                         .orElseThrow(SubmissionNotFoundException::new);
-        if (task.type() != TaskType.TEXT) {
-            throw new SubmissionNotReviewableException();
-        }
+        boolean webTask =
+                task.type() == TaskType.CODE
+                        && taskQuery
+                                .findCodeTaskConfiguration(task.id())
+                                .map(
+                                        config ->
+                                                config.programmingConfig() != null
+                                                        && config.programmingConfig().language()
+                                                                == ProgrammingLanguage.WEB)
+                                .orElse(false);
+        if (task.type() != TaskType.TEXT && !webTask) throw new SubmissionNotReviewableException();
         if (reviewStatus != SubmissionStatus.PASSED && reviewStatus != SubmissionStatus.FAILED) {
             throw new InvalidSubmissionReviewStatusException();
         }
         if (submission.getStatus() != SubmissionStatus.NEEDS_REVIEW) {
             throw new SubmissionNotReviewableException();
         }
-        submission.review(reviewStatus);
+        submission.review(reviewStatus, comment);
         SubmissionEntity saved = submissionRepository.saveAndFlush(submission);
         eventPublisher.publishEvent(
                 new SubmissionReviewedEvent(
@@ -198,7 +227,7 @@ public class SubmissionService {
                         saved.getTaskId(),
                         saved.getHomeworkItemId(),
                         saved.getStatus()));
-        return SubmissionResult.from(saved);
+        return enrich(SubmissionResult.from(saved), true);
     }
 
     private SubmissionEntity requireTeacherStudentSubmission(
@@ -238,6 +267,19 @@ public class SubmissionService {
     private void requireTeacherSubmissionContext(
             UUID teacherId, UUID studentId, SubmissionEntity submission) {
         if (submission.getHomeworkItemId() == null) {
+            var program =
+                    programQuery
+                            .findStudentProgram(submission.getStudentProgramId())
+                            .orElseThrow(SubmissionNotFoundException::new);
+            var task =
+                    taskQuery
+                            .findTask(submission.getTaskId())
+                            .orElseThrow(SubmissionNotFoundException::new);
+            if (!program.belongsToStudent(studentId)
+                    || !program.isAssignedBy(teacherId)
+                    || !task.isOwnedBy(teacherId)) {
+                throw new SubmissionNotFoundException();
+            }
             return;
         }
         SubmissionHomeworkContextQuery.HomeworkSubmissionContext homework =

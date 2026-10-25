@@ -9,4 +9,9 @@ public record ReviewTextSubmissionRequest(
                 @Schema(
                         requiredMode = Schema.RequiredMode.REQUIRED,
                         allowableValues = {"PASSED", "FAILED"})
-                SubmissionStatus status) {}
+                SubmissionStatus status,
+        @jakarta.validation.constraints.Size(max = 4000) String comment) {
+    public ReviewTextSubmissionRequest(SubmissionStatus status) {
+        this(status, null);
+    }
+}

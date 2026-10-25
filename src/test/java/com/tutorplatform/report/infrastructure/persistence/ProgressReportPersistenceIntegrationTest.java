@@ -27,7 +27,7 @@ class ProgressReportPersistenceIntegrationTest extends PostgresIntegrationTest {
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
         PostgresIntegrationTest.configurePostgres(
-                registry, "test_progress_report_persistence", "008");
+                registry, "test_progress_report_persistence", "017");
     }
 
     private static final Instant START = Instant.parse("2026-01-01T10:00:00Z");

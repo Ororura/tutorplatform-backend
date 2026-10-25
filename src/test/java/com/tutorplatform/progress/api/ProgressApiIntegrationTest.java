@@ -31,7 +31,7 @@ class ProgressApiIntegrationTest extends PostgresIntegrationTest {
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
-        PostgresIntegrationTest.configurePostgres(registry, "test_progress_api", "008");
+        PostgresIntegrationTest.configurePostgres(registry, "test_progress_api", "017");
     }
 
     @Autowired private MockMvc mockMvc;

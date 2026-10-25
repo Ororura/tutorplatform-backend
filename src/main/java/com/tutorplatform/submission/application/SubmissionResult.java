@@ -16,7 +16,31 @@ public record SubmissionResult(
         SubmissionStatus status,
         String textAnswer,
         Instant submittedAt,
-        CodeSubmissionResult execution) {
+        CodeSubmissionResult execution,
+        String reviewComment) {
+    public SubmissionResult(
+            UUID id,
+            UUID studentId,
+            UUID taskId,
+            UUID homeworkItemId,
+            int attemptNo,
+            SubmissionStatus status,
+            String textAnswer,
+            Instant submittedAt,
+            CodeSubmissionResult execution) {
+        this(
+                id,
+                studentId,
+                taskId,
+                homeworkItemId,
+                attemptNo,
+                status,
+                textAnswer,
+                submittedAt,
+                execution,
+                null);
+    }
+
     static SubmissionResult from(SubmissionEntity submission) {
         return new SubmissionResult(
                 submission.getId(),
@@ -27,7 +51,8 @@ public record SubmissionResult(
                 submission.getStatus(),
                 submission.getTextAnswer(),
                 submission.getSubmittedAt(),
-                null);
+                null,
+                submission.getReviewComment());
     }
 
     SubmissionResult withCodeSubmission(
@@ -41,7 +66,8 @@ public record SubmissionResult(
                 status,
                 textAnswer,
                 submittedAt,
-                CodeSubmissionResult.from(codeSubmission, includeSourceCode));
+                CodeSubmissionResult.from(codeSubmission, includeSourceCode),
+                reviewComment);
     }
 
     SubmissionResult withCodeSubmission(CodeSubmissionRepository.Summary summary) {
@@ -54,6 +80,7 @@ public record SubmissionResult(
                 status,
                 textAnswer,
                 submittedAt,
-                CodeSubmissionResult.from(summary));
+                CodeSubmissionResult.from(summary),
+                reviewComment);
     }
 }

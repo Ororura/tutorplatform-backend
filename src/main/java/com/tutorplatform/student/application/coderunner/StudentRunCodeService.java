@@ -10,6 +10,7 @@ import com.tutorplatform.student.application.management.StudentNotFoundException
 import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.task.application.StudentTopicTaskService;
 import com.tutorplatform.task.application.TaskQuery;
+import com.tutorplatform.task.domain.programming.ProgrammingLanguage;
 import com.tutorplatform.task.domain.programming.TaskTestCase;
 import com.tutorplatform.task.domain.task.TaskStatus;
 import com.tutorplatform.task.domain.task.TaskType;
@@ -91,6 +92,16 @@ public class StudentRunCodeService {
                         .findCodeTaskConfiguration(taskId)
                         .orElseThrow(() -> new RunCodeException(Reason.TASK_NOT_FOUND));
         requireExecutableTask(task);
+        if (task.programmingConfig().language() == ProgrammingLanguage.WEB) {
+            try {
+                sourceCode =
+                        WebExerciseSource.normalize(
+                                task.programmingConfig().starterCode(), sourceCode);
+            } catch (IllegalArgumentException exception) {
+                throw new com.tutorplatform.submission.application.exception
+                        .InvalidSubmissionException("sourceCode", exception.getMessage());
+            }
+        }
         executionRateLimiter.acquire(studentId);
 
         var config = task.programmingConfig();

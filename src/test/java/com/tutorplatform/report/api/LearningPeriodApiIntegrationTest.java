@@ -29,7 +29,7 @@ class LearningPeriodApiIntegrationTest extends PostgresIntegrationTest {
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
-        PostgresIntegrationTest.configurePostgres(registry, "test_learning_period_read_api", "008");
+        PostgresIntegrationTest.configurePostgres(registry, "test_learning_period_read_api", "017");
     }
 
     private static final Instant STARTED_AT = Instant.parse("2026-02-01T10:00:00Z");

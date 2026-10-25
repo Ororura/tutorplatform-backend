@@ -18,7 +18,8 @@ public record StudentSubmissionResponse(
                 Instant submittedAt,
         @Schema(nullable = true, description = "Returned for an owned CODE submission detail")
                 String sourceCode,
-        @Schema(nullable = true) CodeSubmissionExecutionResponse execution) {
+        @Schema(nullable = true) CodeSubmissionExecutionResponse execution,
+        @Schema(nullable = true) String reviewComment) {
     public static StudentSubmissionResponse from(SubmissionResult result) {
         return new StudentSubmissionResponse(
                 result.id(),
@@ -31,6 +32,7 @@ public record StudentSubmissionResponse(
                 result.execution() == null ? null : result.execution().sourceCode(),
                 result.execution() == null
                         ? null
-                        : CodeSubmissionExecutionResponse.from(result.execution()));
+                        : CodeSubmissionExecutionResponse.from(result.execution()),
+                result.reviewComment());
     }
 }

@@ -35,7 +35,7 @@ class LessonMaterialApplicationIntegrationTest extends PostgresIntegrationTest {
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
         PostgresIntegrationTest.configurePostgres(
-                registry, "test_lesson_material_application", "008");
+                registry, "test_lesson_material_application", "017");
     }
 
     @Autowired private LessonMaterialService lessonMaterialService;

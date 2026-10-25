@@ -52,7 +52,7 @@ class ReportShareApiIntegrationTest extends PostgresIntegrationTest {
 
     @DynamicPropertySource
     static void configure(DynamicPropertyRegistry registry) {
-        PostgresIntegrationTest.configurePostgres(registry, "test_report_share_api", "008");
+        PostgresIntegrationTest.configurePostgres(registry, "test_report_share_api", "017");
         registry.add("app.student-invites.public-frontend-base-url", () -> FRONTEND_BASE_URL + "/");
     }
 

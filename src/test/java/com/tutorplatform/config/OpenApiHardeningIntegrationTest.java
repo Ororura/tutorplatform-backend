@@ -85,7 +85,7 @@ class OpenApiHardeningIntegrationTest extends PostgresIntegrationTest {
                         .path("components")
                         .path("schemas");
         assertThat(schemas.path("ProgrammingLanguage").path("enum").toString())
-                .isEqualTo("[\"PYTHON\",\"JAVA\"]");
+                .isEqualTo("[\"PYTHON\",\"JAVA\",\"WEB\"]");
         assertThat(schemas.path("RunCodeRequest").path("properties").has("language")).isFalse();
         assertThat(schemas.path("SubmitCodeRequest").path("properties").has("language")).isFalse();
     }

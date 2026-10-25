@@ -35,7 +35,7 @@ class TeacherDashboardApiIntegrationTest extends PostgresIntegrationTest {
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
-        PostgresIntegrationTest.configurePostgres(registry, "test_teacher_dashboard_api", "008");
+        PostgresIntegrationTest.configurePostgres(registry, "test_teacher_dashboard_api", "017");
     }
 
     @Autowired private MockMvc mockMvc;

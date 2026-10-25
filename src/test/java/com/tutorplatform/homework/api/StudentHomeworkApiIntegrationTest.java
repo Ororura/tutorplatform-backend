@@ -69,7 +69,7 @@ class StudentHomeworkApiIntegrationTest extends PostgresIntegrationTest {
 
     @DynamicPropertySource
     static void configurePostgres(DynamicPropertyRegistry registry) {
-        PostgresIntegrationTest.configurePostgres(registry, "test_student_homework_api", "008");
+        PostgresIntegrationTest.configurePostgres(registry, "test_student_homework_api", "017");
         registry.add("spring.jpa.properties.hibernate.generate_statistics", () -> "true");
     }
 
