@@ -24,7 +24,7 @@ public class FileStorageConfiguration {
         return S3Client.builder()
                 .endpointOverride(URI.create(endpoint))
                 .region(Region.of(region))
-                .credentialsProvider(DefaultCredentialsProvider.create())
+                .credentialsProvider(DefaultCredentialsProvider.builder().build())
                 .serviceConfiguration(
                         S3Configuration.builder().pathStyleAccessEnabled(true).build())
                 .requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED)
