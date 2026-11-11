@@ -274,6 +274,210 @@ class CodeSubmissionApiIntegrationTest extends PostgresIntegrationTest {
     }
 
     @Test
+    void standaloneTextCanBeRetriedListedAndReviewedWithoutCompletingHomework() throws Exception {
+        Fixture fixture =
+                createFixture(
+                        "text-practice",
+                        TaskType.TEXT,
+                        TaskStatus.ACTIVE,
+                        false,
+                        HomeworkStatus.ASSIGNED);
+        String response =
+                submitTextPractice(
+                                fixture,
+                                Map.of(
+                                        "studentProgramId",
+                                        fixture.studentProgramId(),
+                                        "topicId",
+                                        fixture.topicId(),
+                                        "textAnswer",
+                                        "Условие выбирает ветку"))
+                        .andExpect(status().isCreated())
+                        .andExpect(jsonPath("$.status").value("NEEDS_REVIEW"))
+                        .andExpect(jsonPath("$.homeworkItemId").isEmpty())
+                        .andExpect(jsonPath("$.attemptNo").value(1))
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+        String id = objectMapper.readTree(response).get("id").asText();
+        submitTextPractice(
+                        fixture,
+                        Map.of(
+                                "studentProgramId",
+                                fixture.studentProgramId(),
+                                "topicId",
+                                fixture.topicId(),
+                                "textAnswer",
+                                "Уточнённый ответ"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.attemptNo").value(2));
+        mockMvc.perform(
+                        get("/api/v1/student/tasks/{taskId}/submissions", fixture.taskId())
+                                .with(user(fixture.principal()))
+                                .param("studentProgramId", fixture.studentProgramId().toString())
+                                .param("topicId", fixture.topicId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(2));
+        mockMvc.perform(
+                        get("/api/v1/teacher/students/{studentId}/submissions", fixture.studentId())
+                                .with(user(fixture.teacherPrincipal()))
+                                .param("status", "NEEDS_REVIEW"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(2));
+        mockMvc.perform(
+                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch(
+                                        "/api/v1/teacher/students/{studentId}/submissions/{submissionId}/review",
+                                        fixture.studentId(),
+                                        id)
+                                .with(user(fixture.teacherPrincipal()))
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"status\":\"PASSED\",\"comment\":\"Верно\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PASSED"));
+        assertThat(homeworkRepository.findById(fixture.homeworkId()).orElseThrow().getStatus())
+                .isEqualTo(HomeworkStatus.ASSIGNED);
+        submitTextPractice(
+                        fixture,
+                        Map.of(
+                                "homeworkItemId",
+                                fixture.homeworkItemId(),
+                                "textAnswer",
+                                "Ответ на домашнее задание"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.attemptNo").value(1));
+        mockMvc.perform(
+                        get("/api/v1/student/tasks/{taskId}/submissions", fixture.taskId())
+                                .with(user(fixture.principal()))
+                                .param("studentProgramId", fixture.studentProgramId().toString())
+                                .param("topicId", fixture.topicId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(2));
+    }
+
+    @Test
+    void standaloneTextRejectsForeignLockedAndUnlinkedTopics() throws Exception {
+        Fixture fixture =
+                createFixture(
+                        "text-access",
+                        TaskType.TEXT,
+                        TaskStatus.ACTIVE,
+                        false,
+                        HomeworkStatus.ASSIGNED);
+        Fixture foreign =
+                createFixture(
+                        "text-foreign",
+                        TaskType.TEXT,
+                        TaskStatus.ACTIVE,
+                        false,
+                        HomeworkStatus.ASSIGNED);
+        long before = count("submissions");
+        submitTextPractice(
+                        fixture,
+                        Map.of(
+                                "studentProgramId",
+                                foreign.studentProgramId(),
+                                "topicId",
+                                foreign.topicId(),
+                                "textAnswer",
+                                "Ответ"))
+                .andExpect(status().isNotFound());
+        submitTextPractice(
+                        fixture,
+                        Map.of(
+                                "studentProgramId",
+                                fixture.studentProgramId(),
+                                "topicId",
+                                foreign.topicId(),
+                                "textAnswer",
+                                "Ответ"))
+                .andExpect(status().isNotFound());
+        progressRepository.saveAndFlush(
+                new StudentTopicProgressEntity(
+                        fixture.studentProgramId(),
+                        fixture.topicId(),
+                        StudentTopicProgressStatus.LOCKED,
+                        null,
+                        null));
+        submitTextPractice(
+                        fixture,
+                        Map.of(
+                                "studentProgramId",
+                                fixture.studentProgramId(),
+                                "topicId",
+                                fixture.topicId(),
+                                "textAnswer",
+                                "Ответ"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("STUDENT_TOPIC_LOCKED"));
+        assertThat(count("submissions")).isEqualTo(before);
+    }
+
+    @Test
+    void standaloneTextRejectsMissingMixedBlankAndInactiveRequests() throws Exception {
+        Fixture fixture =
+                createFixture(
+                        "text-validation",
+                        TaskType.TEXT,
+                        TaskStatus.ACTIVE,
+                        false,
+                        HomeworkStatus.ASSIGNED);
+        for (Map<String, Object> body :
+                List.<Map<String, Object>>of(
+                        Map.of("textAnswer", "Ответ"),
+                        Map.of(
+                                "studentProgramId",
+                                fixture.studentProgramId(),
+                                "textAnswer",
+                                "Ответ"),
+                        Map.of(
+                                "homeworkItemId",
+                                fixture.homeworkItemId(),
+                                "studentProgramId",
+                                fixture.studentProgramId(),
+                                "topicId",
+                                fixture.topicId(),
+                                "textAnswer",
+                                "Ответ"),
+                        Map.of(
+                                "studentProgramId",
+                                fixture.studentProgramId(),
+                                "topicId",
+                                fixture.topicId(),
+                                "textAnswer",
+                                "  "))) {
+            submitTextPractice(fixture, body).andExpect(status().isBadRequest());
+        }
+        Fixture inactive =
+                createFixture(
+                        "text-inactive",
+                        TaskType.TEXT,
+                        TaskStatus.ARCHIVED,
+                        false,
+                        HomeworkStatus.ASSIGNED);
+        submitTextPractice(
+                        inactive,
+                        Map.of(
+                                "studentProgramId",
+                                inactive.studentProgramId(),
+                                "topicId",
+                                inactive.topicId(),
+                                "textAnswer",
+                                "Ответ"))
+                .andExpect(status().isNotFound());
+    }
+
+    private org.springframework.test.web.servlet.ResultActions submitTextPractice(
+            Fixture fixture, Map<String, ?> body) throws Exception {
+        return mockMvc.perform(
+                post("/api/v1/student/tasks/{taskId}/submissions", fixture.taskId())
+                        .with(user(fixture.principal()))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)));
+    }
+
+    @Test
     void successfulStandaloneTopicSubmissionIsPersistedForStudentAndTask() throws Exception {
         Fixture fixture =
                 createFixture(

@@ -34,7 +34,12 @@ public class StudentSubmissionController implements StudentSubmissionApi {
         StudentSubmissionResponse response =
                 StudentSubmissionResponse.from(
                         submissionService.submitTextAnswer(
-                                principal, taskId, request.homeworkItemId(), request.textAnswer()));
+                                principal,
+                                taskId,
+                                request.homeworkItemId(),
+                                request.studentProgramId(),
+                                request.topicId(),
+                                request.textAnswer()));
         return created(response);
     }
 
@@ -67,11 +72,13 @@ public class StudentSubmissionController implements StudentSubmissionApi {
             @AuthenticationPrincipal AuthenticatedUser principal,
             @PathVariable UUID taskId,
             @RequestParam(required = false) UUID homeworkItemId,
+            @RequestParam(required = false) UUID studentProgramId,
+            @RequestParam(required = false) UUID topicId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         return StudentSubmissionPageResponse.from(
                 submissionService.listStudentTaskSubmissions(
-                        principal, taskId, homeworkItemId, page, size));
+                        principal, taskId, homeworkItemId, studentProgramId, topicId, page, size));
     }
 
     @Override

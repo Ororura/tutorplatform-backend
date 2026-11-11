@@ -6,9 +6,11 @@ import com.tutorplatform.student.application.management.StudentNotFoundException
 import com.tutorplatform.student.application.ownership.StudentOwnershipQuery;
 import com.tutorplatform.submission.application.exception.*;
 import com.tutorplatform.submission.domain.*;
+import com.tutorplatform.task.application.StudentTopicTaskService;
 import com.tutorplatform.task.application.TaskQuery;
 import com.tutorplatform.task.application.exception.TaskNotFoundException;
 import com.tutorplatform.task.domain.programming.ProgrammingLanguage;
+import com.tutorplatform.task.domain.task.TaskStatus;
 import com.tutorplatform.task.domain.task.TaskType;
 import java.time.Instant;
 import java.util.Set;
@@ -26,6 +28,7 @@ public class SubmissionService {
 
     private final StudentOwnershipQuery studentOwnershipQuery;
     private final TaskQuery taskQuery;
+    private final StudentTopicTaskService studentTopicTaskService;
     private final SubmissionHomeworkContextQuery homeworkContextQuery;
     private final ProgramQuery programQuery;
     private final SubmissionRepository submissionRepository;
@@ -35,6 +38,7 @@ public class SubmissionService {
     public SubmissionService(
             StudentOwnershipQuery studentOwnershipQuery,
             TaskQuery taskQuery,
+            StudentTopicTaskService studentTopicTaskService,
             SubmissionHomeworkContextQuery homeworkContextQuery,
             ProgramQuery programQuery,
             SubmissionRepository submissionRepository,
@@ -42,6 +46,7 @@ public class SubmissionService {
             ApplicationEventPublisher eventPublisher) {
         this.studentOwnershipQuery = studentOwnershipQuery;
         this.taskQuery = taskQuery;
+        this.studentTopicTaskService = studentTopicTaskService;
         this.homeworkContextQuery = homeworkContextQuery;
         this.programQuery = programQuery;
         this.submissionRepository = submissionRepository;
@@ -51,31 +56,41 @@ public class SubmissionService {
 
     @Transactional
     public SubmissionResult submitTextAnswer(
-            AuthenticatedUser principal, UUID taskId, UUID homeworkItemId, String textAnswer) {
-        if (homeworkItemId == null) {
-            throw new InvalidSubmissionException("homeworkItemId", "must not be null");
-        }
+            AuthenticatedUser principal,
+            UUID taskId,
+            UUID homeworkItemId,
+            UUID studentProgramId,
+            UUID topicId,
+            String textAnswer) {
+        validateTextContext(homeworkItemId, studentProgramId, topicId);
         if (textAnswer == null || textAnswer.isBlank()) {
             throw new InvalidSubmissionException("textAnswer", "must not be blank");
         }
         UUID studentId = currentStudentId(principal);
-        requireTextTask(taskId);
-        SubmissionHomeworkContextQuery.HomeworkSubmissionContext homework =
-                requireHomeworkContext(studentId, taskId, homeworkItemId);
-        if (homework.cancelled() || homework.completed()) {
-            throw new HomeworkNotSubmittableException();
+        TaskQuery.TaskContext task = requireTask(taskId);
+        if (task.type() != TaskType.TEXT) throw new TextSubmissionRequiredException();
+        UUID programId;
+        if (homeworkItemId != null) {
+            var homework = requireHomeworkContext(studentId, taskId, homeworkItemId);
+            if (homework.cancelled() || homework.completed())
+                throw new HomeworkNotSubmittableException();
+            programId = homework.studentProgramId();
+        } else {
+            if (task.status() != TaskStatus.ACTIVE) throw new TaskNotFoundException();
+            programId =
+                    studentTopicTaskService
+                            .requireTaskAccess(studentId, studentProgramId, topicId, task)
+                            .id();
         }
-
         SubmissionAttemptContext attemptContext =
-                new SubmissionAttemptContext(
-                        studentId, homework.studentProgramId(), taskId, homeworkItemId);
+                new SubmissionAttemptContext(studentId, programId, taskId, homeworkItemId);
         int attemptNo = submissionRepository.nextAttemptNo(attemptContext);
         SubmissionEntity saved =
                 submissionRepository.saveAndFlush(
                         new SubmissionEntity(
                                 UUID.randomUUID(),
                                 studentId,
-                                homework.studentProgramId(),
+                                programId,
                                 taskId,
                                 homeworkItemId,
                                 attemptNo,
@@ -94,12 +109,28 @@ public class SubmissionService {
     }
 
     public SubmissionPageResult listStudentTaskSubmissions(
-            AuthenticatedUser principal, UUID taskId, UUID homeworkItemId, int page, int size) {
+            AuthenticatedUser principal,
+            UUID taskId,
+            UUID homeworkItemId,
+            UUID studentProgramId,
+            UUID topicId,
+            int page,
+            int size) {
         validatePage(page, size);
         UUID studentId = currentStudentId(principal);
         requireTask(taskId);
         SubmissionPage submissions;
-        if (homeworkItemId == null) {
+        if (studentProgramId != null || topicId != null) {
+            validateTextContext(homeworkItemId, studentProgramId, topicId);
+            var program =
+                    studentTopicTaskService.requireTaskAccess(
+                            studentId, studentProgramId, topicId, requireTask(taskId));
+            submissions =
+                    submissionRepository.findAttempts(
+                            new SubmissionAttemptContext(studentId, program.id(), taskId, null),
+                            page,
+                            size);
+        } else if (homeworkItemId == null) {
             submissions =
                     submissionRepository.findPageByStudentIdAndTaskId(
                             studentId, taskId, page, size);
@@ -303,9 +334,13 @@ public class SubmissionService {
         return taskQuery.findTask(taskId).orElseThrow(TaskNotFoundException::new);
     }
 
-    private void requireTextTask(UUID taskId) {
-        if (requireTask(taskId).type() != TaskType.TEXT) {
-            throw new TextSubmissionRequiredException();
+    private void validateTextContext(UUID homeworkItemId, UUID studentProgramId, UUID topicId) {
+        boolean homework = homeworkItemId != null;
+        boolean practice = studentProgramId != null && topicId != null;
+        if (homework == practice || (homework && (studentProgramId != null || topicId != null))) {
+            throw new InvalidSubmissionException(
+                    "context",
+                    "must contain either homeworkItemId or studentProgramId and topicId");
         }
     }
 

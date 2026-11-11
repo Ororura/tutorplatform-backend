@@ -17,7 +17,7 @@ public interface StudentSubmissionApi {
 
     @Operation(
             operationId = "submitTextAnswer",
-            summary = "Submit a TEXT answer for a homework task")
+            summary = "Submit a TEXT answer for a homework or topic practice task")
     @ApiResponses({
         @ApiResponse(
                 responseCode = "201",
@@ -117,6 +117,12 @@ public interface StudentSubmissionApi {
                             description = "Optional homework item context",
                             schema = @Schema(format = "uuid"))
                     UUID homeworkItemId,
+            @Parameter(
+                            description = "Practice student program context",
+                            schema = @Schema(format = "uuid"))
+                    UUID studentProgramId,
+            @Parameter(description = "Practice topic context", schema = @Schema(format = "uuid"))
+                    UUID topicId,
             @Parameter(description = "Zero-based page index", example = "0") int page,
             @Parameter(description = "Page size from 1 to 100", example = "20") int size);
 
